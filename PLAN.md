@@ -15,7 +15,8 @@
 | How data gets in | **Browser extension** (Chrome first, Manifest V3) | X and LinkedIn have no usable API for saved posts. The extension reads the user's *own* saved pages while they're logged in. Browser bookmarks come free through `chrome.bookmarks`. |
 | Where you browse it | **Web app** | Bigger screen, works on any device, easy to share later. |
 | Extension framework | **WXT** (TypeScript + React) | The best MV3 developer experience available, with hot reload and cross-browser builds (Firefox later at almost no extra cost). |
-| Web app | **Next.js** (App Router) + Tailwind + shadcn/ui | A standard stack with fast iteration. |
+| Web app | **Next.js** (App Router) + Tailwind + shadcn | A standard stack with fast iteration. |
+| Design system | **[Lime](https://design.how/systems/lime) from design.how** (MIT) | Warm, light and made for consumer apps. It installs through shadcn and ships its own agent skill and lint, so every screen stays consistent. See section 5. |
 | Backend / DB / auth | **Supabase**: Postgres, Auth, Row Level Security, **pgvector** | One service covers auth, data and vector search. |
 | AI categorizing | **Claude API**, Haiku for bulk tagging, Sonnet for building taxonomies | Cheap and fast for thousands of items. Structured JSON output. |
 | Semantic search | Embeddings (Voyage AI) stored in pgvector | Lets "that post about pricing pages" work even with no keyword match. |
@@ -85,10 +86,74 @@ Rough cost: at Haiku pricing, a few thousand items cost a few cents to categoriz
 
 ---
 
-## 5. Features by phase
+## 5. Design system: Lime (design.how)
+
+Lime is a white page, warm-grey surfaces and near-black text, with **one glowing lime action per view**. It suits a calm, personal library. Source: [arla6ka/design.how/systems/lime](https://github.com/arla6ka/design.how/tree/main/systems/lime), MIT licensed.
+
+### Install (in `apps/web`, and again in `apps/extension` for the popup)
+```bash
+npx shadcn@latest init
+npx shadcn@latest add https://design.how/r/lime/theme.json   # tokens, styles, Lime skill
+npx shadcn@latest add https://design.how/r/lime/button.json  # then each component by name
+npx shadcn@latest add https://design.how/r/lime/lint.json    # lint rules
+npx eslint -c lime.eslint.config.mjs .                       # run in CI
+```
+Root layout: `<body className="lime"><LimePortalProvider>{children}</LimePortalProvider></body>`. Without the provider, menus and dialogs lose their tokens.
+
+### Key tokens (never use raw values in code; use the classes)
+| Role | Token → value |
+|---|---|
+| Page / surfaces | `--page` #ffffff, `--surface` #f6f5f2, `--surface-2` #efeeea |
+| Text | `--fg` #0f0f0d, `--fg-2` #4a4943, `--fg-3` #6b6a63 |
+| The one action | `--accent` #e4f222 (lime), text on it `--on-accent` #0f0f0d |
+| Selected row | `--accent-wash` #f5f9c4 |
+| Lines | `--line` #e6e4df |
+| Font | Hanken Grotesk 400/500/600 (never 700) |
+| Radius | field 12px, panel 16px, sheet 24px, controls fully round |
+| Controls | 32 / 40 / 48px tall |
+
+Dark mode: put `data-theme="dark"` on `<html>`. It doesn't follow the system setting by itself, so add a small toggle that reads `prefers-color-scheme` on first load.
+
+### How Stash's screens map to Lime
+| Stash screen / piece | Lime pieces |
+|---|---|
+| App frame | Page shell, `main` at `max-w-5xl` for the library grid and `max-w-2xl` for settings |
+| Category sidebar (desktop) | List + ListItem, chosen row on `--accent-wash`; Sheet on phones |
+| Source filter (All / X / LinkedIn / Bookmarks) | Segmented |
+| Tags | Chip |
+| Saved item | Card (only around the item itself, never a card in a card), Avatar for the author, Badge for the source |
+| Move to category | Dropdown menu or Combobox |
+| Uncategorized inbox | List; Empty when it's clear |
+| Taxonomy review after the first import | **Approval request** block, so the AI proposes categories and you approve, edit or reject before anything moves |
+| "Sorted 214 items" result | Action receipt with Undo |
+| Ask your saves (Phase 2) | Chat input, Message, Follow ups |
+| Weekly digest / resurface | Insight |
+| Sync progress | Progress, Status, Toast |
+| Import bookmarks `.html` | Dropzone |
+| Settings (sync schedule, auto-sort rules) | Switch, Autonomy rule, "Settings rules" block |
+| Extension popup | Same theme: sign-in, one lime **Sync now** button, Status per source |
+
+**Where the one glowing action goes:** in the library it's **Add / Save**; on the taxonomy review it's **Apply categories**; in the popup it's **Sync now**. Everything else is secondary, outline or ghost.
+
+### Gaps (Lime is built for a banking app, so build these from Lime parts)
+- **⌘K search:** Lime has no command palette. Use a Dialog with an Input and a List of results.
+- **Bulk select and move:** no bulk action bar. Use a sticky bottom bar on `bg-page` with `border-t border-line`, holding a count and a Dropdown menu.
+- **Masonry grid of saves:** CSS grid of Cards with the Lime spacing scale.
+- **Skip** the money components: Amount, Balance, Bill schedule, Keypad, Receipt match.
+
+### Rules to keep (from Lime's skill)
+- Sentence case, a verb on every button ("Sort my saves", not "OK"), no emoji, no all-caps labels.
+- No gradients, blobs, glass or extra glows; no rows of stat cards ("1,204 saves / 38 categories / ..."). Say it in a sentence instead.
+- Every input sits in a Field with a visible label.
+- Before calling a screen done: lint passes, and it's checked at 390px and 1280px wide.
+
+---
+
+## 6. Features by phase
 
 ### Phase 0: Setup (≈2 days)
 - Monorepo, Supabase project, auth (Google and email magic link)
+- Lime theme installed, Lime lint running in CI
 - Extension skeleton that signs in with the same Supabase session
 - CI: typecheck, lint and tests on push
 
@@ -124,7 +189,7 @@ Rough cost: at Haiku pricing, a few thousand items cost a few cents to categoriz
 
 ---
 
-## 6. Repo layout
+## 7. Repo layout
 
 ```
 apps/
@@ -147,7 +212,7 @@ supabase/
 
 ---
 
-## 7. Risks and how to handle them
+## 8. Risks and how to handle them
 
 | Risk | Mitigation |
 |---|---|
@@ -159,14 +224,15 @@ supabase/
 
 ---
 
-## 8. First tasks, in order
+## 9. First tasks, in order
 
 1. Scaffold the monorepo (pnpm, Turborepo, WXT, Next.js, shared package).
-2. Supabase schema migration and auth in the web app.
-3. Browser-bookmarks importer → `/api/ingest` → items show up in a plain list.
-4. Classification pipeline with Claude, and categories in the sidebar.
-5. X importer, with a fixture-tested parser.
-6. LinkedIn importer, same pattern.
-7. Search, the inbox and drag-to-recategorize.
+2. Install Lime (theme, lint, first components) in the web app and the extension popup. Add the Lime lint to CI.
+3. Supabase schema migration and auth in the web app.
+4. Browser-bookmarks importer → `/api/ingest` → items show up in a plain list.
+5. Classification pipeline with Claude, and categories in the sidebar.
+6. X importer, with a fixture-tested parser.
+7. LinkedIn importer, same pattern.
+8. Search, the inbox and drag-to-recategorize.
 
-Step 3 is the first real milestone: real data flowing end to end. Everything after that is adding sources and polish.
+Step 4 is the first real milestone: real data flowing end to end. Everything after that is adding sources and polish.
