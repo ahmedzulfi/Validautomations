@@ -283,12 +283,7 @@ if let Some(msg) = r.submitted { /* send */ }"##,
                 }
                 ui.label(egui::RichText::new("Narrow (mobile) header, menu open:").size(12.0));
                 ui.allocate_ui(egui::vec2(380.0, 320.0), |ui| {
-                    let id = ui.scope_id().with("header-narrow").with("open");
-                    if !glowkit_core::state(ui, ui.scope_id().with("init"), || false) {
-                        glowkit_core::set_state(ui, ui.scope_id().with("init"), true);
-                        let _ = id;
-                    }
-                    HeaderSection::new("Glowkit").layout(HeaderLayout::Floating).id_salt("narrow").show(ui);
+                    HeaderSection::new("Glowkit").layout(HeaderLayout::Floating).menu_open(true).id_salt("narrow").show(ui);
                 });
             },
         },

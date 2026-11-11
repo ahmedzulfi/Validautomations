@@ -38,6 +38,7 @@ pub struct HeaderSection {
     layout: HeaderLayout,
     background: SectionBackground,
     badge: Option<(usize, String)>,
+    menu_open: bool,
     salt: Option<String>,
 }
 
@@ -52,8 +53,14 @@ impl HeaderSection {
             layout: HeaderLayout::Bar,
             background: SectionBackground::Plain,
             badge: None,
+            menu_open: false,
             salt: None,
         }
+    }
+    /// Start with the mobile menu open (narrow screens only).
+    pub fn menu_open(mut self, open: bool) -> Self {
+        self.menu_open = open;
+        self
     }
     /// Navigation links.
     pub fn links(mut self, l: &[&str]) -> Self {
@@ -102,7 +109,7 @@ impl HeaderSection {
             let t = sec.t.clone();
             let narrow = sec.w < 760.0;
             let mut active: usize = glowkit_core::state(ui, id.with("active"), || 0);
-            let mut open: bool = glowkit_core::state(ui, id.with("open"), || false);
+            let mut open: bool = glowkit_core::state(ui, id.with("open"), || self.menu_open);
             let h = if floating { 56.0 } else { 64.0 };
             let (bar, _) = ui.allocate_exact_size(vec2(ui.available_width(), h), Sense::hover());
             let painter = ui.painter().clone();
