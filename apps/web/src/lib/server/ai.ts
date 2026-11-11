@@ -1,24 +1,34 @@
-import Anthropic from '@anthropic-ai/sdk';
-import {zodOutputFormat} from '@anthropic-ai/sdk/helpers/zod';
+import {createOpenRouter} from '@openrouter/ai-sdk-provider';
+import {generateText, JSONParseError, NoObjectGeneratedError, NoOutputGeneratedError, Output, TypeValidationError, type LanguageModel} from 'ai';
 import {z} from 'zod/v4';
 
-// Building a person's category list is a judgment call over a sample, done rarely, so it uses the main
-// model. Sorting every item is high-volume and simple, so it uses the small, fast one.
-export const TAXONOMY_MODEL = process.env.STASH_TAXONOMY_MODEL || 'claude-opus-5-5';
-export const CLASSIFY_MODEL = process.env.STASH_CLASSIFY_MODEL || 'claude-haiku-5-5';
+// Calls go through OpenRouter with the Vercel AI SDK, so any model OpenRouter offers can be used.
+// Building a person's category list is a judgment call over a sample, done rarely, so it uses a large
+// model. Sorting every item is high-volume and simple, so it uses a small, fast one.
+export const TAXONOMY_MODEL = process.env.STASH_TAXONOMY_MODEL || 'anthropic/claude-opus-5.5';
+export const CLASSIFY_MODEL = process.env.STASH_CLASSIFY_MODEL || 'anthropic/claude-haiku-5.5';
 
 /** Below this confidence an item goes to the inbox instead of a category. */
 export const MIN_CONFIDENCE = 0.6;
 export const UNCATEGORIZED = 'Uncategorized';
 
 export function aiConfigured(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
+  return Boolean(process.env.OPENROUTER_API_KEY);
 }
 
-let cachedClient: Anthropic | null = null;
-export function anthropic(): Anthropic {
-  cachedClient ??= new Anthropic();
-  return cachedClient;
+/** Turns a model id into a model to call. Tests pass their own. */
+export type ModelPicker = (modelId: string) => LanguageModel;
+
+let provider: ReturnType<typeof createOpenRouter> | null = null;
+export function openRouterModels(): ModelPicker {
+  provider ??= createOpenRouter({
+    apiKey: process.env.OPENROUTER_API_KEY,
+    baseURL: process.env.OPENROUTER_BASE_URL || undefined,
+    appName: 'Stash',
+    appUrl: process.env.STASH_PUBLIC_URL || undefined,
+  });
+  const p = provider;
+  return (modelId) => p(modelId);
 }
 
 /** What the model sees of one saved item. Long posts are cut to keep each batch small. */
@@ -46,8 +56,39 @@ export function describeItem(item: ItemForAi, maxBody = 600): string {
   return parts.join('\n');
 }
 
-export class AiRefusalError extends Error {}
-export class AiEmptyError extends Error {}
+/** The model declined, or its answer did not fit the schema. Retrying the same input will not help. */
+export class AiNoAnswerError extends Error {}
+
+type StructuredCall<T> = {
+  model: LanguageModel;
+  schema: z.ZodType<T>;
+  system: string;
+  prompt: string;
+  effort: 'low' | 'medium' | 'high';
+};
+
+async function structured<T>({model, schema, system, prompt, effort}: StructuredCall<T>): Promise<T> {
+  try {
+    const result = await generateText({
+      model,
+      system,
+      prompt,
+      output: Output.object({schema}),
+      maxOutputTokens: 16000,
+      maxRetries: 2,
+      providerOptions: {openrouter: {reasoning: {effort}}},
+    });
+    if (result.finishReason === 'content-filter') throw new AiNoAnswerError('The model declined this request.');
+    return result.output as T;
+  } catch (err) {
+    if (err instanceof AiNoAnswerError) throw err;
+    // A refusal, or an answer that is not valid JSON for the schema. Retrying the same input will not help.
+    if (NoObjectGeneratedError.isInstance(err) || NoOutputGeneratedError.isInstance(err) || TypeValidationError.isInstance(err) || JSONParseError.isInstance(err)) {
+      throw new AiNoAnswerError('The model returned an answer that could not be read.');
+    }
+    throw err;
+  }
+}
 
 const TaxonomySchema = z.object({
   categories: z.array(z.object({
@@ -61,28 +102,22 @@ export type ProposedCategory = {name: string; description: string};
  * Reads a sample of someone's saves and proposes categories that fit what this person actually saves.
  * The person reviews them before anything is sorted.
  */
-export async function suggestTaxonomy(client: Anthropic, sample: ItemForAi[], existing: string[] = []): Promise<ProposedCategory[]> {
+export async function suggestTaxonomy(models: ModelPicker, sample: ItemForAi[], existing: string[] = []): Promise<ProposedCategory[]> {
   const listing = sample.map((item, i) => `<item n="${i + 1}">\n${describeItem(item, 300)}\n</item>`).join('\n');
-  const response = await client.messages.parse({
-    model: TAXONOMY_MODEL,
-    max_tokens: 16000,
-    output_config: {effort: 'medium', format: zodOutputFormat(TaxonomySchema)},
+  const parsed = await structured({
+    model: models(TAXONOMY_MODEL),
+    schema: TaxonomySchema,
+    effort: 'medium',
     system:
       'You organize a person\'s saved posts and bookmarks into a small set of categories. ' +
       'Propose 8 to 15 categories that cover most of their saves, based on what they actually save, not generic topics. ' +
       'Each category should be distinct enough that an item clearly belongs to one. ' +
       'Prefer the person\'s own interests and projects over broad buckets like "Technology" or "Misc". ' +
       'Names are 2 to 4 words in sentence case with no emoji. Do not include an "Uncategorized" or "Other" category.',
-    messages: [{
-      role: 'user',
-      content:
-        (existing.length ? `They already have these categories, keep the ones that still fit: ${existing.join(', ')}.\n\n` : '') +
-        `Here are ${sample.length} of their saved items:\n\n${listing}`,
-    }],
+    prompt:
+      (existing.length ? `They already have these categories, keep the ones that still fit: ${existing.join(', ')}.\n\n` : '') +
+      `Here are ${sample.length} of their saved items:\n\n${listing}`,
   });
-  if (response.stop_reason === 'refusal') throw new AiRefusalError('The model declined to suggest categories.');
-  const parsed = response.parsed_output;
-  if (!parsed) throw new AiEmptyError('The model returned no categories.');
   return cleanCategories(parsed.categories);
 }
 
@@ -113,7 +148,7 @@ export type Correction = {item: ItemForAi; category: string};
  * item the model is unsure about comes back with category null so it lands in the inbox.
  */
 export async function classifyBatch(
-  client: Anthropic,
+  models: ModelPicker,
   categories: ProposedCategory[],
   items: ItemForAi[],
   corrections: Correction[] = [],
@@ -137,21 +172,18 @@ export async function classifyBatch(
     : '';
   const listing = items.map((item, i) => `<item n="${i + 1}">\n${describeItem(item)}\n</item>`).join('\n');
 
-  const response = await client.messages.parse({
-    model: CLASSIFY_MODEL,
-    max_tokens: 16000,
-    output_config: {effort: 'low', format: zodOutputFormat(BatchSchema)},
+  const parsed = await structured({
+    model: models(CLASSIFY_MODEL),
+    schema: BatchSchema,
+    effort: 'low',
     system:
       'You sort a person\'s saved posts and bookmarks into their own categories.\n\n' +
       `Their categories:\n${categoryList}\n\n` +
       `Pick the single best category for each item. If none fits, or the item has too little text to tell, use "${UNCATEGORIZED}". ` +
       'Give a confidence from 0 to 1, up to 5 short lower-case tags, and a one-line summary in plain words. ' +
       'Return exactly one result for every item number.' + examples,
-    messages: [{role: 'user', content: listing}],
+    prompt: listing,
   });
-  if (response.stop_reason === 'refusal') throw new AiRefusalError('The model declined to sort this batch.');
-  const parsed = response.parsed_output;
-  if (!parsed) throw new AiEmptyError('The model returned no results.');
 
   const byN = new Map(parsed.results.map((r) => [r.n, r]));
   return items.map((_, i) => {

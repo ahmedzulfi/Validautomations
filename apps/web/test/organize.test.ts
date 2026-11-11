@@ -1,28 +1,27 @@
-import Anthropic from '@anthropic-ai/sdk';
+import {APICallError} from 'ai';
 import {describe, expect, it} from 'vitest';
 import {classifyBatch, MIN_CONFIDENCE} from '@/lib/server/ai';
 import {ingestItems, moveItem} from '@/lib/server/items';
 import {applyTaxonomy, proposeTaxonomy, sortingState, sortPending} from '@/lib/server/organize';
-import {fakeClient, itemNumbers, makeCategories, makeUser, query} from './helpers';
+import {fakeModels, itemNumbers, makeCategories, makeUser, query} from './helpers';
 
 const item = (text: string) => ({source: 'x', title: text, body: text, authorName: null, url: 'https://x.com/i/status/1', folderPath: null});
 
 describe('classifyBatch', () => {
   it('returns one result per item in order, sends low confidence to the inbox and cleans tags', async () => {
-    const {client, calls} = fakeClient(() => ({
-      stop_reason: 'end_turn',
-      parsed_output: {results: [
+    const {models, calls} = fakeModels(() => ({
+      output: {results: [
         {n: 2, category: 'Databases', confidence: 0.95, tags: ['#Postgres', 'postgres', 'Indexes'], summary: 'Indexes'},
         {n: 1, category: 'Design', confidence: MIN_CONFIDENCE - 0.1, tags: [], summary: 'Unsure'},
       ]},
     }));
-    const results = await classifyBatch(client, [{name: 'Design', description: ''}, {name: 'Databases', description: ''}], [item('a'), item('b'), item('c')]);
+    const results = await classifyBatch(models, [{name: 'Design', description: ''}, {name: 'Databases', description: ''}], [item('a'), item('b'), item('c')]);
     expect(results).toEqual([
       {category: null, confidence: MIN_CONFIDENCE - 0.1, tags: [], summary: 'Unsure'},
       {category: 'Databases', confidence: 0.95, tags: ['postgres', 'indexes'], summary: 'Indexes'},
       {category: null, confidence: 0, tags: [], summary: ''},
     ]);
-    expect(calls[0]!.model).toBe('claude-haiku-5-5');
+    expect(calls[0]!.modelId).toBe('anthropic/claude-haiku-5.5');
   });
 });
 
@@ -39,12 +38,10 @@ describe('sortPending', () => {
     return {user, cats};
   }
 
-  const byText = fakeClient((params) => {
-    const text = String(params.messages[0]!.content);
-    const blocks = text.split('<item n="').slice(1);
+  const byText = fakeModels((call) => {
+    const blocks = call.prompt.split('<item n="').slice(1);
     return {
-      stop_reason: 'end_turn',
-      parsed_output: {results: itemNumbers(params).map((n, i) => ({
+      output: {results: itemNumbers(call).map((n, i) => ({
         n,
         category: blocks[i]!.includes('Postgres') ? 'Databases' : 'Design',
         confidence: 0.9,
@@ -59,7 +56,7 @@ describe('sortPending', () => {
     const [first] = await query<{id: string}>(`select id from items where user_id = $1 and body = 'Postgres tip 1'`, [user]);
     await moveItem(user, first!.id, cats.get('Design')!);
 
-    const result = await sortPending(user, byText.client);
+    const result = await sortPending(user, byText.models);
     expect(result).toMatchObject({processed: 29, placed: 29, inbox: 0, error: null});
 
     const counts = await query<{name: string; n: number}>(
@@ -72,32 +69,31 @@ describe('sortPending', () => {
     expect(await sortingState(user)).toEqual({running: false, error: null});
 
     // Nothing left: a second run does no work.
-    expect((await sortPending(user, byText.client)).processed).toBe(0);
+    expect((await sortPending(user, byText.models)).processed).toBe(0);
   });
 
   it('shows the person\'s corrections to the model as examples', async () => {
     const {user, cats} = await setup();
     const [first] = await query<{id: string}>(`select id from items where user_id = $1 and body = 'Postgres tip 1'`, [user]);
     await moveItem(user, first!.id, cats.get('Design')!);
-    const spy = fakeClient(byText.client.messages.parse as never);
-    await sortPending(user, spy.client);
-    expect(String(spy.calls[0]!.system)).toContain('<example category="Design">');
+    await sortPending(user, byText.models);
+    expect(byText.calls.at(-1)!.system).toContain('<example category="Design">');
   });
 
   it('puts a refused batch in the inbox instead of retrying it forever', async () => {
     const {user} = await setup();
-    const {client} = fakeClient(() => ({stop_reason: 'refusal', parsed_output: null}));
-    const result = await sortPending(user, client);
+    const {models} = fakeModels(() => ({output: {}, finishReason: 'content-filter'}));
+    const result = await sortPending(user, models);
     expect(result).toMatchObject({processed: 30, placed: 0, inbox: 30, error: null});
   });
 
   it('stops on an API error, keeps the rest unsorted and says why', async () => {
     const {user} = await setup();
-    const {client} = fakeClient(() => {
-      throw new Anthropic.AuthenticationError(401, {type: 'error', error: {type: 'authentication_error', message: 'bad key'}}, 'bad key', new Headers());
+    const {models} = fakeModels(() => {
+      throw new APICallError({message: 'bad key', url: 'https://openrouter.ai/api/v1/chat/completions', requestBodyValues: {}, statusCode: 401, isRetryable: false});
     });
-    const result = await sortPending(user, client);
-    expect(result.error).toMatch(/API key was not accepted/);
+    const result = await sortPending(user, models);
+    expect(result.error).toMatch(/OpenRouter API key was not accepted/);
     expect(await sortingState(user)).toEqual({running: false, error: result.error});
     const [{n}] = await query<{n: number}>('select count(*)::int as n from items where user_id = $1 and classified_at is null', [user]) as [{n: number}];
     expect(n).toBe(30);
@@ -106,7 +102,7 @@ describe('sortPending', () => {
   it('does nothing without categories', async () => {
     const user = await makeUser();
     await ingestItems(user, [{source: 'bookmark', sourceId: 'a', url: 'https://example.com/a'}]);
-    expect((await sortPending(user, byText.client)).skipped).toBe('no-categories');
+    expect((await sortPending(user, byText.models)).skipped).toBe('no-categories');
   });
 });
 
@@ -114,17 +110,16 @@ describe('taxonomy', () => {
   it('proposes categories from a sample and applies the edited list', async () => {
     const user = await makeUser();
     await ingestItems(user, [{source: 'bookmark', sourceId: 'a', url: 'https://example.com/a', title: 'Grid systems'}]);
-    const {client, calls} = fakeClient(() => ({
-      stop_reason: 'end_turn',
-      parsed_output: {categories: [
+    const {models, calls} = fakeModels(() => ({
+      output: {categories: [
         {name: 'Design systems', description: 'Tokens and components'},
         {name: 'design systems', description: 'Duplicate'},
         {name: 'Other', description: 'Should be dropped'},
       ]},
     }));
-    const proposal = await proposeTaxonomy(user, client);
+    const proposal = await proposeTaxonomy(user, models);
     expect(proposal.categories).toEqual([{name: 'Design systems', description: 'Tokens and components'}]);
-    expect(calls[0]!.model).toBe('claude-opus-5-5');
+    expect(calls[0]!.modelId).toBe('anthropic/claude-opus-5.5');
 
     await applyTaxonomy(user, [{name: 'Design systems', description: 'Tokens'}, {name: 'Hiring', description: 'People'}], proposal.id);
     const names = await query<{name: string}>('select name from categories where user_id = $1 order by sort_order', [user]);

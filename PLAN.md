@@ -16,7 +16,7 @@ Changes from the plan below, and why:
 - **Auth is built in** (email and password, sessions in Postgres, API tokens for the extension) instead of Supabase Auth. Any Postgres works, Supabase included, and the whole flow can be tested locally without a hosted service.
 - **Search is Postgres full-text search** for now. Semantic search with embeddings (pgvector) stays in Phase 2.
 - **One category per item, plus tags in an array**, rather than many-to-many tables. Simpler, and it matches how the library is browsed.
-- **Models:** categories are suggested by `claude-opus-5-5` (rare, judgment-heavy) and items sorted by `claude-haiku-5-5` (high volume). Both can be changed with environment variables.
+- **AI calls go through OpenRouter with the Vercel AI SDK** (`ai` + `@openrouter/ai-sdk-provider`), so any OpenRouter model can be used. Categories are suggested by `anthropic/claude-opus-5.5` (rare, judgment-heavy) and items sorted by `anthropic/claude-haiku-5.5` (high volume). Both can be changed with environment variables.
 - **No Turborepo:** pnpm workspaces are enough at this size.
 - **Lime gaps:** Lime's Approval request component is built around money, so the category review uses Lime's form fields and List instead. The Action receipt confirms the result.
 
@@ -34,7 +34,7 @@ Not yet done: Phase 2 semantic search and weekly digest, Phase 3 sources and bro
 | Web app | **Next.js** (App Router) + Tailwind + shadcn | A standard stack with fast iteration. |
 | Design system | **[Lime](https://design.how/systems/lime) from design.how** (MIT) | Warm, light and made for consumer apps. It installs through shadcn and ships its own agent skill and lint, so every screen stays consistent. See section 5. |
 | Backend / DB / auth | **Supabase**: Postgres, Auth, Row Level Security, **pgvector** | One service covers auth, data and vector search. |
-| AI categorizing | **Claude API**, Haiku for bulk tagging, Sonnet for building taxonomies | Cheap and fast for thousands of items. Structured JSON output. |
+| AI categorizing | **OpenRouter via the Vercel AI SDK**: Claude Haiku for bulk tagging, Claude Opus for building taxonomies | Cheap and fast for thousands of items. Structured JSON output. Any OpenRouter model can be swapped in. |
 | Semantic search | Embeddings (Voyage AI) stored in pgvector | Lets "that post about pricing pages" work even with no keyword match. |
 | Monorepo | pnpm + Turborepo (`apps/extension`, `apps/web`, `packages/shared`) | Shared types between the extension and the app. |
 

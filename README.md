@@ -35,9 +35,10 @@ Open http://localhost:3000, create an account, and you're in.
 | Variable | What it is |
 |---|---|
 | `DATABASE_URL` | Postgres connection string. Supabase, Neon or any Postgres works. |
-| `ANTHROPIC_API_KEY` | Turns on category suggestions and sorting. Without it, everything else works and you can make categories by hand. |
-| `STASH_TAXONOMY_MODEL` | Optional. The model that suggests categories. Default `claude-opus-5-5`. |
-| `STASH_CLASSIFY_MODEL` | Optional. The model that sorts each item. Default `claude-haiku-5-5` (fast and cheap: a few thousand saves cost cents). |
+| `OPENROUTER_API_KEY` | Turns on category suggestions and sorting (calls go through [OpenRouter](https://openrouter.ai) with the Vercel AI SDK). Without it, everything else works and you can make categories by hand. |
+| `STASH_TAXONOMY_MODEL` | Optional. The OpenRouter model that suggests categories. Default `anthropic/claude-opus-5.5`. |
+| `STASH_CLASSIFY_MODEL` | Optional. The OpenRouter model that sorts each item. Default `anthropic/claude-haiku-5.5` (fast and cheap). Any OpenRouter model that supports structured outputs works. |
+| `OPENROUTER_BASE_URL` | Optional. A different OpenRouter-compatible endpoint. |
 | `STASH_PUBLIC_URL` | Optional. The address shown to paste into the extension, if it differs from what the server sees. |
 
 ## Install the extension

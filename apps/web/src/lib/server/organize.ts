@@ -1,9 +1,9 @@
 import 'server-only';
-import Anthropic from '@anthropic-ai/sdk';
 import {chunk} from '@stash/shared';
+import {APICallError, LoadAPIKeyError, RetryError} from 'ai';
 import {
-  AiEmptyError, AiRefusalError, aiConfigured, anthropic, classifyBatch, cleanCategories,
-  suggestTaxonomy, type Correction, type ItemForAi, type ProposedCategory,
+  AiNoAnswerError, aiConfigured, classifyBatch, cleanCategories, openRouterModels,
+  suggestTaxonomy, type Correction, type ItemForAi, type ModelPicker, type ProposedCategory,
 } from './ai';
 import {query, queryOne} from './db';
 
@@ -23,7 +23,7 @@ export async function pendingProposal(userId: string): Promise<Proposal | null> 
 }
 
 /** Asks the AI for categories that fit this person's saves, and keeps them for review. */
-export async function proposeTaxonomy(userId: string, client: Anthropic = anthropic()): Promise<Proposal> {
+export async function proposeTaxonomy(userId: string, models: ModelPicker = openRouterModels()): Promise<Proposal> {
   const sample = await query<ItemForAi>(
     `select sources[1] as source, title, body, author_name as "authorName", url, folder_path as "folderPath"
      from items where user_id = $1 order by random() limit ${SAMPLE_SIZE}`,
@@ -31,7 +31,7 @@ export async function proposeTaxonomy(userId: string, client: Anthropic = anthro
   );
   if (sample.length === 0) throw new Error('Import some saves first, so there is something to sort.');
   const existing = (await query<{name: string}>('select name from categories where user_id = $1 order by sort_order', [userId])).map((r) => r.name);
-  const categories = await suggestTaxonomy(client, sample, existing);
+  const categories = await suggestTaxonomy(models, sample, existing);
   await query(`update taxonomy_proposals set status = 'dismissed' where user_id = $1 and status = 'pending'`, [userId]);
   const row = await queryOne<Proposal>(
     `insert into taxonomy_proposals (user_id, categories) values ($1, $2) returning id, categories, created_at as "createdAt"`,
@@ -127,8 +127,8 @@ type PendingItem = ItemForAi & {id: string};
  * Sorts every item that has not been sorted yet into the person's categories. Safe to call often: it
  * does nothing if a sort is already running for this person or there is nothing to sort.
  */
-export async function sortPending(userId: string, client?: Anthropic, maxItems = 5000): Promise<SortResult> {
-  if (!client && !aiConfigured()) return {processed: 0, placed: 0, inbox: 0, error: null, skipped: 'no-ai'};
+export async function sortPending(userId: string, models?: ModelPicker, maxItems = 5000): Promise<SortResult> {
+  if (!models && !aiConfigured()) return {processed: 0, placed: 0, inbox: 0, error: null, skipped: 'no-ai'};
   const categories = await query<{id: string; name: string; description: string}>(
     'select id, name, description from categories where user_id = $1 order by sort_order',
     [userId],
@@ -136,7 +136,7 @@ export async function sortPending(userId: string, client?: Anthropic, maxItems =
   if (categories.length === 0) return {processed: 0, placed: 0, inbox: 0, error: null, skipped: 'no-categories'};
   if (!(await claimSorting(userId))) return {processed: 0, placed: 0, inbox: 0, error: null, skipped: 'busy'};
 
-  const ai = client ?? anthropic();
+  const ai = models ?? openRouterModels();
   const idByName = new Map(categories.map((c) => [c.name, c.id]));
   const result: SortResult = {processed: 0, placed: 0, inbox: 0, error: null};
   try {
@@ -163,7 +163,7 @@ export async function sortPending(userId: string, client?: Anthropic, maxItems =
         const batch = batches[i]!;
         if (outcome.status === 'rejected') {
           const reason = outcome.reason;
-          if (reason instanceof AiRefusalError || reason instanceof AiEmptyError) {
+          if (reason instanceof AiNoAnswerError) {
             // Leave these for the person to place, rather than retrying them forever.
             await saveResults(userId, batch.map((item) => ({id: item.id, categoryId: null, confidence: 0, tags: [], summary: null})));
             result.processed += batch.length;
@@ -210,10 +210,17 @@ async function saveResults(userId: string, rows: Array<{id: string; categoryId: 
 }
 
 export function describeAiError(err: unknown): string {
-  if (err instanceof Anthropic.AuthenticationError) return 'The Anthropic API key was not accepted. Check ANTHROPIC_API_KEY.';
-  if (err instanceof Anthropic.RateLimitError) return 'The AI is rate limited right now. Try sorting again in a minute.';
-  if (err instanceof Anthropic.APIConnectionError) return 'Could not reach the AI service. Check the server\'s network and try again.';
-  if (err instanceof Anthropic.APIError) return `The AI service returned an error (${err.status ?? 'unknown'}). Try again.`;
-  if (err instanceof Error) return err.message;
+  const cause = RetryError.isInstance(err) ? err.lastError : err;
+  if (LoadAPIKeyError.isInstance(cause)) return 'Set OPENROUTER_API_KEY on the server to use AI sorting.';
+  if (APICallError.isInstance(cause)) {
+    const status = cause.statusCode;
+    if (status === 401 || status === 403) return 'The OpenRouter API key was not accepted. Check OPENROUTER_API_KEY.';
+    if (status === 402) return 'The OpenRouter account is out of credits. Add credits at openrouter.ai and try again.';
+    if (status === 404) return 'OpenRouter does not have that model. Check STASH_TAXONOMY_MODEL and STASH_CLASSIFY_MODEL.';
+    if (status === 429) return 'The AI is rate limited right now. Try sorting again in a minute.';
+    if (status === undefined) return 'Could not reach OpenRouter. Check the server\'s network and try again.';
+    return `OpenRouter returned an error (${status}). Try again.`;
+  }
+  if (cause instanceof Error) return cause.message;
   return 'Sorting stopped for an unknown reason. Try again.';
 }

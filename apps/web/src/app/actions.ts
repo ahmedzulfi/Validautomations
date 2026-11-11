@@ -64,7 +64,7 @@ export type SuggestResult = {proposalId: string; categories: ProposedCategory[]}
 
 export async function suggestCategoriesAction(): Promise<SuggestResult> {
   const user = await requireUser();
-  if (!aiConfigured()) return {error: 'Add ANTHROPIC_API_KEY to the server environment to get suggestions. You can still add categories by hand.'};
+  if (!aiConfigured()) return {error: 'Add OPENROUTER_API_KEY to the server environment to get suggestions. You can still add categories by hand.'};
   try {
     const proposal = await proposeTaxonomy(user.id);
     revalidatePath('/categories');
@@ -99,7 +99,7 @@ export async function dismissProposalAction(proposalId: string): Promise<void> {
 
 export async function startSortingAction(): Promise<{error?: string}> {
   const user = await requireUser();
-  if (!aiConfigured()) return {error: 'Add ANTHROPIC_API_KEY to the server environment to sort with AI.'};
+  if (!aiConfigured()) return {error: 'Add OPENROUTER_API_KEY to the server environment to sort with AI.'};
   await query('update users set sorting_error = null where id = $1', [user.id]);
   after(() => sortPending(user.id));
   revalidatePath('/library');

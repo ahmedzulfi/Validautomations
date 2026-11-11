@@ -76,7 +76,7 @@ export function CategoryEditor({current, proposal, itemCount, aiReady}: Props) {
           lines={[
             {label: `Saved ${receipt.count} ${receipt.count === 1 ? 'category' : 'categories'}`},
             ...(receipt.removed ? [{label: `Removed ${receipt.removed}, and sent their saves back to be sorted`}] : []),
-            {label: aiReady ? 'Started sorting your saves in the background' : 'Sorting needs ANTHROPIC_API_KEY on the server', failed: !aiReady},
+            {label: aiReady ? 'Started sorting your saves in the background' : 'Sorting needs OPENROUTER_API_KEY on the server', failed: !aiReady},
           ]}
         />
         <Link href="/library" className={buttonVariants({className: 'self-start'})}>Go to the library</Link>
@@ -93,7 +93,7 @@ export function CategoryEditor({current, proposal, itemCount, aiReady}: Props) {
             ? `The AI reads a sample of your ${itemCount.toLocaleString('en-US')} saves and suggests 8 to 15 categories that fit them. Nothing is sorted until you approve.`
             : 'Import some saves first. Then the AI can read them and suggest categories that fit.'}
         </p>
-        {!aiReady && <p className="text-sm text-fg-2">Suggestions need ANTHROPIC_API_KEY on the server. You can also add categories by hand.</p>}
+        {!aiReady && <p className="text-sm text-fg-2">Suggestions need OPENROUTER_API_KEY on the server. You can also add categories by hand.</p>}
         {error && <p role="alert" className="text-sm text-danger-text">{error}</p>}
         <div className="flex flex-wrap gap-2">
           {itemCount > 0 && aiReady
