@@ -379,11 +379,8 @@ pub(crate) fn trust_logos(ui: &mut Ui, id: egui::Id, label: &str, logos: &[Strin
         Tx::new(label).size(13.0).color(t.muted_foreground).align(align).show(ui);
         ui.add_space(20.0);
     }
-    row(ui, id.with("logos"), align, 40.0, |ui| {
-        for (k, name) in logos.iter().enumerate() {
-            logo_item(ui, name, k, 22.0);
-        }
-    });
+    let _ = id;
+    logo_rows(ui, logos, 22.0, 40.0, align);
 }
 
 /// One muted logo that brightens when hovered.
@@ -395,4 +392,12 @@ pub(crate) fn logo_item(ui: &mut Ui, name: &str, kind: usize, h: f32) -> egui::R
     let c = with_alpha(t.muted_foreground, 0.75).lerp_to_gamma(t.foreground, hv);
     paint_logo(ui.painter(), rect.left_center(), name, kind, c, h);
     resp
+}
+
+/// Logos in centered wrapping lines.
+pub(crate) fn logo_rows(ui: &mut Ui, logos: &[String], h: f32, gap: f32, align: Align) {
+    let widths: Vec<f32> = logos.iter().map(|n| logo_width(ui, n, h)).collect();
+    wrap_rows(ui, &widths, h + 8.0, gap, 24.0, align, |ui, k| {
+        logo_item(ui, &logos[k], k, h);
+    });
 }

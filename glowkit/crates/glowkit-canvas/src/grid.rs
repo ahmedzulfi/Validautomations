@@ -520,7 +520,7 @@ impl<'a> DataGrid<'a> {
             let cr = range_rect(CellRange::new((r, c), (r, c)));
             if body.intersects(cr) {
                 painter.rect(cr.expand(1.0), CornerRadius::same(2), t.popover, Stroke::new(2.0, t.accent), StrokeKind::Inside);
-                let te = ui.put(cr.shrink2(vec2(8.0, 4.0)), TextEdit::singleline(&mut text).frame(egui::Frame::NONE).font(qfont(12.5)).align(Align2::LEFT_CENTER));
+                let te = ui.put(cr.shrink2(vec2(8.0, 0.0)), TextEdit::singleline(&mut text).frame(egui::Frame::NONE).font(qfont(12.5)).align(Align2::LEFT_CENTER));
                 if focus {
                     te.request_focus();
                     if let Some(mut s) = TextEdit::load_state(ui.ctx(), te.id) {

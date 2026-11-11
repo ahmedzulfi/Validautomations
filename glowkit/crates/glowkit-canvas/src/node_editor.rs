@@ -785,6 +785,11 @@ impl<'a> NodeEditor<'a> {
                             if icon_button(ui, id.with(("tbb", j)), br, icon, false, tip).clicked() {
                                 action = Some(j);
                             }
+                            if j == 1 {
+                                // show the node color as a swatch over the button
+                                let c = graph.nodes[i].color.unwrap_or(t.accent);
+                                painter.circle(br.center(), 6.5, c, Stroke::new(2.0, t.popover));
+                            }
                         }
                         match action {
                             Some(0) => {

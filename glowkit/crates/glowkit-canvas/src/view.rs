@@ -266,13 +266,13 @@ pub fn paint_background(painter: &Painter, rect: Rect, view: &CanvasView, kind: 
             for ix in 0..nx {
                 let x = x0 + ix as f32 * s;
                 let is_major = (((x - origin.x) / major).round() * major - (x - origin.x)).abs() < 0.5;
-                let c = if is_major { color } else { col.gamma_multiply(0.55) };
+                let c = if is_major { color.gamma_multiply(0.7) } else { col.gamma_multiply(0.45) };
                 painter.line_segment([pos2(x, rect.top()), pos2(x, rect.bottom())], Stroke::new(if is_major { 1.0 } else { 0.6 }, c));
             }
             for iy in 0..ny {
                 let y = y0 + iy as f32 * s;
                 let is_major = (((y - origin.y) / major).round() * major - (y - origin.y)).abs() < 0.5;
-                let c = if is_major { color } else { col.gamma_multiply(0.55) };
+                let c = if is_major { color.gamma_multiply(0.7) } else { col.gamma_multiply(0.45) };
                 painter.line_segment([pos2(rect.left(), y), pos2(rect.right(), y)], Stroke::new(if is_major { 1.0 } else { 0.6 }, c));
             }
         }

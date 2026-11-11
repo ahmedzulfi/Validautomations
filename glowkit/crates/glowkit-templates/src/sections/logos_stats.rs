@@ -1,6 +1,6 @@
 //! Logo clouds and stats sections.
 
-use super::hero::logo_item;
+use super::hero::{logo_item, logo_rows};
 use super::kit::*;
 use egui::{pos2, vec2, Align, CornerRadius, Rect, Sense, Stroke, StrokeKind, Ui, Vec2};
 use glowkit_components::UiIcon;
@@ -97,11 +97,7 @@ impl LogoCloudSection {
             match self.layout {
                 LogoCloudLayout::Row => {
                     sec.fade(ui, 1, |ui| {
-                        row(ui, id.with("r"), Align::Center, 48.0, |ui| {
-                            for (k, n) in self.logos.iter().enumerate() {
-                                logo_item(ui, n, k, h);
-                            }
-                        });
+                        logo_rows(ui, &self.logos, h, 48.0, Align::Center);
                     });
                 }
                 LogoCloudLayout::Grid => {

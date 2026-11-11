@@ -136,7 +136,7 @@ fn dashboard(ui: &mut Ui, rect: Rect, range: &mut usize) {
                 ui.put(*r, tile.size(r.size()).animate(true));
             }
             // revenue + donut
-            let row = kit::alloc_row(ui, 300.0);
+            let row = kit::alloc_row(ui, 380.0);
             let parts = if w > 860.0 { kit::split_x(row, &[0.0, 330.0], 14.0) } else { vec![row] };
             if loading {
                 parts.iter().for_each(|r| kit::skel_r(ui, *r, t.radius));
@@ -155,7 +155,12 @@ fn dashboard(ui: &mut Ui, rect: Rect, range: &mut usize) {
                             Datum::new("Email", 640.0 * k),
                         ];
                         let total: f64 = d.iter().map(|x| x.value).sum();
-                        ui.add(DonutChart::new(&d).center_title(glowkit_charts::format_compact(total)).center_caption("Sessions").height(b.height()).id_salt("an_donut"));
+                        let lh = 5.0 * 26.0;
+                        let dh = (b.height() - lh - 12.0).max(120.0);
+                        let dr = Rect::from_min_size(b.min, vec2(b.width(), dh));
+                        ui.put(dr, DonutChart::new(&d).center_title(glowkit_charts::format_compact(total)).center_caption("Sessions").legend(false).height(dh).width(b.width()).id_salt("an_donut"));
+                        let items: Vec<(String, f64, egui::Color32)> = d.iter().enumerate().map(|(i, x)| (x.label.clone(), x.value, t.chart[i % 6])).collect();
+                        kit::legend_list(ui.painter(), Rect::from_min_max(pos2(b.min.x, b.max.y - lh), b.max), &items, glowkit_charts::format_compact, &t);
                     });
                 }
             }

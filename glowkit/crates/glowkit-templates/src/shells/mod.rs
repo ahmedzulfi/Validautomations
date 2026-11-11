@@ -10,6 +10,7 @@ mod sidebar;
 pub use icon::AppIcon;
 pub use nav::{nav_find, nav_leaves, nav_path, NavItem, NavSection, ShellNotification, ShellUser, Workspace};
 pub use shell::{AppShell, ShellContext, ShellLayout, ShellResponse};
+pub(crate) use sidebar::chevron as sidebar_chevron;
 
 #[cfg(feature = "demos")]
 mod demos;

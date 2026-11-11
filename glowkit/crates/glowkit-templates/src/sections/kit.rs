@@ -183,12 +183,12 @@ impl Tx {
     }
     /// Fake bold (overdraw) scaled to the font size.
     pub fn bold(mut self) -> Self {
-        self.weight = (self.size * 0.035).clamp(0.5, 2.4);
+        self.weight = (self.size * 0.035).clamp(0.6, 2.4);
         self
     }
     /// Semi-bold (lighter overdraw).
     pub fn semi(mut self) -> Self {
-        self.weight = (self.size * 0.02).clamp(0.35, 1.2);
+        self.weight = (self.size * 0.04).clamp(0.6, 1.0);
         self
     }
     pub fn align(mut self, a: Align) -> Self {
@@ -246,9 +246,12 @@ impl Tx {
         };
         let pos = pos2(anchor_x, min.y);
         let color = self.color.unwrap_or(fallback);
-        let copies = (self.weight / 0.45).ceil() as usize;
+        let ppp = ui.ctx().pixels_per_point();
+        let px = (self.weight * ppp).round();
+        let copies = px as usize;
         for i in 0..=copies {
-            let dx = if copies == 0 { 0.0 } else { self.weight * i as f32 / copies as f32 };
+            // whole physical pixels, so the weight is identical wherever the text lands
+            let dx = i as f32 / ppp;
             let p = pos + vec2(dx, 0.0);
             if let Some(g) = &self.gradient {
                 let b = galley.mesh_bounds.translate(pos.to_vec2());
@@ -592,6 +595,37 @@ pub(crate) fn row<R>(ui: &mut Ui, id: Id, align: Align, gap: f32, add: impl FnOn
     }
     ui.advance_cursor_after_rect(Rect::from_min_max(pos2(x0, used.min.y), pos2(x0 + avail, used.max.y)));
     r
+}
+
+/// Lay out items of known widths in lines that wrap, each line aligned on its own (so a
+/// centered row of logos stays centered when it wraps). `add(ui, i)` must use `widths[i]`.
+pub(crate) fn wrap_rows(ui: &mut Ui, widths: &[f32], h: f32, gap: f32, line_gap: f32, align: Align, mut add: impl FnMut(&mut Ui, usize)) {
+    let avail = ui.available_width();
+    let x0 = ui.cursor().min.x;
+    let mut y = ui.cursor().min.y;
+    let mut i = 0;
+    let n = widths.len();
+    while i < n {
+        let mut j = i;
+        let mut w = 0.0;
+        while j < n && (j == i || w + gap + widths[j] <= avail) {
+            w += if j == i { widths[j] } else { gap + widths[j] };
+            j += 1;
+        }
+        let x = match align {
+            Align::Min => x0,
+            Align::Center => x0 + ((avail - w) / 2.0).max(0.0),
+            Align::Max => x0 + (avail - w).max(0.0),
+        };
+        let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_size(pos2(x, y), vec2(w + 1.0, h))).layout(Layout::left_to_right(Align::Center)).id_salt(("wrap", i)));
+        child.spacing_mut().item_spacing.x = gap;
+        for k in i..j {
+            add(&mut child, k);
+        }
+        y += h + if j < n { line_gap } else { 0.0 };
+        i = j;
+    }
+    ui.advance_cursor_after_rect(Rect::from_min_max(pos2(x0, ui.cursor().min.y), pos2(x0 + avail, y)));
 }
 
 /// A responsive grid: `n` cells in `cols` columns, rows as tall as their tallest cell.

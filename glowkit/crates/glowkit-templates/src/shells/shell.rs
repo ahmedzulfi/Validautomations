@@ -867,7 +867,7 @@ impl<'a> AppShell<'a> {
                 let cw = (r.max.x - x - if narrow { 150.0 } else { 420.0 }).max(60.0);
                 let cr = Rect::from_min_size(pos2(x, cy - 13.0), vec2(cw, 26.0));
                 let items: Vec<&str> = crumbs.iter().map(|s| s.as_str()).collect();
-                let clicked = kit::child(ui, cr, |ui| Breadcrumb::new(&items).max_items(if narrow { 2 } else { 4 }).size(13.5).show(ui));
+                let clicked = kit::child(ui, cr, |ui| Breadcrumb::new(&items).max_items(if r.width() < 560.0 { 2 } else { 4 }).size(13.5).show(ui));
                 if let Some(i) = clicked {
                     // navigate to the first leaf under the clicked crumb
                     if i > 0 {

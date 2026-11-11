@@ -524,7 +524,17 @@ pub fn shortcut_overlay(painter: &Painter, t: &Theme, area: Rect, title: &str, e
     }
     let cols = if entries.len() > 8 { 2 } else { 1 };
     let rows = entries.len().div_ceil(cols);
-    let col_w = 250.0;
+    // width of the widest key combination
+    let key_w = entries
+        .iter()
+        .map(|(keys, _)| {
+            keys.split('+')
+                .map(|k| (painter.layout_no_wrap(k.trim().to_owned(), FontId::monospace(10.5), Color32::WHITE).size().x + 10.0).max(20.0) + 3.0)
+                .sum::<f32>()
+        })
+        .fold(0.0, f32::max)
+        + 14.0;
+    let col_w = key_w + 160.0;
     let size = vec2(col_w * cols as f32 + 32.0, rows as f32 * 28.0 + 62.0);
     let center = area.center() + vec2(0.0, (1.0 - open) * 14.0);
     let rect = Rect::from_center_size(center, size);
@@ -548,7 +558,7 @@ pub fn shortcut_overlay(painter: &Painter, t: &Theme, area: Rect, title: &str, e
             }
             x += keycap(&p2, t, pos2(x, y), key.trim());
         }
-        p2.text(pos2(x0 + 104.0, y), Align2::LEFT_CENTER, *desc, FontId::proportional(12.5), t.muted_foreground);
+        p2.text(pos2(x0 + key_w, y), Align2::LEFT_CENTER, *desc, FontId::proportional(12.5), t.muted_foreground);
     }
 }
 

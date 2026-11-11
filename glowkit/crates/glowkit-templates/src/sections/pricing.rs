@@ -268,21 +268,21 @@ impl PricingSection {
     }
 
     fn price(&self, ui: &mut Ui, tier: &PricingTier, yearly: bool, size: f32, t: &Theme) {
-        ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = 4.0;
-            if let Some(l) = &tier.price_label {
-                Tx::new(l).size(size).bold().color(t.foreground).show_inline(ui);
-            } else {
-                let v = if yearly { tier.yearly } else { tier.monthly };
-                let dec = if v.fract().abs() > 1e-6 { 2 } else { 0 };
-                ui.add(glowkit_text::CountUp::new(v).from(v).duration(0.6).decimals(dec).prefix(&self.currency).size(size).bold(true).color(t.foreground));
-                ui.add_space(2.0);
-                ui.vertical(|ui| {
-                    ui.add_space(size * 0.42);
-                    Tx::new(&self.period).size(14.0).color(t.muted_foreground).show_inline(ui);
-                });
-            }
-        });
+        // fixed-height row so buttons line up across tiers whatever the price looks like
+        let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), (size * 1.25).round()), Sense::hover());
+        let mut row_ui = ui.new_child(egui::UiBuilder::new().max_rect(r).layout(egui::Layout::left_to_right(Align::Max)));
+        row_ui.spacing_mut().item_spacing.x = 6.0;
+        if let Some(l) = &tier.price_label {
+            Tx::new(l).size(size * 0.92).bold().color(t.foreground).show_inline(&mut row_ui);
+        } else {
+            let v = if yearly { tier.yearly } else { tier.monthly };
+            let dec = if v.fract().abs() > 1e-6 { 2 } else { 0 };
+            row_ui.add(glowkit_text::CountUp::new(v).from(v).duration(0.6).decimals(dec).prefix(&self.currency).size(size).bold(true).color(t.foreground));
+            row_ui.vertical(|ui| {
+                Tx::new(&self.period).size(14.0).color(t.muted_foreground).show_inline(ui);
+                ui.add_space(size * 0.12);
+            });
+        }
         let note = if tier.price_label.is_some() {
             "Tailored to your team"
         } else if tier.monthly == 0.0 && tier.yearly == 0.0 {

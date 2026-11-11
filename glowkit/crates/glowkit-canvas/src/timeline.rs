@@ -348,7 +348,8 @@ impl<'a> TimelineEditor<'a> {
                     continue;
                 }
                 let resp = ui.interact(r.intersect(lanes), id.with(("clip", c.id)), Sense::click_and_drag());
-                let p = pointer.unwrap_or_default();
+                // classify by where the press happened (the drag only starts after a threshold)
+                let p = if resp.drag_started() { ui.input(|i| i.pointer.press_origin()).or(pointer).unwrap_or_default() } else { pointer.unwrap_or_default() };
                 let edge = if (p.x - r.left()).abs() < 7.0 {
                     Some(Mode::TrimL)
                 } else if (p.x - r.right()).abs() < 7.0 {
@@ -365,8 +366,7 @@ impl<'a> TimelineEditor<'a> {
                 }
                 if resp.drag_started() {
                     st.selected = Some(c.id);
-                    let gp = resp.interact_pointer_pos().unwrap_or(p);
-                    st.drag = Some(ClipDrag { id: c.id, mode: edge.unwrap_or(Mode::Move), grab_t: t_of(gp.x), start: c.start, len: c.len, track: ti });
+                    st.drag = Some(ClipDrag { id: c.id, mode: edge.unwrap_or(Mode::Move), grab_t: t_of(p.x), start: c.start, len: c.len, track: ti });
                 }
             }
         }

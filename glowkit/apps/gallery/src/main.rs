@@ -273,7 +273,7 @@ fn chip(ui: &mut Ui, text: &str) {
         .corner_radius(egui::CornerRadius::same(99))
         .inner_margin(egui::Margin::symmetric(8, 2))
         .show(ui, |ui| {
-            ui.label(RichText::new(text).size(11.0).color(t.muted_foreground));
+            ui.add(egui::Label::new(RichText::new(text).size(11.0).color(t.muted_foreground)).wrap_mode(egui::TextWrapMode::Extend));
         });
 }
 

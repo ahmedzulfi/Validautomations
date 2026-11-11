@@ -38,9 +38,11 @@ pub(crate) fn page_header(ui: &mut Ui, rect: Rect, title: &str, subtitle: &str, 
     if !subtitle.is_empty() {
         kit::text_at(&p, rect.min + vec2(0.0, 31.0), Align2::LEFT_TOP, subtitle, 13.5, t.muted_foreground, tw);
     }
-    let rr = Rect::from_min_max(pos2(rect.min.x + tw + 12.0, rect.min.y + 6.0), pos2(rect.max.x, rect.min.y + 44.0));
+    // Align::Min: field widgets allocate top-down from their frame top, so centering a row of
+    // them misplaces them; 32-point controls fill this 32-point strip exactly.
+    let rr = Rect::from_min_max(pos2(rect.min.x + tw + 12.0, rect.min.y + 6.0), pos2(rect.max.x, rect.min.y + 38.0));
     kit::child(ui, rr, |ui| {
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
             ui.spacing_mut().item_spacing.x = 8.0;
             right(ui);
         });

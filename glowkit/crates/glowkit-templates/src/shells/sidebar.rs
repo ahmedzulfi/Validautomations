@@ -255,6 +255,9 @@ pub(crate) fn sidebar(ui: &mut Ui, rect: Rect, c: f32, cfg: SideCfg<'_>) -> Side
             });
     });
     let _ = bounds;
+    // soft fade where the list scrolls under the footer
+    let fade = Rect::from_min_max(pos2(rect.min.x + 1.0, list_rect.max.y - 18.0), pos2(rect.max.x - 1.0, list_rect.max.y));
+    kit::vgrad(&p, fade, with_alpha(bg, 0.0), bg);
 
     // ---- upgrade card -------------------------------------------------------------------
     if up_h > 0.5 {

@@ -426,7 +426,7 @@ impl<'a> GanttChart<'a> {
             }
             let task = data.task(*tid).cloned().expect("task");
             let resp = ui.interact(r.expand2(vec2(4.0, 2.0)).intersect(body), id.with(("bar", *tid)), Sense::click_and_drag());
-            let p = pointer.unwrap_or_default();
+            let p = if resp.drag_started() { ui.input(|i| i.pointer.press_origin()).or(pointer).unwrap_or_default() } else { pointer.unwrap_or_default() };
             let edge = if task.duration > 0.0 && r.width() > 18.0 {
                 if (p.x - r.left()).abs() < 6.0 {
                     Some(Mode::Left)
@@ -448,7 +448,7 @@ impl<'a> GanttChart<'a> {
                 });
             }
             if resp.drag_started() {
-                let pd = day_of(resp.interact_pointer_pos().unwrap_or(p).x);
+                let pd = day_of(p.x);
                 st.drag = Some(GDrag { task: *tid, mode: edge.unwrap_or(Mode::Move), grab_day: pd, start: task.start, duration: task.duration, progress: task.progress });
             }
         }

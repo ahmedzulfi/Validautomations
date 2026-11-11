@@ -236,8 +236,8 @@ pub fn mind_layout(map: &MindMap, layout: MindLayout, size: &dyn Fn(u64) -> Vec2
                         hide(map, k, me, out);
                     } else {
                         let mid = a + span / 2.0;
-                        let r = 190.0 + (depth - 1.0) * 150.0;
-                        let p = pos2(mid.cos() * r, mid.sin() * r * 0.82);
+                        let r = 200.0 + (depth - 1.0) * 175.0;
+                        let p = pos2(mid.cos() * r * 1.15, mid.sin() * r * 0.62);
                         out.insert(k, (p, if mid.cos() >= 0.0 { 1.0 } else { -1.0 }));
                         radial(map, k, a, a + span, depth + 1.0, out);
                     }
@@ -476,6 +476,18 @@ impl<'a> MindMapEditor<'a> {
                 }
                 // fold toggle
                 let kids = map.children(n.id);
+                if depth == 0 && n.collapsed && !kids.is_empty() {
+                    let c = pos2(r.right() + 14.0 * zoom.max(0.7), r.center().y);
+                    let cnt = format!("+{}", map.descendants(n.id));
+                    let g = pp.layout_no_wrap(cnt.clone(), qfont(11.0 * zoom.max(0.7)), Color32::WHITE);
+                    let br = Rect::from_center_size(c + vec2(g.size().x / 2.0, 0.0), vec2(g.size().x + 12.0, 20.0 * zoom.max(0.7)));
+                    let bresp = ui.interact(br, id.with(("fold", n.id)), Sense::click());
+                    pp.rect(br, CornerRadius::same((br.height() / 2.0) as u8), t.accent, Stroke::new(1.5, t.background), StrokeKind::Outside);
+                    pp.text(br.center(), Align2::CENTER_CENTER, cnt, qfont(11.0 * zoom.max(0.7)), t.accent_foreground);
+                    if bresp.on_hover_cursor(CursorIcon::PointingHand).clicked() {
+                        toggle = Some(n.id);
+                    }
+                }
                 if !kids.is_empty() && depth > 0 {
                     let side = pos_of(n.id).0.x - map.get(n.id).and_then(|x| x.parent).map(|pp| pos_of(pp).0.x).unwrap_or(0.0);
                     let side = if side >= 0.0 { 1.0 } else { -1.0 };
@@ -530,6 +542,7 @@ impl<'a> MindMapEditor<'a> {
             }
 
             // ---- editing overlay
+            let mut edit_ended = false;
             if let Some(eid) = st.editing {
                 if let Some(n) = map.get(eid).cloned() {
                     let depth = map.depth(eid);
@@ -558,7 +571,24 @@ impl<'a> MindMapEditor<'a> {
                     let (enter, tab, esc) = ui.input(|i| (i.key_pressed(egui::Key::Enter), i.key_pressed(egui::Key::Tab), i.key_pressed(egui::Key::Escape)));
                     if enter || tab || esc || resp.lost_focus() {
                         st.editing = None;
-                        if tab {
+                        edit_ended = true;
+                        let empty = map.get(eid).is_some_and(|n| n.text.trim().is_empty() && n.parent.is_some());
+                        if empty {
+                            // an abandoned new topic disappears
+                            let parent = map.get(eid).and_then(|n| n.parent);
+                            map.remove(eid);
+                            st.selected = parent;
+                            changed = true;
+                        } else if enter {
+                            // Enter commits and starts a sibling (mind-map convention)
+                            st.history.record(map);
+                            let nid = map.add_sibling(eid, "");
+                            st.selected = Some(nid);
+                            st.editing = Some(nid);
+                            st.focus_edit = true;
+                            changed = true;
+                        }
+                        if tab && !empty {
                             st.history.record(map);
                             let nid = map.add_child(eid, "");
                             st.selected = Some(nid);
@@ -576,7 +606,7 @@ impl<'a> MindMapEditor<'a> {
             }
 
             // ---- keyboard
-            let keys = ui.rect_contains_pointer(rect) && st.editing.is_none() && !ui.ctx().text_edit_focused();
+            let keys = ui.rect_contains_pointer(rect) && st.editing.is_none() && !edit_ended && !ui.ctx().text_edit_focused();
             if keys {
                 use egui::Key;
                 let sel = st.selected.or(root);

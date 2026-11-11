@@ -3,9 +3,19 @@
 //! point of a real desktop app.
 
 mod analytics;
+mod commerce;
 mod common;
+mod crm;
+mod finance;
+mod mail;
+mod projects;
 
 pub use analytics::AnalyticsApp;
+pub use commerce::{CommerceApp, ShopOrder, ShopProduct};
+pub use finance::{FinanceAccount, FinanceApp, FinanceTxn};
+pub use projects::{ProjectTask, ProjectsApp};
+pub use mail::{MailApp, MailMessage};
+pub use crm::{CrmApp, CrmCustomer, CrmDeal};
 
 #[cfg(feature = "demos")]
 mod demos;

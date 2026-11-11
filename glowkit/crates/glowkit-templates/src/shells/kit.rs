@@ -466,3 +466,29 @@ pub(crate) fn alloc_row(ui: &mut Ui, h: f32) -> Rect {
     let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), h), Sense::hover());
     r
 }
+
+/// A vertical two-color gradient rectangle (top color → bottom color).
+pub(crate) fn vgrad(painter: &Painter, rect: Rect, top: Color32, bottom: Color32) {
+    let mut m = egui::Mesh::default();
+    m.colored_vertex(rect.left_top(), top);
+    m.colored_vertex(rect.right_top(), top);
+    m.colored_vertex(rect.right_bottom(), bottom);
+    m.colored_vertex(rect.left_bottom(), bottom);
+    m.add_triangle(0, 1, 2);
+    m.add_triangle(0, 2, 3);
+    painter.add(egui::Shape::mesh(m));
+}
+
+/// A legend list: colored dot, label, value and share, one row each. Returns the used height.
+pub(crate) fn legend_list(painter: &Painter, rect: Rect, items: &[(String, f64, Color32)], fmt: fn(f64) -> String, t: &Theme) -> f32 {
+    let total: f64 = items.iter().map(|i| i.1).sum::<f64>().max(1e-9);
+    let rh = 26.0;
+    for (i, (label, v, c)) in items.iter().enumerate() {
+        let y = rect.min.y + i as f32 * rh + rh / 2.0;
+        painter.circle_filled(pos2(rect.min.x + 5.0, y), 4.0, *c);
+        let vr = text_at(painter, pos2(rect.max.x, y), Align2::RIGHT_CENTER, &format!("{:.0}%", v / total * 100.0), 12.0, t.muted_foreground, 44.0);
+        let vr2 = text_at(painter, pos2(vr.min.x - 10.0, y), Align2::RIGHT_CENTER, &fmt(*v), 12.5, t.foreground, 70.0);
+        text_at(painter, pos2(rect.min.x + 16.0, y), Align2::LEFT_CENTER, label, 12.5, t.muted_foreground, vr2.min.x - rect.min.x - 22.0);
+    }
+    items.len() as f32 * rh
+}
