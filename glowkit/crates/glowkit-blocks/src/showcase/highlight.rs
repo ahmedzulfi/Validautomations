@@ -127,7 +127,7 @@ impl Widget for GeminiEffect {
             }
         }
         // the hub button
-        let g = p.layout_no_wrap(self.button.clone(), FontId::proportional(15.0), Color32::WHITE);
+        let g = p.layout_no_wrap(self.button.clone(), FontId::proportional(15.0), Color32::PLACEHOLDER);
         let pill = Rect::from_center_size(hub, g.size() + vec2(36.0, 18.0));
         paint::glow(&p, hub, 90.0, with_alpha(self.colors[3], 0.25 * prog));
         paint::soft_shadow(&p, pill, pill.height() / 2.0, 18.0, vec2(0.0, 4.0), Color32::from_black_alpha(90));
@@ -280,7 +280,7 @@ impl Widget for Cover {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
         let font = FontId::proportional(self.size);
-        let g = ui.painter().layout_no_wrap(self.text.clone(), font, Color32::WHITE);
+        let g = ui.painter().layout_no_wrap(self.text.clone(), font, Color32::PLACEHOLDER);
         let pad = vec2(self.size * 0.45, self.size * 0.22);
         let (rect, resp) = ui.allocate_exact_size(g.size() + pad * 2.0, Sense::hover());
         if !ui.is_rect_visible(rect) {

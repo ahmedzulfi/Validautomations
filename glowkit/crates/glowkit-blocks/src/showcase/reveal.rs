@@ -352,7 +352,7 @@ impl egui::Widget for CompareSlider<'_> {
         if let Some((a, b)) = &self.labels {
             let font = FontId::proportional(12.0);
             for (txt, right_side) in [(a, false), (b, true)] {
-                let g = p.layout_no_wrap(txt.clone(), font.clone(), Color32::WHITE);
+                let g = p.layout_no_wrap(txt.clone(), font.clone(), Color32::PLACEHOLDER);
                 let pill = if right_side {
                     Rect::from_min_size(pos2(rect.max.x - 14.0 - g.size().x - 20.0, rect.min.y + 14.0), g.size() + vec2(20.0, 10.0))
                 } else {

@@ -331,7 +331,7 @@ impl Widget for AnimatedTestimonials<'_> {
             if k <= 0.0 {
                 continue;
             }
-            let g = p.layout_no_wrap(word, font.clone(), t.muted_foreground);
+            let g = p.layout_no_wrap(word, font.clone(), Color32::PLACEHOLDER);
             let pos = origin + first.offset + vec2(0.0, (1.0 - k) * 5.0);
             let col = with_alpha(mix(t.muted_foreground, t.foreground, 0.35), k);
             paint::blurred_galley(&p, pos, &g, col, (1.0 - k) * 5.0);

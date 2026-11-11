@@ -439,6 +439,7 @@ pub fn all() -> Vec<Demo> {
                     egui::Frame::new().fill(t.background).stroke(t.border_stroke()).corner_radius(14).inner_margin(0).show(ui, |ui| {
                         ui.set_width(w);
                         ui.set_height(330.0);
+                        ui.vertical(|ui| {
                         ui.spacing_mut().item_spacing.y = 0.0;
                         let hovered = ui.rect_contains_pointer(ui.max_rect());
                         let was = open;
@@ -453,6 +454,7 @@ pub fn all() -> Vec<Demo> {
                         let mut child = ui.new_child(egui::UiBuilder::new().max_rect(pr));
                         child.set_clip_rect(pr.intersect(ui.clip_rect()));
                         mock_site(&mut child);
+                        });
                     });
                 });
                 glowkit_core::animate(ui);

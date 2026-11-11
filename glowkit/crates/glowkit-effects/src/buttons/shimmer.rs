@@ -247,13 +247,13 @@ impl Widget for RainbowButton {
         let shift = glowkit_core::time(ui) / self.speed.max(0.1);
         let colors = &self.colors;
         // glow pooled under the bottom edge
-        let n = 7;
+        let n = 14;
         for i in 0..n {
             let u = (i as f32 + 0.5) / n as f32;
             let x = rect.min.x + rect.width() * (0.1 + 0.8 * u);
             let c = gradient_cyclic(colors, u * 0.8 - shift);
-            let a = if t.dark { 0.55 } else { 0.40 } + 0.2 * hover;
-            paint::glow_ellipse(p, egui::pos2(x, rect.max.y + rect.height() * 0.05), vec2(rect.width() * 0.2, rect.height() * (0.55 + 0.15 * hover)), with_alpha(c, a));
+            let a = (if t.dark { 0.55 } else { 0.40 } + 0.2 * hover) * 0.55;
+            paint::glow_ellipse(p, egui::pos2(x, rect.max.y + rect.height() * 0.05), vec2((rect.width() * 0.2).max(rect.height() * 1.2), rect.height() * (0.55 + 0.15 * hover)), with_alpha(c, a));
         }
         p.rect_filled(rect, cr(radius), bg);
         util::border_fn(p, rect, radius, 2.0, |q, _| {

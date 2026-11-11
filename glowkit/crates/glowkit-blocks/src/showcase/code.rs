@@ -450,8 +450,8 @@ impl Widget for StickyBanner<'_> {
         paint::shader_grid(&p, full, 24, 1, |uv| with_alpha(glowkit_core::color::gradient_cyclic(&stops, uv.x * 0.6 - time * 0.08), k));
         paint::glow_ellipse(&p, full.center(), vec2(w * 0.4, self.height), with_alpha(Color32::WHITE, 0.12 * k));
         let ink = Color32::WHITE;
-        let g = p.layout_no_wrap(self.text.clone(), FontId::proportional(14.0), ink);
-        let lg = p.layout_no_wrap(if self.link.is_empty() { String::new() } else { format!("{} →", self.link) }, FontId::proportional(14.0), ink);
+        let g = p.layout_no_wrap(self.text.clone(), FontId::proportional(14.0), Color32::PLACEHOLDER);
+        let lg = p.layout_no_wrap(if self.link.is_empty() { String::new() } else { format!("{} →", self.link) }, FontId::proportional(14.0), Color32::PLACEHOLDER);
         let total = g.size().x + if self.link.is_empty() { 0.0 } else { 14.0 + lg.size().x };
         let x0 = full.center().x - total / 2.0;
         let ty = full.center().y - g.size().y / 2.0;

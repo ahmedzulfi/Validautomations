@@ -121,8 +121,10 @@ impl Widget for TrueFocus {
         }
         let Some(target) = rects.get(active).copied() else { return resp };
         let target = target.expand2(pad + vec2(0.0, 3.0));
-        let a = spring2(ui, id.with("fmin"), target.min.to_vec2(), 320.0, 30.0);
-        let b = spring2(ui, id.with("fmax"), target.max.to_vec2(), 320.0, 30.0);
+        // springs live in widget-local coordinates so moving the widget doesn't make them lag
+        let origin = rect.min.to_vec2();
+        let a = spring2(ui, id.with("fmin"), target.min.to_vec2() - origin, 320.0, 30.0) + origin;
+        let b = spring2(ui, id.with("fmax"), target.max.to_vec2() - origin, 320.0, 30.0) + origin;
         if !ui.is_rect_visible(rect) {
             return resp;
         }

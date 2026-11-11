@@ -105,7 +105,8 @@ impl Widget for TextHoverEffect {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
         let font = FontId::proportional(self.size);
-        let g = ui.painter().layout_no_wrap(self.text.clone(), font, Color32::WHITE);
+        let g = ui.painter().layout_no_wrap(self.text.clone(), font.clone(), Color32::WHITE);
+        let gp = ui.painter().layout_no_wrap(self.text.clone(), font, Color32::PLACEHOLDER);
         let size = g.size() + vec2(20.0, 10.0);
         let (rect, resp) = ui.allocate_exact_size(size, Sense::hover());
         if !ui.is_rect_visible(rect) {
@@ -138,7 +139,7 @@ impl Widget for TextHoverEffect {
             vec2(a.cos(), a.sin()) * stroke_w
         }).collect();
         for o in &offsets {
-            p.galley(origin + *o, g.clone(), outline);
+            p.galley(origin + *o, gp.clone(), outline);
         }
         // colored outline around the pointer
         let w = rect.width();
@@ -155,7 +156,7 @@ impl Widget for TextHoverEffect {
             });
         }
         // hollow the letters
-        p.galley(origin, g.clone(), bg);
+        p.galley(origin, gp.clone(), bg);
         // a faint inner fill that also glows near the pointer
         galley_fine(p, origin, &g, 10, |q| {
             let d = q.distance(center) / radius;
@@ -274,9 +275,7 @@ impl Widget for DirectionAwareHover<'_> {
         }
         let k = st.k;
         let p = ui.painter().with_clip_rect(rect.intersect(ui.clip_rect()));
-        // image with a subtle parallax push away from the entry side
-        let push = -st.dir * 10.0 * k;
-        (self.scene)(&p, rect.expand(12.0 * k).translate(push));
+        (self.scene)(&p, rect);
         // overlay
         let off = st.dir * (1.0 - k) * vec2(rect.width(), rect.height());
         let ov = rect.translate(off);
@@ -575,7 +574,7 @@ impl Pin3D {
 impl Widget for Pin3D {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
-        let total = self.size + vec2(0.0, 110.0);
+        let total = self.size + vec2(0.0, 130.0);
         let (outer, resp) = ui.allocate_exact_size(total, Sense::hover());
         if !ui.is_rect_visible(outer) {
             return resp;
@@ -624,10 +623,10 @@ impl Widget for Pin3D {
                 let rr = 10.0 + ph * 90.0;
                 let a = (1.0 - ph) * hk;
                 let squash = 0.32 + 0.5 * (1.0 - hk);
-                p.add(Shape::ellipse_filled(base, vec2(rr, rr * squash), with_alpha(c0, a * 0.12)));
-                p.add(Shape::ellipse_stroke(base, vec2(rr, rr * squash), Stroke::new(1.2, with_alpha(c0, a * 0.7))));
+                p.add(Shape::ellipse_filled(base, vec2(rr, rr * squash), with_alpha(mix(c0, Color32::BLACK, 0.3), a * 0.35)));
+                p.add(Shape::ellipse_stroke(base, vec2(rr, rr * squash), Stroke::new(1.5, with_alpha(mix(c0, Color32::WHITE, 0.3), a))));
             }
-            let h = 118.0 * hk;
+            let h = 190.0 * hk;
             let top = base - vec2(0.0, h);
             let beam: Vec<Pos2> = (0..=16).map(|i| base.lerp(top, i as f32 / 16.0)).collect();
             paint::gradient_polyline(&p, &beam, false, 1.5, |u| with_alpha(c0, (1.0 - u) * 0.2 + u * hk));
@@ -635,7 +634,7 @@ impl Widget for Pin3D {
             paint::glow(&p, base, 12.0, with_alpha(c0, 0.6 * hk));
             p.circle_filled(base, 2.5, with_alpha(Color32::WHITE, hk));
             // label pill
-            let g = p.layout_no_wrap(self.label.clone(), FontId::proportional(13.0), Color32::WHITE);
+            let g = p.layout_no_wrap(self.label.clone(), FontId::proportional(13.0), Color32::PLACEHOLDER);
             let pill = Rect::from_center_size(top - vec2(0.0, 16.0), g.size() + vec2(26.0, 12.0));
             paint::soft_shadow(&p, pill, pill.height() / 2.0, 12.0, vec2(0.0, 4.0), Color32::from_black_alpha((90.0 * hk) as u8));
             p.rect_filled(pill, pill.height() / 2.0, with_alpha(hex("#09090B"), hk));

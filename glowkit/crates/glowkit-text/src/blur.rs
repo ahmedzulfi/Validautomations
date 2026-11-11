@@ -4,19 +4,26 @@ use glowkit_core::{anim::stagger, ease, paint, Clock, Easing, Theme, Trigger};
 /// How [`BlurText`] splits its text.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum SplitBy {
+    /// Each word animates as one piece (default).
     #[default]
     Words,
+    /// Each letter animates on its own.
     Letters,
 }
 
 /// Direction the pieces travel from as they come into focus.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum Direction {
+    /// From above (default).
     #[default]
     Top,
+    /// From below.
     Bottom,
+    /// From the left.
     Left,
+    /// From the right.
     Right,
+    /// In place, no travel.
     None,
 }
 
@@ -55,6 +62,7 @@ pub struct BlurText {
 }
 
 impl BlurText {
+    /// Create the effect for `text`.
     pub fn new(text: impl Into<String>) -> Self {
         Self {
             text: text.into(),
@@ -70,18 +78,22 @@ impl BlurText {
             trigger: Trigger::OnAppear,
         }
     }
+    /// Font size in points.
     pub fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
+    /// Text color (defaults to the theme foreground).
     pub fn color(mut self, c: Color32) -> Self {
         self.color = Some(c);
         self
     }
+    /// Animate word by word (default) or letter by letter.
     pub fn split_by(mut self, s: SplitBy) -> Self {
         self.split = s;
         self
     }
+    /// Side the pieces drift in from.
     pub fn direction(mut self, d: Direction) -> Self {
         self.direction = d;
         self
@@ -101,14 +113,17 @@ impl BlurText {
         self.blur = b;
         self
     }
+    /// Travel distance in points.
     pub fn distance(mut self, d: f32) -> Self {
         self.distance = d;
         self
     }
+    /// Easing curve for each piece.
     pub fn easing(mut self, e: Easing) -> Self {
         self.easing = e;
         self
     }
+    /// When the animation plays.
     pub fn trigger(mut self, t: Trigger) -> Self {
         self.trigger = t;
         self

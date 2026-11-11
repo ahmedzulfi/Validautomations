@@ -66,12 +66,18 @@ pub struct ModelSelector<'a> {
     models: &'a [ModelInfo<'a>],
     selected: &'a mut usize,
     ghost: bool,
+    id_salt: Option<egui::IdSalt>,
 }
 
 impl<'a> ModelSelector<'a> {
     /// Choose among `models`; `selected` is an index into it.
     pub fn new(models: &'a [ModelInfo<'a>], selected: &'a mut usize) -> Self {
-        Self { models, selected, ghost: false }
+        Self { models, selected, ghost: false, id_salt: None }
+    }
+    /// Stable id for the open state (needed when several selectors share a parent).
+    pub fn id_salt(mut self, salt: impl egui::AsIdSalt) -> Self {
+        self.id_salt = Some(egui::IdSalt::new(salt));
+        self
     }
     /// Borderless button (for use inside a prompt toolbar).
     pub fn ghost(mut self, on: bool) -> Self {
@@ -89,9 +95,10 @@ impl Widget for ModelSelector<'_> {
         *self.selected = (*self.selected).min(self.models.len() - 1);
         let cur = self.models[*self.selected];
         let g = common::galley(ui, cur.name, 13.0, t.foreground);
-        let (rect, mut resp) = ui.allocate_exact_size(vec2(g.size().x + 58.0, 32.0), Sense::click());
-        let id = resp.id;
-        let mut open: bool = glowkit_core::state(ui, id.with("open"), || true);
+        let id = self.id_salt.map(|s| ui.scope_id().with_salt(s)).unwrap_or_else(|| ui.scope_id().with("glowkit_model_selector"));
+        let (rect, _) = ui.allocate_exact_size(vec2(g.size().x + 58.0, 32.0), Sense::hover());
+        let mut resp = ui.interact(rect, id.with("button"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+        let mut open: bool = glowkit_core::state(ui, id.with("open"), || false);
         if resp.clicked() {
             open = !open;
         }
@@ -115,9 +122,18 @@ impl Widget for ModelSelector<'_> {
         ui.painter().add(egui::Shape::line(pts, Stroke::new(1.5, t.muted_foreground)));
         if open || open_t > 0.01 {
             let width = 300.0;
+            // open upward when there is no room below
+            let providers = self.models.windows(2).filter(|w| w[0].provider != w[1].provider).count() + 1;
+            let est_h = self.models.iter().map(|m| if m.description.is_empty() { 38.0 } else { 52.0 }).sum::<f32>() + providers as f32 * 28.0 + 14.0;
+            let below = ui.ctx().content_rect().max.y - rect.max.y;
+            let up = below < est_h + 12.0 && rect.min.y > est_h + 12.0;
+            let slide = (1.0 - open_t) * 6.0;
+            let (pos, pivot) = if up { (pos2(rect.min.x, rect.min.y - 6.0 + slide), Align2::LEFT_BOTTOM) } else { (pos2(rect.min.x, rect.max.y + 6.0 - slide), Align2::LEFT_TOP) };
             let area = egui::Area::new(id.with("menu"))
                 .order(Order::Foreground)
-                .fixed_pos(pos2(rect.min.x, rect.max.y + 6.0 - (1.0 - open_t) * 6.0))
+                .fade_in(false)
+                .pivot(pivot)
+                .fixed_pos(pos)
                 .interactable(open)
                 .show(ui.ctx(), |ui| {
                     ui.multiply_opacity(open_t);

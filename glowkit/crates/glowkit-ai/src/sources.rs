@@ -205,6 +205,7 @@ impl Widget for InlineCitation<'_> {
             let s = self.sources[st.page];
             let area = egui::Area::new(id.with("hover_card"))
                 .order(Order::Tooltip)
+                .fade_in(false)
                 .fixed_pos(pos2(rect.min.x, rect.max.y + 6.0))
                 .interactable(true)
                 .show(ui.ctx(), |ui| {

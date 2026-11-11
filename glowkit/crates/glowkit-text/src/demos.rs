@@ -288,12 +288,12 @@ ui.add(FuzzyText::new("not found").size(40.0).base_intensity(0.2));"##,
             covers: &["React Bits: Circular Text", "Magic UI: Spinning Text"],
             code: r##"ui.add(CircularText::new("GLOWKIT • ANIMATED • RUST • ").center_text("✦"));
 ui.add(CircularText::new("hover to slow down * ").on_hover(HoverSpin::SlowDown));"##,
-            show: |ui| centered_at(ui, 40.0, |ui| {
+            show: |ui| centered_at(ui, 30.0, |ui| {
                 let t = Theme::of(ui);
                 row(ui, "rings", |ui| {
-                    ui.add(CircularText::new("GLOWKIT • ANIMATED • RUST UI • ").size(24.0).center_text("✦"));
+                    ui.add(CircularText::new("GLOWKIT • ANIMATED • RUST UI • ").size(26.0).center_text("✦"));
                     ui.add_space(70.0);
-                    ui.add(CircularText::new("SPINNING TEXT ✺ HOVER ME ✺ ").size(18.0).radius(80.0).color(t.accent).period(-10.0).on_hover(HoverSpin::Reverse).center_text("⟳").center_color(t.foreground));
+                    ui.add(CircularText::new("SPINNING TEXT ✺ HOVER ME ✺ ").size(18.0).radius(90.0).color(t.accent).period(-10.0).on_hover(HoverSpin::Reverse).center_text("⟳").center_color(t.foreground));
                 });
             }),
         },

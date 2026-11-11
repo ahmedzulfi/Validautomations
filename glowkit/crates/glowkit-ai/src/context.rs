@@ -193,6 +193,7 @@ impl Widget for ContextMeter<'_> {
                 if resp.hovered() {
                     egui::Area::new(resp.id.with("card"))
                         .order(Order::Tooltip)
+                        .fade_in(false)
                         .fixed_pos(pos2(rect.min.x, rect.max.y + 6.0))
                         .show(ui.ctx(), |ui| {
                             egui::Frame::new()

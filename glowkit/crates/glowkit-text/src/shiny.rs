@@ -20,6 +20,7 @@ pub struct ShinyText {
 }
 
 impl ShinyText {
+    /// Create the effect for `text`.
     pub fn new(text: impl Into<String>) -> Self {
         Self { text: text.into(), size: 28.0, color: None, shine: None, speed: 3.0, band: 0.18, angle: 20.0, disabled: false }
     }

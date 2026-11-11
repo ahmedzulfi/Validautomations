@@ -22,9 +22,11 @@ pub struct GradientText {
 }
 
 impl GradientText {
+    /// Create the effect for `text`.
     pub fn new(text: impl Into<String>) -> Self {
         Self { text: text.into(), size: 32.0, colors: Vec::new(), speed: 6.0, angle: 0.0, border: false, bold: false }
     }
+    /// Font size in points.
     pub fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
