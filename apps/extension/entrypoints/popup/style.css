@@ -1,0 +1,14 @@
+/* The web app's Lime theme, plus this popup's files for Tailwind to scan. */
+@import "../../../web/src/components/lime/styles.css";
+@source "./";
+
+html,
+body {
+  margin: 0;
+}
+html {
+  background: #ffffff;
+}
+html[data-theme="dark"] {
+  background: #0f0f0d;
+}

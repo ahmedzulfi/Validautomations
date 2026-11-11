@@ -1,0 +1,47 @@
+{
+  "data": {"data": {"searchDashClustersByAll": {"*elements": ["urn:li:fsd_searchCluster:1"]}}},
+  "included": [
+    {
+      "$type": "com.linkedin.voyager.dash.search.EntityResultViewModel",
+      "entityUrn": "urn:li:fsd_entityResultViewModel:(urn:li:activity:7254000000000000001,SEARCH_MY_ITEMS_SAVED_POSTS,DEFAULT)",
+      "trackingUrn": "urn:li:activity:7254000000000000001",
+      "navigationUrl": "https://www.linkedin.com/feed/update/urn:li:activity:7254000000000000001/",
+      "title": {"text": "Priya Raman"},
+      "primarySubtitle": {"text": "Head of Growth at Fieldnote"},
+      "secondarySubtitle": {"text": "2w •"},
+      "summary": {"text": "We cut onboarding from 9 steps to 4. Activation went up 18%.\nHere is what we removed and why."},
+      "image": {
+        "attributes": [{
+          "detailData": {
+            "nonEntityProfilePicture": {
+              "vectorImage": {
+                "rootUrl": "https://media.licdn.com/dms/image/v2/abc/profile-displayphoto-shrink_",
+                "artifacts": [
+                  {"width": 100, "fileIdentifyingUrlPathSegment": "100_100/0/1?e=1&v=beta"},
+                  {"width": 400, "fileIdentifyingUrlPathSegment": "400_400/0/1?e=1&v=beta"}
+                ]
+              }
+            }
+          }
+        }]
+      },
+      "entityEmbeddedObject": {
+        "title": {"text": "Onboarding teardown"},
+        "image": {"attributes": [{"detailData": {"imageUrl": {"vectorImage": {"rootUrl": "https://media.licdn.com/dms/image/v2/post/", "artifacts": [{"width": 800, "fileIdentifyingUrlPathSegment": "feedshare_800/0/2"}]}}}}]}
+      }
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.EntityResultViewModel",
+      "entityUrn": "urn:li:fsd_entityResultViewModel:(urn:li:ugcPost:7254000000000000002,SEARCH_MY_ITEMS_SAVED_POSTS,DEFAULT)",
+      "navigationUrl": "https://www.linkedin.com/feed/update/urn%3Ali%3AugcPost%3A7254000000000000002",
+      "title": {"text": "Sam Okafor"},
+      "summary": {"text": "Hiring your first designer: a checklist."}
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.EntityResultViewModel",
+      "entityUrn": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_profile:ACoAA,SEARCH,DEFAULT)",
+      "title": {"text": "Not a post"}
+    },
+    {"$type": "com.linkedin.voyager.dash.common.image.ImageViewModel"}
+  ]
+}

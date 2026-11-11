@@ -1,0 +1,82 @@
+{
+  "data": {
+    "bookmark_timeline_v2": {
+      "timeline": {
+        "instructions": [
+          {
+            "type": "TimelineAddEntries",
+            "entries": [
+              {
+                "entryId": "tweet-1850000000000000001",
+                "sortIndex": "1850000000000000001",
+                "content": {
+                  "entryType": "TimelineTimelineItem",
+                  "__typename": "TimelineTimelineItem",
+                  "itemContent": {
+                    "itemType": "TimelineTweet",
+                    "__typename": "TimelineTweet",
+                    "tweet_results": {
+                      "result": {
+                        "__typename": "Tweet",
+                        "rest_id": "1850000000000000001",
+                        "core": {
+                          "user_results": {
+                            "result": {
+                              "__typename": "User",
+                              "rest_id": "44196397",
+                              "avatar": {"image_url": "https://pbs.twimg.com/profile_images/1/avatar_normal.jpg"},
+                              "core": {"name": "Maya Chen", "screen_name": "mayabuilds"},
+                              "legacy": {}
+                            }
+                          }
+                        },
+                        "legacy": {
+                          "id_str": "1850000000000000001",
+                          "created_at": "Tue Oct 21 14:03:11 +0000 2025",
+                          "full_text": "Pricing pages that convert: show the plan most people pick first, and say what happens after you click. Notes here https://t.co/abc123 https://t.co/media1",
+                          "entities": {
+                            "urls": [{"url": "https://t.co/abc123", "expanded_url": "https://mayachen.dev/pricing-notes?utm_source=twitter", "display_url": "mayachen.dev/pricing-notes"}],
+                            "media": [{"url": "https://t.co/media1"}]
+                          },
+                          "extended_entities": {
+                            "media": [{"type": "photo", "media_url_https": "https://pbs.twimg.com/media/pricing.jpg"}]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "entryId": "tweet-1850000000000000002",
+                "content": {
+                  "itemContent": {
+                    "tweet_results": {
+                      "result": {
+                        "__typename": "TweetWithVisibilityResults",
+                        "tweet": {
+                          "rest_id": "1850000000000000002",
+                          "core": {"user_results": {"result": {"legacy": {"name": "Theo Park", "screen_name": "theop", "profile_image_url_https": "https://pbs.twimg.com/profile_images/2/theo.jpg"}}}},
+                          "note_tweet": {"note_tweet_results": {"result": {"text": "A long thread on Postgres indexes &amp; when partial indexes beat composite ones.\n\nFirst: measure."}}},
+                          "legacy": {"id_str": "1850000000000000002", "created_at": "Mon Oct 20 09:00:00 +0000 2025", "full_text": "A long thread on Postgres indexes &amp; when…", "entities": {"urls": []}}
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "entryId": "tweet-tombstone",
+                "content": {"itemContent": {"tweet_results": {"result": {"__typename": "TweetTombstone"}}}}
+              },
+              {
+                "entryId": "cursor-bottom-1",
+                "content": {"entryType": "TimelineTimelineCursor", "value": "HBaAgLydwdDx", "cursorType": "Bottom"}
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

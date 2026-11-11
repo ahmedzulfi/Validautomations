@@ -8,6 +8,22 @@
 
 ---
 
+## Status: Phase 1 built (see README.md to run it)
+
+Done: all three importers (X, LinkedIn, browser bookmarks, plus a bookmarks-file upload), dedup across sources, AI category suggestions with review and approval, background sorting with an inbox for unsure items, corrections fed back to the AI, library with search, source filter and move, export to Markdown and CSV, delete everything, dark mode, "Save this page" and a daily auto-sync in the extension. Also from Phase 2: live sync of new bookmarks, and export.
+
+Changes from the plan below, and why:
+- **Auth is built in** (email and password, sessions in Postgres, API tokens for the extension) instead of Supabase Auth. Any Postgres works, Supabase included, and the whole flow can be tested locally without a hosted service.
+- **Search is Postgres full-text search** for now. Semantic search with embeddings (pgvector) stays in Phase 2.
+- **One category per item, plus tags in an array**, rather than many-to-many tables. Simpler, and it matches how the library is browsed.
+- **Models:** categories are suggested by `claude-opus-5-5` (rare, judgment-heavy) and items sorted by `claude-haiku-5-5` (high volume). Both can be changed with environment variables.
+- **No Turborepo:** pnpm workspaces are enough at this size.
+- **Lime gaps:** Lime's Approval request component is built around money, so the category review uses Lime's form fields and List instead. The Action receipt confirms the result.
+
+Not yet done: Phase 2 semantic search and weekly digest, Phase 3 sources and browsers, and the Chrome Web Store listing.
+
+---
+
 ## 1. Core decisions
 
 | Decision | Choice | Why |
