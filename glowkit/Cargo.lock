@@ -1324,12 +1324,7 @@ name = "glowkit-blocks"
 version = "0.1.0"
 dependencies = [
  "egui",
- "glowkit-backgrounds",
- "glowkit-charts",
- "glowkit-components",
  "glowkit-core",
- "glowkit-effects",
- "glowkit-text",
 ]
 
 [[package]]
