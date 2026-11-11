@@ -1,0 +1,22 @@
+[package]
+name = "glowkit-effects"
+description = "Animated buttons, borders, cards and cursor effects for egui: shimmer, border beams, spotlight cards, tilt, sparks, docks and more."
+readme = "../../README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[features]
+default = []
+## Exposes `demos()` for the gallery.
+demos = []
+
+[dependencies]
+egui.workspace = true
+glowkit-core.workspace = true

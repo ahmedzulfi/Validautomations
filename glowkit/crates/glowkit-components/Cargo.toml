@@ -1,0 +1,22 @@
+[package]
+name = "glowkit-components"
+description = "Polished everyday components for egui: buttons, inputs, switches, tabs, accordions, dialogs, toasts, tables, loaders and more."
+readme = "../../README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[features]
+default = []
+## Exposes `demos()` for the gallery.
+demos = []
+
+[dependencies]
+egui.workspace = true
+glowkit-core.workspace = true

@@ -1,0 +1,30 @@
+[package]
+name = "glowkit-gallery"
+description = "Interactive gallery of every glowkit component."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[features]
+default = ["text", "backgrounds", "effects", "components", "charts", "ai", "blocks"]
+text = ["glowkit/text"]
+backgrounds = ["glowkit/backgrounds"]
+effects = ["glowkit/effects"]
+components = ["glowkit/components"]
+charts = ["glowkit/charts"]
+ai = ["glowkit/ai"]
+blocks = ["glowkit/blocks"]
+
+[dependencies]
+glowkit = { workspace = true, default-features = false, features = ["demos"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+eframe = { workspace = true, features = ["default"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+eframe = { workspace = true, features = ["glow", "default_fonts"] }
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlCanvasElement", "Location", "History"] }
+log = "0.4"

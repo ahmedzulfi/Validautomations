@@ -1,0 +1,36 @@
+[package]
+name = "glowkit"
+description = "A big, beautiful, animated component library for Rust desktop apps (Windows, macOS, Linux) and the web, built on egui."
+readme = "../../README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[features]
+default = ["text", "backgrounds", "effects", "components", "charts", "ai", "blocks"]
+text = ["dep:glowkit-text"]
+backgrounds = ["dep:glowkit-backgrounds"]
+effects = ["dep:glowkit-effects"]
+components = ["dep:glowkit-components"]
+charts = ["dep:glowkit-charts"]
+ai = ["dep:glowkit-ai"]
+blocks = ["dep:glowkit-blocks"]
+## Gallery demos for every enabled crate.
+demos = ["glowkit-text?/demos", "glowkit-backgrounds?/demos", "glowkit-effects?/demos", "glowkit-components?/demos", "glowkit-charts?/demos", "glowkit-ai?/demos", "glowkit-blocks?/demos"]
+
+[dependencies]
+egui.workspace = true
+glowkit-core.workspace = true
+glowkit-text = { workspace = true, optional = true }
+glowkit-backgrounds = { workspace = true, optional = true }
+glowkit-effects = { workspace = true, optional = true }
+glowkit-components = { workspace = true, optional = true }
+glowkit-charts = { workspace = true, optional = true }
+glowkit-ai = { workspace = true, optional = true }
+glowkit-blocks = { workspace = true, optional = true }

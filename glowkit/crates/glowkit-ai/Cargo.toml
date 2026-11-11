@@ -1,0 +1,24 @@
+[package]
+name = "glowkit-ai"
+description = "AI interface components for egui: chat messages, streaming text, prompt input, reasoning, tool calls, voice orb and waveform."
+readme = "../../README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[features]
+default = []
+## Exposes `demos()` for the gallery.
+demos = []
+
+[dependencies]
+egui.workspace = true
+glowkit-core.workspace = true
+glowkit-components.workspace = true
+glowkit-text.workspace = true

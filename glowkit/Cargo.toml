@@ -1,0 +1,45 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/glowkit-core",
+    "crates/glowkit-text",
+    "crates/glowkit-backgrounds",
+    "crates/glowkit-effects",
+    "crates/glowkit-components",
+    "crates/glowkit-charts",
+    "crates/glowkit-ai",
+    "crates/glowkit-blocks",
+    "crates/glowkit",
+    "apps/gallery",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/glowkit-rs/glowkit"
+homepage = "https://github.com/glowkit-rs/glowkit"
+keywords = ["egui", "ui", "animation", "gui", "components"]
+categories = ["gui", "graphics"]
+authors = ["glowkit contributors"]
+
+[workspace.dependencies]
+egui = { version = "0.37", default-features = false, features = ["default_fonts"] }
+eframe = { version = "0.37", default-features = false }
+glowkit-core = { path = "crates/glowkit-core", version = "0.1.0" }
+glowkit-text = { path = "crates/glowkit-text", version = "0.1.0" }
+glowkit-backgrounds = { path = "crates/glowkit-backgrounds", version = "0.1.0" }
+glowkit-effects = { path = "crates/glowkit-effects", version = "0.1.0" }
+glowkit-components = { path = "crates/glowkit-components", version = "0.1.0" }
+glowkit-charts = { path = "crates/glowkit-charts", version = "0.1.0" }
+glowkit-ai = { path = "crates/glowkit-ai", version = "0.1.0" }
+glowkit-blocks = { path = "crates/glowkit-blocks", version = "0.1.0" }
+glowkit = { path = "crates/glowkit", version = "0.1.0", default-features = false }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+
+[profile.dev.package."*"]
+opt-level = 2
