@@ -77,7 +77,7 @@ pub(crate) fn area_input(ui: &Ui, rect: Rect, id: Id, autoplay: bool, click_ever
     }
     glowkit_core::animate(ui);
     let now = glowkit_core::time(ui);
-    let pos = lissajous(rect, now * 1.1);
+    let pos = lissajous(rect, now * 1.8);
     let mut clicks = Vec::new();
     if click_every > 0.0 {
         let prev: f32 = glowkit_core::state(ui, id.with("auto_t"), || now);

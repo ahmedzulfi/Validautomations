@@ -190,7 +190,7 @@ impl Default for RibbonTrail {
 impl RibbonTrail {
     /// Three ribbons in the theme gradient.
     pub fn new() -> Self {
-        Self { colors: None, thickness: 16.0, length: 40, friction: 0.55, spring: 0.9, offset: 0.0, autoplay: false, area: None, salt: 0 }
+        Self { colors: None, thickness: 16.0, length: 40, friction: 0.5, spring: 0.9, offset: 10.0, autoplay: false, area: None, salt: 0 }
     }
     /// One ribbon per color. Defaults to the theme gradient (3 ribbons).
     pub fn colors(mut self, colors: &[Color32]) -> Self {
