@@ -22,10 +22,13 @@ pub enum Category {
     Charts,
     Ai,
     Blocks,
+    Canvas,
+    Dashboards,
+    Templates,
 }
 
 impl Category {
-    pub const ALL: [Category; 16] = [
+    pub const ALL: [Category; 19] = [
         Category::TextAnimations,
         Category::Backgrounds,
         Category::Buttons,
@@ -42,6 +45,9 @@ impl Category {
         Category::Charts,
         Category::Ai,
         Category::Blocks,
+        Category::Canvas,
+        Category::Dashboards,
+        Category::Templates,
     ];
 
     pub fn label(self) -> &'static str {
@@ -62,6 +68,9 @@ impl Category {
             Category::Charts => "Charts",
             Category::Ai => "AI",
             Category::Blocks => "Blocks",
+            Category::Canvas => "Canvas & Editors",
+            Category::Dashboards => "Dashboards & Shells",
+            Category::Templates => "Templates",
         }
     }
 
@@ -83,6 +92,9 @@ impl Category {
             Category::Charts => "📈",
             Category::Ai => "✦",
             Category::Blocks => "▣",
+            Category::Canvas => "✐",
+            Category::Dashboards => "▥",
+            Category::Templates => "❖",
         }
     }
 }

@@ -1297,11 +1297,13 @@ dependencies = [
  "glowkit-ai",
  "glowkit-backgrounds",
  "glowkit-blocks",
+ "glowkit-canvas",
  "glowkit-charts",
  "glowkit-components",
  "glowkit-core",
  "glowkit-effects",
  "glowkit-motion",
+ "glowkit-templates",
  "glowkit-text",
 ]
 
@@ -1331,6 +1333,14 @@ dependencies = [
 
 [[package]]
 name = "glowkit-blocks"
+version = "0.1.0"
+dependencies = [
+ "egui",
+ "glowkit-core",
+]
+
+[[package]]
+name = "glowkit-canvas"
 version = "0.1.0"
 dependencies = [
  "egui",
@@ -1382,6 +1392,14 @@ dependencies = [
 
 [[package]]
 name = "glowkit-motion"
+version = "0.1.0"
+dependencies = [
+ "egui",
+ "glowkit-core",
+]
+
+[[package]]
+name = "glowkit-templates"
 version = "0.1.0"
 dependencies = [
  "egui",

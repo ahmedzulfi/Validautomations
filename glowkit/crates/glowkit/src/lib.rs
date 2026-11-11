@@ -13,7 +13,7 @@
 //! ```
 //!
 //! Every category lives in its own crate and is enabled by a cargo feature (all on by default):
-//! `text`, `backgrounds`, `effects`, `components`, `charts`, `ai`, `blocks`, `motion`, `three-d`.
+//! `text`, `backgrounds`, `effects`, `components`, `charts`, `ai`, `blocks`, `motion`, `three-d`, `canvas`, `templates`.
 
 pub use glowkit_core as core;
 pub use glowkit_core::{anim, color, egui, noise, paint, rng, Theme};
@@ -28,6 +28,10 @@ pub use glowkit_blocks as blocks;
 pub use glowkit_motion as motion;
 #[cfg(feature = "three-d")]
 pub use glowkit_3d as three_d;
+#[cfg(feature = "canvas")]
+pub use glowkit_canvas as canvas;
+#[cfg(feature = "templates")]
+pub use glowkit_templates as templates;
 #[cfg(feature = "charts")]
 pub use glowkit_charts as charts;
 #[cfg(feature = "components")]
@@ -67,6 +71,10 @@ pub fn all_demos() -> Vec<glowkit_core::demo::Demo> {
     v.extend(glowkit_motion::demos());
     #[cfg(feature = "three-d")]
     v.extend(glowkit_3d::demos());
+    #[cfg(feature = "canvas")]
+    v.extend(glowkit_canvas::demos());
+    #[cfg(feature = "templates")]
+    v.extend(glowkit_templates::demos());
     v.sort_by_key(|d| d.category);
     v
 }

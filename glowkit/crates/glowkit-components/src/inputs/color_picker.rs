@@ -167,7 +167,7 @@ impl ColorPicker<'_> {
                 // preview + sliders
                 ui.horizontal(|ui| {
                     ui.spacing_mut().item_spacing.x = 12.0;
-                    let rows = if self.alpha { 2.0 } else { 1.0 };
+                    let rows: f32 = if self.alpha { 2.0 } else { 1.0 };
                     let sh = 12.0 * rows + 10.0 * (rows - 1.0);
                     let pv = sh.max(28.0);
                     let (prev, _) = ui.allocate_exact_size(vec2(pv, pv), Sense::hover());

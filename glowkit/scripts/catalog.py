@@ -107,6 +107,15 @@ SOURCES = OrderedDict([
     ("Evil Charts", {"url": "https://evilcharts.com", "items": [
         "Area Chart", "Bar Chart", "Line Chart", "Pie Chart", "Radar Chart", "Radial Chart",
     ]}),
+    ("MVP Blocks", {"url": "https://blocks.mvp-subha.me", "note": "section types (their catalog is organized by section)", "items": [
+        "Hero", "Features", "Bento Grid", "Pricing", "Testimonials", "CTA", "Footer", "Header", "About",
+        "Contact", "FAQ", "Team", "Waitlist", "Login", "Signup", "Not Found", "Dashboard", "Stats",
+        "Logo Cloud", "Newsletter", "Blog", "Changelog", "Integrations", "Gallery", "Timeline",
+    ]}),
+    ("React Flow", {"url": "https://reactflow.dev", "items": [
+        "Background", "Controls", "MiniMap", "Node Toolbar", "Edge Label", "Custom Nodes", "Custom Edges",
+        "Animated Edges", "Selection", "Snap to Grid", "Auto Layout", "Undo Redo",
+    ]}),
     ("Tremor", {"url": "https://tremor.so", "items": [
         "Area Chart", "Bar Chart", "Line Chart", "Donut Chart", "Bar List", "Spark Chart", "Tracker",
         "Category Bar", "Progress Bar", "Progress Circle", "Combo Chart", "Scatter Chart",
@@ -121,7 +130,8 @@ ALIASES = {  # library name variants used in `covers`
     "reactbits": "React Bits", "motionprimitives": "Motion Primitives", "shadcn": "shadcn/ui",
     "shadcnui": "shadcn/ui", "aielements": "Vercel AI Elements", "vercelaielements": "Vercel AI Elements",
     "promptkit": "prompt-kit", "elevenlabsui": "ElevenLabs UI", "elevenlabs": "ElevenLabs UI",
-    "evilcharts": "Evil Charts", "tremor": "Tremor",
+    "evilcharts": "Evil Charts", "tremor": "Tremor", "mvpblocks": "MVP Blocks", "reactflow": "React Flow",
+    "xyflow": "React Flow",
 }
 
 def main():
@@ -165,7 +175,8 @@ def main():
         summary.append(f"| [{lib}]({info['url']}) | {have} / {len(info['items'])} | {pct}% |")
         data["libraries"].append({"name": lib, "url": info["url"], "have": have, "total": len(info["items"]),
                                    "items": [{"name": i, "glowkit": ids or []} for i, ids in rows]})
-        sec = [f"## {lib}", "", f"{have} of {len(info['items'])} covered.", "", "| Component | glowkit |", "|---|---|"]
+        note = f" ({info['note']})" if info.get("note") else ""
+        sec = [f"## {lib}", "", f"{have} of {len(info['items'])} covered{note}.", "", "| Component | glowkit |", "|---|---|"]
         for item, ids in rows:
             cell = ", ".join(f"`{i}`" for i in sorted(set(ids))) if ids else "open"
             sec.append(f"| {item} | {'✅ ' + cell if ids else '⬜ ' + cell} |")

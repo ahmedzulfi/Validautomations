@@ -207,7 +207,7 @@ impl Widget for Select<'_> {
                 let clip = ui.painter().with_clip_rect(content);
                 match self.selected.and_then(|i| self.options.get(i)) {
                     Some(opt) => {
-                        let sub = ui.new_child(egui::UiBuilder::new().max_rect(content));
+                        let mut sub = ui.new_child(egui::UiBuilder::new().max_rect(content));
                         let _ = clip;
                         sub.set_clip_rect(content);
                         paint_option_content(&sub, content, opt, t.foreground, fs);

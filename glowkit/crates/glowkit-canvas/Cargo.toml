@@ -1,0 +1,21 @@
+[package]
+name = "glowkit-canvas"
+description = "Canvas components for egui: infinite pan/zoom canvas, node-graph editor (React Flow style), whiteboard, kanban, gantt and mind map."
+readme = "../../README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[features]
+default = []
+demos = []
+
+[dependencies]
+egui.workspace = true
+glowkit-core.workspace = true

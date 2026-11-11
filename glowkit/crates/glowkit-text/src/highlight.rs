@@ -226,7 +226,6 @@ impl Widget for HighlightText {
                     let full = Rect::from_min_max(pos2(x0, line.min.y), pos2(x0 + r.width() + bold + s * 0.08, line.max.y));
                     let clip = painter.with_clip_rect(line.intersect(painter.clip_rect()));
                     paint::gradient_rect(&clip, full, th / 2.0, 0.0, &[c0, c1]);
-                    let _ = CornerRadius::ZERO;
                 }
             }
             HighlightStyle::Box => {
