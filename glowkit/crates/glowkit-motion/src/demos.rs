@@ -37,16 +37,6 @@ fn caption(ui: &Ui, pos: Pos2, align: Align2, text: &str) {
     ui.painter().text(pos, align, text, FontId::proportional(11.5), t.muted_foreground);
 }
 
-/// Monospace tag drawn on a pill.
-fn tag(painter: &egui::Painter, t: &Theme, pos: Pos2, align: Align2, text: &str, color: Color32) {
-    let galley = painter.layout_no_wrap(text.to_owned(), FontId::monospace(10.5), color);
-    let r = align.anchor_size(pos, galley.size() + vec2(14.0, 6.0));
-    painter.rect_filled(r, 99, with_alpha(color, 0.12));
-    painter.rect_stroke(r, 99, Stroke::new(1.0, with_alpha(color, 0.35)), StrokeKind::Inside);
-    painter.galley(r.min + vec2(7.0, 3.0), galley, color);
-    let _ = t;
-}
-
 /// A card-like rounded rect with a soft shadow.
 fn card(painter: &egui::Painter, t: &Theme, rect: Rect, radius: f32) {
     paint::soft_shadow(painter, rect.translate(vec2(0.0, 4.0)), radius, 16.0, Vec2::ZERO, Color32::from_black_alpha(if t.dark { 110 } else { 28 }));
