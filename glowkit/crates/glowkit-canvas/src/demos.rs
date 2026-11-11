@@ -37,10 +37,10 @@ fn workflow_graph(t: &Theme) -> Graph {
     let c = t.chart;
     let hook = g.add(Node::new("Webhook", pos2(0.0, 120.0)).subtitle("POST /orders").icon("⚡").color(c[3]).output(Port::new("body")).line("Last call 2s ago").status(NodeStatus::Done));
     let filter = g.add(Node::new("If", pos2(280.0, 120.0)).subtitle("amount > $500").icon("?").color(c[1]).input(Port::new("in")).output(Port::new("true")).output(Port::new("false")).status(NodeStatus::Done));
-    let enrich = g.add(Node::new("HTTP Request", pos2(560.0, 0.0)).subtitle("GET /customers/:id").icon("↗").color(c[5]).input(Port::new("in")).output(Port::new("json")).line("Retry 3x · 10s timeout").status(NodeStatus::Running));
-    let ai = g.add(Node::new("AI Summarize", pos2(840.0, 0.0)).subtitle("Model · temperature 0.2").icon("✦").color(c[0]).input(Port::new("order")).input(Port::new("customer")).output(Port::new("summary")).line("\"Write a 2-line brief…\""));
-    let notify = g.add(Node::new("Notify #sales", pos2(1120.0, -40.0)).subtitle("Chat message").icon("#").color(c[2]).input(Port::new("text")).output(Port::new("ok")));
-    let db = g.add(Node::new("Insert row", pos2(1120.0, 140.0)).subtitle("orders_large").icon("▤").color(c[4]).input(Port::new("row")).output(Port::new("id")));
+    let enrich = g.add(Node::new("HTTP Request", pos2(560.0, -30.0)).subtitle("GET /customers/:id").icon("↗").color(c[5]).input(Port::new("in")).output(Port::new("json")).line("Retry 3x · 10s timeout").status(NodeStatus::Running));
+    let ai = g.add(Node::new("AI Summarize", pos2(840.0, 60.0)).subtitle("Model · temperature 0.2").icon("✦").color(c[0]).input(Port::new("order")).input(Port::new("customer")).output(Port::new("summary")).line("\"Write a 2-line brief…\""));
+    let notify = g.add(Node::new("Notify #sales", pos2(1120.0, 0.0)).subtitle("Chat message").icon("#").color(c[2]).input(Port::new("text")).output(Port::new("ok")));
+    let db = g.add(Node::new("Insert row", pos2(1120.0, 170.0)).subtitle("orders_large").icon("▤").color(c[4]).input(Port::new("row")).output(Port::new("id")));
     let mail = g.add(Node::new("Send receipt", pos2(560.0, 260.0)).subtitle("Email · template #12").icon("@").color(c[3]).input(Port::new("to")).output(Port::new("sent")));
     g.link((hook, 0), (filter, 0)).anim = EdgeAnim::Dashes;
     g.link((filter, 0), (enrich, 0)).label("true").anim = EdgeAnim::Dashes;
@@ -124,7 +124,10 @@ fn agent_graph(t: &Theme) -> Graph {
     let writer = g.add(Node::new("Writer", pos2(1040.0, 70.0)).subtitle("LLM · streaming").icon("✎").color(c[0]).input(Port::new("context").multi()).output(Port::new("draft")).custom(14.0).tag("agent"));
     let guard = g.add(Node::new("Guardrails", pos2(1300.0, 70.0)).subtitle("PII · policy").icon("⛨").color(c[2]).width(180.0).input(Port::new("draft")).output(Port::new("answer")).custom(14.0).tag("agent"));
     for (a, ap, b, bp) in [(q, 0, plan, 0), (plan, 0, rag, 0), (plan, 1, sql, 0), (rag, 0, rerank, 0), (rerank, 0, writer, 0), (sql, 0, writer, 0), (writer, 0, guard, 0)] {
-        g.link((a, ap), (b, bp)).anim = EdgeAnim::Dots;
+        let col = g.node(a).and_then(|n| n.color);
+        let e = g.link((a, ap), (b, bp));
+        e.anim = EdgeAnim::Dots;
+        e.color = col;
     }
     g
 }
@@ -384,7 +387,7 @@ GanttChart::new(&mut g, &mut state).height(480.0).show(ui);"##,
                 let s = persist(ui, "gantt", || (gantt_data(&t), GanttState::default()));
                 let mut s = s.lock().unwrap();
                 let (g, st) = &mut *s;
-                GanttChart::new(g, st).height(H).show(ui);
+                GanttChart::new(g, st).height(H + 50.0).show(ui);
             },
         },
         Demo {
@@ -420,7 +423,7 @@ TimelineEditor::new(&mut tl, &mut state).height(420.0).show(ui);"##,
                 let s = persist(ui, "tl", || (timeline_data(), { let mut st = TimelineState::default(); st.playhead = 12.4; st }));
                 let mut s = s.lock().unwrap();
                 let (tl, st) = &mut *s;
-                TimelineEditor::new(tl, st).height(H - 60.0).show(ui);
+                TimelineEditor::new(tl, st).height(H).show(ui);
             },
         },
         Demo {
@@ -585,8 +588,8 @@ fn whiteboard_doc() -> Document {
     let blue = WB_COLORS[4];
     let red = WB_COLORS[1];
     let green = WB_COLORS[3];
+    d.add(WbShape::freehand(synthetic_stroke(&[pos2(-6.0, -62.0), pos2(80.0, -66.0), pos2(170.0, -61.0), pos2(236.0, -64.0)]), true).stroke(Color32::from_rgb(250, 204, 21)).width(16.0));
     d.add(WbShape::text(pos2(-10.0, -96.0), "Launch plan · Q1", 30.0));
-    d.add(WbShape::freehand(synthetic_stroke(&[pos2(-6.0, -50.0), pos2(80.0, -56.0), pos2(170.0, -50.0), pos2(250.0, -54.0)]), true).stroke(Color32::from_rgb(250, 204, 21)).width(14.0));
     let design = d.add(WbShape::new(ShapeKind::Rect, Rect::from_min_size(pos2(0.0, 20.0), vec2(170.0, 90.0))).sketchy(true).fill(with_alpha(blue, 0.22)).stroke(blue).label("Design"));
     let build = d.add(WbShape::new(ShapeKind::Diamond, Rect::from_min_size(pos2(260.0, 0.0), vec2(170.0, 130.0))).sketchy(true).fill(with_alpha(WB_COLORS[2], 0.22)).stroke(WB_COLORS[2]).label("Ready?"));
     let ship = d.add(WbShape::new(ShapeKind::Ellipse, Rect::from_min_size(pos2(520.0, 15.0), vec2(170.0, 100.0))).sketchy(true).fill(with_alpha(green, 0.22)).stroke(green).label("Ship"));
@@ -715,11 +718,13 @@ fn timeline_data() -> Timeline {
         fps: 30.0,
         duration: 64.0,
         tracks: vec![
+            Track::new("Effects", ClipKind::Effect, vec![Clip::new(13, "Color grade · warm", 0.0, 24.0), Clip::new(14, "Glow", 33.0, 9.0)]),
             Track::new("Titles", ClipKind::Title, vec![Clip::new(1, "Opening title", 1.0, 4.5), Clip::new(2, "Lower third · Maya", 14.0, 5.0), Clip::new(3, "End card", 52.0, 6.0)]),
             Track::new("Video 2", ClipKind::Video, vec![Clip::new(4, "B-roll city.mp4", 9.0, 7.5), Clip::new(5, "Drone.mov", 33.0, 9.0)]),
             Track::new("Video 1", ClipKind::Video, vec![Clip::new(6, "Intro.mp4", 0.0, 9.0), Clip::new(7, "Interview A.mp4", 9.0, 15.0), Clip::new(8, "Demo screen.mov", 24.0, 18.0), Clip::new(9, "Outro.mp4", 42.0, 16.0)]),
             Track::new("Voice", ClipKind::Audio, vec![Clip::new(10, "VO take 3.wav", 2.0, 20.0), Clip::new(11, "VO take 5.wav", 25.0, 16.0)]),
             Track::new("Music", ClipKind::Audio, vec![Clip::new(12, "Lo-fi bed.mp3", 0.0, 58.0)]),
+            Track::new("SFX", ClipKind::Audio, vec![Clip::new(15, "Whoosh.wav", 8.4, 1.2), Clip::new(16, "Click.wav", 23.6, 0.8), Clip::new(17, "Riser.wav", 40.0, 2.4)]),
         ],
     }
 }
@@ -816,16 +821,37 @@ fn org_data(t: &Theme) -> OrgChart {
 // ------------------------------------------------------------------------------------------------
 
 fn sample_signature() -> Ink {
-    // a cursive-ish "Ada Park" made of a few smooth strokes
-    let s1: Vec<Pos2> = vec![pos2(60.0, 150.0), pos2(84.0, 92.0), pos2(104.0, 60.0), pos2(116.0, 70.0), pos2(124.0, 120.0), pos2(132.0, 150.0)];
-    let s2: Vec<Pos2> = vec![pos2(80.0, 116.0), pos2(124.0, 110.0)];
-    let s3: Vec<Pos2> = vec![pos2(160.0, 130.0), pos2(146.0, 140.0), pos2(150.0, 150.0), pos2(168.0, 138.0), pos2(174.0, 96.0), pos2(176.0, 150.0), pos2(196.0, 134.0), pos2(184.0, 132.0), pos2(186.0, 148.0), pos2(206.0, 140.0), pos2(212.0, 134.0)];
-    let s4: Vec<Pos2> = vec![pos2(250.0, 170.0), pos2(258.0, 70.0), pos2(290.0, 72.0), pos2(292.0, 102.0), pos2(256.0, 112.0)];
-    let s5: Vec<Pos2> = vec![pos2(306.0, 132.0), pos2(296.0, 142.0), pos2(304.0, 150.0), pos2(318.0, 134.0), pos2(320.0, 150.0), pos2(336.0, 128.0), pos2(340.0, 150.0), pos2(350.0, 132.0), pos2(364.0, 128.0)];
-    let s6: Vec<Pos2> = vec![pos2(372.0, 150.0), pos2(380.0, 92.0), pos2(384.0, 150.0), pos2(400.0, 124.0), pos2(388.0, 134.0), pos2(408.0, 150.0), pos2(432.0, 118.0)];
+    use std::f32::consts::PI;
     let mut ink = Ink::default();
-    for s in [s1, s2, s3, s4, s5, s6] {
-        ink.strokes.push(synthetic_stroke(&s));
+    let base = 150.0;
+    let slant = 0.32;
+    let sl = |p: Pos2| pos2(p.x + (base - p.y) * slant, p.y);
+    // capital "J" with a curl
+    let cap = [pos2(92.0, 70.0), pos2(118.0, 64.0), pos2(150.0, 66.0), pos2(126.0, 72.0), pos2(118.0, 110.0), pos2(112.0, 160.0), pos2(98.0, 186.0), pos2(80.0, 182.0), pos2(78.0, 166.0), pos2(98.0, 150.0)];
+    ink.strokes.push(synthetic_stroke(&cap.map(sl)));
+    // the cursive body: humps of varying height, tall ones loop like ascenders
+    let heights = [0.42, 0.5, 1.1, 0.46, 0.4, 0.95, 0.5, 0.36, 0.44];
+    let widths = [20.0, 22.0, 15.0, 22.0, 18.0, 14.0, 24.0, 19.0, 22.0];
+    let mut pts = vec![pos2(124.0, base)];
+    let mut x0 = 126.0;
+    for (h, w) in heights.iter().zip(widths.iter()) {
+        let loop_k = if *h > 0.9 { 11.0 } else { 3.0 };
+        for j in 1..=7 {
+            let u = j as f32 / 7.0;
+            let y = base - h * 52.0 * (PI * u).sin().max(0.0).powf(0.85);
+            let x = x0 + w * u - loop_k * (2.0 * PI * u).sin();
+            pts.push(pos2(x, y));
+        }
+        x0 += w;
     }
+    // trailing swoop
+    pts.extend([pos2(x0 + 14.0, base - 18.0), pos2(x0 + 30.0, base - 34.0), pos2(x0 + 22.0, base - 30.0), pos2(x0 + 34.0, base + 2.0), pos2(x0 + 60.0, base + 4.0)]);
+    let body: Vec<Pos2> = pts.into_iter().map(sl).collect();
+    ink.strokes.push(synthetic_stroke(&body));
+    // t-cross and i-dot
+    ink.strokes.push(synthetic_stroke(&[pos2(196.0, 112.0), pos2(222.0, 108.0), pos2(240.0, 110.0)].map(sl)));
+    ink.strokes.push(synthetic_stroke(&[pos2(330.0, 96.0), pos2(333.0, 94.0), pos2(334.0, 97.0)]));
+    // underline flourish
+    ink.strokes.push(synthetic_stroke(&[pos2(70.0, 176.0), pos2(160.0, 170.0), pos2(280.0, 166.0), pos2(400.0, 160.0), pos2(436.0, 152.0)]));
     ink
 }

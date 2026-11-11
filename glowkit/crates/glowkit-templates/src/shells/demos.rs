@@ -327,7 +327,7 @@ AppShell::new(&mut route, &mut nav)
                     let pr = Rect::from_min_size(pos2(x0 + k as f32 * (phone_w + gap), rect.min.y), vec2(phone_w, h));
                     let t = Theme::of(ui);
                     let frame = pr.expand(6.0);
-                    ui.painter().rect_filled(frame, 34.0, if t.dark { glowkit_core::hex("#1C1C20") } else { glowkit_core::hex("#D4D4D8") });
+                    ui.painter().rect_filled(frame, 34.0, if t.dark { glowkit_core::hex("#27272A") } else { glowkit_core::hex("#D4D4D8") });
                     kit::child(ui, pr, |ui| {
                         let id = ui.scope_id().with(("phone", k));
                         let mut st: ShellDemo = glowkit_core::state(ui, id, || ShellDemo::new(route));
@@ -341,6 +341,7 @@ AppShell::new(&mut route, &mut nav)
                             .padding(16.0)
                             .id_salt(("phone_shell", k))
                             .size(pr.size())
+                            .corner_radius(28.0)
                             .show(ui, |ui, sc| mobile_page(ui, sc, &nav_copy));
                         feedback(ui, &r);
                         glowkit_core::set_state(ui, id, st);

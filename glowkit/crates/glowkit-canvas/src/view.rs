@@ -235,7 +235,7 @@ pub fn paint_background(painter: &Painter, rect: Rect, view: &CanvasView, kind: 
     let x0 = origin.x + ((rect.left() - origin.x) / s).floor() * s;
     let y0 = origin.y + ((rect.top() - origin.y) / s).floor() * s;
     // fade the pattern as cells get small
-    let fade = ((s - 10.0) / 14.0).clamp(0.25, 1.0);
+    let fade = ((s - 8.0) / 12.0).clamp(0.5, 1.0);
     let col = color.gamma_multiply(fade);
     let nx = ((rect.right() - x0) / s).ceil() as i64 + 1;
     let ny = ((rect.bottom() - y0) / s).ceil() as i64 + 1;

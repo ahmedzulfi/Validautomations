@@ -156,6 +156,7 @@ pub struct AppShell<'a> {
     id_salt: egui::IdSalt,
     rounded: bool,
     start_collapsed: bool,
+    corner: Option<f32>,
 }
 
 impl<'a> AppShell<'a> {
@@ -182,6 +183,7 @@ impl<'a> AppShell<'a> {
             id_salt: egui::IdSalt::new("glowkit_app_shell"),
             rounded: true,
             start_collapsed: false,
+            corner: None,
         }
     }
     /// Layout variant (default [`ShellLayout::Sidebar`]).
@@ -265,6 +267,11 @@ impl<'a> AppShell<'a> {
         self.start_collapsed = yes;
         self
     }
+    /// Outer corner radius (defaults to the theme radius).
+    pub fn corner_radius(mut self, r: f32) -> Self {
+        self.corner = Some(r);
+        self
+    }
     /// Round the outer corners of the shell (default true; turn off when it fills a window).
     pub fn rounded(mut self, yes: bool) -> Self {
         self.rounded = yes;
@@ -326,7 +333,7 @@ impl<'a> AppShell<'a> {
         let t = Theme::of(ui);
         let now = ui.input(|i| i.time);
         let p = ui.painter().clone();
-        let outer_r = if self.rounded { t.radius } else { 0.0 };
+        let outer_r = if self.rounded { self.corner.unwrap_or(t.radius) } else { 0.0 };
         let chrome = kit::chrome_bg(&t);
         let mut command = None;
         let mut menu: Option<String> = None;
@@ -714,6 +721,10 @@ impl<'a> AppShell<'a> {
             ctx.request_repaint();
         }
 
+        if self.rounded {
+            // hairline outline so the app reads as a window on any backdrop
+            ui.painter().rect_stroke(rect, outer_r, Stroke::new(1.0, t.border), StrokeKind::Inside);
+        }
         Toaster::new().within(rect.shrink(4.0)).position(ToastPosition::BottomRight).width(340.0f32.min(rect.width() - 24.0)).show(ui);
 
         st.upgrade_dismissed = upgrade_dismissed;
@@ -1048,7 +1059,7 @@ impl<'a> AppShell<'a> {
     fn bottom_bar(&mut self, ui: &mut Ui, r: Rect, id: Id) -> bool {
         let t = Theme::of(ui);
         let p = ui.painter_at(r);
-        p.rect_filled(r, egui::CornerRadius { sw: if self.rounded { t.radius as u8 } else { 0 }, se: if self.rounded { t.radius as u8 } else { 0 }, nw: 0, ne: 0 }, kit::chrome_bg(&t));
+        p.rect_filled(r, egui::CornerRadius { sw: if self.rounded { self.corner.unwrap_or(t.radius) as u8 } else { 0 }, se: if self.rounded { self.corner.unwrap_or(t.radius) as u8 } else { 0 }, nw: 0, ne: 0 }, kit::chrome_bg(&t));
         p.line_segment([r.left_top(), r.right_top()], Stroke::new(1.0, t.border));
         let items: Vec<(String, String, Option<AppIcon>, Option<String>, bool)> = self
             .nav
@@ -1116,7 +1127,7 @@ fn theme_button(ui: &mut Ui, r: Rect, id: Id) -> egui::Response {
     LineIcon::Sun.paint(&sp, Rect::from_center_size(r.center() + vec2(0.0, d * 6.0), vec2(s * (1.0 - 0.3 * d), s * (1.0 - 0.3 * d))), col);
     let mut mp = p.clone();
     mp.multiply_opacity(d);
-    LineIcon::Moon.paint(&mp, Rect::from_center_size(r.center() + vec2(0.0, (1.0 - d) * -6.0), vec2(s * (0.7 + 0.3 * d), s * (0.7 + 0.3 * d))), col);
+    moon(&mp, r.center() + vec2(0.0, (1.0 - d) * -6.0), s * 0.42 * (0.7 + 0.3 * d), col);
     kit::tip(&resp, if t.dark { "Light mode" } else { "Dark mode" }, None);
     resp
 }
@@ -1201,4 +1212,28 @@ fn bell(ui: &mut Ui, r: Rect, id: Id, notes: &mut [ShellNotification], bounds: R
         let _ = w;
     });
     clicked
+}
+
+/// A stroked crescent moon.
+fn moon(p: &egui::Painter, c: egui::Pos2, r: f32, col: Color32) {
+    let cut = c + vec2(r * 0.55, -r * 0.45);
+    let rc = r * 0.8;
+    let n = 64;
+    let st = Stroke::new(1.5, col);
+    let outer: Vec<egui::Pos2> = (0..=n)
+        .map(|i| {
+            let a = i as f32 / n as f32 * std::f32::consts::TAU + 0.6;
+            c + vec2(a.cos(), a.sin()) * r
+        })
+        .filter(|q| q.distance(cut) >= rc)
+        .collect();
+    let inner: Vec<egui::Pos2> = (0..=n)
+        .map(|i| {
+            let a = i as f32 / n as f32 * std::f32::consts::TAU;
+            cut + vec2(a.cos(), a.sin()) * rc
+        })
+        .filter(|q| q.distance(c) <= r)
+        .collect();
+    p.add(egui::Shape::line(outer, st));
+    p.add(egui::Shape::line(inner, st));
 }

@@ -658,7 +658,7 @@ pub fn paint_wb_shape(painter: &Painter, t: &Theme, doc: &Document, s: &WbShape,
         }
         ShapeKind::Highlight => {
             let pts: Vec<Pos2> = s.points.iter().map(|p| ts(rotate_about(p.pos, s.rect.center(), s.rotation))).collect();
-            painter.add(Shape::line(pts, Stroke::new(s.width * zoom, with_alpha(stroke_col, 0.38))));
+            painter.add(Shape::line(pts, Stroke::new(s.width * zoom, with_alpha(stroke_col, if t.dark { 0.5 } else { 0.4 }))));
         }
         ShapeKind::Line | ShapeKind::Arrow => {
             let (a, b) = doc.arrow_ends(s);
@@ -684,7 +684,7 @@ pub fn paint_wb_shape(painter: &Painter, t: &Theme, doc: &Document, s: &WbShape,
         }
         ShapeKind::Text => {
             let font = qfont(s.font_size * zoom);
-            let g = painter.layout(s.text.clone(), font, stroke_col, (s.rect.width() * zoom).max(10.0));
+            let g = painter.layout(s.text.clone(), font, stroke_col, f32::INFINITY);
             let min = ts(rotate_about(s.rect.min, s.rect.center(), s.rotation));
             painter.add(egui::epaint::TextShape::new(min, g, stroke_col).with_angle(s.rotation));
         }
@@ -726,11 +726,11 @@ pub fn paint_wb_shape(painter: &Painter, t: &Theme, doc: &Document, s: &WbShape,
                 painter.add(Shape::closed_line(pts, st));
             }
             if !s.text.is_empty() {
-                let font = qfont(s.font_size * 0.8 * zoom);
-                let g = painter.layout(s.text.clone(), font, stroke_col, (s.rect.width() * zoom * 0.8).max(10.0));
+                let font = qfont(s.font_size * 0.85 * zoom);
+                let g = painter.layout(s.text.clone(), font, t.foreground, (s.rect.width() * zoom * 0.8).max(10.0));
                 let c = ts(s.rect.center());
                 let min = c - g.size() / 2.0;
-                painter.add(egui::epaint::TextShape::new(rotate_about(min, c, s.rotation), g, stroke_col).with_angle(s.rotation));
+                painter.add(egui::epaint::TextShape::new(rotate_about(min, c, s.rotation), g, t.foreground).with_angle(s.rotation));
             }
         }
     }
@@ -870,6 +870,13 @@ impl<'a> Whiteboard<'a> {
         let hand = st.tool == Tool::Hand;
         InfiniteCanvas::new(&mut view).background(background).height(height).pan_on_drag(hand).id_salt("whiteboard").show(ui, |cv| {
             let rect = cv.rect;
+            for s in doc.shapes.iter_mut().filter(|s| s.kind == ShapeKind::Text) {
+                let g = cv.painter.layout_no_wrap(if s.text.is_empty() { " ".into() } else { s.text.clone() }, egui::FontId::proportional(s.font_size), Color32::WHITE);
+                let size = vec2(g.size().x.max(20.0) + 4.0, g.size().y.max(s.font_size * 1.2));
+                if (s.rect.size() - size).length() > 0.5 {
+                    s.rect = Rect::from_min_size(s.rect.min, size);
+                }
+            }
             if cv.view.needs_fit && !doc.shapes.is_empty() {
                 cv.view.fit_now(rect, doc.bounds(), 70.0);
             }

@@ -4,7 +4,9 @@
 
 mod kit;
 mod hero;
+mod features;
 
+pub use features::{FeatureItem, FeatureVisual, FeaturesLayout, FeaturesSection};
 pub use hero::{HeroLayout, HeroSection, HeroVisual};
 
 pub use kit::{SectionAlign, SectionBackground, SectionCtaStyle, SectionResponse, SectionSocial, SECTION_MAX_WIDTH, SECTION_STACK_BELOW};

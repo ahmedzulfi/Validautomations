@@ -170,7 +170,7 @@ pub struct KanbanBoard<'a> {
     board: &'a mut Board,
     state: &'a mut KanbanState,
     height: f32,
-    column_width: f32,
+    column_width: Option<f32>,
 }
 
 const HEADER: f32 = 46.0;
@@ -180,16 +180,16 @@ const PAD: f32 = 8.0;
 impl<'a> KanbanBoard<'a> {
     /// A board view.
     pub fn new(board: &'a mut Board, state: &'a mut KanbanState) -> Self {
-        Self { board, state, height: 480.0, column_width: 248.0 }
+        Self { board, state, height: 480.0, column_width: None }
     }
     /// Height of the board.
     pub fn height(mut self, h: f32) -> Self {
         self.height = h;
         self
     }
-    /// Width of an expanded column.
+    /// Width of an expanded column (default: fit the available width, 220..300).
     pub fn column_width(mut self, w: f32) -> Self {
-        self.column_width = w;
+        self.column_width = Some(w);
         self
     }
 
@@ -216,6 +216,12 @@ impl<'a> KanbanBoard<'a> {
         }
         let painter = ui.painter_at(rect);
         let dt = glowkit_core::dt(ui);
+        let column_width = column_width.unwrap_or_else(|| {
+            let collapsed = board.columns.iter().filter(|c| c.collapsed).count();
+            let open = (board.columns.len() - collapsed).max(1);
+            let avail = rect.width() - collapsed as f32 * 60.0 - 12.0 * (open as f32 - 1.0);
+            (avail / open as f32).clamp(220.0, 300.0)
+        });
         let mut changed = false;
         let pointer = ui.input(|i| i.pointer.hover_pos());
         let col_fill = if t.dark { with_alpha(t.foreground, 0.035) } else { t.muted };

@@ -946,7 +946,7 @@ mod tests {
             let mut drawn = 0;
             for i in 0..n {
                 let mut s = Scene::new(ui.painter().clone(), rect, Camera::looking_at(vec3(0.0, 1.0, 4.0), Vec3::ZERO));
-                s.draw(&knot, Transform::IDENTITY.with_euler(0.0, i as f32 * 0.1, 0.0), &Material::smooth(Color32::WHITE).wire(crate::Wire::new(Color32::WHITE)));
+                s.draw(&knot, Transform::IDENTITY.with_euler(0.0, i as f32 * 0.1, 0.0), &Material::smooth(Color32::WHITE));
                 drawn = s.stats().triangles_drawn;
                 s.paint();
             }

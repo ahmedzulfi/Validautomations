@@ -218,8 +218,8 @@ pub struct GanttChart<'a> {
 }
 
 const HEAD: f32 = 52.0;
-const ROW: f32 = 34.0;
-const GROUP_ROW: f32 = 32.0;
+const ROW: f32 = 31.0;
+const GROUP_ROW: f32 = 30.0;
 
 #[derive(Clone, Copy)]
 enum RowKind {
@@ -265,7 +265,8 @@ impl<'a> GanttChart<'a> {
         let target_px = st.zoom.px();
         let center_day = st.scroll + tl.width() / 2.0 / st.px;
         if !st.init {
-            st.scroll = (data.today - tl.width() / st.px * 0.3).floor();
+            let first = data.groups.iter().filter_map(|g| g.span()).map(|s| s.0).fold(data.today, f32::min);
+            st.scroll = (first - 4.0).min(data.today - tl.width() / st.px * 0.3).floor();
             st.init = true;
         }
         let new_px = glowkit_core::anim::approach(st.px, target_px, 12.0, dt);
@@ -486,9 +487,18 @@ impl<'a> GanttChart<'a> {
                     let hl = active == Some(task.id) || active == Some(*dep);
                     let bad = data.task(*dep).is_some_and(|d| d.end() > task.start + 1e-3);
                     let col = if bad { t.destructive } else if hl { t.accent } else { with_alpha(t.muted_foreground, 0.6) };
-                    let pa = a.right_center();
+                    // leave from the bottom of the predecessor (keeps labels clear), enter from the left
                     let pb = b.left_center();
-                    let path = common::orthogonal_route(pa, Vec2::X, pb, -Vec2::X, 10.0, 5.0);
+                    let ax = (a.right() - 8.0).max(a.left() + 4.0).min(a.right());
+                    let pa = pos2(ax, a.bottom());
+                    let pts = if pb.x - 10.0 >= ax {
+                        vec![pa, pos2(ax, pb.y), pb]
+                    } else {
+                        let ym = if pb.y > pa.y { pa.y + 6.0 } else { pa.y - a.height() - 6.0 };
+                        let pa = if pb.y > pa.y { pa } else { pos2(ax, a.top()) };
+                        vec![pa, pos2(ax, ym), pos2(pb.x - 10.0, ym), pos2(pb.x - 10.0, pb.y), pb]
+                    };
+                    let path = common::round_corners(&pts, 5.0);
                     if bad {
                         common::dashed_polyline(&bp, &path, 4.0, 3.0, 0.0, Stroke::new(1.4, col));
                     } else {
@@ -522,13 +532,12 @@ impl<'a> GanttChart<'a> {
             if task.progress > 0.0 {
                 let mut pr = *r;
                 pr.set_width(r.width() * task.progress);
-                bp.rect_filled(pr.shrink(1.0), CornerRadius::same(5), with_alpha(col, 0.85));
+                bp.rect_filled(pr.shrink(1.0), CornerRadius::same(5), with_alpha(col, if t.dark { 0.7 } else { 0.55 }));
             }
             let label = format!("{}{}", task.name, if task.progress > 0.0 && task.progress < 1.0 { format!("  {:.0}%", task.progress * 100.0) } else { String::new() });
             let gw = bp.layout_no_wrap(label.clone(), qfont(12.0), Color32::WHITE).size().x;
             if gw + 16.0 < r.width() {
-                let txt_col = if task.progress > 0.3 { glowkit_core::color::contrast_text(col) } else { t.foreground };
-                bp.text(pos2(r.left() + 8.0, r.center().y), Align2::LEFT_CENTER, label, qfont(12.0), txt_col);
+                bp.text(pos2(r.left() + 8.0, r.center().y), Align2::LEFT_CENTER, label, qfont(12.0), t.foreground);
             } else {
                 bp.text(pos2(r.right() + 8.0, r.center().y), Align2::LEFT_CENTER, label, qfont(12.0), t.foreground.gamma_multiply(0.9));
             }
