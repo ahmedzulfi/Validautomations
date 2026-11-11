@@ -814,8 +814,6 @@ fn emit_line(m: &mut EMesh, a: Pos2, b: Pos2, wa: f32, wb: f32, ca: Color32, cb:
     let (ha, ca) = thin(wa, ca);
     let (hb, cb) = thin(wb, cb);
     let f = 0.7;
-    // extend slightly along the direction so joints between segments overlap
-    let (a, b) = (a - dir * (ha * 0.5).min(1.0), b + dir * (hb * 0.5).min(1.0));
     let base = m.vertices.len() as u32;
     for (p, h, c) in [(a, ha, ca), (b, hb, cb)] {
         m.vertices.push(Vertex { pos: p + n * (h + f), uv: WHITE_UV, color: Color32::TRANSPARENT });

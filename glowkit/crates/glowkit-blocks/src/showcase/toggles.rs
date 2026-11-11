@@ -1,5 +1,5 @@
 use egui::{pos2, vec2, Color32, Id, LayerId, Order, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2, Widget};
-use glowkit_core::{anim::ease, color::with_alpha, hex, mix, paint, Easing, Theme};
+use glowkit_core::{anim::{ease, smoothstep}, color::with_alpha, hex, mix, paint, Easing, Theme};
 use std::f32::consts::TAU;
 
 /// Paint a sun (k = 0) that morphs into a crescent moon (k = 1).
@@ -37,8 +37,8 @@ struct RevealState {
 }
 
 /// An icon button that toggles between light and dark: a sun whose rays retract as it morphs
-/// into a crescent moon. When the value changes, a circular "wipe" in the new background color
-/// expands from the button over an optional reveal area, like a view-transition theme switch.
+/// into a crescent moon. When the value changes, the new theme is revealed through a circle that
+/// expands from the button over an optional area, like a view-transition theme switch.
 ///
 /// ```no_run
 /// # let ui: &mut egui::Ui = todo!();
@@ -53,29 +53,35 @@ pub struct ThemeToggler<'a> {
     reveal: Option<Rect>,
     colors: [Color32; 2],
     duration: f32,
+    rounding: f32,
 }
 
 impl<'a> ThemeToggler<'a> {
     /// Toggle for `dark` (true = dark mode).
     pub fn new(dark: &'a mut bool) -> Self {
-        Self { dark, size: 40.0, reveal: None, colors: [Theme::light().background, Theme::dark().background], duration: 0.7 }
+        Self { dark, size: 40.0, reveal: None, colors: [Theme::light().background, Theme::dark().background], duration: 0.7, rounding: 0.0 }
     }
     /// Button diameter in points.
     pub fn size(mut self, s: f32) -> Self {
         self.size = s;
         self
     }
-    /// Area the circular wipe covers when the value changes.
+    /// Area the circular reveal covers when the value changes.
     pub fn reveal(mut self, area: Rect) -> Self {
         self.reveal = Some(area);
         self
     }
-    /// Wipe colors for `[light, dark]` (default: the light / dark theme backgrounds).
+    /// Background colors of the light and dark themes (the old one is held outside the circle).
     pub fn reveal_colors(mut self, light: Color32, dark: Color32) -> Self {
         self.colors = [light, dark];
         self
     }
-    /// Seconds the wipe takes to cover the area.
+    /// Corner radius of the reveal area (so the wipe respects rounded containers).
+    pub fn reveal_rounding(mut self, r: f32) -> Self {
+        self.rounding = r.max(0.0);
+        self
+    }
+    /// Seconds the reveal takes to cover the area.
     pub fn duration(mut self, s: f32) -> Self {
         self.duration = s.max(0.05);
         self
@@ -115,28 +121,30 @@ impl Widget for ThemeToggler<'_> {
                 ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
             }
         }
-        // the circular wipe
+        // the circular reveal: the area outside a growing circle keeps the old background
+        // (fading out at the end) so the new theme appears inside the circle.
         if let Some(area) = self.reveal {
             let e = (now - st.start) as f32;
-            let total = self.duration + 0.45;
+            let total = self.duration + 0.3;
             if e < total {
                 ui.ctx().request_repaint();
-                let c = rect.center();
+                let c = rect.center().clamp(area.min, area.max);
                 let far = [area.left_top(), area.right_top(), area.left_bottom(), area.right_bottom()]
                     .iter()
                     .map(|q| q.distance(c))
                     .fold(0.0, f32::max);
                 let grow = ease(Easing::InOutCubic, e / self.duration);
-                let fade = 1.0 - ((e - self.duration) / 0.45).clamp(0.0, 1.0);
-                let col = if st.to_dark { self.colors[1] } else { self.colors[0] };
+                let fade = 1.0 - ((e - self.duration) / 0.3).clamp(0.0, 1.0);
+                let old = if st.to_dark { self.colors[0] } else { self.colors[1] };
                 let lp = ui.ctx().layer_painter(LayerId::new(Order::Middle, Id::unique("glowkit_theme_reveal").with(resp.id))).with_clip_rect(area);
-                let rr = far * grow;
-                if rr > 0.5 {
-                    let pts = paint::circle_points(c, rr, 128);
-                    lp.add(egui::Shape::convex_polygon(pts, with_alpha(col, fade), Stroke::NONE));
-                    // bright leading edge
+                let rr = (far * grow).max(self.size * 0.5 + 3.0);
+                super::util::rounded_grid(&lp, area, self.rounding, 4.0, |q| {
+                    let d = q.distance(c);
+                    with_alpha(old, fade * smoothstep(rr - 2.0, rr + 2.0, d))
+                });
+                if rr > 0.5 && grow < 1.0 {
                     let edge = if st.to_dark { t.gradient[0] } else { t.gradient[2] };
-                    lp.circle_stroke(c, rr, Stroke::new(2.0, with_alpha(edge, fade * (1.0 - grow) * 0.9)));
+                    lp.circle_stroke(c, rr, Stroke::new(2.0, with_alpha(edge, (1.0 - grow) * 0.8)));
                 }
             }
         }

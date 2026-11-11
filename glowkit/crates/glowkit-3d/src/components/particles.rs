@@ -102,7 +102,7 @@ impl Default for ParticleMorph {
 impl ParticleMorph {
     /// Default: 1600 points cycling through every shape.
     pub fn new() -> Self {
-        Self { count: 1600, shapes: CloudShape::ALL.to_vec(), hold: 2.2, morph: 1.8, colors: None, size: 0.02, height: 380.0, id_salt: None }
+        Self { count: 1600, shapes: CloudShape::ALL.to_vec(), hold: 2.2, morph: 1.8, colors: None, size: 0.022, height: 380.0, id_salt: None }
     }
     /// Number of particles.
     pub fn count(mut self, n: usize) -> Self {
@@ -153,7 +153,7 @@ impl Widget for ParticleMorph {
             .height(self.height)
             .background(bg)
             .fov(40.0)
-            .controls(OrbitControls::new().distance(5.4).pitch(0.25).auto_rotate(0.25).distance_range(2.5, 12.0))
+            .controls(OrbitControls::new().distance(4.7).pitch(0.3).auto_rotate(0.25).distance_range(2.5, 12.0))
             .show(ui, |scene, ctx| {
                 let n = self.count;
                 let shapes = &self.shapes;
@@ -186,7 +186,7 @@ impl Widget for ParticleMorph {
                             p += off.normalized() * (0.6 - dist) * 0.9;
                         }
                     }
-                    let tcol = (p.y / 3.2 + 0.5 + hash01(i as u64) * 0.15).clamp(0.0, 1.0);
+                    let tcol = ((p.length() / 1.9) * 0.65 + (p.y / 3.2 + 0.5) * 0.35 + hash01(i as u64) * 0.12).clamp(0.0, 1.0);
                     let c = color::gradient(&stops, tcol);
                     let col = if dark { crate::additive(c.gamma_multiply(0.95)) } else { color::with_alpha(color::shade(c, -0.08), 0.9) };
                     scene.point(p, self.size * (0.7 + hash01(i as u64 * 5) * 0.6), col);
@@ -285,7 +285,7 @@ impl Widget for Galaxy {
                 let time = ctx.time * self.speed;
                 let c = ctx.controls;
                 // cinematic path: slow orbit, swooping pitch and distance
-                let dist = 5.2 + 1.6 * (time * 0.11).sin();
+                let dist = 6.6 + 1.6 * (time * 0.11).sin();
                 let pitch = (0.55 + 0.35 * (time * 0.07).sin() + c.pitch).clamp(-1.2, 1.3);
                 let yaw = time * 0.06 + c.yaw;
                 let eye = Vec3::from_spherical(dist, yaw, pitch);
@@ -296,9 +296,9 @@ impl Widget for Galaxy {
                 let arms = self.arms as f32;
                 for i in 0..n {
                     let h = |k: u64| hash01(i as u64 * 97 + k);
-                    let r = h(1).powf(1.6) * 4.2 + 0.08;
+                    let r = h(1).powf(1.35) * 4.2 + 0.05;
                     let arm = (i % self.arms) as f32;
-                    let spread = (h(2) - 0.5) * (0.35 + r * 0.12) + (h(3) - 0.5) * 0.3;
+                    let spread = (h(2) - 0.5) * (0.7 + r * 0.22) + (h(3) - 0.5) * 0.45;
                     let a = arm / arms * TAU + r * self.twist * 0.35 + spread - time * 0.35 / (r + 0.6);
                     let y = (h(4) + h(5) - 1.0) * 0.22 * (1.0 - r / 4.6).max(0.05);
                     let off = (h(6) - 0.5) * 0.25;
@@ -356,7 +356,7 @@ impl Default for Starfield {
 impl Starfield {
     /// Default: 900 stars.
     pub fn new() -> Self {
-        Self { count: 900, speed: 1.0, colors: None, height: 340.0, id_salt: None }
+        Self { count: 1400, speed: 1.0, colors: None, height: 340.0, id_salt: None }
     }
     /// Number of stars.
     pub fn count(mut self, n: usize) -> Self {
@@ -416,17 +416,17 @@ impl Widget for Starfield {
                 let mut cam = Camera::looking_at(Vec3::ZERO, look).fov_degrees(70.0 + st.boost * 18.0);
                 cam.up = up;
                 scene.set_camera(cam);
-                let depth = 60.0;
+                let depth = 40.0;
                 let dark = t.dark;
-                let streak = 0.08 + st.boost * 1.6 + self.speed * 0.15;
+                let streak = 0.25 + st.boost * 2.4 + self.speed * 0.35;
                 for i in 0..self.count {
                     let h = |k: u64| hash01(i as u64 * 59 + k);
                     let a = h(1) * TAU;
-                    let r = 0.6 + h(2).sqrt() * 14.0;
+                    let r = 0.35 + h(2).powf(0.8) * 7.0;
                     let z = -((h(3) * depth - st.travel).rem_euclid(depth)) - 0.5;
                     let p = vec3(a.cos() * r, a.sin() * r, z);
                     let near = 1.0 - (-z / depth);
-                    let fade = (near * near).clamp(0.0, 1.0) * ((-z - 0.5) / 3.0).clamp(0.0, 1.0);
+                    let fade = near.clamp(0.0, 1.0).powf(1.5) * ((-z - 0.5) / 2.0).clamp(0.0, 1.0);
                     let base = color::gradient(&stops, h(4));
                     let tail = p + vec3(0.0, 0.0, -streak * (1.0 + h(5)));
                     let (ch, ct) = if dark {
@@ -434,7 +434,10 @@ impl Widget for Starfield {
                     } else {
                         (color::with_alpha(color::shade(base, -0.25), fade * 0.9), Color32::TRANSPARENT)
                     };
-                    scene.line_world(p, tail, 0.03 + h(6) * 0.03, ch, ct);
+                    scene.line_world(p, tail, 0.016 + h(6) * 0.02, ch, ct);
+                    if h(7) > 0.9 {
+                        scene.glow_point(p, 0.12, if dark { crate::additive(base.gamma_multiply(fade * 0.35)) } else { color::with_alpha(base, fade * 0.3) });
+                    }
                 }
                 let center = scene.rect().center();
                 let _ = center;

@@ -211,7 +211,7 @@ impl Widget for ModelViewer {
             .height(self.height)
             .background(bg)
             .fov(38.0)
-            .controls(OrbitControls::new().distance(5.2).pitch(0.28).yaw(0.5).auto_rotate(self.auto_rotate).distance_range(2.5, 12.0))
+            .controls(OrbitControls::new().distance(4.5).pitch(0.24).yaw(0.5).auto_rotate(self.auto_rotate).distance_range(2.5, 12.0))
             .show(ui, |scene, ctx| {
                 let model = self.model.clone();
                 let key = model.name();
@@ -222,6 +222,8 @@ impl Widget for ModelViewer {
                 let bob = if self.float { (ctx.time * 1.3).sin() * 0.08 } else { 0.0 };
                 let tf = Transform::from_translation(vec3(0.0, 0.1 + bob, 0.0)).with_euler(0.12 * (ctx.time * 0.7).sin(), 0.0, 0.0);
                 let faceted = model.faceted();
+                // models with their own vertex colors keep them unless a color was set explicitly
+                let accent = if !mesh.colors.is_empty() && self.color.is_none() && matches!(self.look, Look::Studio | Look::Flat | Look::Toon) { Color32::WHITE } else { accent };
                 let mut mat = match self.look {
                     Look::Studio => Material::smooth(accent).specular(0.55).shininess(40.0).rim(0.35).rim_color(color::mix(accent, Color32::WHITE, 0.6)),
                     Look::Gradient => Material::matcap([color::shade(t.gradient[0], -0.25), t.gradient[1], color::mix(t.gradient[2], Color32::WHITE, 0.35)]).shininess(24.0),

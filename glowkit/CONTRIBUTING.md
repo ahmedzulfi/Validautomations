@@ -40,7 +40,7 @@ scripts/               build-web.sh, serve.sh, shot.mjs (headless screenshots)
    * Continuous animations call `glowkit_core::animate(ui)` (requests a repaint) every frame.
    * One-shot animations must stop requesting repaints when finished (`Clock::triggered` does this).
    * Per-widget state: `glowkit_core::{state, set_state, with_state}` keyed by the widget's
-     `Response::id` (or `ui.id().with(...)`). State types must be `Clone + Send + Sync + 'static`.
+     `Response::id` (or `ui.scope_id().with(...)`; `ui.id()` is deprecated in egui 0.37). State types must be `Clone + Send + Sync + 'static`.
    * Never call a `ui`/`ctx` method inside a `with_state` closure: it holds egui's context lock
      and will deadlock. Read time/input first, mutate inside, repaint after.
    * Springs and easing: `glowkit_core::anim::{spring, spring2, follow, ease, Easing, Spring, stagger, Clock, Trigger}`.

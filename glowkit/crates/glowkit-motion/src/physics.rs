@@ -11,7 +11,7 @@ use glowkit_core::{color, paint, Theme};
 ///
 /// ```no_run
 /// use glowkit_motion::SpringChain;
-/// let mut chain = SpringChain::new(12, egui::pos2(0.0, 0.0)).stiffness(260.0).damping(18.0);
+/// let mut chain = SpringChain::new(12, egui::pos2(0.0, 0.0)).stiffness(400.0).damping(40.0);
 /// chain.update(egui::pos2(100.0, 50.0), 1.0 / 60.0);
 /// for p in chain.points() { /* draw a dot */ }
 /// ```
@@ -27,14 +27,15 @@ pub struct SpringChain {
 impl SpringChain {
     /// `n` points stacked at `at`.
     pub fn new(n: usize, at: Pos2) -> Self {
-        Self { points: vec![at; n.max(1)], velocities: vec![Vec2::ZERO; n.max(1)], stiffness: 300.0, damping: 22.0, falloff: 0.92 }
+        Self { points: vec![at; n.max(1)], velocities: vec![Vec2::ZERO; n.max(1)], stiffness: 400.0, damping: 40.0, falloff: 0.96 }
     }
     /// Spring stiffness of the first link.
     pub fn stiffness(mut self, k: f32) -> Self {
         self.stiffness = k.max(1.0);
         self
     }
-    /// Spring damping.
+    /// Spring damping. Keep it near `2 * stiffness.sqrt()` (critical) or above for a smooth
+    /// tail: every link filters the one before it, so bounce compounds along long chains.
     pub fn damping(mut self, d: f32) -> Self {
         self.damping = d.max(0.0);
         self

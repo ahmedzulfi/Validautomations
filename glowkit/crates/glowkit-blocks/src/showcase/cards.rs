@@ -1,4 +1,4 @@
-use super::util::{bold_text, galley_fine, idle_time};
+use super::util::{bold_text, galley_fine, idle_time, rounded_grid};
 use egui::epaint::Mesh;
 use egui::{pos2, vec2, Align2, Color32, FontId, Painter, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, Vec2, Widget};
 use glowkit_core::{anim::smoothstep, color::with_alpha, hex, mix, paint, rng::hash01, Theme};
@@ -21,35 +21,6 @@ fn hover_or_auto(ui: &Ui, resp: &Response, autoplay: bool, period: f32) -> f32 {
         0.0
     };
     glowkit_core::anim::follow(ui, resp.id.with("hover_k"), target, 5.0)
-}
-
-/// A grid mesh over a rounded rect: vertices outside the rounded corners are projected onto
-/// the outline, so per-vertex effects get smooth rounded edges.
-fn rounded_grid(p: &Painter, rect: Rect, radius: f32, cell: f32, f: impl Fn(Pos2) -> Color32) {
-    let cols = (rect.width() / cell).ceil().max(1.0) as usize;
-    let rows = (rect.height() / cell).ceil().max(1.0) as usize;
-    let mut m = Mesh::default();
-    m.reserve_vertices((cols + 1) * (rows + 1));
-    for y in 0..=rows {
-        for x in 0..=cols {
-            let mut q = pos2(rect.min.x + rect.width() * x as f32 / cols as f32, rect.min.y + rect.height() * y as f32 / rows as f32);
-            let c = pos2(q.x.clamp(rect.min.x + radius, rect.max.x - radius), q.y.clamp(rect.min.y + radius, rect.max.y - radius));
-            let d = q - c;
-            if d.length() > radius {
-                q = c + d.normalized() * radius;
-            }
-            m.colored_vertex(q, f(q));
-        }
-    }
-    let w = (cols + 1) as u32;
-    for y in 0..rows as u32 {
-        for x in 0..cols as u32 {
-            let i = y * w + x;
-            m.add_triangle(i, i + 1, i + w + 1);
-            m.add_triangle(i, i + w + 1, i + w);
-        }
-    }
-    p.add(Shape::mesh(m));
 }
 
 /// Huge outlined text; a radial gradient reveal follows the pointer and lights up the outline

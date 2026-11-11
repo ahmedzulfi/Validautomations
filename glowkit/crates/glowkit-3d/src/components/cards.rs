@@ -42,6 +42,8 @@ pub(crate) struct CardStyle {
     pub border: Color32,
     pub sheen: f32,
     pub text_scale: f32,
+    /// Fade alpha out towards the card's local top (used for floor reflections).
+    pub reflect: bool,
 }
 
 /// Draw a card face (both sides; the back side shows `back` if given, else a darker face).
@@ -55,6 +57,7 @@ pub(crate) fn draw_card(scene: &mut Scene, center: Vec3, right: Vec3, up: Vec3, 
         (false, Some(b)) => (-right, b, 1.0),
         (false, None) => (-right, card, 0.55),
     };
+    let show_text = front || back.is_some();
     let n = right.cross(up);
     let outline = rounded_outline(size.x, size.y, style.radius, 5);
     let world = |x: f32, y: f32| center + right * x + up * y;
@@ -69,7 +72,8 @@ pub(crate) fn draw_card(scene: &mut Scene, center: Vec3, right: Vec3, up: Vec3, 
         let c = color::mix(card.colors[0], card.colors[1], t);
         let c = if dim < 1.0 { color::mix(c, Color32::BLACK, 1.0 - dim) } else { c };
         let c = color::mix(c, Color32::WHITE, sheen * (1.0 - t * 0.6));
-        color::with_alpha(c, a)
+        let k = if style.reflect { (0.5 - y / size.y).clamp(0.0, 1.0).powi(2) } else { 1.0 };
+        color::with_alpha(c, a * k)
     };
     scene.group(center, |s| {
         let cc = col_at(0.0, 0.0);
@@ -90,8 +94,13 @@ pub(crate) fn draw_card(scene: &mut Scene, center: Vec3, right: Vec3, up: Vec3, 
             );
         }
         let pts: Vec<Vec3> = outline.iter().map(|p| world(p.0, p.1)).collect();
-        let bc = style.border.gamma_multiply(a);
-        s.polyline(&pts, 1.0, true, |_| bc);
+        if !style.reflect {
+            let bc = style.border.gamma_multiply(a);
+            s.polyline(&pts, 1.0, true, |_| bc);
+        }
+        if !show_text || style.reflect {
+            return;
+        }
         let ts = style.text_scale * size.y.min(size.x * 1.4);
         let tc = style.text.gamma_multiply(a);
         let pad = size.x * 0.09;
@@ -181,14 +190,14 @@ impl Widget for CardCarousel3D {
         let t = Theme::of(ui);
         let n = self.cards.len().max(1);
         let size = self.card_size;
-        let radius = ((size.x + 0.35) * n as f32 / TAU).max(1.2);
+        let radius = ((size.x + 0.55) * n as f32 / TAU).max(1.2);
         Viewport3D::new(salt_or(&self.id_salt, "card-carousel"))
             .height(self.height)
             .camera(Camera::default())
             .show(ui, |scene, ctx| {
-                let dist = radius + 4.6;
+                let dist = radius + 4.1;
                 let eye = vec3(0.0, dist * self.tilt.sin() + 0.2, dist * self.tilt.cos());
-                scene.set_camera(Camera::looking_at(eye, vec3(0.0, 0.05, 0.0)).fov_degrees(40.0));
+                scene.set_camera(Camera::looking_at(eye, vec3(0.0, -0.3, 0.0)).fov_degrees(38.0));
                 let drag = if ctx.response.dragged() { Some(ctx.response.drag_delta().x) } else { None };
                 let dt = ctx.dt.max(1e-4);
                 let spin = ctx.state("spin", Spin::default, |s| {
@@ -208,7 +217,7 @@ impl Widget for CardCarousel3D {
                 if ctx.response.hovered() {
                     ctx.ui.ctx().set_cursor_icon(if ctx.response.dragged() { egui::CursorIcon::Grabbing } else { egui::CursorIcon::Grab });
                 }
-                let floor = -size.y / 2.0 - 0.12;
+                let floor = -size.y / 2.0 - 0.04;
                 let border = color::with_alpha(Color32::WHITE, 0.35);
                 for (i, card) in self.cards.iter().enumerate() {
                     let a = spin.angle + i as f32 / n as f32 * TAU;
@@ -216,12 +225,12 @@ impl Widget for CardCarousel3D {
                     let right = vec3(a.cos(), 0.0, -a.sin());
                     let facing = (a.cos() * 0.5 + 0.5).clamp(0.0, 1.0);
                     let opacity = 0.35 + 0.65 * facing;
-                    let style = CardStyle { radius: 0.12, opacity, text: text_on(card), border, sheen: 0.55, text_scale: 1.0 };
+                    let style = CardStyle { radius: 0.12, opacity, text: text_on(card), border, sheen: 0.55, text_scale: 1.0, reflect: false };
                     draw_card(scene, c, right, Vec3::Y, size, card, None, &style);
-                    if self.reflection {
+                    if self.reflection && facing > 0.35 {
                         let rc = vec3(c.x, floor * 2.0 - c.y, c.z);
-                        let fade = if t.dark { 0.16 } else { 0.12 };
-                        let style = CardStyle { opacity: opacity * fade, text: Color32::TRANSPARENT, border: Color32::TRANSPARENT, ..style };
+                        let fade = if t.dark { 0.3 } else { 0.22 };
+                        let style = CardStyle { opacity: opacity * fade, reflect: true, ..style };
                         scene.underlay(|s| draw_card(s, rc, right, -Vec3::Y, size, card, None, &style));
                     }
                 }
@@ -323,7 +332,7 @@ impl Widget for FlipCard3D {
                 let right = q.rotate(Vec3::X);
                 let up = q.rotate(Vec3::Y);
                 let t = Theme::of(ctx.ui);
-                let style = CardStyle { radius: 0.14, opacity: 1.0, text: text_on(&self.front), border: color::with_alpha(Color32::WHITE, 0.35), sheen: 0.7, text_scale: 1.0 };
+                let style = CardStyle { radius: 0.14, opacity: 1.0, text: text_on(&self.front), border: color::with_alpha(Color32::WHITE, 0.35), sheen: 0.7, text_scale: 1.0, reflect: false };
                 let back_style = CardStyle { text: text_on(&self.back), ..style };
                 let lift = (st.spring.value % PI / PI * PI).sin().abs();
                 scene.shadow(vec3(0.0, -ch / 2.0 - 0.25, 0.0), cw * (0.7 - 0.15 * lift), super::shadow_c(&t, 0.8));
@@ -431,7 +440,7 @@ impl Widget for Marquee3D {
                         }
                         let card = &self.cards[(c * 3 + r) % self.cards.len()];
                         let center = right * x + up * y;
-                        let style = CardStyle { radius: 0.1, opacity: fade, text: text_on(card), border, sheen: 0.4, text_scale: 1.0 };
+                        let style = CardStyle { radius: 0.1, opacity: fade, text: text_on(card), border, sheen: 0.4, text_scale: 1.0, reflect: false };
                         draw_card(scene, center, right, up, egui::vec2(cw, ch), card, None, &style);
                     }
                 }

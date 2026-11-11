@@ -20,7 +20,7 @@ fn hint(ui: &mut Ui, text: &str) {
 fn showcase(ui: &mut Ui) {
     Viewport3D::new("showcase")
         .height(360.0)
-        .controls(OrbitControls::new().distance(9.5).pitch(0.42).yaw(0.4).auto_rotate(0.15).distance_range(4.0, 20.0))
+        .controls(OrbitControls::new().distance(7.6).pitch(0.38).yaw(0.4).auto_rotate(0.15).distance_range(4.0, 20.0))
         .show(ui, |scene, ctx| {
             let t = &ctx.theme;
             let g = t.gradient;
@@ -31,7 +31,7 @@ fn showcase(ui: &mut Ui) {
                 ("Matcap", Material::matcap([glowkit_core::color::shade(g[0], -0.25), g[1], glowkit_core::color::mix(g[2], Color32::WHITE, 0.4)])),
                 ("Normal", Material::normal()),
                 ("Wireframe", Material::wireframe(t.chart[5]).wire(Wire::new(t.chart[5]).width(1.2).glow(if t.dark { 1.0 } else { 0.0 }))),
-                ("Glow", if t.dark { Material::glow(t.chart[3]).shading(Shading::Smooth).emissive(0.6) } else { Material::smooth(t.chart[3]).emissive(0.4).rim(0.8) }),
+                ("Glow", Material::smooth(glowkit_core::color::shade(t.chart[3], if t.dark { -0.35 } else { -0.05 })).emissive(0.25).rim(1.6).rim_color(t.chart[3]).specular(0.2)),
                 ("Overlay", Material::smooth(t.chart[4]).wire(Wire::new(Color32::from_white_alpha(140)).width(1.0))),
             ];
             let meshes = [
@@ -46,9 +46,12 @@ fn showcase(ui: &mut Ui) {
             ];
             for (i, ((name, mat), mesh)) in items.iter().zip(meshes.iter()).enumerate() {
                 let (col, row) = (i % 4, i / 4);
-                let p = vec3((col as f32 - 1.5) * 2.3, 0.0, (row as f32 - 0.5) * 2.6);
+                let p = vec3((col as f32 - 1.5) * 2.4, 0.0, (row as f32 - 0.5) * 2.5);
                 let tf = Transform::from_translation(p + vec3(0.0, (ctx.time * 1.2 + i as f32).sin() * 0.1, 0.0)).with_euler(ctx.time * 0.4 + i as f32, ctx.time * 0.6, 0.0);
                 scene.shadow(p - vec3(0.0, 0.95, 0.0), 0.8, glowkit_core::color::with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.15 }));
+                if *name == "Glow" {
+                    scene.underlay(|s| s.glow_point(p, 1.3, if t.dark { additive(t.chart[3].gamma_multiply(0.35)) } else { glowkit_core::color::with_alpha(t.chart[3], 0.25) }));
+                }
                 scene.draw(mesh, tf, mat);
                 scene.text(name, p - vec3(0.0, 0.95, -0.95), Vec3::X, -Vec3::Z, 0.26, t.muted_foreground, egui::Align2::CENTER_CENTER);
             }
@@ -176,8 +179,8 @@ ui.add(FlipCard3D::new(front, back).size(vec2(220.0, 300.0)));"##,
                     ui.spacing_mut().item_spacing.x = 24.0;
                     for i in 0..3 {
                         let front = Card3D { subtitle: "Click to flip".into(), ..cards[i * 2].clone() };
-                        let back = Card3D { subtitle: "Hello from the back".into(), ..cards[i * 2 + 1].clone() };
-                        ui.add(FlipCard3D::new(front, back).size(vec2(w, 310.0)).auto_flip(3.5, i as f32 * 0.6).id_salt(format!("flip{i}")));
+                        let back = Card3D { subtitle: "Hi from the back".into(), ..cards[i * 2 + 1].clone() };
+                        ui.add(FlipCard3D::new(front, back).size(vec2(w, 310.0)).auto_flip(4.2, i as f32 * 1.4 + 1.0).id_salt(format!("flip{i}")));
                     }
                 });
             },

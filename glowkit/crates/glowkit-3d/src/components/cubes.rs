@@ -104,7 +104,7 @@ impl TiltCubes {
 impl Widget for TiltCubes {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
-        let face = self.face.unwrap_or(if t.dark { color::mix(t.card, t.accent, 0.12) } else { color::mix(t.background, t.muted, 0.7) });
+        let face = self.face.unwrap_or(if t.dark { color::mix(t.card, t.accent, 0.2) } else { color::mix(t.background, t.muted, 0.9) });
         let ripple = self.ripple.unwrap_or(t.accent);
         let border = self.border.unwrap_or(if t.dark { color::with_alpha(color::mix(t.border, t.accent, 0.35), 0.9) } else { color::with_alpha(color::mix(t.border, t.foreground, 0.25), 0.9) });
         let (cols, rows) = (self.cols, self.rows);
@@ -112,7 +112,7 @@ impl Widget for TiltCubes {
         let (gw, gh) = (cols as f32 * pitch, rows as f32 * pitch);
         let aspect = ui.available_width() / self.height;
         let fov: f32 = 32.0;
-        let fit = (gh / 2.0).max(gw / 2.0 / aspect) * 1.25;
+        let fit = (gh / 2.0).max(gw / 2.0 / aspect) * 1.12;
         let dist = fit / (fov.to_radians() / 2.0).tan() + 0.5;
         Viewport3D::new(salt_or(&self.id_salt, "tilt-cubes"))
             .height(self.height)
@@ -199,7 +199,9 @@ impl Widget for TiltCubes {
                         }
                         let q = Quat::from_axis_angle(Vec3::X, rx) * Quat::from_axis_angle(Vec3::Y, ry);
                         let tf = Transform::from_translation(c + vec3(0.0, 0.0, lift)).with_rotation(q);
-                        let base = color::mix(face, ripple, (flash * 0.9).min(1.0));
+                        let tilt_k = ((rx * rx + ry * ry).sqrt() / max_tilt.max(1e-3)).clamp(0.0, 1.0);
+                        let tint = color::gradient(&t.gradient, i as f32 / (cols.max(2) - 1) as f32);
+                        let base = color::mix(color::mix(face, tint, tilt_k * 0.65), ripple, (flash * 0.9).min(1.0));
                         let mat = Material::smooth(base).specular(0.25).shininess(24.0).wire(Wire::new(border).width(1.0).depth_fade(0.0)).emissive(flash * 0.25);
                         scene.group(c + vec3(0.0, 0.0, lift), |s| s.draw(&mesh, tf, &mat));
                     }
@@ -533,7 +535,7 @@ impl Widget for VoxelText {
         let ncols = (self.text.chars().count() as i32 * 6 - 1).max(1) as f32;
         let aspect = ui.available_width() / self.height;
         let fov: f32 = 35.0;
-        let half_w = ncols / 2.0 * 1.15;
+        let half_w = ncols / 2.0 * 1.45;
         let dist = (half_w / aspect).max(5.5) / (fov.to_radians() / 2.0).tan();
         Viewport3D::new(salt_or(&self.id_salt, "voxel-text"))
             .height(self.height)
@@ -551,7 +553,7 @@ impl Widget for VoxelText {
                 } else {
                     1.0 - ease(Easing::OutBack, ((ph - 5.7) / 1.1).clamp(0.0, 1.0))
                 };
-                let sway = Quat::from_axis_angle(Vec3::Y, (time * 0.45).sin() * 0.35) * Quat::from_axis_angle(Vec3::X, (time * 0.6).sin() * 0.08);
+                let sway = Quat::from_axis_angle(Vec3::Y, (time * 0.45).sin() * 0.22) * Quat::from_axis_angle(Vec3::X, (time * 0.6).sin() * 0.08);
                 scene.lights = Lights::default();
                 for (k, &(cx, cy)) in vox.iter().enumerate() {
                     let x = cx as f32 - ncols / 2.0 + 0.5;
@@ -570,9 +572,9 @@ impl Widget for VoxelText {
                 }
                 let span = ncols * 0.5;
                 scene.underlay(|s| {
-                    for i in 0..5 {
-                        let x = (i as f32 / 4.0 - 0.5) * span * 1.6;
-                        s.shadow(vec3(x, -5.2, 0.0), span * 0.45, super::shadow_c(&t, 0.45));
+                    for i in 0..3 {
+                        let x = (i as f32 / 2.0 - 0.5) * span * 1.1;
+                        s.shadow(vec3(x, -5.0, 0.0), span * 0.5, super::shadow_c(&t, if t.dark { 0.4 } else { 0.25 }));
                     }
                 });
             })

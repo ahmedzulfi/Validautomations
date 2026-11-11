@@ -87,7 +87,7 @@ impl Widget for BarChart3D {
         Viewport3D::new(salt_or(&self.id_salt, "bar-chart-3d"))
             .height(self.height)
             .fov(34.0)
-            .controls(OrbitControls::new().distance(span * 1.75 + 3.0).pitch(0.5).yaw(0.6).auto_rotate(0.12).pitch_range(0.1, 1.3).target(vec3(0.0, 0.9, 0.0)))
+            .controls(OrbitControls::new().distance(span * 1.55 + 3.6).pitch(0.5).yaw(0.6).auto_rotate(0.12).pitch_range(0.1, 1.3).target(vec3(0.0, 0.7, 0.0)))
             .show(ui, |scene, ctx| {
                 if rows == 0 || cols == 0 {
                     return;
@@ -264,7 +264,7 @@ impl Widget for Helix {
             .show(ui, |scene, ctx| {
                 scene.lights = Lights::default();
                 let n = self.pairs;
-                let r = 0.85;
+                let r = 0.95;
                 let spin = ctx.time * self.speed;
                 let strand = |k: f32, off: f32| -> Vec3 {
                     let u = k / (n - 1) as f32;
@@ -277,10 +277,10 @@ impl Widget for Helix {
                     let mid = (pa + pb) * 0.5;
                     let pair = (hash01(i as u64 * 7) * 4.0) as usize;
                     let (c1, c2) = if pair % 2 == 0 { (b1, b2) } else { (b2, b1) };
-                    scene.line_world(pa, mid, 0.07, c1, c1);
-                    scene.line_world(mid, pb, 0.07, c2, c2);
-                    scene.ball(pa, 0.17, ca);
-                    scene.ball(pb, 0.17, cb);
+                    scene.line_world(pa, mid, 0.09, c1, c1);
+                    scene.line_world(mid, pb, 0.09, c2, c2);
+                    scene.ball(pa, 0.2, ca);
+                    scene.ball(pb, 0.2, cb);
                     if i + 1 < n {
                         // backbone links
                         for s in 1..3 {
@@ -336,13 +336,13 @@ impl Planet {
     pub fn samples() -> Vec<Planet> {
         let h = color::hex;
         vec![
-            Planet::new("Mercury", h("#A8A29E"), 0.12, 1.5, 1.6),
-            Planet::new("Venus", h("#F5C77E"), 0.2, 2.1, 1.15),
-            Planet::new("Earth", h("#3B82F6"), 0.22, 2.85, 0.9).moon(),
-            Planet::new("Mars", h("#EF6B4A"), 0.16, 3.55, 0.72),
-            Planet::new("Jupiter", h("#E8B98A"), 0.46, 4.7, 0.42),
-            Planet::new("Saturn", h("#F1D9A0"), 0.36, 6.0, 0.3).ring(),
-            Planet::new("Neptune", h("#6366F1"), 0.26, 7.1, 0.22),
+            Planet::new("Mercury", h("#A8A29E"), 0.15, 1.5, 1.6),
+            Planet::new("Venus", h("#F5C77E"), 0.24, 2.1, 1.15),
+            Planet::new("Earth", h("#3B82F6"), 0.27, 2.85, 0.9).moon(),
+            Planet::new("Mars", h("#EF6B4A"), 0.2, 3.55, 0.72),
+            Planet::new("Jupiter", h("#E8B98A"), 0.52, 4.7, 0.42),
+            Planet::new("Saturn", h("#F1D9A0"), 0.4, 6.0, 0.3).ring(),
+            Planet::new("Neptune", h("#6366F1"), 0.3, 7.1, 0.22),
         ]
     }
 }
@@ -408,7 +408,7 @@ impl Widget for SolarSystem {
             .height(self.height)
             .background(bg)
             .fov(34.0)
-            .controls(OrbitControls::new().distance(outer * 1.75).pitch(0.42).yaw(0.3).auto_rotate(0.05).distance_range(outer * 0.6, outer * 4.0))
+            .controls(OrbitControls::new().distance(outer * 2.4).pitch(0.48).yaw(0.3).auto_rotate(0.05).distance_range(outer * 0.6, outer * 4.0))
             .show(ui, |scene, ctx| {
                 let time = ctx.time * self.speed;
                 let cam = scene.camera().position;

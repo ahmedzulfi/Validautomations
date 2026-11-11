@@ -155,7 +155,7 @@ fn mini_app(ui: &mut Ui, rect: Rect, th: &Theme, dark: &mut bool) {
     super::util::bold_text(&p, pos2(head.min.x + 42.0, head.center().y), Align2::LEFT_CENTER, "Acme Analytics", FontId::proportional(15.0), th.foreground);
     let tr = Rect::from_center_size(pos2(head.max.x - 32.0, head.center().y), vec2(38.0, 38.0));
     let area = rect;
-    ui.put(tr, ThemeToggler::new(dark).size(38.0).reveal(area));
+    ui.put(tr, ThemeToggler::new(dark).size(38.0).reveal(area).reveal_rounding(14.0));
     let labels = [("Revenue", "$48,210", "+12.4%"), ("Users", "9,481", "+4.1%"), ("Churn", "1.8%", "-0.3%")];
     let gap = 14.0;
     let cw = (rect.width() - 40.0 - gap * 2.0) / 3.0;

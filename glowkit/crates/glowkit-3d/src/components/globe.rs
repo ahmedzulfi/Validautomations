@@ -265,7 +265,7 @@ impl Widget for Globe3D {
             .height(self.height)
             .background(Background::None)
             .fov(32.0)
-            .controls(OrbitControls::new().distance(4.4).pitch(0.3).yaw(-1.2).auto_rotate(self.speed).pitch_range(-1.0, 1.0).zoom(false).damping(2.5))
+            .controls(OrbitControls::new().distance(4.9).pitch(0.3).yaw(-1.2).auto_rotate(self.speed).pitch_range(-1.0, 1.0).zoom(false).damping(2.5))
             .show(ui, |scene, ctx| {
                 let land = ctx.memo(("land", self.density), || Arc::new(land_points(self.density)));
                 let sphere = ctx.mesh("sphere", || Mesh::icosphere(1.0, 3));
@@ -280,7 +280,7 @@ impl Widget for Globe3D {
                 scene.underlay(|s| {
                     s.glow_point(Vec3::ZERO, 1.42, glow_c(&t, glow, if dark { 0.55 } else { 0.35 }));
                 });
-                let body = Material::smooth(ocean).specular(if dark { 0.25 } else { 0.4 }).shininess(20.0).rim(if dark { 0.9 } else { 0.6 }).rim_color(glow);
+                let body = Material::smooth(ocean).specular(if dark { 0.12 } else { 0.3 }).shininess(28.0).rim(if dark { 0.9 } else { 0.6 }).rim_color(glow);
                 scene.draw(&sphere, Transform::IDENTITY.with_scale(0.995), &body);
                 let time = ctx.time;
                 scene.overlay(|s: &mut Scene| {

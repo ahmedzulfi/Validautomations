@@ -111,7 +111,7 @@ pub struct Demo {
     pub covers: &'static [&'static str],
     /// Usage snippet shown under the live preview.
     pub code: &'static str,
-    /// Renders the live preview. Called every frame. Use `ui.id()`-derived ids for state.
+    /// Renders the live preview. Called every frame. Use `ui.scope_id()`-derived ids for state.
     pub show: fn(&mut Ui),
 }
 

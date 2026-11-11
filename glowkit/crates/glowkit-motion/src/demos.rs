@@ -294,7 +294,7 @@ let mid = morph_polygon(&star, &heart, t);   // any two polygons"##,
             category: C,
             description: "A follow-the-leader chain of springs: each dot chases the one in front, making whippy trails behind the pointer.",
             covers: &["React Bits: Splash/Blob Cursor", "Framer Motion: useSpring chains", "Codrops: elastic trails"],
-            code: r##"let mut chain = SpringChain::new(20, start).stiffness(320.0).damping(20.0).falloff(0.93);
+            code: r##"let mut chain = SpringChain::new(20, start).stiffness(900.0).damping(58.0).falloff(0.96);
 chain.update(pointer, dt);
 for (i, p) in chain.points().iter().enumerate() { painter.circle_filled(*p, 14.0 - i as f32 * 0.6, color); }"##,
             show: spring_chain_demo,
@@ -618,7 +618,9 @@ fn timeline_demo(ui: &mut Ui) {
     let track = Rect::from_min_size(pos2(tx, cy + 36.0), vec2((rect.max.x - tx - 40.0).max(60.0), 8.0));
     p.rect_filled(track, 4, t.border);
     let grad = t.gradient;
-    paint::gradient_rect(&p, Rect::from_min_size(track.min, vec2(track.width() * bar, track.height())), 4.0, 0.0, &grad);
+    if bar > 0.01 {
+        paint::gradient_rect(&p, Rect::from_min_size(track.min, vec2(track.width() * bar, track.height())), 4.0, 0.0, &grad);
+    }
     ui.add_space(10.0);
     let mut pb2 = pb;
     ui.add(Scrubber::new(&tl, &mut pb2));
@@ -1422,7 +1424,9 @@ fn scroll_demo(ui: &mut Ui) {
     let track = Rect::from_min_size(bar_rect.min + vec2(0.0, 4.0), vec2(bar_rect.width() - 70.0, 6.0));
     p.rect_filled(track, 3, t.border);
     let grad = t.gradient;
-    paint::gradient_rect(p, Rect::from_min_size(track.min, vec2(track.width() * prog, track.height())), 3.0, 0.0, &grad);
+    if prog > 0.005 {
+        paint::gradient_rect(p, Rect::from_min_size(track.min, vec2(track.width() * prog, track.height())), 3.0, 0.0, &grad);
+    }
     let ring_c = pos2(bar_rect.max.x - 50.0, track.center().y);
     let ang: f32 = transform(prog, &[0.0, 1.0], &[0.0_f32, TAU]);
     paint::arc(p, ring_c, 8.0, -TAU / 4.0, -TAU / 4.0 + ang.max(0.01), 2.5, t.accent);
@@ -1511,8 +1515,11 @@ fn path_drawing_demo(ui: &mut Ui) {
     let gap = 16.0;
     let cw = (rect.width() - 32.0 - gap * (n - 1) as f32) / n as f32;
     let p = ui.painter_at(rect);
-    let draw: f32 = Keyframes::new([(0.0, 0.0_f32), (0.45, 1.0), (0.75, 1.0), (1.0, 1.0)]).ease_segments([Easing::InOutCubic, Easing::Linear, Easing::Linear]).duration(3.2).repeat(Repeat::Infinite).play(ui, id.with("draw"));
-    let erase: f32 = Keyframes::new([(0.0, 0.0_f32), (0.75, 0.0), (1.0, 1.0)]).ease_segments([Easing::Linear, Easing::InOutCubic]).duration(3.2).repeat(Repeat::Infinite).play(ui, id.with("erase"));
+    // both tracks share one clock, started a little into the cycle so the paths are mid-stroke
+    let clock = glowkit_core::Clock::elapsed(ui, id.with("clock")) + 1.0;
+    let draw: f32 = Keyframes::new([(0.0, 0.0_f32), (0.45, 1.0), (0.75, 1.0), (1.0, 1.0)]).ease_segments([Easing::InOutCubic, Easing::Linear, Easing::Linear]).duration(3.2).repeat(Repeat::Infinite).sample(clock);
+    let erase: f32 = Keyframes::new([(0.0, 0.0_f32), (0.75, 0.0), (1.0, 1.0)]).ease_segments([Easing::Linear, Easing::InOutCubic]).duration(3.2).repeat(Repeat::Infinite).sample(clock);
+    glowkit_core::animate(ui);
     let labels = ["checkmark", "signature", "star", "chart"];
     for i in 0..n {
         let cell = Rect::from_min_size(pos2(rect.min.x + 16.0 + i as f32 * (cw + gap), rect.min.y + 20.0), vec2(cw, rect.height() - 60.0));
@@ -1552,7 +1559,7 @@ fn path_drawing_demo(ui: &mut Ui) {
         };
         // ghost
         let ghost = path.points().to_vec();
-        p.add(egui::Shape::line(ghost, Stroke::new(1.0, with_alpha(t.muted_foreground, 0.18))));
+        p.add(egui::Shape::line(ghost, Stroke::new(1.0, with_alpha(t.muted_foreground, if t.dark { 0.2 } else { 0.3 }))));
         let stops = [t.chart[i % t.chart.len()], t.gradient[(i + 1) % 3]];
         let local_draw = (draw * 1.15 - i as f32 * 0.05).clamp(0.0, 1.0);
         let local_erase = (erase * 1.15 - i as f32 * 0.05).clamp(0.0, 1.0);
@@ -1634,14 +1641,15 @@ fn spring_chain_demo(ui: &mut Ui) {
     let id = ui.scope_id().with("spring_chain");
     let (rect, resp) = stage(ui, 330.0);
     let time = glowkit_core::time(ui);
+    // read input *before* `state`: never touch the context inside its init closure (nested lock)
+    let now = ui.input(|i| i.time);
     let mut s: ChainDemo = state(ui, id, || ChainDemo {
-        dots: SpringChain::new(16, rect.center()).stiffness(700.0).damping(26.0).falloff(0.97),
-        ribbon: SpringChain::new(28, rect.center()).stiffness(520.0).damping(30.0).falloff(0.99),
-        last: ui.input(|i| i.time),
+        dots: SpringChain::new(12, rect.center()).stiffness(2400.0).damping(98.0).falloff(0.94),
+        ribbon: SpringChain::new(22, rect.center()).stiffness(3000.0).damping(110.0).falloff(0.99),
+        last: now,
     });
     // follow wall-clock time (not the clamped frame delta) so the trail stays coherent even when
     // frames are slow; the chain sub-steps internally
-    let now = ui.input(|i| i.time);
     let dt = ((now - s.last) as f32).clamp(0.0, 0.25);
     s.last = now;
     let c = rect.center();

@@ -97,7 +97,7 @@ impl Widget for FloatingShapes {
                     S { mesh: "ico", x: -0.62, y: -0.62, z: 1.0, scale: 0.55, speed: 0.8, phase: 2.1 },
                     S { mesh: "knot", x: 0.66, y: 0.58, z: -1.6, scale: 0.7, speed: 0.5, phase: 3.4 },
                     S { mesh: "capsule", x: -0.1, y: 0.86, z: -2.8, scale: 0.55, speed: 0.7, phase: 4.2 },
-                    S { mesh: "cone", x: 0.26, y: -0.86, z: 1.6, scale: 0.4, speed: 0.9, phase: 5.0 },
+                    S { mesh: "cone", x: 0.3, y: -0.72, z: 1.6, scale: 0.4, speed: 0.9, phase: 5.0 },
                     S { mesh: "octa", x: 0.98, y: 0.12, z: -2.2, scale: 0.42, speed: 1.0, phase: 0.7 },
                     S { mesh: "dodeca", x: -1.0, y: -0.05, z: -1.8, scale: 0.42, speed: 0.75, phase: 2.8 },
                 ];
@@ -123,10 +123,10 @@ impl Widget for FloatingShapes {
                         mat.shading = Shading::Toon { bands: 3 };
                         mat.color = g[(i + 1) % 3];
                     }
-                    scene.draw(&mesh, Transform::from_translation(p).with_rotation(q).with_scale(s.scale), &mat);
+                    scene.draw(&mesh, Transform::from_translation(p).with_rotation(q).with_scale(s.scale * 1.25), &mat);
                 }
                 let tc = self.title_color.unwrap_or(t.foreground);
-                let title_h = (half_h * 0.24).min(half_w * 2.4 / self.title.chars().count().max(4) as f32);
+                let title_h = (half_h * 0.3).min(half_w * 2.4 / self.title.chars().count().max(4) as f32);
                 if !self.title.is_empty() {
                     scene.text(&self.title, vec3(0.0, title_h * 0.35, 0.0), Vec3::X, Vec3::Y, title_h, tc, Align2::CENTER_CENTER);
                 }

@@ -86,7 +86,7 @@ impl WaveTerrain {
 }
 
 fn terrain_h(x: f32, z: f32, amp: f32) -> f32 {
-    let valley = glowkit_core::anim::smoothstep(0.6, 3.2, x.abs());
+    let valley = glowkit_core::anim::smoothstep(0.8, 3.6, x.abs());
     let n = noise::fbm3(x * 0.32, z * 0.32, 0.7, 4) * 0.5 + 0.5;
     (n * n * 2.6 + 0.08 * (x * 1.3).sin()) * valley * amp
 }
@@ -118,7 +118,7 @@ impl Widget for WaveTerrain {
             .show(ui, |scene, ctx| {
                 let travel = ctx.time * self.speed * 2.2;
                 let sway = (ctx.time * 0.35).sin() * 0.35 + ctx.pointer_ndc.map(|p| p.x * 0.6).unwrap_or(0.0);
-                let mut cam = Camera::looking_at(vec3(sway, 1.55, 4.0), vec3(sway * 0.4, 0.95, -6.0)).fov_degrees(62.0);
+                let mut cam = Camera::looking_at(vec3(sway, 2.1, 4.2), vec3(sway * 0.4, 1.0, -6.0)).fov_degrees(60.0);
                 cam.up = vec3((ctx.time * 0.35).cos() * -0.04, 1.0, 0.0);
                 scene.set_camera(cam);
                 let (cols, rows) = (self.cols, self.rows);
@@ -133,9 +133,8 @@ impl Widget for WaveTerrain {
                     let wz = -(j as f32 + base_row) * cell; // world-stable coordinate for the noise
                     vec3(x, terrain_h(x, wz, amp), z)
                 };
-                scene.fog = Some(if synth || dark { Fog::new(horizon, 9.0, depth - 2.0) } else { Fog::fade(10.0, depth - 2.0) });
                 // sun / moon on the horizon
-                let sun_c = vec3(0.0, 3.4, -24.0);
+                let sun_c = vec3(0.0, 4.6, -24.0);
                 scene.underlay(|s| {
                     if synth {
                         let r = 5.0;
@@ -169,6 +168,7 @@ impl Widget for WaveTerrain {
                         s.ball_lit(sun_c, 1.6, color::mix(sun, Color32::WHITE, 0.4), vec3(0.0, 0.0, 1.0), 1.0, 0.0);
                     }
                 });
+                scene.fog = Some(if synth || dark { Fog::new(horizon, 9.0, depth - 2.0) } else { Fog::fade(10.0, depth - 2.0) });
                 match self.style {
                     TerrainStyle::Wireframe => {
                         let lc = |p: Vec3| -> Color32 {
@@ -202,8 +202,9 @@ impl Widget for WaveTerrain {
                             for i in 0..=cols {
                                 let p = pos(i, j);
                                 m.vertex(p, Vec3::Y);
-                                let k = (p.y / (2.4 * amp.max(0.1))).clamp(0.0, 1.0);
-                                colors.push(if synth { Color32::WHITE } else { color::gradient(&[color::mix(low, t.card, 0.2), low, high], k) });
+                                let k = (p.y / (1.6 * amp.max(0.1))).clamp(0.0, 1.0);
+                                let valley_c = if dark { color::mix(t.card, low, 0.35) } else { color::mix(t.background, low, 0.25) };
+                                colors.push(if synth { Color32::WHITE } else { color::gradient(&[valley_c, low, high, color::mix(high, Color32::WHITE, 0.6)], k) });
                             }
                         }
                         m.colors = colors;

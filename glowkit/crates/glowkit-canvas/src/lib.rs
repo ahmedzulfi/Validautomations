@@ -4,11 +4,15 @@
 pub mod common;
 mod freehand;
 mod gantt;
+mod grid;
 mod kanban;
 mod mindmap;
 pub mod graph;
 mod node_editor;
+mod orgchart;
+mod signature;
 pub mod json;
+mod timeline;
 mod undo;
 mod view;
 mod whiteboard;
@@ -32,3 +36,7 @@ pub use whiteboard::{paint_wb_shape, rough_segment, synthetic_stroke, Document, 
 pub use gantt::{civil_from_days, days_from_civil, weekday, Gantt, GanttChart, GanttGroup, GanttState, GanttTask, GanttZoom};
 pub use kanban::{insertion_index, Board, Card, Column, KanbanBoard, KanbanState, Label};
 pub use mindmap::{mind_layout, MindLayout, MindMap, MindMapEditor, MindMapState, MindNode};
+pub use timeline::{ruler_step, snap_to, timecode, Clip, ClipKind, Timeline, TimelineEditor, TimelineState, Track};
+pub use grid::{group_thousands, parse_number, CellKind, CellRange, DataGrid, GridColumn, GridData, GridState};
+pub use orgchart::{tree_layout, OrgChart, OrgChartState, OrgChartView, OrgPerson};
+pub use signature::{Ink, SignaturePad};
