@@ -2,7 +2,7 @@ use super::{glow_c, salt_or};
 use crate::{vec3, Background, Camera, Material, Mesh, Quat, Shading, Transform, Vec3, Viewport3D, Wire};
 use egui::{Align2, Color32, Response, Ui, Widget};
 use glowkit_core::{color, Theme};
-use std::f32::consts::{PI, TAU};
+use std::f32::consts::TAU;
 
 /// A Spline-style hero: glossy gradient shapes (torus, sphere, knot, gems, capsule...) float
 /// and spin around a headline, some in front of it and some behind, with a subtle parallax that
@@ -128,7 +128,6 @@ impl Widget for FloatingShapes {
                 let tc = self.title_color.unwrap_or(t.foreground);
                 let title_h = (half_h * 0.24).min(half_w * 2.4 / self.title.chars().count().max(4) as f32);
                 if !self.title.is_empty() {
-                    scene.underlay(|_| {});
                     scene.text(&self.title, vec3(0.0, title_h * 0.35, 0.0), Vec3::X, Vec3::Y, title_h, tc, Align2::CENTER_CENTER);
                 }
                 if !self.subtitle.is_empty() {
@@ -212,22 +211,20 @@ impl Widget for GlowKnot {
                 let time = ctx.time;
                 let (p, q) = (self.p, self.q);
                 let n = 260;
-                let rot = Quat::from_axis_angle(Vec3::X, 1.1 + (time * 0.3).sin() * 0.2) * Quat::from_axis_angle(Vec3::Z, time * 0.25);
+                let rot = Quat::from_axis_angle(Vec3::X, 0.45 + (time * 0.3).sin() * 0.2) * Quat::from_axis_angle(Vec3::Y, time * 0.25);
                 let path: Vec<Vec3> = (0..n)
                     .map(|i| {
                         let u = i as f32 / n as f32 * TAU;
                         let (pt, qt) = (p as f32 * u, q as f32 * u);
                         let r = 2.0 + qt.cos();
-                        rot.rotate(vec3(r * pt.cos(), r * pt.sin(), -qt.sin()) * 0.55)
+                        rot.rotate(vec3(r * pt.cos(), -qt.sin(), r * pt.sin()) * 0.55)
                     })
                     .collect();
                 if self.wireframe {
                     let mesh = ctx.mesh(("tube", p, q), || Mesh::torus_knot(p, q, 1.65, 0.2, 140, 6));
                     let wc = if dark { color::with_alpha(stops[0], 0.35) } else { color::with_alpha(stops[0], 0.3) };
                     let mat = Material::wireframe(wc).wire(Wire::new(wc).width(0.8).depth_fade(0.85)).additive(dark);
-                    // torus_knot uses (x, -sin, z); rotate it into the path's frame
-                    let align = Quat::from_axis_angle(Vec3::X, -PI / 2.0);
-                    scene.draw(&mesh, Transform::IDENTITY.with_rotation(rot * align), &mat);
+                    scene.draw(&mesh, Transform::IDENTITY.with_rotation(rot), &mat);
                 }
                 let col = |u: f32| color::gradient_cyclic(&stops, u - time * 0.08);
                 for i in 0..n {
