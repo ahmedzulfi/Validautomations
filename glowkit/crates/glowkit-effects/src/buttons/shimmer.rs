@@ -1,5 +1,4 @@
 use super::util::{self, cr};
-use super::{opt_setter, setter};
 use egui::{vec2, Color32, Pos2, Response, Ui, Vec2, Widget};
 use glowkit_core::color::{gradient_cyclic, mix, palettes, with_alpha};
 use glowkit_core::{paint, Theme};

@@ -156,7 +156,7 @@ pub(crate) fn partial_polyline(painter: &Painter, pts: &[Pos2], progress: f32, s
 /// which glyphs a font happens to ship.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[non_exhaustive]
-pub enum LineIcon {
+pub enum UiIcon {
     Check,
     X,
     Plus,
@@ -219,7 +219,7 @@ pub enum LineIcon {
     Terminal,
 }
 
-impl LineIcon {
+impl UiIcon {
     /// Paint the icon centered in `rect` (use a square rect) with the given color.
     pub fn paint(self, painter: &Painter, rect: Rect, color: Color32) {
         let s = rect.width().min(rect.height());
@@ -254,101 +254,101 @@ impl LineIcon {
                 .collect()
         };
         match self {
-            LineIcon::Check => line(&[(20.0, 6.0), (9.0, 17.0), (4.0, 12.0)]),
-            LineIcon::X => {
+            UiIcon::Check => line(&[(20.0, 6.0), (9.0, 17.0), (4.0, 12.0)]),
+            UiIcon::X => {
                 line(&[(18.0, 6.0), (6.0, 18.0)]);
                 line(&[(6.0, 6.0), (18.0, 18.0)]);
             }
-            LineIcon::Plus => {
+            UiIcon::Plus => {
                 line(&[(12.0, 5.0), (12.0, 19.0)]);
                 line(&[(5.0, 12.0), (19.0, 12.0)]);
             }
-            LineIcon::Minus => line(&[(5.0, 12.0), (19.0, 12.0)]),
-            LineIcon::ChevronDown => line(&[(6.0, 9.0), (12.0, 15.0), (18.0, 9.0)]),
-            LineIcon::ChevronUp => line(&[(6.0, 15.0), (12.0, 9.0), (18.0, 15.0)]),
-            LineIcon::ChevronLeft => line(&[(15.0, 6.0), (9.0, 12.0), (15.0, 18.0)]),
-            LineIcon::ChevronRight => line(&[(9.0, 6.0), (15.0, 12.0), (9.0, 18.0)]),
-            LineIcon::ChevronsUpDown => {
+            UiIcon::Minus => line(&[(5.0, 12.0), (19.0, 12.0)]),
+            UiIcon::ChevronDown => line(&[(6.0, 9.0), (12.0, 15.0), (18.0, 9.0)]),
+            UiIcon::ChevronUp => line(&[(6.0, 15.0), (12.0, 9.0), (18.0, 15.0)]),
+            UiIcon::ChevronLeft => line(&[(15.0, 6.0), (9.0, 12.0), (15.0, 18.0)]),
+            UiIcon::ChevronRight => line(&[(9.0, 6.0), (15.0, 12.0), (9.0, 18.0)]),
+            UiIcon::ChevronsUpDown => {
                 line(&[(7.0, 15.0), (12.0, 20.0), (17.0, 15.0)]);
                 line(&[(7.0, 9.0), (12.0, 4.0), (17.0, 9.0)]);
             }
-            LineIcon::Search => {
+            UiIcon::Search => {
                 circle(11.0, 11.0, 7.0);
                 line(&[(21.0, 21.0), (16.2, 16.2)]);
             }
-            LineIcon::Eye | LineIcon::EyeOff => {
+            UiIcon::Eye | UiIcon::EyeOff => {
                 let mut pts = glowkit_core::paint::quad_bezier(p(2.0, 12.0), p(12.0, 2.5), p(22.0, 12.0), 14);
                 pts.extend(glowkit_core::paint::quad_bezier(p(22.0, 12.0), p(12.0, 21.5), p(2.0, 12.0), 14).into_iter().skip(1));
                 painter.add(Shape::closed_line(pts, st));
                 circle(12.0, 12.0, 3.0);
-                if self == LineIcon::EyeOff {
+                if self == UiIcon::EyeOff {
                     line(&[(3.0, 3.0), (21.0, 21.0)]);
                 }
             }
-            LineIcon::Calendar => {
+            UiIcon::Calendar => {
                 rrect(3.0, 5.0, 21.0, 21.0, 2.5);
                 line(&[(3.0, 10.0), (21.0, 10.0)]);
                 line(&[(8.0, 3.0), (8.0, 7.0)]);
                 line(&[(16.0, 3.0), (16.0, 7.0)]);
             }
-            LineIcon::Upload => {
+            UiIcon::Upload => {
                 line(&[(12.0, 15.0), (12.0, 3.0)]);
                 line(&[(7.0, 8.0), (12.0, 3.0), (17.0, 8.0)]);
                 line(&[(3.0, 15.0), (3.0, 20.0), (21.0, 20.0), (21.0, 15.0)]);
             }
-            LineIcon::Download => {
+            UiIcon::Download => {
                 line(&[(12.0, 3.0), (12.0, 15.0)]);
                 line(&[(7.0, 10.0), (12.0, 15.0), (17.0, 10.0)]);
                 line(&[(3.0, 15.0), (3.0, 20.0), (21.0, 20.0), (21.0, 15.0)]);
             }
-            LineIcon::Info => {
+            UiIcon::Info => {
                 circle(12.0, 12.0, 10.0);
                 line(&[(12.0, 16.0), (12.0, 11.5)]);
                 dot(12.0, 8.0, 1.2);
             }
-            LineIcon::AlertCircle => {
+            UiIcon::AlertCircle => {
                 circle(12.0, 12.0, 10.0);
                 line(&[(12.0, 7.5), (12.0, 12.5)]);
                 dot(12.0, 16.0, 1.2);
             }
-            LineIcon::AlertTriangle => {
+            UiIcon::AlertTriangle => {
                 closed(&[(12.0, 3.0), (22.0, 20.5), (2.0, 20.5)]);
                 line(&[(12.0, 9.0), (12.0, 13.5)]);
                 dot(12.0, 17.0, 1.2);
             }
-            LineIcon::CheckCircle => {
+            UiIcon::CheckCircle => {
                 circle(12.0, 12.0, 10.0);
                 line(&[(8.0, 12.0), (11.0, 15.0), (16.5, 9.5)]);
             }
-            LineIcon::XCircle => {
+            UiIcon::XCircle => {
                 circle(12.0, 12.0, 10.0);
                 line(&[(15.0, 9.0), (9.0, 15.0)]);
                 line(&[(9.0, 9.0), (15.0, 15.0)]);
             }
-            LineIcon::Copy => {
+            UiIcon::Copy => {
                 rrect(8.0, 8.0, 21.0, 21.0, 2.0);
                 line(&[(4.0, 16.0), (4.0, 5.0), (5.0, 4.0), (16.0, 4.0)]);
             }
-            LineIcon::Trash => {
+            UiIcon::Trash => {
                 line(&[(3.0, 6.0), (21.0, 6.0)]);
                 line(&[(5.0, 6.0), (6.0, 21.0), (18.0, 21.0), (19.0, 6.0)]);
                 line(&[(9.0, 6.0), (9.0, 3.0), (15.0, 3.0), (15.0, 6.0)]);
             }
-            LineIcon::Mail => {
+            UiIcon::Mail => {
                 rrect(2.0, 5.0, 22.0, 19.0, 2.0);
                 line(&[(2.5, 7.0), (12.0, 13.0), (21.5, 7.0)]);
             }
-            LineIcon::User => {
+            UiIcon::User => {
                 circle(12.0, 8.0, 4.0);
                 painter.add(Shape::line(arc(12.0, 21.0, 7.5, PI, TAU), st));
             }
-            LineIcon::Users => {
+            UiIcon::Users => {
                 circle(9.0, 8.0, 3.6);
                 painter.add(Shape::line(arc(9.0, 20.5, 6.5, PI, TAU), st));
                 painter.add(Shape::line(arc(16.0, 8.0, 3.6, -PI * 0.5, PI * 0.5), st));
                 painter.add(Shape::line(arc(17.0, 20.5, 5.0, PI * 1.5, TAU), st));
             }
-            LineIcon::Settings => {
+            UiIcon::Settings => {
                 circle(12.0, 12.0, 3.0);
                 circle(12.0, 12.0, 7.0);
                 for i in 0..8 {
@@ -356,7 +356,7 @@ impl LineIcon {
                     line(&[(12.0 + 7.0 * a.cos(), 12.0 + 7.0 * a.sin()), (12.0 + 10.0 * a.cos(), 12.0 + 10.0 * a.sin())]);
                 }
             }
-            LineIcon::Star => {
+            UiIcon::Star => {
                 let pts: Vec<Pos2> = (0..10)
                     .map(|i| {
                         let a = i as f32 / 10.0 * TAU - PI / 2.0;
@@ -366,7 +366,7 @@ impl LineIcon {
                     .collect();
                 painter.add(Shape::closed_line(pts, st));
             }
-            LineIcon::Heart => {
+            UiIcon::Heart => {
                 let pts: Vec<Pos2> = (0..40)
                     .map(|i| {
                         let t = i as f32 / 40.0 * TAU;
@@ -377,29 +377,29 @@ impl LineIcon {
                     .collect();
                 painter.add(Shape::closed_line(pts, st));
             }
-            LineIcon::ArrowRight => {
+            UiIcon::ArrowRight => {
                 line(&[(5.0, 12.0), (19.0, 12.0)]);
                 line(&[(12.0, 5.0), (19.0, 12.0), (12.0, 19.0)]);
             }
-            LineIcon::ArrowLeft => {
+            UiIcon::ArrowLeft => {
                 line(&[(19.0, 12.0), (5.0, 12.0)]);
                 line(&[(12.0, 5.0), (5.0, 12.0), (12.0, 19.0)]);
             }
-            LineIcon::ArrowUp => {
+            UiIcon::ArrowUp => {
                 line(&[(12.0, 19.0), (12.0, 5.0)]);
                 line(&[(5.0, 12.0), (12.0, 5.0), (19.0, 12.0)]);
             }
-            LineIcon::ArrowDown => {
+            UiIcon::ArrowDown => {
                 line(&[(12.0, 5.0), (12.0, 19.0)]);
                 line(&[(5.0, 12.0), (12.0, 19.0), (19.0, 12.0)]);
             }
-            LineIcon::ArrowUpDown => {
+            UiIcon::ArrowUpDown => {
                 line(&[(8.0, 4.0), (8.0, 20.0)]);
                 line(&[(4.0, 8.0), (8.0, 4.0), (12.0, 8.0)]);
                 line(&[(16.0, 20.0), (16.0, 4.0)]);
                 line(&[(12.0, 16.0), (16.0, 20.0), (20.0, 16.0)]);
             }
-            LineIcon::Bold => {
+            UiIcon::Bold => {
                 let mut a = vec![p(6.5, 12.0), p(6.5, 4.0), p(13.5, 4.0)];
                 a.extend(arc(13.5, 8.0, 4.0, -PI / 2.0, PI / 2.0));
                 a.push(p(6.5, 12.0));
@@ -409,80 +409,80 @@ impl LineIcon {
                 a.push(p(6.5, 12.0));
                 painter.add(Shape::line(a, Stroke::new(w * 1.25, color)));
             }
-            LineIcon::Italic => {
+            UiIcon::Italic => {
                 line(&[(19.0, 4.0), (10.0, 4.0)]);
                 line(&[(14.0, 20.0), (5.0, 20.0)]);
                 line(&[(15.0, 4.0), (9.0, 20.0)]);
             }
-            LineIcon::Underline => {
+            UiIcon::Underline => {
                 let mut a = vec![p(6.0, 4.0)];
                 a.extend(arc(12.0, 10.0, 6.0, PI, 0.0));
                 a.push(p(18.0, 4.0));
                 painter.add(Shape::line(a, st));
                 line(&[(4.0, 21.0), (20.0, 21.0)]);
             }
-            LineIcon::AlignLeft => {
+            UiIcon::AlignLeft => {
                 line(&[(3.0, 6.0), (21.0, 6.0)]);
                 line(&[(3.0, 12.0), (15.0, 12.0)]);
                 line(&[(3.0, 18.0), (18.0, 18.0)]);
             }
-            LineIcon::AlignCenter => {
+            UiIcon::AlignCenter => {
                 line(&[(3.0, 6.0), (21.0, 6.0)]);
                 line(&[(7.0, 12.0), (17.0, 12.0)]);
                 line(&[(5.0, 18.0), (19.0, 18.0)]);
             }
-            LineIcon::AlignRight => {
+            UiIcon::AlignRight => {
                 line(&[(3.0, 6.0), (21.0, 6.0)]);
                 line(&[(9.0, 12.0), (21.0, 12.0)]);
                 line(&[(6.0, 18.0), (21.0, 18.0)]);
             }
-            LineIcon::File => {
+            UiIcon::File => {
                 closed(&[(14.0, 2.0), (6.0, 2.0), (4.5, 3.5), (4.5, 20.5), (6.0, 22.0), (18.0, 22.0), (19.5, 20.5), (19.5, 7.5)]);
                 line(&[(14.0, 2.0), (14.0, 7.5), (19.5, 7.5)]);
             }
-            LineIcon::Folder => {
+            UiIcon::Folder => {
                 closed(&[(2.5, 5.5), (3.5, 4.0), (9.5, 4.0), (11.5, 7.0), (20.5, 7.0), (21.5, 8.0), (21.5, 19.0), (20.5, 20.0), (3.5, 20.0), (2.5, 19.0)]);
             }
-            LineIcon::FolderOpen => {
+            UiIcon::FolderOpen => {
                 line(&[(5.0, 20.0), (3.5, 20.0), (2.5, 19.0), (2.5, 5.0), (3.5, 4.0), (9.5, 4.0), (11.5, 7.0), (18.0, 7.0), (19.0, 8.0), (19.0, 10.0)]);
                 closed(&[(5.0, 10.0), (22.0, 10.0), (19.0, 20.0), (2.5, 20.0)]);
             }
-            LineIcon::Home => {
+            UiIcon::Home => {
                 closed(&[(3.0, 10.0), (12.0, 3.0), (21.0, 10.0), (21.0, 21.0), (3.0, 21.0)]);
                 line(&[(9.0, 21.0), (9.0, 14.0), (15.0, 14.0), (15.0, 21.0)]);
             }
-            LineIcon::Lock => {
+            UiIcon::Lock => {
                 rrect(4.0, 11.0, 20.0, 21.5, 2.0);
                 let mut a = vec![p(7.5, 11.0)];
                 a.extend(arc(12.0, 7.5, 4.5, PI, TAU));
                 a.push(p(16.5, 11.0));
                 painter.add(Shape::line(a, st));
             }
-            LineIcon::Image => {
+            UiIcon::Image => {
                 rrect(3.0, 3.0, 21.0, 21.0, 2.5);
                 circle(9.0, 9.0, 2.0);
                 line(&[(21.0, 15.0), (16.0, 10.0), (5.0, 21.0)]);
             }
-            LineIcon::MoreHorizontal => {
+            UiIcon::MoreHorizontal => {
                 dot(5.0, 12.0, 1.7);
                 dot(12.0, 12.0, 1.7);
                 dot(19.0, 12.0, 1.7);
             }
-            LineIcon::Filter => closed(&[(3.0, 4.0), (21.0, 4.0), (14.0, 12.5), (14.0, 20.0), (10.0, 18.0), (10.0, 12.5)]),
-            LineIcon::Clock => {
+            UiIcon::Filter => closed(&[(3.0, 4.0), (21.0, 4.0), (14.0, 12.5), (14.0, 20.0), (10.0, 18.0), (10.0, 12.5)]),
+            UiIcon::Clock => {
                 circle(12.0, 12.0, 10.0);
                 line(&[(12.0, 6.0), (12.0, 12.0), (16.0, 14.0)]);
             }
-            LineIcon::Code => {
+            UiIcon::Code => {
                 line(&[(16.0, 18.0), (22.0, 12.0), (16.0, 6.0)]);
                 line(&[(8.0, 6.0), (2.0, 12.0), (8.0, 18.0)]);
             }
-            LineIcon::Sparkles => {
+            UiIcon::Sparkles => {
                 glowkit_core::paint::sparkle(painter, p(10.0, 13.0), 8.0 * k, 0.0, color);
                 glowkit_core::paint::sparkle(painter, p(18.5, 5.5), 4.0 * k, 0.0, color);
                 glowkit_core::paint::sparkle(painter, p(19.0, 18.5), 2.8 * k, 0.0, color);
             }
-            LineIcon::Bell => {
+            UiIcon::Bell => {
                 let mut a = vec![p(3.5, 17.0)];
                 a.push(p(5.5, 14.5));
                 a.extend(arc(12.0, 9.0, 6.5, PI, TAU).into_iter().map(|q| q + vec2(0.0, 1.0 * k)));
@@ -491,11 +491,11 @@ impl LineIcon {
                 painter.add(Shape::closed_line(a, st));
                 painter.add(Shape::line(arc(12.0, 19.5, 2.2, 0.0, PI), st));
             }
-            LineIcon::Inbox => {
+            UiIcon::Inbox => {
                 closed(&[(5.5, 4.0), (18.5, 4.0), (22.0, 12.0), (22.0, 20.0), (2.0, 20.0), (2.0, 12.0)]);
                 line(&[(2.0, 12.0), (8.0, 12.0), (10.0, 15.0), (14.0, 15.0), (16.0, 12.0), (22.0, 12.0)]);
             }
-            LineIcon::Globe => {
+            UiIcon::Globe => {
                 circle(12.0, 12.0, 10.0);
                 line(&[(2.0, 12.0), (22.0, 12.0)]);
                 let mut a = arc(12.0, 12.0, 10.0, -PI / 2.0, PI / 2.0);
@@ -506,7 +506,7 @@ impl LineIcon {
                 painter.add(Shape::line(a, st));
                 painter.add(Shape::line(b, st));
             }
-            LineIcon::Link => {
+            UiIcon::Link => {
                 let r = Rect::from_center_size(p(8.5, 15.5), vec2(11.0 * k, 6.5 * k));
                 let rot = |q: Pos2, c: Pos2| {
                     let d = q - c;
@@ -519,20 +519,20 @@ impl LineIcon {
                     painter.add(Shape::closed_line(pts, st));
                 }
             }
-            LineIcon::Grid => {
+            UiIcon::Grid => {
                 rrect(3.0, 3.0, 10.5, 10.5, 1.5);
                 rrect(13.5, 3.0, 21.0, 10.5, 1.5);
                 rrect(3.0, 13.5, 10.5, 21.0, 1.5);
                 rrect(13.5, 13.5, 21.0, 21.0, 1.5);
             }
-            LineIcon::List => {
+            UiIcon::List => {
                 for y in [6.0, 12.0, 18.0] {
                     dot(4.0, y, 1.2);
                     line(&[(8.0, y), (21.0, y)]);
                 }
             }
-            LineIcon::Zap => closed(&[(13.0, 2.0), (4.0, 14.0), (12.0, 14.0), (11.0, 22.0), (20.0, 10.0), (12.0, 10.0)]),
-            LineIcon::Dollar => {
+            UiIcon::Zap => closed(&[(13.0, 2.0), (4.0, 14.0), (12.0, 14.0), (11.0, 22.0), (20.0, 10.0), (12.0, 10.0)]),
+            UiIcon::Dollar => {
                 line(&[(12.0, 2.0), (12.0, 22.0)]);
                 let mut a = vec![p(17.0, 6.0), p(10.0, 6.0)];
                 a.extend(arc(10.0, 9.0, 3.0, -PI / 2.0, -PI * 1.5));
@@ -541,8 +541,8 @@ impl LineIcon {
                 a.push(p(6.0, 18.0));
                 painter.add(Shape::line(a, st));
             }
-            LineIcon::Activity => line(&[(22.0, 12.0), (18.0, 12.0), (15.0, 21.0), (9.0, 3.0), (6.0, 12.0), (2.0, 12.0)]),
-            LineIcon::Terminal => {
+            UiIcon::Activity => line(&[(22.0, 12.0), (18.0, 12.0), (15.0, 21.0), (9.0, 3.0), (6.0, 12.0), (2.0, 12.0)]),
+            UiIcon::Terminal => {
                 line(&[(4.0, 17.0), (10.0, 11.0), (4.0, 5.0)]);
                 line(&[(12.0, 19.0), (20.0, 19.0)]);
             }

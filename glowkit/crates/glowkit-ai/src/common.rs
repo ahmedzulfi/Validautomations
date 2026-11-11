@@ -35,7 +35,7 @@ pub(crate) fn paint_galley_fx(painter: &Painter, pos: Pos2, galley: &Arc<Galley>
     for row in &galley.rows {
         let src = &row.visuals.mesh;
         if src.is_empty() {
-            base += row.char_count_including_newline();
+            base += row.char_count_including_newline().0;
             continue;
         }
         let offset = pos.to_vec2() + row.pos.to_vec2();
@@ -73,7 +73,7 @@ pub(crate) fn paint_galley_fx(painter: &Painter, pos: Pos2, galley: &Arc<Galley>
             mesh.indices.extend_from_slice(&[idx, idx + 1, idx + 2, idx + 2, idx + 1, idx + 3]);
         }
         painter.add(Shape::mesh(mesh));
-        base += row.char_count_including_newline();
+        base += row.char_count_including_newline().0;
     }
 }
 
@@ -93,7 +93,7 @@ pub(crate) fn char_rects(galley: &Galley, range: Range<usize>) -> Vec<Rect> {
         if r.is_positive() {
             out.push(r);
         }
-        base += row.char_count_including_newline();
+        base += row.char_count_including_newline().0;
     }
     out
 }
@@ -286,4 +286,9 @@ pub(crate) enum AvatarKind<'a> {
     Initials(&'a str),
     #[allow(dead_code)]
     Icon(Icon),
+}
+
+/// Resolve a widget's state id: the caller's salt (stable) or the next auto id (positional).
+pub(crate) fn widget_id(ui: &Ui, salt: Option<egui::IdSalt>) -> Id {
+    salt.map(|s| ui.scope_id().with_salt(s)).unwrap_or_else(|| ui.next_auto_id())
 }

@@ -9,6 +9,8 @@ members = [
     "crates/glowkit-charts",
     "crates/glowkit-ai",
     "crates/glowkit-blocks",
+    "crates/glowkit-motion",
+    "crates/glowkit-3d",
     "crates/glowkit",
     "apps/gallery",
 ]
@@ -35,6 +37,8 @@ glowkit-components = { path = "crates/glowkit-components", version = "0.1.0" }
 glowkit-charts = { path = "crates/glowkit-charts", version = "0.1.0" }
 glowkit-ai = { path = "crates/glowkit-ai", version = "0.1.0" }
 glowkit-blocks = { path = "crates/glowkit-blocks", version = "0.1.0" }
+glowkit-motion = { path = "crates/glowkit-motion", version = "0.1.0" }
+glowkit-3d = { path = "crates/glowkit-3d", version = "0.1.0" }
 glowkit = { path = "crates/glowkit", version = "0.1.0", default-features = false }
 
 [profile.release]

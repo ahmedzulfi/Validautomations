@@ -1,4 +1,4 @@
-use super::kit::{self, control_radius, ControlSize, LineIcon};
+use super::kit::{self, control_radius, ControlSize, UiIcon};
 use egui::{vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
@@ -28,9 +28,9 @@ pub enum ButtonVariant {
 ///
 /// ```no_run
 /// # let ui: &mut egui::Ui = todo!();
-/// use glowkit_components::{Button, ButtonVariant, LineIcon};
+/// use glowkit_components::{Button, ButtonVariant, UiIcon};
 /// if ui.add(Button::new("Save changes")).clicked() {}
-/// ui.add(Button::new("Delete").variant(ButtonVariant::Destructive).icon(LineIcon::Trash));
+/// ui.add(Button::new("Delete").variant(ButtonVariant::Destructive).icon(UiIcon::Trash));
 /// ui.add(Button::new("Saving").loading(true));
 /// ```
 #[must_use = "add it with `ui.add(...)`"]
@@ -38,8 +38,8 @@ pub struct Button {
     text: String,
     variant: ButtonVariant,
     size: ControlSize,
-    icon: Option<LineIcon>,
-    trailing: Option<LineIcon>,
+    icon: Option<UiIcon>,
+    trailing: Option<UiIcon>,
     loading: bool,
     disabled: bool,
     width: Option<f32>,
@@ -66,7 +66,7 @@ impl Button {
         }
     }
     /// A square icon-only button.
-    pub fn icon_only(icon: LineIcon) -> Self {
+    pub fn icon_only(icon: UiIcon) -> Self {
         Self::new("").icon(icon)
     }
     /// Visual variant.
@@ -88,12 +88,12 @@ impl Button {
         self.size(ControlSize::Lg)
     }
     /// Leading icon.
-    pub fn icon(mut self, icon: LineIcon) -> Self {
+    pub fn icon(mut self, icon: UiIcon) -> Self {
         self.icon = Some(icon);
         self
     }
     /// Trailing icon (e.g. an arrow or chevron).
-    pub fn trailing_icon(mut self, icon: LineIcon) -> Self {
+    pub fn trailing_icon(mut self, icon: UiIcon) -> Self {
         self.trailing = Some(icon);
         self
     }
@@ -235,7 +235,7 @@ impl Widget for Button {
             x += galley.size().x + gap;
         }
         if let Some(icon) = self.trailing {
-            let nudge = if self.variant != ButtonVariant::Link && matches!(icon, LineIcon::ArrowRight | LineIcon::ChevronRight) { 2.0 * hover } else { 0.0 };
+            let nudge = if self.variant != ButtonVariant::Link && matches!(icon, UiIcon::ArrowRight | UiIcon::ChevronRight) { 2.0 * hover } else { 0.0 };
             icon.paint(painter, Rect::from_center_size(egui::pos2(x + is / 2.0 + nudge, cy), vec2(is, is)), text_col);
         }
         let _ = Align2::CENTER_CENTER;
@@ -302,6 +302,6 @@ impl Widget for ButtonGroup {
         let start = ui.cursor().min;
         self.show(ui);
         let r = Rect::from_min_max(start, ui.min_rect().max);
-        ui.interact(r, ui.id().with("button_group"), Sense::hover())
+        ui.interact(r, ui.scope_id().with("button_group"), Sense::hover())
     }
 }

@@ -1,0 +1,21 @@
+[package]
+name = "glowkit-3d"
+description = "Real-time 3D for egui without a GPU pipeline: camera, meshes, lighting, depth sorting, orbit controls, and animated 3D components (globes, particle spheres, shapes, carousels, model viewer)."
+readme = "../../README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[features]
+default = []
+demos = []
+
+[dependencies]
+egui.workspace = true
+glowkit-core.workspace = true

@@ -12,6 +12,8 @@ pub enum Category {
     CardsAndBorders,
     CursorAndInteraction,
     Motion,
+    MotionEngine,
+    ThreeD,
     Loaders,
     Inputs,
     Navigation,
@@ -23,13 +25,15 @@ pub enum Category {
 }
 
 impl Category {
-    pub const ALL: [Category; 14] = [
+    pub const ALL: [Category; 16] = [
         Category::TextAnimations,
         Category::Backgrounds,
         Category::Buttons,
         Category::CardsAndBorders,
         Category::CursorAndInteraction,
         Category::Motion,
+        Category::MotionEngine,
+        Category::ThreeD,
         Category::Loaders,
         Category::Inputs,
         Category::Navigation,
@@ -48,6 +52,8 @@ impl Category {
             Category::CardsAndBorders => "Cards & Borders",
             Category::CursorAndInteraction => "Cursor & Interaction",
             Category::Motion => "Motion & Layout",
+            Category::MotionEngine => "Motion Engine",
+            Category::ThreeD => "3D",
             Category::Loaders => "Loaders & Progress",
             Category::Inputs => "Inputs & Forms",
             Category::Navigation => "Navigation",
@@ -67,6 +73,8 @@ impl Category {
             Category::CardsAndBorders => "▢",
             Category::CursorAndInteraction => "➚",
             Category::Motion => "≋",
+            Category::MotionEngine => "»",
+            Category::ThreeD => "◆",
             Category::Loaders => "◌",
             Category::Inputs => "✎",
             Category::Navigation => "☰",

@@ -1,7 +1,8 @@
 //! Private helpers shared by the text effects in this crate.
 
 use egui::epaint::{Mesh, TextShape, Vertex};
-use egui::{pos2, vec2, Color32, FontId, Galley, Id, Painter, Pos2, Rot2, Ui, Vec2};
+use egui::emath::Rot2;
+use egui::{pos2, vec2, Color32, FontId, Galley, Id, Painter, Pos2, Ui, Vec2};
 use std::sync::Arc;
 
 /// Proportional or monospace font of `size` points.
@@ -177,4 +178,35 @@ pub(crate) fn digit_width(painter: &Painter, font: &FontId) -> f32 {
 /// Bump curve: 0 at 0 and 1, 1 at 0.5.
 pub(crate) fn bump(t: f32) -> f32 {
     (t.clamp(0.0, 1.0) * std::f32::consts::PI).sin()
+}
+
+/// Fake gaussian blur for a placeholder-colored galley (see [`layout`]): rings of offset copies
+/// at low alpha (more rings for bigger radii). `radius` near 0 paints the text normally.
+pub(crate) fn paint_blurred(painter: &Painter, pos: Pos2, galley: &Arc<Galley>, color: Color32, radius: f32, bold: f32) {
+    if color.a() == 0 {
+        return;
+    }
+    if radius < 0.4 {
+        paint_galley(painter, pos, galley, color, bold);
+        return;
+    }
+    let rings = ((radius / 3.0).ceil() as usize).clamp(1, 4);
+    let taps = 8;
+    let copies = rings * taps;
+    // total opacity spread over the copies, plus a faint sharp core that fades as blur grows
+    let core = (1.0 - radius / 10.0).clamp(0.0, 1.0);
+    let a = (1.0 - core * 0.6).clamp(0.2, 1.0) * 2.2 / copies as f32;
+    let c = color.gamma_multiply(a.min(1.0));
+    for ring in 0..rings {
+        let rr = radius * (ring as f32 + 1.0) / rings as f32;
+        let rot = ring as f32 * 0.4;
+        for i in 0..taps {
+            let ang = rot + i as f32 / taps as f32 * std::f32::consts::TAU;
+            let p = pos + vec2(ang.cos(), ang.sin()) * rr + vec2(bold / 2.0, 0.0);
+            painter.add(TextShape::new(p, galley.clone(), c).with_override_text_color(c));
+        }
+    }
+    if core > 0.0 {
+        paint_galley(painter, pos, galley, color.gamma_multiply(core * 0.6), bold);
+    }
 }

@@ -13,7 +13,7 @@ categories.workspace = true
 authors.workspace = true
 
 [features]
-default = ["text", "backgrounds", "effects", "components", "charts", "ai", "blocks"]
+default = ["text", "backgrounds", "effects", "components", "charts", "ai", "blocks", "motion", "three-d"]
 text = ["dep:glowkit-text"]
 backgrounds = ["dep:glowkit-backgrounds"]
 effects = ["dep:glowkit-effects"]
@@ -21,8 +21,10 @@ components = ["dep:glowkit-components"]
 charts = ["dep:glowkit-charts"]
 ai = ["dep:glowkit-ai"]
 blocks = ["dep:glowkit-blocks"]
+motion = ["dep:glowkit-motion"]
+three-d = ["dep:glowkit-3d"]
 ## Gallery demos for every enabled crate.
-demos = ["glowkit-text?/demos", "glowkit-backgrounds?/demos", "glowkit-effects?/demos", "glowkit-components?/demos", "glowkit-charts?/demos", "glowkit-ai?/demos", "glowkit-blocks?/demos"]
+demos = ["glowkit-text?/demos", "glowkit-backgrounds?/demos", "glowkit-effects?/demos", "glowkit-components?/demos", "glowkit-charts?/demos", "glowkit-ai?/demos", "glowkit-blocks?/demos", "glowkit-motion?/demos", "glowkit-3d?/demos"]
 
 [dependencies]
 egui.workspace = true
@@ -34,3 +36,5 @@ glowkit-components = { workspace = true, optional = true }
 glowkit-charts = { workspace = true, optional = true }
 glowkit-ai = { workspace = true, optional = true }
 glowkit-blocks = { workspace = true, optional = true }
+glowkit-motion = { workspace = true, optional = true }
+glowkit-3d = { workspace = true, optional = true }

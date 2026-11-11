@@ -1,4 +1,4 @@
-use super::kit::{self, control_radius, ControlSize, LineIcon};
+use super::kit::{self, control_radius, ControlSize, UiIcon};
 use egui::{pos2, vec2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
@@ -7,14 +7,14 @@ use glowkit_core::Theme;
 #[derive(Clone, Debug, PartialEq)]
 pub struct ToggleItem {
     /// Optional icon shown before the label.
-    pub icon: Option<LineIcon>,
+    pub icon: Option<UiIcon>,
     /// Text label (may be empty for icon-only items).
     pub label: String,
 }
 
 impl ToggleItem {
     /// Icon and text.
-    pub fn new(icon: LineIcon, label: impl Into<String>) -> Self {
+    pub fn new(icon: UiIcon, label: impl Into<String>) -> Self {
         Self { icon: Some(icon), label: label.into() }
     }
 }
@@ -31,8 +31,8 @@ impl From<String> for ToggleItem {
     }
 }
 
-impl From<LineIcon> for ToggleItem {
-    fn from(i: LineIcon) -> Self {
+impl From<UiIcon> for ToggleItem {
+    fn from(i: UiIcon) -> Self {
         Self { icon: Some(i), label: String::new() }
     }
 }
@@ -67,8 +67,8 @@ fn paint_item(ui: &Ui, rect: Rect, item: &ToggleItem, size: ControlSize, color: 
 /// ```no_run
 /// # let ui: &mut egui::Ui = todo!();
 /// # let mut bold = false;
-/// use glowkit_components::{LineIcon, Toggle};
-/// ui.add(Toggle::new(&mut bold, LineIcon::Bold));
+/// use glowkit_components::{UiIcon, Toggle};
+/// ui.add(Toggle::new(&mut bold, UiIcon::Bold));
 /// ```
 #[must_use = "add it with `ui.add(...)`"]
 pub struct Toggle<'a> {
@@ -79,7 +79,7 @@ pub struct Toggle<'a> {
 }
 
 impl<'a> Toggle<'a> {
-    /// A toggle bound to `on`, showing `item` (text, [`LineIcon`] or [`ToggleItem`]).
+    /// A toggle bound to `on`, showing `item` (text, [`UiIcon`] or [`ToggleItem`]).
     pub fn new(on: &'a mut bool, item: impl Into<ToggleItem>) -> Self {
         Self { on, item: item.into(), size: ControlSize::Md, outline: false }
     }
@@ -130,9 +130,9 @@ enum Selection<'a> {
 /// ```no_run
 /// # let ui: &mut egui::Ui = todo!();
 /// # let mut align = 0usize; let mut styles = vec![false; 3];
-/// use glowkit_components::{LineIcon, ToggleGroup};
-/// ui.add(ToggleGroup::single(&mut align, [LineIcon::AlignLeft, LineIcon::AlignCenter, LineIcon::AlignRight]));
-/// ui.add(ToggleGroup::multi(&mut styles, [LineIcon::Bold, LineIcon::Italic, LineIcon::Underline]));
+/// use glowkit_components::{UiIcon, ToggleGroup};
+/// ui.add(ToggleGroup::single(&mut align, [UiIcon::AlignLeft, UiIcon::AlignCenter, UiIcon::AlignRight]));
+/// ui.add(ToggleGroup::multi(&mut styles, [UiIcon::Bold, UiIcon::Italic, UiIcon::Underline]));
 /// ```
 #[must_use = "add it with `ui.add(...)`"]
 pub struct ToggleGroup<'a> {

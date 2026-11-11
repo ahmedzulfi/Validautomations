@@ -1293,6 +1293,7 @@ name = "glowkit"
 version = "0.1.0"
 dependencies = [
  "egui",
+ "glowkit-3d",
  "glowkit-ai",
  "glowkit-backgrounds",
  "glowkit-blocks",
@@ -1300,7 +1301,16 @@ dependencies = [
  "glowkit-components",
  "glowkit-core",
  "glowkit-effects",
+ "glowkit-motion",
  "glowkit-text",
+]
+
+[[package]]
+name = "glowkit-3d"
+version = "0.1.0"
+dependencies = [
+ "egui",
+ "glowkit-core",
 ]
 
 [[package]]
@@ -1368,6 +1378,14 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+]
+
+[[package]]
+name = "glowkit-motion"
+version = "0.1.0"
+dependencies = [
+ "egui",
+ "glowkit-core",
 ]
 
 [[package]]

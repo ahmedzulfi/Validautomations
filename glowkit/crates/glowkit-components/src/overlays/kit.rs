@@ -44,19 +44,57 @@ pub(crate) fn row_highlight(t: &Theme) -> Color32 {
     }
 }
 
+/// Frame-rate independent exponential follow stored in context memory.
+pub(crate) fn follow_ctx(ctx: &Context, id: Id, target: f32, speed: f32) -> f32 {
+    let dt = ctx.input(|i| i.stable_dt).clamp(0.0, 0.05);
+    let v = ctx.data_mut(|d| {
+        let v = d.get_temp_mut_or_insert_with(id.with("kit_follow"), || target);
+        *v = glowkit_core::anim::approach(*v, target, speed, dt);
+        if (*v - target).abs() < 1e-3 {
+            *v = target;
+        }
+        *v
+    });
+    if v != target {
+        ctx.request_repaint();
+    }
+    v
+}
+
+/// A spring stored in context memory.
+pub(crate) fn spring_ctx(ctx: &Context, id: Id, target: f32, stiffness: f32, damping: f32) -> f32 {
+    let dt = ctx.input(|i| i.stable_dt).clamp(0.0, 0.05);
+    let (v, settled) = ctx.data_mut(|d| {
+        let s = d.get_temp_mut_or_insert_with(id.with("kit_spring"), || glowkit_core::Spring::new(target));
+        s.target = target;
+        s.stiffness = stiffness;
+        s.damping = damping;
+        s.step(dt);
+        if s.is_settled() {
+            s.value = target;
+            s.velocity = 0.0;
+        }
+        (s.value, s.is_settled())
+    });
+    if !settled {
+        ctx.request_repaint();
+    }
+    v
+}
+
 /// Exponential presence animation (0 = hidden, 1 = shown).
 pub(crate) fn presence(ui: &Ui, id: Id, open: bool, speed: f32) -> f32 {
-    glowkit_core::anim::follow(ui, id.with("presence"), if open { 1.0 } else { 0.0 }, speed)
+    follow_ctx(ui.ctx(), id.with("presence"), if open { 1.0 } else { 0.0 }, speed)
 }
 
 /// A spring that overshoots slightly when opening (for scale-in effects).
 pub(crate) fn pop_spring(ui: &Ui, id: Id, open: bool) -> f32 {
-    glowkit_core::anim::spring(ui, id.with("pop"), if open { 1.0 } else { 0.0 }, 420.0, 30.0)
+    spring_ctx(ui.ctx(), id.with("pop"), if open { 1.0 } else { 0.0 }, 420.0, 30.0)
 }
 
 /// Smoothly animated hover amount for a widget.
 pub(crate) fn hover_anim(ui: &Ui, id: Id, hovered: bool) -> f32 {
-    glowkit_core::anim::follow(ui, id.with("hover_anim"), if hovered { 1.0 } else { 0.0 }, 18.0)
+    follow_ctx(ui.ctx(), id.with("hover_anim"), if hovered { 1.0 } else { 0.0 }, 18.0)
 }
 
 /// Show `add` inside a floating layer at exactly `rect`, scaled by `scale` around `origin` and
@@ -117,7 +155,7 @@ pub(crate) fn button_width(ui: &Ui, label: &str, size: f32) -> f32 {
 pub(crate) fn button(ui: &mut Ui, label: &str, kind: Btn) -> Response {
     let w = button_width(ui, label, 13.5);
     let (rect, _) = ui.allocate_exact_size(vec2(w, 34.0), Sense::hover());
-    let id = ui.id().with(("kit_btn", label));
+    let id = ui.scope_id().with(("kit_btn", label));
     button_at(ui, rect, id, label, kind)
 }
 

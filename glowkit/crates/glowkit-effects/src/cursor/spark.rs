@@ -116,7 +116,7 @@ impl ClickSpark {
 
     /// Paint the effect over `rect`.
     pub fn show(self, ui: &mut Ui, rect: Rect) {
-        let id = ui.id().with(("click_spark", self.salt));
+        let id = ui.scope_id().with(("click_spark", self.salt));
         let input = area_input(ui, rect, id, self.autoplay, 0.7);
         let now = glowkit_core::time(ui);
         let bursts = push_bursts(ui, id, &input.clicks, now, self.duration);
@@ -225,7 +225,7 @@ impl ClickRipple {
 
     /// Paint the effect over `rect`.
     pub fn show(self, ui: &mut Ui, rect: Rect) {
-        let id = ui.id().with(("click_ripple", self.salt));
+        let id = ui.scope_id().with(("click_ripple", self.salt));
         let input = area_input(ui, rect, id, self.autoplay, 0.9);
         let now = glowkit_core::time(ui);
         let total = self.duration * (1.0 + 0.25 * (self.rings as f32 - 1.0));

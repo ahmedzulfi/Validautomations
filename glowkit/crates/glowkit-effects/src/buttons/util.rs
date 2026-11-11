@@ -35,7 +35,7 @@ pub(crate) fn ribbon(painter: &Painter, pts: &[Pos2], width: f32, f: impl Fn(Pos
     let feather = 0.8;
     let mut mesh = Mesh::default();
     mesh.reserve_vertices((n + 1) * 4);
-    for k in 0..=n {
+    for (k, &len) in lens.iter().enumerate() {
         let i = k % n;
         let p = pts[i];
         let prev = pts[(i + n - 1) % n];
@@ -48,7 +48,7 @@ pub(crate) fn ribbon(painter: &Painter, pts: &[Pos2], width: f32, f: impl Fn(Pos
         }
         let normal = dir.normalized().rot90();
         let miter = 1.0 / normal.dot(d2.rot90()).abs().max(0.3);
-        let t = lens[k] / total.max(1e-3);
+        let t = len / total.max(1e-3);
         let col = f(p, t);
         let w = hw * miter;
         mesh.colored_vertex(p + normal * (w + feather), Color32::TRANSPARENT);

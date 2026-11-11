@@ -1,6 +1,5 @@
 use super::shimmer::{label_size, pressed_rect};
 use super::util::{self, cr};
-use super::{opt_setter, setter};
 use egui::{pos2, vec2, Color32, Pos2, Response, Ui, Widget};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{paint, Theme};

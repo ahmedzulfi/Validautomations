@@ -1,0 +1,21 @@
+[package]
+name = "glowkit-motion"
+description = "A Framer-Motion-style animation engine for egui: animated values, keyframes, timelines, variants, presence, layout transitions, drag with inertia and gestures."
+readme = "../../README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[features]
+default = []
+demos = []
+
+[dependencies]
+egui.workspace = true
+glowkit-core.workspace = true

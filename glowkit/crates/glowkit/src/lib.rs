@@ -13,7 +13,7 @@
 //! ```
 //!
 //! Every category lives in its own crate and is enabled by a cargo feature (all on by default):
-//! `text`, `backgrounds`, `effects`, `components`, `charts`, `ai`, `blocks`.
+//! `text`, `backgrounds`, `effects`, `components`, `charts`, `ai`, `blocks`, `motion`, `three-d`.
 
 pub use glowkit_core as core;
 pub use glowkit_core::{anim, color, egui, noise, paint, rng, Theme};
@@ -24,6 +24,10 @@ pub use glowkit_ai as ai;
 pub use glowkit_backgrounds as backgrounds;
 #[cfg(feature = "blocks")]
 pub use glowkit_blocks as blocks;
+#[cfg(feature = "motion")]
+pub use glowkit_motion as motion;
+#[cfg(feature = "three-d")]
+pub use glowkit_3d as three_d;
 #[cfg(feature = "charts")]
 pub use glowkit_charts as charts;
 #[cfg(feature = "components")]
@@ -59,6 +63,10 @@ pub fn all_demos() -> Vec<glowkit_core::demo::Demo> {
     v.extend(glowkit_ai::demos());
     #[cfg(feature = "blocks")]
     v.extend(glowkit_blocks::demos());
+    #[cfg(feature = "motion")]
+    v.extend(glowkit_motion::demos());
+    #[cfg(feature = "three-d")]
+    v.extend(glowkit_3d::demos());
     v.sort_by_key(|d| d.category);
     v
 }
