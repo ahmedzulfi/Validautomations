@@ -61,6 +61,10 @@ pub fn set_state<T: Clone + Send + Sync + 'static>(ui: &egui::Ui, id: egui::Id, 
 }
 
 /// Mutate per-widget state in place, creating it with `init` on first use.
+///
+/// **Do not call any `ui` / `ctx` method inside `f`.** The closure runs while egui's context lock
+/// is held, so reading input, time, or requesting a repaint there will deadlock (on wasm it shows
+/// up as a panic). Read what you need *before* calling `with_state`, and act on the result after.
 pub fn with_state<T: Clone + Send + Sync + 'static, R>(
     ui: &egui::Ui,
     id: egui::Id,

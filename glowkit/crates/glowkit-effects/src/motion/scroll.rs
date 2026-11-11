@@ -259,6 +259,12 @@ impl<'a> Masonry<'a> {
                 t.x.target = r.min.x;
                 t.y.target = r.min.y;
                 t.w.target = r.width();
+                if now < t.born + 0.3 {
+                    // not shown yet: jump straight to the slot (first-frame layout may differ)
+                    t.x.value = r.min.x;
+                    t.y.value = r.min.y;
+                    t.w.value = r.width();
+                }
                 t.x.step(dt);
                 t.y.step(dt);
                 t.w.step(dt);

@@ -522,7 +522,9 @@ fn keyframes_demo(ui: &mut Ui) {
         let yy = right.min.y + 18.0 + i as f32 * (right.height() - 36.0) / 2.0;
         let x0 = right.min.x + 70.0;
         let x1 = right.max.x - 10.0;
-        let k: f32 = Keyframes::new(frames).ease_segments([Easing::OutCubic, Easing::InOutSine]).duration(1.4).repeat(Repeat::Infinite).repeat_type(*rt).repeat_delay(0.35).play(ui, id.with(i));
+        // sample one iteration ahead so the repeat types already differ on the first run
+        let kf = Keyframes::new(frames).ease_segments([Easing::OutCubic, Easing::InOutSine]).duration(1.4).repeat(Repeat::Infinite).repeat_type(*rt).repeat_delay(0.35);
+        let k: f32 = kf.sample(glowkit_core::Clock::elapsed(ui, id.with("rows")) + 1.75);
         let col = t.chart[(i + 3) % t.chart.len()];
         p.text(pos2(right.min.x, yy), Align2::LEFT_CENTER, *name, FontId::monospace(12.0), t.foreground);
         p.line_segment([pos2(x0, yy), pos2(x1, yy)], Stroke::new(4.0, with_alpha(t.border, 1.0)));
@@ -536,6 +538,7 @@ fn keyframes_demo(ui: &mut Ui) {
         p.circle_filled(pos2(x, yy), 7.0, col);
     }
     caption(ui, pos2(right.center().x, rect.max.y - 26.0), Align2::CENTER_TOP, "same keyframes, three repeat types (dots = stops)");
+    glowkit_core::animate(ui);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -900,7 +903,7 @@ fn presence_demo(ui: &mut Ui) {
             card(p, &t, r, 10.0);
             let col = t.chart[c.color % t.chart.len()];
             p.rect_filled(Rect::from_min_size(r.min + vec2(10.0, 10.0), vec2(18.0, 18.0)), 6, col);
-            p.text(r.left_center() + vec2(40.0, 0.0), Align2::LEFT_CENTER, names[c.color % names.len()], FontId::proportional(13.5), t.foreground);
+            p.text(r.left_center() + vec2(40.0, 0.0), Align2::LEFT_CENTER, names[c.id as usize % names.len()], FontId::proportional(13.5), t.foreground);
             p.text(r.right_center() - vec2(12.0, 0.0), Align2::RIGHT_CENTER, format!("#{}", c.id), FontId::monospace(11.0), t.muted_foreground);
         });
 
@@ -995,7 +998,7 @@ fn layout_demo(ui: &mut Ui) {
     let (rect, _) = stage(ui, 330.0);
     let inner = rect.shrink2(vec2(24.0, 20.0));
     let names = ["Nebula", "Lagoon", "Canyon", "Meadow", "Tundra", "Savanna", "Reef", "Volcano"];
-    let icons = ["✦", "≈", "▲", "❀", "❄", "☀", "◉", "♨"];
+    let icons = ["✦", "≈", "▲", "❀", "◆", "✚", "◉", "★"];
     LayoutAnim::new(id.with("layout")).transition(Transition::spring(300.0, 28.0)).show(ui, |layout, ui| {
         for (slot, &item) in s.order.iter().enumerate() {
             let target = if s.grid {
@@ -1266,11 +1269,11 @@ fn reorder_demo(ui: &mut Ui) {
     let now = ui.input(|i| i.time);
     let mut s: ReorderDemo = state(ui, id, || ReorderDemo {
         tasks: vec![
-            Task { id: 0, icon: "☕", title: "Morning coffee", sub: "07:30 · 15 min" },
-            Task { id: 1, icon: "✉", title: "Answer email", sub: "08:00 · 30 min" },
+            Task { id: 0, icon: "●", title: "Morning coffee", sub: "07:30 · 15 min" },
+            Task { id: 1, icon: "@", title: "Answer email", sub: "08:00 · 30 min" },
             Task { id: 2, icon: "✎", title: "Write the spec", sub: "09:00 · 2 h" },
-            Task { id: 3, icon: "☎", title: "Standup call", sub: "11:00 · 15 min" },
-            Task { id: 4, icon: "🍜", title: "Lunch", sub: "12:30 · 45 min" },
+            Task { id: 3, icon: "◆", title: "Standup call", sub: "11:00 · 15 min" },
+            Task { id: 4, icon: "★", title: "Lunch", sub: "12:30 · 45 min" },
         ],
         next: now + 1.0,
         rng: Rng::new(11),
@@ -1344,25 +1347,34 @@ fn scroll_demo(ui: &mut Ui) {
             sa.show(ui, |ui| {
                 let scroll = scroll_offset(ui).y;
                 let w = ui.available_width();
-                // hero with parallax layers
+                // hero with parallax layers (each drifts at its own speed)
                 let (hero, _) = ui.allocate_exact_size(vec2(w, 300.0), Sense::hover());
-                let p = ui.painter();
-                let layers: [(f32, f32, usize); 3] = [(0.7, 46.0, 0), (0.4, 30.0, 1), (0.15, 18.0, 2)];
-                for (li, (factor, size, ci)) in layers.iter().enumerate() {
+                let p = ui.painter().with_clip_rect(hero.intersect(ui.clip_rect()));
+                let sky_top = color::mix(t.muted, t.gradient[0], if t.dark { 0.18 } else { 0.10 });
+                let sky_bot = color::mix(t.muted, t.gradient[2], if t.dark { 0.22 } else { 0.16 });
+                paint::gradient_rect(&p, hero, 0.0, 90.0, &[sky_top, sky_bot]);
+                let sun = pos2(hero.min.x + w * 0.72, hero.min.y + 96.0 + parallax(scroll, 0.85));
+                paint::glow(&p, sun, 120.0, with_alpha(t.gradient[2], if t.dark { 0.35 } else { 0.3 }));
+                p.circle_filled(sun, 30.0, color::mix(t.gradient[2], t.gradient[1], 0.25));
+                let ridges: [(f32, f32, f32, f32); 3] = [(0.65, 150.0, 0.004, 0.45), (0.38, 190.0, 0.007, 0.7), (0.12, 232.0, 0.011, 1.0)];
+                for (li, (factor, base, freq, strength)) in ridges.iter().enumerate() {
                     let off = parallax(scroll, *factor);
-                    for k in 0..6 {
-                        let x = hero.min.x + w * ((k as f32 * 0.19 + li as f32 * 0.07 + 0.06) % 1.0);
-                        let y = hero.min.y + 60.0 + ((k * 53 + li * 31) % 170) as f32 + off;
-                        let col = with_alpha(t.chart[(*ci + k) % t.chart.len()], 0.25 + 0.2 * li as f32);
-                        p.circle_filled(pos2(x, y), size * (0.6 + 0.1 * (k % 3) as f32), col);
-                    }
+                    let pts: Vec<Pos2> = (0..=60)
+                        .map(|k| {
+                            let x = hero.min.x + w * k as f32 / 60.0;
+                            let u = x * freq + li as f32 * 1.7;
+                            let y = hero.min.y + base + off - 34.0 * (u.sin() * 0.6 + (u * 2.3).sin() * 0.3 + (u * 5.1).sin() * 0.1) * (1.0 + li as f32 * 0.2);
+                            pos2(x, y)
+                        })
+                        .collect();
+                    let col = color::mix(t.muted, color::mix(t.gradient[0], t.gradient[1], li as f32 * 0.4), *strength * if t.dark { 0.55 } else { 0.45 });
+                    paint::area_fill(&p, &pts, hero.max.y + 2.0, col, color::shade(col, -0.04));
                 }
-                let fade: f32 = transform(scroll, &[0.0, 220.0], &[1.0, 0.0]);
-                let ty = hero.center().y - 20.0 + parallax(scroll, 0.5);
-                let tc: Color32 = transform(scroll, &[0.0, 250.0], &[t.foreground, t.accent]);
-                p.text(pos2(hero.center().x, ty), Align2::CENTER_CENTER, "Scroll-linked motion", FontId::proportional(34.0), with_alpha(tc, fade));
-                p.text(pos2(hero.center().x, ty + 36.0), Align2::CENTER_CENTER, "parallax · transform() · whileInView", FontId::proportional(15.0), with_alpha(t.muted_foreground, fade));
-                p.text(pos2(hero.center().x, hero.max.y - 26.0 + parallax(scroll, 0.3)), Align2::CENTER_CENTER, "↓ scroll", FontId::proportional(13.0), with_alpha(t.muted_foreground, fade));
+                let fade: f32 = transform(scroll, &[0.0, 200.0], &[1.0, 0.0]);
+                let ty = hero.min.y + 92.0 + parallax(scroll, 0.5);
+                let tc: Color32 = transform(scroll, &[0.0, 200.0], &[t.foreground, t.accent]);
+                p.text(pos2(hero.min.x + 40.0, ty), Align2::LEFT_CENTER, "Scroll-linked motion", FontId::proportional(32.0), with_alpha(tc, fade));
+                p.text(pos2(hero.min.x + 40.0, ty + 34.0), Align2::LEFT_CENTER, "parallax · transform() · whileInView", FontId::proportional(15.0), with_alpha(t.muted_foreground, fade));
                 // cards animate in when they scroll into view
                 ui.add_space(10.0);
                 let feats = [
@@ -1618,23 +1630,23 @@ fn spring_chain_demo(ui: &mut Ui) {
     let time = glowkit_core::time(ui);
     let dt = glowkit_core::dt(ui);
     let mut s: ChainDemo = state(ui, id, || ChainDemo {
-        dots: SpringChain::new(22, rect.center()).stiffness(420.0).damping(20.0).falloff(0.95),
-        ribbon: SpringChain::new(36, rect.center()).stiffness(260.0).damping(24.0).falloff(0.985),
+        dots: SpringChain::new(16, rect.center()).stiffness(700.0).damping(26.0).falloff(0.97),
+        ribbon: SpringChain::new(28, rect.center()).stiffness(520.0).damping(30.0).falloff(0.99),
     });
     let c = rect.center();
-    let auto = c + vec2((time * 1.3).sin() * rect.width() * 0.36, (time * 2.1).sin() * rect.height() * 0.3);
+    let auto = c + vec2((time * 0.9).sin() * rect.width() * 0.36, (time * 1.5).sin() * rect.height() * 0.3);
     let head = resp.hover_pos().unwrap_or(auto);
-    let auto2 = c + vec2((time * 0.9 + 2.0).cos() * rect.width() * 0.3, (time * 1.7).sin() * rect.height() * 0.32);
+    let auto2 = c + vec2((time * 0.7 + 2.0).cos() * rect.width() * 0.3, (time * 1.2).sin() * rect.height() * 0.32);
     s.dots.update(head, dt);
     s.ribbon.update(if resp.hovered() { head } else { auto2 }, dt);
     let p = ui.painter_at(rect);
     // ribbon: a smooth tapered trail
-    let pts = s.ribbon.points();
+    let pts = paint::catmull_rom(s.ribbon.points(), 3);
     let n = pts.len();
     let grad = t.gradient;
     for i in (0..n - 1).rev() {
         let k = i as f32 / (n - 1) as f32;
-        let w = 18.0 * (1.0 - k) + 2.0;
+        let w = 16.0 * (1.0 - k) + 2.0;
         p.line_segment([pts[i], pts[i + 1]], Stroke::new(w, with_alpha(color::gradient(&grad, k), 0.9 * (1.0 - k) + 0.1)));
         p.circle_filled(pts[i], w / 2.0, with_alpha(color::gradient(&grad, k), 0.9 * (1.0 - k) + 0.1));
     }

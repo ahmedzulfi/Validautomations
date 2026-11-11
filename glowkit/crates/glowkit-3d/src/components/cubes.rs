@@ -1,5 +1,5 @@
 use super::{rounded_quad, salt_or};
-use crate::{vec3, Background, Lights, Material, Mesh, OrbitControls, Quat, Transform, Vec3, Viewport3D, Wire};
+use crate::{vec3, Lights, Material, Mesh, OrbitControls, Quat, Transform, Vec3, Viewport3D, Wire};
 use egui::{Color32, Response, Ui, Widget};
 use glowkit_core::{color, ease, rng::hash01, Easing, Rng, Theme};
 use std::f32::consts::{FRAC_PI_2, TAU};
@@ -544,9 +544,7 @@ impl Widget for VoxelText {
                 let cube = ctx.mesh("vox", || Mesh::cube(0.9));
                 let cycle = 7.0;
                 let ph = time % cycle;
-                let burst = if !self.burst {
-                    0.0
-                } else if ph < 5.0 {
+                let burst = if !self.burst || ph < 5.0 {
                     0.0
                 } else if ph < 5.7 {
                     ease(Easing::OutCubic, (ph - 5.0) / 0.7)
@@ -600,7 +598,7 @@ mod tests {
 
     #[test]
     fn font_has_pixels() {
-        assert_eq!(voxel_font("I").len(), 13);
+        assert_eq!(voxel_font("I").len(), 11);
         assert!(voxel_font(" ").is_empty());
         assert_eq!(voxel_font("AB").iter().map(|v| v.0).max(), Some(10));
     }

@@ -1,4 +1,3 @@
-use egui::emath::TSTransform;
 use egui::{pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder};
 use glowkit_core::anim::{ease, Easing};
 use glowkit_core::color::{mix, with_alpha};
@@ -148,23 +147,21 @@ impl<'a> Stepper<'a> {
         let mut measured = content_h;
         let mut render = |ui: &mut Ui, step: usize, offset: f32, alpha: f32, measure: bool| {
             let r = Rect::from_min_size(body.min + vec2(offset, 0.0), vec2(body.width(), 4000.0));
-            ui.with_visual_transform(TSTransform::IDENTITY, |ui| {
-                let mut child = ui.new_child(UiBuilder::new().max_rect(r).id_salt(("step_body", step)));
-                child.set_clip_rect(clip);
-                child.multiply_opacity(alpha);
-                if step >= n {
-                    child.vertical_centered(|ui| {
-                        ui.add_space(8.0);
-                        ui.label(egui::RichText::new("🎉").size(30.0));
-                        ui.label(egui::RichText::new("All done!").size(18.0).color(t.foreground));
-                    });
-                } else {
-                    content(&mut child, step);
-                }
-                if measure {
-                    measured = child.min_rect().height();
-                }
-            });
+            let mut child = ui.new_child(UiBuilder::new().max_rect(r).id_salt(("step_body", step)));
+            child.set_clip_rect(clip);
+            child.multiply_opacity(alpha);
+            if step >= n {
+                child.vertical_centered(|ui| {
+                    ui.add_space(8.0);
+                    ui.label(egui::RichText::new("🎉").size(30.0));
+                    ui.label(egui::RichText::new("All done!").size(18.0).color(t.foreground));
+                });
+            } else {
+                content(&mut child, step);
+            }
+            if measure {
+                measured = child.min_rect().height();
+            }
         };
         if p < 1.0 && anim.from != anim.to {
             render(ui, anim.from, -dir * slide * e, 1.0 - e, false);

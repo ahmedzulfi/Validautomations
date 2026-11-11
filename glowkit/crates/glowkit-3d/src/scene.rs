@@ -785,10 +785,7 @@ fn clip_near(v: &[CVert; 3], near: f32) -> Vec<CVert> {
         }
         if (da >= 0.0) != (db >= 0.0) {
             let t = da / (da - db);
-            let mut c = [0.0; 4];
-            for k in 0..4 {
-                c[k] = a.c[k] + (b.c[k] - a.c[k]) * t;
-            }
+            let c: [f32; 4] = std::array::from_fn(|k| a.c[k] + (b.c[k] - a.c[k]) * t);
             out.push(CVert { v: a.v.lerp(b.v, t), c });
         }
     }

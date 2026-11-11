@@ -41,6 +41,8 @@ scripts/               build-web.sh, serve.sh, shot.mjs (headless screenshots)
    * One-shot animations must stop requesting repaints when finished (`Clock::triggered` does this).
    * Per-widget state: `glowkit_core::{state, set_state, with_state}` keyed by the widget's
      `Response::id` (or `ui.id().with(...)`). State types must be `Clone + Send + Sync + 'static`.
+   * Never call a `ui`/`ctx` method inside a `with_state` closure: it holds egui's context lock
+     and will deadlock. Read time/input first, mutate inside, repaint after.
    * Springs and easing: `glowkit_core::anim::{spring, spring2, follow, ease, Easing, Spring, stagger, Clock, Trigger}`.
    * Respect `Trigger` where it makes sense (`OnAppear`, `Loop`, `OnHover`, `OnClick`).
 5. **Painting helpers** live in `glowkit_core::paint`: `gradient_rect`, `gradient_circle`,
