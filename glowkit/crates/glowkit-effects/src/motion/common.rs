@@ -70,19 +70,19 @@ pub(crate) fn sample_faces() -> Vec<CardFace> {
 /// Fill a (possibly transformed) convex outline with a soft drop shadow made of stacked
 /// translucent copies, so rotated cards still cast believable shadows.
 pub(crate) fn polygon_shadow(painter: &Painter, outline: &[Pos2], center: Pos2, offset: Vec2, spread: f32, color: Color32) {
-    let layers = 5;
+    let layers = 8;
     for k in 0..layers {
         let f = (k + 1) as f32 / layers as f32;
-        let grow = spread * (1.0 - f) + 1.0;
+        let grow = spread * (1.0 - f);
         let pts: Vec<Pos2> = outline
             .iter()
             .map(|p| {
                 let d = *p - center;
                 let len = d.length().max(1.0);
-                *p + d / len * grow + offset * f
+                *p + d / len * grow + offset * (0.4 + 0.6 * f)
             })
             .collect();
-        painter.add(Shape::convex_polygon(pts, color.gamma_multiply(0.22 / layers as f32 * (1.0 + f)), Stroke::NONE));
+        painter.add(Shape::convex_polygon(pts, color.gamma_multiply(0.07), Stroke::NONE));
     }
 }
 
@@ -125,8 +125,8 @@ pub(crate) fn paint_card_face(painter: &Painter, t: &Theme, face: &CardFace, ind
     let [c0, c1] = face.resolved_colors(t, index);
     let a = pose.alpha;
     if pose.shadow > 0.0 {
-        let sc = if t.dark { Color32::BLACK } else { Color32::from_rgb(30, 30, 60) };
-        polygon_shadow(painter, &outline, pose.center, vec2(0.0, 10.0 * pose.scale), 14.0 * pose.scale, sc.gamma_multiply(a * pose.shadow));
+        let sc = if t.dark { Color32::BLACK } else { Color32::from_rgb(40, 40, 90).gamma_multiply(0.45) };
+        polygon_shadow(painter, &outline, pose.center, vec2(0.0, 10.0 * pose.scale), 16.0 * pose.scale, sc.gamma_multiply(a * pose.shadow));
     }
     // gradient evaluated in the card's local space so it rotates with the card
     let (s, co) = (-pose.angle).sin_cos();

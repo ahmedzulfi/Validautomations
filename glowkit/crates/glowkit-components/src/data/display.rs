@@ -129,7 +129,7 @@ impl<'a> Card<'a> {
                 .inner;
             if let Some(f) = self.footer {
                 ui.add_space(if self.footer_border { pad } else { 18.0 });
-                footer_top = Some(ui.cursor().min.y - if self.footer_border { 0.0 } else { 0.0 });
+                footer_top = Some(ui.cursor().min.y);
                 if self.footer_border {
                     ui.add_space(14.0);
                 }

@@ -394,7 +394,7 @@ impl EncryptedCard {
                     let cols = ((rect.width() - 8.0) / cw) as usize;
                     let rows = ((rect.height() - 8.0) / lh) as usize;
                     let chars: Vec<char> = glowkit_core::text::SCRAMBLE_CHARS.chars().collect();
-                    let ink = if t.dark { Color32::WHITE } else { Color32::WHITE };
+                    let ink = Color32::WHITE;
                     let clip = p.with_clip_rect(rect.shrink(2.0));
                     for row in 0..rows {
                         let y = rect.min.y + 4.0 + row as f32 * lh;

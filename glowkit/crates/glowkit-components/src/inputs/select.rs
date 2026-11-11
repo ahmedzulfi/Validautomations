@@ -1,6 +1,6 @@
 use super::field::FieldLabel;
 use super::kit::{self, control_radius, ControlSize, UiIcon};
-use egui::{pos2, vec2, Align, Color32, CornerRadius, CursorIcon, FontId, Id, Layout, Rect, Response, RichText, Sense, Shape, Stroke, StrokeKind, TextEdit, Ui, Widget};
+use egui::{pos2, vec2, Align, Color32, CornerRadius, CursorIcon, FontId, Id, Layout, Rect, Response, RichText, Sense, Shape, Stroke, TextEdit, Ui, Widget};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 use std::f32::consts::PI;

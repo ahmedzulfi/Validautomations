@@ -255,13 +255,12 @@ impl Draggable {
     /// position), like drag controls on the web. Ignored while the user is dragging it.
     pub fn animate_to(ui: &Ui, id: Id, offset: Vec2, transition: Transition) {
         let key = id.with("glowkit_drag");
-        ui.data_mut(|d| {
-            if let Some(st) = d.get_temp_mut::<DragState>(key) {
-                if !st.dragging {
-                    st.offset.restart_to(offset, transition);
-                }
+        if let Some(mut st) = ui.data(|d| d.get_temp::<DragState>(key)) {
+            if !st.dragging {
+                st.offset.restart_to(offset, transition);
+                ui.data_mut(|d| d.insert_temp(key, st));
             }
-        });
+        }
         ui.ctx().request_repaint();
     }
 

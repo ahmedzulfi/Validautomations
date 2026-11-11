@@ -110,7 +110,7 @@ impl FlowingMenu {
                 painter.line_segment([r.left_top(), r.right_top()], Stroke::new(1.0, t.border));
             }
             let (icon, label) = &self.items[i];
-            painter.text(r.center(), Align2::CENTER_CENTER, label, font.clone(), with_alpha(t.foreground, (1.0 - reveal * 1.5).max(0.0)));
+            painter.text(r.center(), Align2::CENTER_CENTER, label, font.clone(), with_alpha(t.foreground, (1.0 - reveal * 3.0).max(0.0)));
             if reveal > 0.001 {
                 let h = r.height() * reveal;
                 let bandr = if from_top { Rect::from_min_size(r.min, vec2(r.width(), h)) } else { Rect::from_min_max(pos2(r.min.x, r.max.y - h), r.max) };

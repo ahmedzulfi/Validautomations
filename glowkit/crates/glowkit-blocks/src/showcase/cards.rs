@@ -369,7 +369,7 @@ impl Widget for GlowingStarsCard {
             for x in 0..cols {
                 let i = (y * cols + x) as u64;
                 let on_now = hash01(i * 92821 + epoch * 7919) < density;
-                let on_prev = hash01(i * 92821 + epoch.wrapping_sub(1) * 7919) < density;
+                let on_prev = hash01(i * 92821 + epoch.wrapping_sub(1).wrapping_mul(7919)) < density;
                 let g = match (on_prev, on_now) {
                     (true, true) => 1.0,
                     (false, false) => 0.0,

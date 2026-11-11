@@ -159,7 +159,7 @@ impl Avatar {
                 AvatarStatus::Offline => t.muted_foreground,
             };
             let dr = (r * 0.27).max(3.5);
-            let off = if self.square { r - dr * 0.3 } else { r * 0.7071 };
+            let off = if self.square { r - dr * 0.3 } else { r * std::f32::consts::FRAC_1_SQRT_2 };
             let dc = c + vec2(off, off);
             painter.circle_filled(dc, dr + 2.0, self.ring.unwrap_or(t.card));
             painter.circle_filled(dc, dr, dot);

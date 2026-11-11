@@ -17,6 +17,8 @@
 //! repainting; value changes glide with a spring; legends toggle series; hovering shows a
 //! crosshair and a tooltip card.
 
+#![warn(missing_docs)]
+
 mod bar;
 mod cartesian;
 mod common;

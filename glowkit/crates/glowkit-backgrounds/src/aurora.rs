@@ -102,7 +102,7 @@ impl Aurora {
                 let d = edge - y;
                 // bright lower rim, rays reaching up, soft fall-off below
                 let rim = (-(d / 0.07).powi(2)).exp();
-                let up = if d > 0.0 { (-d / reach).exp() * rays } else { 0.0 };
+                let up = (-d.max(0.0) / reach).exp() * rays * crate::smoothstep(-0.09, 0.03, d);
                 let v = rim * 0.55 + up * 0.75;
                 let w = [1.0, 0.75, 0.55][k];
                 glow += v * w;

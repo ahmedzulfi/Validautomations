@@ -91,7 +91,7 @@ impl Widget for ModelSelector<'_> {
         let g = common::galley(ui, cur.name, 13.0, t.foreground);
         let (rect, mut resp) = ui.allocate_exact_size(vec2(g.size().x + 58.0, 32.0), Sense::click());
         let id = resp.id;
-        let mut open: bool = glowkit_core::state(ui, id.with("open"), || false);
+        let mut open: bool = glowkit_core::state(ui, id.with("open"), || true);
         if resp.clicked() {
             open = !open;
         }
@@ -432,10 +432,13 @@ impl<'a> WebPreview<'a> {
         p.rect_filled(ar, CornerRadius::same(15), t.card);
         p.rect_stroke(ar, CornerRadius::same(15), Stroke::new(1.0, t.border), StrokeKind::Inside);
         paint_icon(p, Icon::Lock, Rect::from_center_size(pos2(ar.min.x + 16.0, ar.center().y), vec2(12.0, 12.0)), t.muted_foreground);
-        let te_rect = Rect::from_min_max(pos2(ar.min.x + 28.0, ar.min.y + 1.0), pos2(ar.max.x - 10.0, ar.max.y - 1.0));
+        let te_rect = Rect::from_min_max(pos2(ar.min.x + 28.0, ar.min.y), pos2(ar.max.x - 10.0, ar.max.y));
         let mut child = ui.new_child(UiBuilder::new().max_rect(te_rect).layout(egui::Layout::left_to_right(egui::Align::Center)));
+        let row_h = ui.fonts_mut(|f| f.row_height(&FontId::proportional(13.0)));
+        let my = ((te_rect.height() - row_h) / 2.0).max(0.0) as i8;
         let te = egui::TextEdit::singleline(self.url)
             .frame(egui::Frame::NONE)
+            .margin(egui::Margin::symmetric(0, my))
             .font(FontId::proportional(13.0))
             .text_color(t.foreground)
             .desired_width(te_rect.width())

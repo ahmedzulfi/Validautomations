@@ -37,7 +37,7 @@ impl SliderStyle {
     fn to_t(&self, v: f32) -> f32 {
         glowkit_core::anim::unlerp(*self.range.start(), *self.range.end(), v)
     }
-    fn from_x(&self, track: Rect, x: f32) -> f32 {
+    fn value_at_x(&self, track: Rect, x: f32) -> f32 {
         let t = ((x - track.min.x) / track.width().max(1.0)).clamp(0.0, 1.0);
         self.quantize(glowkit_core::anim::lerp(*self.range.start(), *self.range.end(), t))
     }
@@ -205,7 +205,7 @@ impl Widget for Slider<'_> {
         let (_rect, track, mut resp) = layout(ui, &self.style);
         if let Some(p) = resp.interact_pointer_pos() {
             if resp.dragged() || resp.clicked() {
-                let v = self.style.from_x(track, p.x);
+                let v = self.style.value_at_x(track, p.x);
                 if v != *self.value {
                     *self.value = v;
                     resp.mark_changed();
@@ -245,7 +245,7 @@ impl Widget for RangeSlider<'_> {
                 glowkit_core::set_state(ui, active_id, active);
             }
             if resp.dragged() || resp.clicked() {
-                let mut v = self.style.from_x(track, p.x);
+                let mut v = self.style.value_at_x(track, p.x);
                 if active == 0 {
                     v = v.min(self.values[1]);
                 } else {

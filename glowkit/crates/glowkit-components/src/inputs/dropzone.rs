@@ -44,6 +44,8 @@ pub(crate) fn dashed_closed(painter: &Painter, pts: &[Pos2], dash: f32, gap: f32
     }
 }
 
+type DropCallback<'a> = Box<dyn FnMut(&egui::DroppedFileHandle) + 'a>;
+
 /// A drag-and-drop file area with a dashed border that marches while files hover over it, an
 /// upload icon that lifts, and a list of received files with remove buttons.
 ///
@@ -64,7 +66,7 @@ pub struct FileDropzone<'a> {
     height: f32,
     width: Option<f32>,
     list: bool,
-    on_drop: Option<Box<dyn FnMut(&egui::DroppedFileHandle) + 'a>>,
+    on_drop: Option<DropCallback<'a>>,
     active: Option<bool>,
 }
 

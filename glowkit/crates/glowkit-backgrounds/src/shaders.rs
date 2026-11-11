@@ -341,16 +341,16 @@ impl LiquidMetal {
     pub fn paint(&self, ui: &Ui, rect: Rect) {
         let Some(f) = self.base.begin(ui, rect, "glowkit_liquid_metal") else { return };
         let t = &f.theme;
-        let tint = Rgb::of(self.tint.unwrap_or_else(|| glowkit_core::mix(Color32::WHITE, t.accent, 0.12)));
-        let dark = Rgb::of(glowkit_core::mix(Color32::from_rgb(14, 15, 20), t.accent, 0.08));
+        let tint = Rgb::of(self.tint.unwrap_or_else(|| glowkit_core::mix(glowkit_core::hex("#D9DEE8"), t.accent, 0.1)));
+        let dark = Rgb::of(glowkit_core::mix(Color32::from_rgb(12, 13, 18), t.accent, 0.06));
         let time = f.time * self.speed * 0.6;
         let aspect = rect.width() / rect.height().max(1.0);
         let m = if self.interactive { centered_pointer(ui, rect) } else { None };
         let amp = self.amplitude;
         let height = |p: Vec2| -> f32 {
-            let mut h = (p.x * 2.2 + 1.3 * (p.y * 1.8 + time).sin() + time * 0.7).sin() * 0.5
-                + (p.y * 2.6 - 1.1 * (p.x * 1.4 - time * 0.8).cos()).sin() * 0.35
-                + ((p.x + p.y) * 1.3 + time * 0.5).sin() * 0.25;
+            let mut h = (p.x * 3.0 + 1.3 * (p.y * 2.2 + time).sin() + time * 0.7).sin() * 0.5
+                + (p.y * 3.4 - 1.1 * (p.x * 1.9 - time * 0.8).cos()).sin() * 0.35
+                + ((p.x + p.y) * 2.1 + time * 0.5).sin() * 0.25;
             if let Some(m) = m {
                 let d = (p - m).length();
                 h += (d * 18.0 - time * 8.0).sin() * 0.18 * (-d * 3.5).exp();
@@ -364,10 +364,10 @@ impl LiquidMetal {
             let nx = (height(p + vec2(e, 0.0)) - h) / e;
             let ny = (height(p + vec2(0.0, e)) - h) / e;
             // reflect a soft, banded "studio" environment
-            let r = nx * 0.07 + ny * 0.1 + h * 0.3 + p.y * 0.5;
-            let env = 0.5 + 0.5 * (r * 3.6 + 0.6).sin();
-            let v = smoothstep(0.05, 1.0, env).powf(1.2);
-            let rim = smoothstep(0.85, 1.0, env) * 0.45;
+            let r = nx * 0.1 + ny * 0.16 + h * 0.25 + p.y * 0.7;
+            let env = 0.5 + 0.5 * (r * 5.5 + 0.6).sin();
+            let v = env.powf(1.6);
+            let rim = smoothstep(0.88, 1.0, env) * 0.5;
             dark.lerp(tint, v).lerp(Rgb(1.0, 1.0, 1.0), rim).to_color()
         });
     }

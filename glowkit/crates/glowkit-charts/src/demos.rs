@@ -35,12 +35,12 @@ fn cols(ui: &mut Ui, n: usize, mut f: impl FnMut(usize, &mut Ui)) {
 
 /// A small persistent toggle stored in the demo's ui data.
 fn toggle_state(ui: &mut Ui, key: &str) -> bool {
-    let id = ui.scope_id().with(key);
+    let id = egui::Id::unique(("glowkit_charts_demo_toggle", key));
     ui.data_mut(|d| *d.get_temp_mut_or_insert_with(id, || false))
 }
 
 fn set_toggle(ui: &mut Ui, key: &str, v: bool) {
-    let id = ui.scope_id().with(key);
+    let id = egui::Id::unique(("glowkit_charts_demo_toggle", key));
     ui.data_mut(|d| d.insert_temp(id, v));
 }
 
@@ -197,22 +197,25 @@ ui.add(PieChart::new(&browsers).labels(PieLabels::Outside));"##,
             show: |ui| {
                 let browsers = [Datum::new("Chrome", 275.0), Datum::new("Safari", 200.0), Datum::new("Firefox", 187.0), Datum::new("Edge", 173.0), Datum::new("Other", 90.0)];
                 let devices = [Datum::new("Desktop", 1260.0), Datum::new("Mobile", 940.0), Datum::new("Tablet", 310.0)];
-                cols(ui, 4, |i, ui| match i {
+                cols(ui, 2, |i, ui| match i {
                     0 => {
-                        caption(ui, "Pie with percentages");
-                        ui.add(PieChart::new(&browsers).labels(PieLabels::Percent).height(300.0));
+                        caption(ui, "Pie with percentages · hover a slice, click the legend");
+                        ui.add(PieChart::new(&browsers).labels(PieLabels::Percent).height(280.0));
                     }
-                    1 => {
+                    _ => {
                         caption(ui, "Donut with center total");
-                        ui.add(DonutChart::new(&devices).center_caption("Visitors").height(300.0));
+                        ui.add(DonutChart::new(&devices).center_caption("Visitors").height(280.0));
                     }
-                    2 => {
+                });
+                ui.add_space(16.0);
+                cols(ui, 2, |i, ui| match i {
+                    0 => {
                         caption(ui, "Rounded, padded donut");
-                        ui.add(DonutChart::new(&browsers).rounded(true).pad_angle(2.0).inner_radius(0.76).center_caption("Sessions").legend(false).height(300.0));
+                        ui.add(DonutChart::new(&browsers).rounded(true).pad_angle(2.0).inner_radius(0.76).center_caption("Sessions").legend(false).height(250.0));
                     }
                     _ => {
                         caption(ui, "Outside labels");
-                        ui.add(PieChart::new(&browsers[..4]).labels(PieLabels::Outside).inner_radius(0.45).pad_angle(1.5).legend(false).height(300.0));
+                        ui.add(PieChart::new(&browsers).labels(PieLabels::Outside).inner_radius(0.5).pad_angle(1.5).legend(false).height(250.0));
                     }
                 });
             },

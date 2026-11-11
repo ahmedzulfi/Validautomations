@@ -540,11 +540,11 @@ impl Beams {
             let x = (q.x / aspect + 0.5) * n;
             let idx = x.floor();
             let fr = x - idx - 0.5;
-            let core = (-(fr / (bw * 0.35)).powi(2)).exp();
+            let core = (-(fr / (bw * 0.3)).powi(2)).exp();
             let halo = (-(fr / (bw * 0.9)).powi(2)).exp() * 0.35;
-            let flow = fbm3(idx * 1.7, q.y * 3.0 - time * 0.6, time * 0.1, 3);
-            let tex = 1.0 - noise + noise * smoothstep(-0.35, 0.55, flow);
-            let fade = (PI * (q.y + 0.5).clamp(0.0, 1.0)).sin().powf(0.6) * (0.75 + 0.25 * h01(idx as i32 as u32, 1));
+            let flow = fbm3(idx * 1.7, q.y * 1.6 - time * 0.5, time * 0.1, 3);
+            let tex = 1.0 - noise * 0.6 + noise * 0.6 * smoothstep(-0.45, 0.5, flow);
+            let fade = (PI * uv.y).sin().max(0.0).powf(0.5) * (0.7 + 0.3 * h01(idx as i32 as u32, 1));
             let i = (core * tex + halo * (0.5 + 0.5 * tex)) * fade;
             if dark {
                 bg.add(col.scale(i * 0.85)).lerp(Rgb(1.0, 1.0, 1.0), (core * tex * fade - 0.7).max(0.0) * 0.5).to_color()

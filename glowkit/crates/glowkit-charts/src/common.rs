@@ -819,7 +819,10 @@ pub(crate) fn legend(ui: &mut Ui, id: Id, area: Rect, entries: &[LegendEntry], h
         }
         let hov = glowkit_core::anim::follow(ui, id.with(("glowkit_legend_hov", i)), if resp.hovered() { 1.0 } else { 0.0 }, 18.0);
         if resp.hovered() {
-            hovered = Some(i);
+            // a hidden entry has nothing to focus on
+            if !hidden.get(i).copied().unwrap_or(false) {
+                hovered = Some(i);
+            }
             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
         }
         if hov > 0.01 {

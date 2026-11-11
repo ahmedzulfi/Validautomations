@@ -32,7 +32,6 @@ pub use toggle::{SegmentedControl, Toggle, ToggleGroup, ToggleItem};
 
 pub(crate) use dropzone::dashed_closed;
 pub(crate) use switch::paint_checkbox;
-pub(crate) use tag_input::star_aa;
 
 #[cfg(feature = "demos")]
 pub(crate) mod demos;

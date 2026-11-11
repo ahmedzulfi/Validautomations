@@ -185,6 +185,7 @@ impl<'a> Checkbox<'a> {
 }
 
 /// Paint a checkbox box at `rect` (shared with tables).
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn paint_checkbox(ui: &Ui, id: egui::Id, rect: Rect, checked: bool, indeterminate: bool, hover: bool, color: Option<Color32>, alpha: f32) {
     let t = Theme::of(ui);
     let on = checked || indeterminate;

@@ -266,11 +266,12 @@ impl Widget for ImageGen<'_> {
             // generating: slow noise field tinted toward the palette, plus a sweep of light
             let seed = self.seed as f32 * 0.37;
             let p = self.progress;
-            paint::shader_grid(&painter, rect, 36, 28, |uv| {
-                let n = fbm3(uv.x * 2.2 + seed, uv.y * 2.2, time * 0.18, 3) * 0.5 + 0.5;
-                let tint = gradient(&colors, (n * 1.3 + uv.x * 0.3).fract());
-                let k = 0.12 + 0.35 * p;
-                let c = mix(base, tint, k * n);
+            paint::shader_grid(&painter, rect, 40, 40, |uv| {
+                let n = fbm3(uv.x * 1.4 + seed, uv.y * 1.4, time * 0.15, 2) * 0.5 + 0.5;
+                let hue = glowkit_core::noise::noise3(uv.x * 0.9 - seed, uv.y * 0.9, time * 0.1) * 0.5 + 0.5;
+                let tint = gradient(&colors, hue);
+                let k = 0.18 + 0.4 * p;
+                let c = mix(base, tint, k * (0.4 + 0.6 * n));
                 let sweep = ((uv.x + uv.y * 0.4) - ((time * 0.45).fract() * 2.2 - 0.5)).abs();
                 let shine = (1.0 - sweep / 0.25).clamp(0.0, 1.0);
                 mix(c, Color32::WHITE, shine * if t.dark { 0.08 } else { 0.18 })

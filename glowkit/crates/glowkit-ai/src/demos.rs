@@ -549,7 +549,9 @@ if ui.add(VoiceButton::new(listening).amplitude(mic_level)).clicked() {
                         if tab == 1 {
                             ui.add(CodeBlock::new(code).language("rust"));
                         } else {
+                            let card_w = (ui.available_width() - 2.0 * 12.0) / 3.0 - 34.0;
                             ui.horizontal(|ui| {
+                                ui.spacing_mut().item_spacing.x = 12.0;
                                 for (name, price, hi) in [("Hobby", "0", false), ("Pro", "20", true), ("Team", "60", false)] {
                                     egui::Frame::new()
                                         .fill(if hi { glowkit_core::color::with_alpha(t.accent, 0.08) } else { t.card })
@@ -557,11 +559,14 @@ if ui.add(VoiceButton::new(listening).amplitude(mic_level)).clicked() {
                                         .corner_radius(t.corner())
                                         .inner_margin(egui::Margin::same(16))
                                         .show(ui, |ui| {
-                                            ui.set_width((ui.available_width() / 3.0).clamp(120.0, 180.0));
-                                            ui.label(egui::RichText::new(name).size(13.0).color(t.muted_foreground));
-                                            ui.label(egui::RichText::new(format!("${price}/mo")).size(24.0).color(t.foreground));
-                                            ui.add_space(6.0);
-                                            ui.label(egui::RichText::new("Unlimited chats").size(12.0).color(t.muted_foreground));
+                                            ui.set_width(card_w);
+                                            ui.vertical(|ui| {
+                                                ui.spacing_mut().item_spacing.y = 4.0;
+                                                ui.label(egui::RichText::new(name).size(13.0).color(t.muted_foreground));
+                                                ui.label(egui::RichText::new(format!("${price}/mo")).size(24.0).color(t.foreground));
+                                                ui.add_space(6.0);
+                                                ui.label(egui::RichText::new("Unlimited chats").size(12.0).color(t.muted_foreground));
+                                            });
                                         });
                                 }
                             });
@@ -582,16 +587,21 @@ if ui.add(VoiceButton::new(listening).amplitude(mic_level)).clicked() {
                 let e = looped(ui, 8.0);
                 let p = (e / 5.0).min(1.0);
                 let t = Theme::of(ui);
-                ui.columns(2, |cols| {
+                ui.columns(3, |cols| {
                     cols[0].vertical_centered(|ui| {
-                        ui.add(ImageGen::new(p).size(vec2(300.0, 300.0)).seed(3).background(t.card));
+                        ui.add(ImageGen::new(p).size(vec2(260.0, 260.0)).seed(3).background(t.card));
                         ui.add_space(8.0);
-                        label(ui, "Resolves when progress hits 100%");
+                        label(ui, "Looping: resolves at 100%");
                     });
                     cols[1].vertical_centered(|ui| {
-                        ui.add(ImageGen::new(0.35).size(vec2(300.0, 300.0)).seed(9).label("Upscaling").background(t.card).colors([t.chart[1], t.chart[5], t.chart[0]]));
+                        ui.add(ImageGen::new(0.35).size(vec2(260.0, 260.0)).seed(9).label("Upscaling").background(t.card).colors([t.chart[1], t.chart[5], t.chart[0]]));
                         ui.add_space(8.0);
                         label(ui, "Generating");
+                    });
+                    cols[2].vertical_centered(|ui| {
+                        ui.add(ImageGen::new(1.0).size(vec2(260.0, 260.0)).seed(5).background(t.card));
+                        ui.add_space(8.0);
+                        label(ui, "Done");
                     });
                 });
             },
