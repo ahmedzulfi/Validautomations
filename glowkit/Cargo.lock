@@ -1308,9 +1308,7 @@ name = "glowkit-ai"
 version = "0.1.0"
 dependencies = [
  "egui",
- "glowkit-components",
  "glowkit-core",
- "glowkit-text",
 ]
 
 [[package]]

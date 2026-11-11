@@ -2,3 +2,4 @@
 /website/dist
 **/*.rs.bk
 /website/gallery/pkg*
+/target-*

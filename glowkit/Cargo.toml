@@ -41,5 +41,8 @@ glowkit = { path = "crates/glowkit", version = "0.1.0", default-features = false
 opt-level = 3
 lto = "thin"
 
+[profile.dev]
+debug = false
+
 [profile.dev.package."*"]
 opt-level = 2
