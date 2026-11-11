@@ -51,6 +51,9 @@
 //! * Scale is uniform (egui's `TSTransform` has a single scale factor). Use [`LayoutAnim`] to
 //!   animate real sizes: it lays content out inside the animated rect.
 
+// index loops read better than iterator chains in the numeric code here
+#![allow(clippy::needless_range_loop)]
+
 mod gesture;
 mod group;
 mod keyframes;

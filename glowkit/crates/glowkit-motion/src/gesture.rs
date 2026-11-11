@@ -428,7 +428,7 @@ impl Reorder {
     }
 
     /// Show the list. Returns `true` if the order changed this frame.
-    pub fn show<T, K: Hash + std::fmt::Debug>(self, ui: &mut Ui, items: &mut Vec<T>, key: impl Fn(&T) -> K, mut add: impl FnMut(&mut Ui, &T, ReorderItem)) -> bool {
+    pub fn show<T, K: Hash + std::fmt::Debug>(self, ui: &mut Ui, items: &mut [T], key: impl Fn(&T) -> K, mut add: impl FnMut(&mut Ui, &T, ReorderItem)) -> bool {
         let dkey = self.id.with("glowkit_reorder_drag");
         let mut drag: Option<ReorderDrag> = ui.data(|d| d.get_temp(dkey));
         let width = ui.available_width();
