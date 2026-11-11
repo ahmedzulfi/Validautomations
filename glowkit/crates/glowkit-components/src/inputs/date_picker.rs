@@ -414,7 +414,7 @@ impl Widget for DatePicker<'_> {
             None => (self.placeholder.clone(), t.muted_foreground),
         };
         ui.painter().with_clip_rect(rect.shrink(1.0)).text(pos2(rect.min.x + 38.0, rect.center().y), egui::Align2::LEFT_CENTER, s, FontId::proportional(14.0), col);
-        if resp.clicked() || (matches!(self.sel, Sel::Range(..)) && !open && ui.input(|i| i.time) < 1.5) {
+        if resp.clicked() {
             egui::Popup::toggle_id(ui.ctx(), popup_id);
         }
         let mut changed = false;

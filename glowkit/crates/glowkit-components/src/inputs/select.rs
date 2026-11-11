@@ -226,7 +226,7 @@ impl Widget for Select<'_> {
 
             let sid = popup_id.with("state");
             let mut st: SelState = glowkit_core::state(ui, sid, SelState::default);
-            if resp.clicked() || (self.id_salt == Some(Id::unique("fw")) && !egui::Popup::is_id_open(ui.ctx(), popup_id) && ui.input(|i| i.time) < 1.5) {
+            if resp.clicked() {
                 egui::Popup::toggle_id(ui.ctx(), popup_id);
             }
             let mut changed = false;

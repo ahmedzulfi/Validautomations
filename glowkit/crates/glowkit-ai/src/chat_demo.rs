@@ -170,7 +170,8 @@ pub(crate) fn show(ui: &mut Ui) {
             });
         });
         ui.add_space(6.0);
-        let conv_h = 470.0;
+        let show_suggestions = st.gen.is_none() && st.input.is_empty();
+        let conv_h = if show_suggestions { 470.0 } else { 513.0 };
         let mut regenerate = false;
         Conversation::new().height(conv_h).fade_edges(t.card).id_salt("chat_demo_conv").show(ui, |ui| {
             ui.spacing_mut().item_spacing.y = 22.0;
@@ -258,7 +259,7 @@ pub(crate) fn show(ui: &mut Ui) {
             }
         }
         ui.add_space(6.0);
-        if st.gen.is_none() && st.input.is_empty() {
+        if show_suggestions {
             let items = ["Write a Rust function that counts words", "Compare Rust GUI libraries in a table", "Explain lifetimes simply"];
             if let Some(i) = Suggestions::new(&items).icon(Icon::Sparkle).size(12.5).show(ui) {
                 st.input = items[i].to_owned();

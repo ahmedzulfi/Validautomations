@@ -61,6 +61,7 @@ impl Glyphs {
                 prev_space = true;
             }
         }
+        split_ligatures(painter, &mut glyphs, &font);
         let size = galley.size();
         Self { glyphs, size, font, galley }
     }
@@ -73,6 +74,35 @@ impl Glyphs {
     /// Number of non-whitespace characters.
     pub fn visible_count(&self) -> usize {
         self.glyphs.iter().filter(|g| !g.ch.is_whitespace()).count()
+    }
+}
+
+/// egui shapes ligatures ("ff", "fi", ...) into one glyph followed by zero-width glyphs. Effects
+/// that paint letter by letter need a box per character, so split the ligature's advance across
+/// its characters in proportion to their standalone widths.
+fn split_ligatures(painter: &Painter, glyphs: &mut [GlyphBox], font: &FontId) {
+    let n = glyphs.len();
+    let mut i = 0;
+    while i < n {
+        let mut j = i + 1;
+        while j < n && glyphs[j].size.x <= 1e-3 && glyphs[j].line == glyphs[i].line && !glyphs[j].ch.is_whitespace() {
+            j += 1;
+        }
+        if j > i + 1 {
+            let widths: Vec<f32> = (i..j)
+                .map(|k| painter.layout_no_wrap(glyphs[k].ch.to_string(), font.clone(), Color32::WHITE).size().x)
+                .collect();
+            let sum = widths.iter().sum::<f32>().max(1e-3);
+            let total = glyphs[i].size.x;
+            let mut x = glyphs[i].offset.x;
+            for (k, w) in (i..j).zip(widths) {
+                let w = w * total / sum;
+                glyphs[k].offset.x = x;
+                glyphs[k].size.x = w;
+                x += w;
+            }
+        }
+        i = j;
     }
 }
 

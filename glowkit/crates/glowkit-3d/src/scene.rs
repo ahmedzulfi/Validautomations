@@ -53,6 +53,7 @@ enum Prim {
     Tri([Pos2; 3], [Color32; 3]),
     Line { a: Pos2, b: Pos2, wa: f32, wb: f32, ca: Color32, cb: Color32 },
     Disc { c: Pos2, r: f32, color: Color32, soft: bool },
+    Ball { c: Pos2, r: f32, color: Color32, light: [f32; 3], spec: f32, ambient: f32 },
     Text(Box<EMesh>),
 }
 
@@ -508,6 +509,29 @@ impl Scene {
         self.push(d, Prim::Disc { c: s, r: rp, color, soft });
     }
 
+    /// A lit sphere impostor of world `radius`: a cheap, smooth, perfectly round shaded ball
+    /// (lit by the scene's first directional light). Great for molecules, planets, particles.
+    pub fn ball(&mut self, p: Vec3, radius: f32, color: Color32) {
+        let dir = self.lights.directional.first().map(|d| d.direction).unwrap_or(Vec3::new(0.4, 0.7, 0.6));
+        let amb = (self.lights.ambient_intensity + self.lights.sky_intensity * 0.5).clamp(0.0, 1.0);
+        self.ball_lit(p, radius, color, dir, amb, 0.45);
+    }
+
+    /// A sphere impostor lit from world direction `light` (towards the light) with `ambient`
+    /// light and `specular` highlight strength.
+    pub fn ball_lit(&mut self, p: Vec3, radius: f32, color: Color32, light: Vec3, ambient: f32, specular: f32) {
+        let v = self.view.transform_point(p);
+        let Some((s, d)) = self.proj.project(v) else { return };
+        let rp = radius * self.proj.scale_at(d);
+        if rp < 0.05 || !self.rect.expand(rp).contains(s) {
+            return;
+        }
+        let l = self.view.transform_vector(light).normalized();
+        let color = self.fog_color(color, d);
+        self.stats.points += 1;
+        self.push(d, Prim::Ball { c: s, r: rp, color, light: [l.x, l.y, l.z], spec: specular, ambient });
+    }
+
     fn fog_color(&self, color: Color32, d: f32) -> Color32 {
         match self.fog {
             Some(f) => {
@@ -733,6 +757,7 @@ impl Scene {
                 }
                 Prim::Line { a, b, wa, wb, ca, cb } => emit_line(&mut m, *a, *b, *wa, *wb, *ca, *cb),
                 Prim::Disc { c, r, color, soft } => emit_disc(&mut m, *c, *r, *color, *soft),
+                Prim::Ball { c, r, color, light, spec, ambient } => emit_ball(&mut m, *c, *r, *color, *light, *spec, *ambient),
                 Prim::Text(tm) => {
                     flush(&mut m, &mut shapes);
                     shapes.push(Shape::mesh((**tm).clone()));
@@ -832,6 +857,58 @@ fn emit_disc(m: &mut EMesh, c: Pos2, r: f32, color: Color32, soft: bool) {
         let j = (i + 1) % n;
         let (ai, ao, bi, bo) = (base + 1 + i * 2, base + 2 + i * 2, base + 1 + j * 2, base + 2 + j * 2);
         m.indices.extend([base, ai, bi, ai, ao, bo, ai, bo, bi]);
+    }
+}
+
+fn emit_ball(m: &mut EMesh, c: Pos2, r: f32, color: Color32, l: [f32; 3], spec: f32, ambient: f32) {
+    let segs: u32 = if r < 3.0 { 8 } else if r < 10.0 { 16 } else { 28 };
+    let rings: u32 = if r < 3.0 { 2 } else if r < 10.0 { 4 } else { 6 };
+    let base_c = Rgb::from(color);
+    let alpha = color.a() as f32 / 255.0;
+    let additive = color.a() == 0;
+    let alpha = if additive { 1.0 } else { alpha };
+    let h = {
+        let (x, y, z) = (l[0], l[1], l[2] + 1.0);
+        let n = (x * x + y * y + z * z).sqrt().max(1e-6);
+        [x / n, y / n, z / n]
+    };
+    let shade = |nx: f32, ny: f32, nz: f32| -> Color32 {
+        let ndl = (nx * l[0] + ny * l[1] + nz * l[2]).max(0.0);
+        let s = (nx * h[0] + ny * h[1] + nz * h[2]).max(0.0).powf(28.0) * spec;
+        let rim = (1.0 - nz).powi(3) * 0.25;
+        let k = ambient + (1.0 - ambient) * ndl;
+        base_c.scale(k).add(Rgb(s + rim * base_c.0, s + rim * base_c.1, s + rim * base_c.2)).to_color(alpha, additive)
+    };
+    let base = m.vertices.len() as u32;
+    m.vertices.push(Vertex { pos: c, uv: WHITE_UV, color: shade(0.0, 0.0, 1.0) });
+    for k in 1..=rings {
+        let s = (k as f32 / rings as f32).powf(0.75);
+        let rr = if k == rings { (r - 0.3).max(0.2) } else { r * s };
+        let s = rr / r;
+        let nz = (1.0 - s * s).max(0.0).sqrt();
+        for i in 0..segs {
+            let a = i as f32 / segs as f32 * TAU;
+            let (ca, sa) = (a.cos(), a.sin());
+            // screen y is down; view-space y is up
+            m.vertices.push(Vertex { pos: c + vec2(ca, sa) * rr, uv: WHITE_UV, color: shade(ca * s, -sa * s, nz) });
+        }
+    }
+    // feather ring
+    for i in 0..segs {
+        let a = i as f32 / segs as f32 * TAU;
+        m.vertices.push(Vertex { pos: c + vec2(a.cos(), a.sin()) * (r + 0.6), uv: WHITE_UV, color: Color32::TRANSPARENT });
+    }
+    for i in 0..segs {
+        let j = (i + 1) % segs;
+        m.indices.extend([base, base + 1 + i, base + 1 + j]);
+    }
+    for k in 1..=rings {
+        let a0 = base + 1 + (k - 1) * segs;
+        let b0 = base + 1 + k * segs;
+        for i in 0..segs {
+            let j = (i + 1) % segs;
+            m.indices.extend([a0 + i, b0 + i, b0 + j, a0 + i, b0 + j, a0 + j]);
+        }
     }
 }
 
