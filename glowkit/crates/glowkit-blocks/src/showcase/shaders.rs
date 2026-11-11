@@ -180,8 +180,8 @@ impl ColorBends {
             let u = h * bands * 0.35 - time * 0.05;
             let c = gradient_cyclic(&colors, u);
             // soft ridges between the bands
-            let ridge = 0.62 + 0.38 * (u * colors.len() as f32 * TAU).cos().abs().powf(0.5);
-            let c = mix(Color32::BLACK, c, ridge);
+            let ridge = 0.8 + 0.2 * (u * TAU * 1.5).cos();
+            let c = c.lerp_to_gamma(Color32::BLACK, (1.0 - ridge) * if t.dark { 1.0 } else { 0.5 });
             // fade into the page at the edges
             let vg = (uv.x * (1.0 - uv.x) * uv.y * (1.0 - uv.y) * 16.0).powf(0.35).min(1.0);
             bg.lerp_to_gamma(c, vg * if t.dark { 0.95 } else { 0.85 })
@@ -438,7 +438,7 @@ impl Default for FaultyTerminal {
 impl FaultyTerminal {
     /// Phosphor-green terminal.
     pub fn new() -> Self {
-        Self { size: None, speed: 1.0, color: hex("#4ADE80"), glyph: 13.0 }
+        Self { size: None, speed: 1.0, color: hex("#4ADE80"), glyph: 14.0 }
     }
     /// Phosphor color.
     pub fn color(mut self, c: Color32) -> Self {
@@ -476,11 +476,11 @@ impl FaultyTerminal {
                 let c = pos2(ox + x as f32 * cw + shift, oy + y as f32 * ch);
                 let u = x as f32 / cols as f32;
                 let v = y as f32 / rows as f32;
-                let wave = 0.5 + 0.5 * fbm3(u * 3.0, v * 2.0 - time * 0.12, time * 0.1, 2);
+                let wave = (0.5 + 0.9 * fbm3(u * 3.0, v * 2.0 - time * 0.12, time * 0.1, 2)).clamp(0.0, 1.0);
                 let d = c.distance(ptr) / 140.0;
                 let glow = (1.0 - d).clamp(0.0, 1.0).powf(2.0);
                 let roll = (0.5 + 0.5 * ((v - time * 0.15) * TAU * 1.5).sin()).powf(6.0) * 0.4;
-                let b = (wave.powf(2.2) * 0.85 + glow * 0.9 + roll) * flicker;
+                let b = (0.12 + wave.powf(1.6) * 0.95 + glow * 0.9 + roll) * flicker;
                 if b < 0.06 {
                     continue;
                 }

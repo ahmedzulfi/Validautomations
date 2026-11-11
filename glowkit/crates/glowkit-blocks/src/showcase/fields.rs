@@ -47,7 +47,7 @@ impl Default for MetaBalls {
 impl MetaBalls {
     /// Default blobs in the theme gradient.
     pub fn new() -> Self {
-        Self { size: None, count: 9, colors: Vec::new(), speed: 1.0, cell: 6.0 }
+        Self { size: None, count: 9, colors: Vec::new(), speed: 1.0, cell: 4.5 }
     }
     /// Size (defaults to available width x 360).
     pub fn size(mut self, w: f32, h: f32) -> Self {
@@ -111,7 +111,7 @@ impl MetaBalls {
                 acc[1] += rgb[i][1] * w2;
                 acc[2] += rgb[i][2] * w2;
             }
-            let a = smoothstep(0.9, 1.1, f) * 0.95 + smoothstep(0.35, 0.9, f) * 0.18;
+            let a = smoothstep(0.78, 1.12, f) * 0.95 + smoothstep(0.3, 0.8, f) * 0.15;
             if a <= 0.001 {
                 return Color32::TRANSPARENT;
             }
@@ -281,8 +281,8 @@ impl Widget for BallPit {
             // occasional stir so the pit never sleeps
             if !real && (time % 4.0) < dt {
                 for (i, b) in bs.iter_mut().enumerate() {
-                    if hash01(i as u64 + (time as u64) * 13) < 0.4 {
-                        b.vel += vec2(hash01(i as u64 * 3) * 300.0 - 150.0, -500.0 - 300.0 * hash01(i as u64 * 7));
+                    if hash01(i as u64 + (time as u64) * 13) < 0.25 {
+                        b.vel += vec2(hash01(i as u64 * 3) * 240.0 - 120.0, -260.0 - 200.0 * hash01(i as u64 * 7));
                     }
                 }
             }

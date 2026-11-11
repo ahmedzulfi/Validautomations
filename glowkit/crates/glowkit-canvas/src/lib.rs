@@ -8,6 +8,7 @@ mod node_editor;
 pub mod json;
 mod undo;
 mod view;
+mod whiteboard;
 
 pub use common::Icon;
 pub use freehand::{paint_ink, paint_ribbon, stroke_radii, InkPoint, InkStyle};
@@ -24,3 +25,4 @@ pub fn demos() -> Vec<glowkit_core::demo::Demo> {
 }
 pub use graph::{ConnectError, Edge, EdgeAnim, EdgeId, EdgeKind, Graph, LayoutDirection, Node, NodeId, NodeShape, NodeStatus, Port, PortLayout, PortRef, PortSide, PortType};
 pub use node_editor::{paint_node, shape_points, NodeEditor, NodeEditorResponse, NodeEditorState, PaletteItem};
+pub use whiteboard::{paint_wb_shape, rough_segment, synthetic_stroke, Document, ShapeKind, Tool, WbShape, WbStyle, Whiteboard, WhiteboardState, INK, STICKY_COLORS, WB_COLORS};

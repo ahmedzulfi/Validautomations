@@ -43,7 +43,7 @@ fn line_color(f: &Frame) -> Color32 {
     if t.dark {
         mix(t.border, t.foreground, 0.12)
     } else {
-        t.border
+        mix(t.border, t.foreground, 0.1)
     }
 }
 

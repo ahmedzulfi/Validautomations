@@ -442,3 +442,25 @@ impl Fireworks {
     }
 }
 area_widget!(Fireworks);
+
+#[cfg(test)]
+mod fw_tests {
+    #[test]
+    fn fireworks_explode() {
+        let ctx = egui::Context::default();
+        let mut shapes = 0;
+        for f in 0..240 {
+            let mut input = egui::RawInput::default();
+            input.time = Some(f as f64 / 60.0);
+            input.predicted_dt = 1.0 / 60.0;
+            let mut out = ctx.run_ui(input, |ui| {
+                let rect = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(800.0, 360.0));
+                super::Fireworks::new().interval(0.7).show(ui, rect);
+            });
+            out.textures_delta.clear();
+            shapes = out.shapes.len();
+            if f % 30 == 0 { eprintln!("frame {f}: shapes {shapes}"); }
+        }
+        assert!(shapes > 0);
+    }
+}
