@@ -135,7 +135,7 @@ pub(crate) fn sample_page(ui: &mut Ui, sc: &mut ShellContext<'_>, nav: &[NavSect
                 if r.max.y > b.max.y {
                     break;
                 }
-                let (resp, _) = kit::row(ui, r.expand2(vec2(6.0, 0.0)), ui.id().with(("act", i)), t.radius * 0.6);
+                let (resp, _) = kit::row(ui, r.expand2(vec2(6.0, 0.0)), ui.scope_id().with(("act", i)), t.radius * 0.6);
                 kit::avatar(ui, Rect::from_center_size(pos2(r.min.x + 16.0, r.center().y), vec2(30.0, 30.0)), who);
                 kit::text_at(&p, pos2(r.min.x + 40.0, r.center().y - 8.0), Align2::LEFT_CENTER, who, 13.0, t.foreground, b.width() - 90.0);
                 kit::text_at(&p, pos2(r.min.x + 40.0, r.center().y + 9.0), Align2::LEFT_CENTER, what, 12.0, t.muted_foreground, b.width() - 90.0);
