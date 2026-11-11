@@ -7,10 +7,11 @@
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
     "build": "wxt build",
-    "build:firefox": "wxt build -b firefox",
+    "build:firefox": "wxt build -b firefox --mv3",
     "zip": "wxt zip",
     "typecheck": "wxt prepare && tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "zip:firefox": "wxt zip -b firefox --mv3"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

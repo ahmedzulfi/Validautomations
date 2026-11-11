@@ -4,3 +4,8 @@ export {parseXBookmarks, xBottomCursor} from './parsers/x';
 export {parseLinkedInSavedPosts} from './parsers/linkedin';
 export {flattenBookmarkTree, parseBookmarksHtml, type BookmarkNode} from './parsers/bookmarks';
 export {chunk} from './chunk';
+export {parseRedditSaved, redditNextAfter} from './parsers/reddit';
+export {parseYouTubePlaylist, extractYtInitialData} from './parsers/youtube';
+export {parseInstagramSaved, instagramNextMaxId} from './parsers/instagram';
+export {parseGitHubStars} from './parsers/github';
+export {parseCsv, parseBookmarksCsv} from './parsers/csv';

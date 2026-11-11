@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Stash: a stack of saved cards on Lime's acid lime. -->
+  <rect width="512" height="512" rx="116" fill="#e4f222"/>
+  <rect x="136" y="132" width="240" height="56" rx="28" fill="#0f0f0d" opacity="0.35"/>
+  <rect x="116" y="222" width="280" height="64" rx="32" fill="#0f0f0d" opacity="0.65"/>
+  <rect x="96" y="320" width="320" height="72" rx="36" fill="#0f0f0d"/>
+</svg>

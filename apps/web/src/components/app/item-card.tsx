@@ -1,6 +1,6 @@
 'use client';
 
-import {SOURCE_LABELS, type Source} from '@stash/shared';
+import {POST_SOURCES, SOURCE_LABELS, type Source} from '@stash/shared';
 import Link from 'next/link';
 import {useOptimistic, useState, useTransition} from 'react';
 import {deleteItemAction, moveItemAction} from '@/app/actions';
@@ -14,6 +14,8 @@ import {
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/lime/ui/dropdown-menu';
 import {useToast} from '@/components/lime/ui/toast';
+import {Checkbox} from '@/components/lime/ui/checkbox';
+import {cn} from '@/lib/lime/utils';
 
 export type ItemCardData = {
   id: string;
@@ -36,13 +38,24 @@ export type ItemCardData = {
 
 const INBOX = 'inbox';
 
-export function ItemCard({item, categories}: {item: ItemCardData; categories: Array<{id: string; name: string}>}) {
+type ItemCardProps = {
+  item: ItemCardData;
+  categories: Array<{id: string; name: string}>;
+  /** In select mode a checkbox leads the card. */
+  selecting?: boolean;
+  selected?: boolean;
+  onSelectedChange?: (selected: boolean) => void;
+  /** Why this item is shown, such as how close it is to a search by meaning. */
+  note?: string;
+};
+
+export function ItemCard({item, categories, selecting, selected, onSelectedChange, note}: ItemCardProps) {
   const toast = useToast();
   const [, startTransition] = useTransition();
   const [categoryId, setCategoryId] = useOptimistic(item.categoryId);
   const [imageFailed, setImageFailed] = useState(false);
   const current = categories.find((c) => c.id === categoryId);
-  const isPost = item.sources.includes('x') || item.sources.includes('linkedin');
+  const isPost = item.sources.some((s) => POST_SOURCES.has(s));
   const title = item.title ?? item.host;
 
   const move = (value: string) => {
@@ -68,8 +81,17 @@ export function ItemCard({item, categories}: {item: ItemCardData; categories: Ar
   };
 
   return (
+    <div className={cn('flex w-full min-w-0 rounded-panel', selected && 'ring-2 ring-accent-line')}>
     <Card variant="outline" className="flex w-full min-w-0 flex-col gap-3 p-4">
       <div className="flex items-start gap-3">
+        {selecting && (
+          <Checkbox
+            checked={Boolean(selected)}
+            onCheckedChange={(v: boolean) => onSelectedChange?.(v)}
+            aria-label={`Select ${title}`}
+            className="mt-1"
+          />
+        )}
         {isPost && item.authorName ? (
           <Avatar name={item.authorName} src={item.authorAvatar ?? undefined} size="sm"/>
         ) : null}
@@ -125,6 +147,8 @@ export function ItemCard({item, categories}: {item: ItemCardData; categories: Ar
         />
       )}
 
+      {note && <p className="text-sm text-fg-2">{note}</p>}
+
       <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
         {item.sources.map((s) => <Badge key={s}>{SOURCE_LABELS[s]}</Badge>)}
         {current
@@ -137,5 +161,6 @@ export function ItemCard({item, categories}: {item: ItemCardData; categories: Ar
         ))}
       </div>
     </Card>
+    </div>
   );
 }

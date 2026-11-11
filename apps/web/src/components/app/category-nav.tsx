@@ -7,6 +7,7 @@ type Props = {
   view: string;
   total: number;
   inbox: number;
+  broken?: number;
   compact?: boolean;
   className?: string;
 };
@@ -15,11 +16,12 @@ type Props = {
  * The views of the library: everything, the inbox, then each category with its count. A column on wide
  * screens; a scrolling row of chips on a phone.
  */
-export function CategoryNav({categories, view, total, inbox, compact, className}: Props) {
+export function CategoryNav({categories, view, total, inbox, broken = 0, compact, className}: Props) {
   const rows = [
     {key: 'all', href: '/library', label: 'All saves', count: total},
     {key: 'inbox', href: '/library?view=inbox', label: 'Inbox', count: inbox},
     ...categories.map((c) => ({key: c.id, href: `/library?view=${c.id}`, label: c.name, count: c.count})),
+    ...(broken > 0 || view === 'broken' ? [{key: 'broken', href: '/library?view=broken', label: 'Broken links', count: broken}] : []),
   ];
 
   if (compact) {
@@ -46,7 +48,7 @@ export function CategoryNav({categories, view, total, inbox, compact, className}
       <h2 className="px-3 pb-2 text-lg font-semibold">Categories</h2>
       {rows.map((row, i) => (
         <div key={row.key} className="contents">
-          {i === 2 && <div role="separator" className="mx-3 my-2 h-px bg-line"/>}
+          {(i === 2 || (row.key === 'broken' && i > 2)) && <div role="separator" className="mx-3 my-2 h-px bg-line"/>}
           <Link
             href={row.href}
             aria-current={view === row.key ? 'page' : undefined}

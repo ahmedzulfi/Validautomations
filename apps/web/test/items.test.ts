@@ -83,3 +83,14 @@ describe('listItems', () => {
     expect(row!.category_id).toBeNull();
   });
 });
+
+describe('search by words', () => {
+  it('matches other forms of a word', async () => {
+    const user = await makeUser();
+    await ingestItems(user, [{source: 'x', sourceId: '1', url: 'https://x.com/i/status/1', text: 'Partial indexes beat composite ones'}]);
+    expect((await listItems(user, {view: 'all', q: 'indexing'})).total).toBe(1);
+    expect((await listItems(user, {view: 'all', q: 'index'})).total).toBe(1);
+    expect((await listItems(user, {view: 'all', q: 'composite indexing'})).total).toBe(1);
+    expect((await listItems(user, {view: 'all', q: 'postgres'})).total).toBe(0);
+  });
+});

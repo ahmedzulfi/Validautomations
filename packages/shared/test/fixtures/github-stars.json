@@ -1,0 +1,4 @@
+[
+ {"starred_at":"2025-09-01T10:00:00Z","repo":{"full_name":"pgvector/pgvector","html_url":"https://github.com/pgvector/pgvector","description":"Open-source vector similarity search for Postgres","language":"C","topics":["postgres","vector-search"],"homepage":"","owner":{"login":"pgvector","avatar_url":"https://avatars.githubusercontent.com/u/1"}}},
+ {"full_name":"vercel/ai","html_url":"https://github.com/vercel/ai","description":"The AI Toolkit for TypeScript","language":"TypeScript","homepage":"https://ai-sdk.dev","owner":{"login":"vercel"}}
+]

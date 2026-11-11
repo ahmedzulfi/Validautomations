@@ -3,7 +3,7 @@ import {after} from 'next/server';
 import {authenticateRequest} from '@/lib/server/auth';
 import {error, json, preflight} from '@/lib/server/http';
 import {ingestItems} from '@/lib/server/items';
-import {sortPending} from '@/lib/server/organize';
+import {organizeInBackground} from '@/lib/server/organize';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -25,6 +25,6 @@ export async function POST(request: Request) {
   const parsed = ingestRequestSchema.safeParse(body);
   if (!parsed.success) return error(400, `Some items are not valid: ${parsed.error.issues.slice(0, 3).map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')}`);
   const result = await ingestItems(user.id, parsed.data.items);
-  if (result.added > 0) after(() => sortPending(user.id));
+  if (result.added > 0) after(() => organizeInBackground(user.id));
   return json(result);
 }

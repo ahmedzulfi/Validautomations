@@ -8,19 +8,23 @@
 
 ---
 
-## Status: Phase 1 built (see README.md to run it)
+## Status: Phases 1 to 3 built, Phase 4 store material ready (see README.md to run it)
 
-Done: all three importers (X, LinkedIn, browser bookmarks, plus a bookmarks-file upload), dedup across sources, AI category suggestions with review and approval, background sorting with an inbox for unsure items, corrections fed back to the AI, library with search, source filter and move, export to Markdown and CSV, delete everything, dark mode, "Save this page" and a daily auto-sync in the extension. Also from Phase 2: live sync of new bookmarks, and export.
+Built:
+- **Phase 1:** importers for X, LinkedIn and browser bookmarks; dedup across sources; AI category suggestions with review; background sorting with an inbox; corrections fed back to the AI; library with search, source filter and move; export; delete everything; dark mode.
+- **Phase 2:** search by meaning (embeddings in pgvector) and "Ask your saves" with cited answers; "Save this page" and live bookmark sync in the extension; daily auto-sync; broken-link checker; weekly digest email; Markdown and CSV export; bulk select, move and remove.
+- **Phase 3:** Reddit, YouTube (Watch later and likes), Instagram and GitHub stars; Pocket and Raindrop CSV import; Firefox build (Safari by Apple's converter, documented); installable phone app with share-sheet saving; three older saves resurfaced each day.
+- **Phase 4 (in part):** landing page, privacy policy, app icon, and the full Chrome Web Store and Firefox Add-ons listing (`apps/extension/STORE_LISTING.md`).
+
+Not built: **paid plans and billing.** That needs decisions only you can make: prices, what the free tier includes, and a Stripe account. Once those exist, it is a Stripe Checkout page, a webhook that records the plan, and a limit check in the ingest route.
 
 Changes from the plan below, and why:
-- **Auth is built in** (email and password, sessions in Postgres, API tokens for the extension) instead of Supabase Auth. Any Postgres works, Supabase included, and the whole flow can be tested locally without a hosted service.
-- **Search is Postgres full-text search** for now. Semantic search with embeddings (pgvector) stays in Phase 2.
+- **Auth is built in** (email and password, sessions in Postgres, API tokens for the extension) instead of Supabase Auth. Any Postgres with pgvector works, Supabase included, and everything can be tested locally.
 - **One category per item, plus tags in an array**, rather than many-to-many tables. Simpler, and it matches how the library is browsed.
-- **AI calls go through OpenRouter with the Vercel AI SDK** (`ai` + `@openrouter/ai-sdk-provider`), so any OpenRouter model can be used. Categories are suggested by `anthropic/claude-opus-5.5` (rare, judgment-heavy) and items sorted by `anthropic/claude-haiku-5.5` (high volume). Both can be changed with environment variables.
+- **AI calls go through OpenRouter with the Vercel AI SDK** (`ai` + `@openrouter/ai-sdk-provider`), so any OpenRouter model can be used. `anthropic/claude-opus-5.5` suggests categories and answers questions, `anthropic/claude-haiku-5.5` sorts, and `openai/text-embedding-3-small` powers search by meaning. Requests only go to providers that do not store or train on the data.
+- **Reddit and Instagram are read with the person's login** from the extension rather than by scrolling a page, since both offer their own saved-list JSON. GitHub stars are imported by the server, since they are public.
 - **No Turborepo:** pnpm workspaces are enough at this size.
-- **Lime gaps:** Lime's Approval request component is built around money, so the category review uses Lime's form fields and List instead. The Action receipt confirms the result.
-
-Not yet done: Phase 2 semantic search and weekly digest, Phase 3 sources and browsers, and the Chrome Web Store listing.
+- **Lime gaps:** Lime's Approval request is built around money, so the category review uses Lime's fields and List; Lime has no bulk action bar or command palette, so the bulk bar is built from Lime's Button and menu.
 
 ---
 

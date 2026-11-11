@@ -10,6 +10,7 @@ import {cn} from '@/lib/lime/utils';
 
 const LINKS = [
   {href: '/library', label: 'Library'},
+  {href: '/ask', label: 'Ask'},
   {href: '/categories', label: 'Categories'},
   {href: '/settings', label: 'Settings'},
 ];

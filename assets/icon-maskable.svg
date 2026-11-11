@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Full-bleed version for Android, with the mark inside the safe zone. -->
+  <rect width="512" height="512" fill="#e4f222"/>
+  <rect x="166" y="166" width="180" height="42" rx="21" fill="#0f0f0d" opacity="0.35"/>
+  <rect x="151" y="234" width="210" height="48" rx="24" fill="#0f0f0d" opacity="0.65"/>
+  <rect x="136" y="308" width="240" height="54" rx="27" fill="#0f0f0d"/>
+</svg>

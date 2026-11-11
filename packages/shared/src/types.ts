@@ -1,14 +1,21 @@
 import {z} from 'zod';
 
-export const SOURCES = ['x', 'linkedin', 'bookmark', 'web'] as const;
+export const SOURCES = ['x', 'linkedin', 'reddit', 'youtube', 'instagram', 'github', 'bookmark', 'web'] as const;
 export type Source = (typeof SOURCES)[number];
 
 export const SOURCE_LABELS: Record<Source, string> = {
   x: 'X',
   linkedin: 'LinkedIn',
+  reddit: 'Reddit',
+  youtube: 'YouTube',
+  instagram: 'Instagram',
+  github: 'GitHub',
   bookmark: 'Bookmarks',
   web: 'Saved pages',
 };
+
+/** Sources whose items are posts by a person, shown with the author first. */
+export const POST_SOURCES: ReadonlySet<Source> = new Set(['x', 'linkedin', 'reddit', 'instagram']);
 
 export const mediaSchema = z.object({
   type: z.enum(['image', 'video']),

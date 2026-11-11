@@ -1,7 +1,10 @@
 'use client';
 
 import {useActionState, useEffect, useState, useTransition} from 'react';
-import {createTokenAction, deleteAllDataAction, importBookmarksFileAction, revokeTokenAction} from '@/app/actions';
+import {createTokenAction, deleteAllDataAction, importBookmarksFileAction, importGitHubStarsAction, revokeTokenAction, sendDigestNowAction, setDigestAction, startLinkCheckAction} from '@/app/actions';
+import {useRouter} from 'next/navigation';
+import {Switch} from '@/components/lime/ui/switch';
+import {Progress} from '@/components/lime/ui/progress';
 import {
   AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogTitle, AlertDialogTrigger,
@@ -84,7 +87,7 @@ export function ImportBookmarks() {
     startTransition(async () => {
       const r = await importBookmarksFileAction(form);
       if (r.error) return setError(r.error);
-      const text = `Imported ${r.added} new ${r.added === 1 ? 'bookmark' : 'bookmarks'}${r.existing ? `, ${r.existing} you already had` : ''}.`;
+      const text = `Imported ${r.added} new ${r.added === 1 ? 'link' : 'links'}${r.existing ? `, ${r.existing} you already had` : ''}.`;
       setResult(text);
       toast.show({title: text});
     });
@@ -92,13 +95,13 @@ export function ImportBookmarks() {
   return (
     <div className="flex flex-col gap-2">
       <Dropzone
-        accept=".html,.htm,text/html"
+        accept=".html,.htm,.csv,text/html,text/csv"
         maxSize={20 * 1024 * 1024}
         disabled={pending}
         onFiles={upload}
-        onReject={() => setError('Use the .html file your browser exports, up to 20 MB.')}
-        title={pending ? 'Importing…' : 'Drop your bookmarks file here'}
-        hint="HTML export from Chrome, Edge, Firefox or Safari, up to 20 MB"
+        onReject={() => setError('Use an .html or .csv export, up to 20 MB.')}
+        title={pending ? 'Importing…' : 'Drop a bookmarks file here'}
+        hint="Browser HTML export, or CSV from Pocket, Raindrop or elsewhere, up to 20 MB"
       />
       {result && <p role="status" className="text-sm text-fg">{result}</p>}
       {error && <p role="alert" className="text-sm text-danger-text">{error}</p>}
@@ -153,5 +156,87 @@ export function DeleteEverything() {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  );
+}
+
+export function GitHubImport() {
+  const [state, formAction, pending] = useActionState(importGitHubStarsAction, undefined);
+  return (
+    <div className="flex flex-col gap-2">
+      <form action={formAction} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <Field name="username" className="flex-1">
+          <FieldLabel>GitHub username</FieldLabel>
+          <Input name="username" placeholder="octocat" autoComplete="off" required maxLength={39}/>
+        </Field>
+        <Button type="submit" variant="secondary" pending={pending}>Import stars</Button>
+      </form>
+      {state?.message && <p role="status" className="text-sm text-fg">{state.message}</p>}
+      {state?.error && <p role="alert" className="text-sm text-danger-text">{state.error}</p>}
+    </div>
+  );
+}
+
+export function LinkChecker({running, checked, broken, due}: {running: boolean; checked: number; broken: number; due: number}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  useEffect(() => {
+    if (!running) return;
+    const timer = setInterval(() => router.refresh(), 3000);
+    return () => clearInterval(timer);
+  }, [running, router]);
+  const total = checked + due;
+  return (
+    <div className="flex flex-col gap-3">
+      {running ? (
+        <div role="status" className="flex flex-col gap-2">
+          <p className="text-sm text-fg">Checking links. {due} left.</p>
+          <Progress value={total ? (checked / total) * 100 : 0} label="Link check progress" valueText={`${checked} of ${total} checked`}/>
+        </div>
+      ) : (
+        <p className="text-sm text-fg-2">
+          {checked === 0 ? 'No links checked yet.' : `${checked} checked, ${broken} broken.`} {due > 0 ? `${due} ready to check.` : 'Everything has been checked this month.'}
+        </p>
+      )}
+      <div className="flex flex-wrap gap-2">
+        <Button variant="secondary" pending={pending} disabled={running || due === 0} onClick={() => startTransition(async () => {
+          await startLinkCheckAction();
+          router.refresh();
+        })}>
+          Check links
+        </Button>
+        {broken > 0 && <a href="/library?view=broken" className="self-center text-sm font-medium text-fg underline underline-offset-4">See {broken} broken {broken === 1 ? 'link' : 'links'}</a>}
+      </div>
+    </div>
+  );
+}
+
+export function DigestSetting({enabled, lastSentAt, emailReady, email}: {enabled: boolean; lastSentAt: string | null; emailReady: boolean; email: string}) {
+  const toast = useToast();
+  const [on, setOn] = useState(enabled);
+  const [sending, startSending] = useTransition();
+  return (
+    <div className="flex flex-col gap-3">
+      <label className="flex items-center justify-between gap-3 rounded-field bg-surface px-4 py-3 text-base text-fg">
+        <span className="flex flex-col">
+          Email me a weekly digest
+          <span className="text-sm text-fg-2">{emailReady ? `To ${email}. ${lastSentAt ? `Last sent ${lastSentAt}.` : 'Not sent yet.'}` : 'Email is not set up on this server (RESEND_API_KEY and STASH_EMAIL_FROM).'}</span>
+        </span>
+        <Switch checked={on} disabled={!emailReady} onCheckedChange={(v: boolean) => {
+          setOn(v);
+          void setDigestAction(v);
+        }}/>
+      </label>
+      <div className="flex flex-wrap gap-2">
+        <a href="/digest" className="self-center text-sm font-medium text-fg underline underline-offset-4">Preview this week</a>
+        {emailReady && (
+          <Button variant="ghost" size="sm" pending={sending} onClick={() => startSending(async () => {
+            const r = await sendDigestNowAction();
+            toast.show({title: r.error ?? r.message ?? 'Done'});
+          })}>
+            Send it to me now
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }

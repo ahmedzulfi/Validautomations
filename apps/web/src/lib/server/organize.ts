@@ -6,6 +6,7 @@ import {
   suggestTaxonomy, type Correction, type ItemForAi, type ModelPicker, type ProposedCategory,
 } from './ai';
 import {query, queryOne} from './db';
+import {embedPending} from './search';
 
 const BATCH_SIZE = 25;
 const PARALLEL_BATCHES = 3;
@@ -223,4 +224,10 @@ export function describeAiError(err: unknown): string {
   }
   if (cause instanceof Error) return cause.message;
   return 'Sorting stopped for an unknown reason. Try again.';
+}
+
+/** Everything that happens to new saves after they arrive: sort them, then make them searchable by meaning. */
+export async function organizeInBackground(userId: string): Promise<void> {
+  await sortPending(userId);
+  await embedPending(userId);
 }

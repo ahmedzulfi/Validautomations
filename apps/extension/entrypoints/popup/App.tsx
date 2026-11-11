@@ -9,10 +9,9 @@ import {useToast} from '@/components/lime/ui/toast';
 import {fetchMe} from '../../utils/api';
 import type {SavePageMessage, SavePageReply, SyncMessage, SyncSource} from '../../utils/messages';
 import {
-  emptyStatus, getAllStatus, getSettings, normalizeServerUrl, saveSettings, SOURCE_NAMES, type Settings, type SourceStatus,
+  emptyStatus, getAllStatus, getSettings, normalizeServerUrl, saveSettings, SOURCE_NAMES, SYNC_SOURCES as SOURCES, type Settings, type SourceStatus,
 } from '../../utils/settings';
 
-const SOURCES: SyncSource[] = ['x', 'linkedin', 'bookmark'];
 
 export function App() {
   const [settings, setSettings] = useState<Settings | null | undefined>(undefined);
@@ -78,7 +77,7 @@ function Connect({onConnected}: {onConnected: (s: Settings) => void}) {
 
 function Connected({settings, onChange}: {settings: Settings; onChange: (s: Settings | null) => void}) {
   const toast = useToast();
-  const [status, setStatus] = useState<Record<SyncSource, SourceStatus>>({x: emptyStatus(), linkedin: emptyStatus(), bookmark: emptyStatus()});
+  const [status, setStatus] = useState<Record<SyncSource, SourceStatus>>(() => Object.fromEntries(SOURCES.map((s) => [s, emptyStatus()])) as Record<SyncSource, SourceStatus>);
   const [saving, setSaving] = useState(false);
   const anyRunning = SOURCES.some((s) => status[s].state === 'running');
 
@@ -143,7 +142,7 @@ function Connected({settings, onChange}: {settings: Settings; onChange: (s: Sett
       </label>
 
       <p className="text-sm text-fg-2">
-        X and LinkedIn sync by opening your saved list and scrolling it, as you would. Stay logged in to them in this browser.
+        X, LinkedIn and YouTube sync by opening your saved list and scrolling it, as you would. Reddit and Instagram read your saved list with your login. Stay logged in to them in this browser.
       </p>
 
       <Button variant="link" className="self-start text-sm" onClick={async () => { await saveSettings(null); onChange(null); }}>

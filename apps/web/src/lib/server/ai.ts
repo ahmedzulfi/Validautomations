@@ -1,5 +1,5 @@
 import {createOpenRouter} from '@openrouter/ai-sdk-provider';
-import {generateText, JSONParseError, NoObjectGeneratedError, NoOutputGeneratedError, Output, TypeValidationError, type LanguageModel} from 'ai';
+import {embedMany, generateText, JSONParseError, NoObjectGeneratedError, NoOutputGeneratedError, Output, TypeValidationError, type LanguageModel} from 'ai';
 import {z} from 'zod/v4';
 
 // Calls go through OpenRouter with the Vercel AI SDK, so any model OpenRouter offers can be used.
@@ -28,7 +28,8 @@ export function openRouterModels(): ModelPicker {
     appUrl: process.env.STASH_PUBLIC_URL || undefined,
   });
   const p = provider;
-  return (modelId) => p(modelId);
+  // Only route to providers that do not store or train on what is sent (OpenRouter's data policy filter).
+  return (modelId) => p(modelId, {provider: {data_collection: 'deny'}});
 }
 
 /** What the model sees of one saved item. Long posts are cut to keep each batch small. */
@@ -198,4 +199,79 @@ export async function classifyBatch(
       summary: r.summary.trim().slice(0, 200),
     };
   });
+}
+
+// ---- Search by meaning ----------------------------------------------------------------------------
+
+export const EMBEDDING_MODEL = process.env.STASH_EMBEDDING_MODEL || 'openai/text-embedding-3-small';
+/** Must match the vector column (db/migrations/003). Models that take a size are asked for this one. */
+export const EMBEDDING_DIMENSIONS = 1536;
+
+/** Turns texts into vectors, one per text, in order. Tests pass their own. */
+export type Embedder = (values: string[]) => Promise<number[][]>;
+
+export function openRouterEmbedder(): Embedder {
+  provider ??= createOpenRouter({
+    apiKey: process.env.OPENROUTER_API_KEY,
+    baseURL: process.env.OPENROUTER_BASE_URL || undefined,
+    appName: 'Stash',
+    appUrl: process.env.STASH_PUBLIC_URL || undefined,
+  });
+  const model = provider.textEmbeddingModel(EMBEDDING_MODEL, {
+    extraBody: {dimensions: EMBEDDING_DIMENSIONS},
+    provider: {data_collection: 'deny'},
+  });
+  return async (values) => {
+    const {embeddings} = await embedMany({model, values, maxRetries: 2, maxParallelCalls: 2});
+    for (const e of embeddings) {
+      if (e.length !== EMBEDDING_DIMENSIONS) {
+        throw new Error(`The embedding model returned ${e.length} numbers, not ${EMBEDDING_DIMENSIONS}. Pick a model that can return ${EMBEDDING_DIMENSIONS}.`);
+      }
+    }
+    return embeddings;
+  };
+}
+
+/** The text an item is embedded from: what it says, plus what the AI learned about it. */
+export function embeddingText(item: ItemForAi & {summary?: string | null; tags?: string[]}): string {
+  const parts = [describeItem(item, 1500)];
+  if (item.summary) parts.push(`summary: ${item.summary}`);
+  if (item.tags?.length) parts.push(`tags: ${item.tags.join(', ')}`);
+  return parts.join('\n');
+}
+
+export function toVectorLiteral(v: number[]): string {
+  return `[${v.map((n) => (Number.isFinite(n) ? n : 0)).join(',')}]`;
+}
+
+// ---- Ask your saves -------------------------------------------------------------------------------
+
+export const ASK_MODEL = process.env.STASH_ASK_MODEL || TAXONOMY_MODEL;
+
+const AnswerSchema = z.object({
+  answer: z.string().describe('A short answer in plain words, citing saves like [2]'),
+  cited: z.array(z.number().int()).describe('The numbers of the saves the answer uses'),
+});
+
+/**
+ * Answers a question from the person's own saves only. The saves are numbered; the answer cites them,
+ * and says so when the saves do not answer the question.
+ */
+export async function answerFromSaves(models: ModelPicker, question: string, saves: ItemForAi[]): Promise<{answer: string; cited: number[]}> {
+  const listing = saves.map((item, i) => `<save n="${i + 1}">\n${describeItem(item, 900)}\n</save>`).join('\n');
+  const parsed = await structured({
+    model: models(ASK_MODEL),
+    schema: AnswerSchema,
+    effort: 'low',
+    system:
+      'You answer questions using only the person\'s saved posts and bookmarks given below. ' +
+      'Cite the saves you use with their numbers in brackets, like [2]. ' +
+      'If the saves do not answer the question, say so plainly and point to the closest ones. ' +
+      'Keep it to a few sentences or a short list. No emoji.\n\n' + listing,
+    prompt: question,
+  });
+  return {
+    answer: parsed.answer.trim(),
+    cited: [...new Set(parsed.cited.filter((n) => n >= 1 && n <= saves.length))],
+  };
 }

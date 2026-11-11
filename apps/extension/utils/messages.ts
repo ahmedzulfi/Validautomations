@@ -10,6 +10,6 @@ export type SyncMessage = {type: 'stash:sync'; source: SyncSource | 'all'};
 export type SavePageMessage = {type: 'stash:save-page'; url: string; title: string};
 export type SavePageReply = {ok: true; added: boolean} | {ok: false; error: string};
 
-export type SyncSource = 'x' | 'linkedin' | 'bookmark';
+export type SyncSource = 'x' | 'linkedin' | 'reddit' | 'youtube' | 'instagram' | 'bookmark';
 
 export type BackgroundMessage = ItemsMessage | SyncMessage | SavePageMessage;

@@ -9,10 +9,12 @@ import type {FormState} from '@/app/actions';
 
 type Props = {
   mode: 'signin' | 'signup';
+  /** Where to go after signing in, such as a link shared from a phone. */
+  next?: string;
   action: (state: FormState, form: FormData) => Promise<FormState>;
 };
 
-export function AuthForm({mode, action}: Props) {
+export function AuthForm({mode, action, next}: Props) {
   const [state, formAction, pending] = useActionState(action, undefined);
   // Controlled, so a failed attempt does not clear what the person typed (React resets uncontrolled fields).
   const [email, setEmail] = useState('');
@@ -29,6 +31,7 @@ export function AuthForm({mode, action}: Props) {
         </p>
       </div>
       <form action={formAction} className="flex flex-col gap-4">
+        {next && <input type="hidden" name="next" value={next}/>}
         <Field name="email">
           <FieldLabel>Email</FieldLabel>
           <Input name="email" type="email" autoComplete="email" required size="lg" value={email} onChange={(e) => setEmail(e.target.value)}/>
@@ -45,7 +48,7 @@ export function AuthForm({mode, action}: Props) {
       </form>
       <p className="text-sm text-fg-2">
         {signup ? 'Already have an account? ' : 'New here? '}
-        <Link href={signup ? '/signin' : '/signup'} className="font-medium text-fg underline underline-offset-4">
+        <Link href={`${signup ? '/signin' : '/signup'}${next ? `?next=${encodeURIComponent(next)}` : ''}`} className="font-medium text-fg underline underline-offset-4">
           {signup ? 'Sign in' : 'Create an account'}
         </Link>
       </p>

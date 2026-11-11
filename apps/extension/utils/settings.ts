@@ -19,8 +19,13 @@ export type SourceStatus = {
 export const SOURCE_NAMES: Record<SyncSource, string> = {
   x: 'X bookmarks',
   linkedin: 'LinkedIn saved posts',
+  reddit: 'Reddit saved',
+  youtube: 'YouTube watch later and likes',
+  instagram: 'Instagram saved',
   bookmark: 'Browser bookmarks',
 };
+
+export const SYNC_SOURCES: SyncSource[] = ['x', 'linkedin', 'reddit', 'youtube', 'instagram', 'bookmark'];
 
 const SETTINGS_KEY = 'settings';
 const statusKey = (s: SyncSource) => `status:${s}`;
@@ -44,8 +49,8 @@ export async function getStatus(source: SyncSource): Promise<SourceStatus> {
 }
 
 export async function getAllStatus(): Promise<Record<SyncSource, SourceStatus>> {
-  const [x, linkedin, bookmark] = await Promise.all([getStatus('x'), getStatus('linkedin'), getStatus('bookmark')]);
-  return {x, linkedin, bookmark};
+  const entries = await Promise.all(SYNC_SOURCES.map(async (s) => [s, await getStatus(s)] as const));
+  return Object.fromEntries(entries) as Record<SyncSource, SourceStatus>;
 }
 
 export async function setStatus(source: SyncSource, patch: Partial<SourceStatus>): Promise<SourceStatus> {

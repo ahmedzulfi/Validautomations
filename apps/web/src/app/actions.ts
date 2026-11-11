@@ -1,17 +1,22 @@
 'use server';
 
-import {chunk, MAX_INGEST_BATCH, parseBookmarksHtml} from '@stash/shared';
 import {revalidatePath} from 'next/cache';
 import {redirect} from 'next/navigation';
 import {after} from 'next/server';
 import {z} from 'zod';
+import type {ItemCardData} from '@/components/app/item-card';
+import {toCardData} from '@/lib/card-data';
 import {aiConfigured, type ProposedCategory} from '@/lib/server/ai';
+import {askLibrary} from '@/lib/server/search';
+import {emailConfigured, sendDigest} from '@/lib/server/digest';
+import {checkLinks} from '@/lib/server/linkcheck';
 import {createApiToken, createSession, destroySession, requireUser} from '@/lib/server/auth';
 import {hashPassword, verifyPassword} from '@/lib/server/crypto';
 import {query, queryOne} from '@/lib/server/db';
-import {deleteItem, ingestItems, moveItem} from '@/lib/server/items';
+import {deleteItem, deleteItems, moveItem, moveItems} from '@/lib/server/items';
+import {importBookmarksFile, importGitHubStars, ImportError} from '@/lib/server/importers';
 import {
-  applyTaxonomy, deleteCategory, describeAiError, dismissProposal, proposeTaxonomy, renameCategory, sortPending,
+  applyTaxonomy, deleteCategory, describeAiError, dismissProposal, organizeInBackground, proposeTaxonomy, renameCategory,
 } from '@/lib/server/organize';
 
 export type FormState = {error?: string; message?: string} | undefined;
@@ -29,7 +34,7 @@ export async function signUpAction(_: FormState, form: FormData): Promise<FormSt
   if (existing) return {error: 'There is already an account with that email. Sign in instead.'};
   const user = await queryOne<{id: string}>('insert into users (email, password_hash) values ($1, $2) returning id', [email, await hashPassword(password)]);
   await createSession(user!.id);
-  redirect('/library');
+  redirect(safeNext(form.get('next')));
 }
 
 export async function signInAction(_: FormState, form: FormData): Promise<FormState> {
@@ -40,7 +45,13 @@ export async function signInAction(_: FormState, form: FormData): Promise<FormSt
     return {error: 'That email and password do not match an account.'};
   }
   await createSession(user.id);
-  redirect('/library');
+  redirect(safeNext(form.get('next')));
+}
+
+/** Only paths on this site, so a crafted link cannot send someone elsewhere after they sign in. */
+function safeNext(value: FormDataEntryValue | null): string {
+  const next = typeof value === 'string' ? value : '';
+  return next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/\\') ? next : '/library';
 }
 
 export async function signOutAction(): Promise<void> {
@@ -58,6 +69,37 @@ export async function deleteItemAction(itemId: string): Promise<void> {
   const user = await requireUser();
   await deleteItem(user.id, itemId);
   revalidatePath('/library');
+}
+
+const idList = z.array(z.string().uuid()).max(500);
+
+export async function moveItemsAction(itemIds: string[], categoryId: string | null): Promise<number> {
+  const user = await requireUser();
+  const moved = await moveItems(user.id, idList.parse(itemIds), categoryId === null ? null : z.string().uuid().parse(categoryId));
+  revalidatePath('/library');
+  return moved;
+}
+
+export async function deleteItemsAction(itemIds: string[]): Promise<number> {
+  const user = await requireUser();
+  const removed = await deleteItems(user.id, idList.parse(itemIds));
+  revalidatePath('/library');
+  return removed;
+}
+
+export type AskResult = {answer: string; sources: ItemCardData[]} | {error: string};
+
+export async function askAction(question: string): Promise<AskResult> {
+  const user = await requireUser();
+  const q = question.trim().slice(0, 500);
+  if (!q) return {error: 'Type a question first.'};
+  if (!aiConfigured()) return {error: 'Add OPENROUTER_API_KEY to the server environment to ask your saves.'};
+  try {
+    const {answer, sources} = await askLibrary(user.id, q);
+    return {answer, sources: sources.map(toCardData)};
+  } catch (err) {
+    return {error: describeAiError(err)};
+  }
 }
 
 export type SuggestResult = {proposalId: string; categories: ProposedCategory[]} | {error: string};
@@ -82,7 +124,7 @@ export async function applyCategoriesAction(proposalId: string | null, categorie
   if (!parsed.success) return {error: 'Some categories are not valid. Check the names and try again.'};
   try {
     const result = await applyTaxonomy(user.id, parsed.data, proposalId);
-    after(() => sortPending(user.id));
+    after(() => organizeInBackground(user.id));
     revalidatePath('/library');
     revalidatePath('/categories');
     return result;
@@ -101,7 +143,7 @@ export async function startSortingAction(): Promise<{error?: string}> {
   const user = await requireUser();
   if (!aiConfigured()) return {error: 'Add OPENROUTER_API_KEY to the server environment to sort with AI.'};
   await query('update users set sorting_error = null where id = $1', [user.id]);
-  after(() => sortPending(user.id));
+  after(() => organizeInBackground(user.id));
   revalidatePath('/library');
   return {};
 }
@@ -121,7 +163,7 @@ export async function renameCategoryAction(id: string, name: string, description
 export async function deleteCategoryAction(id: string): Promise<void> {
   const user = await requireUser();
   await deleteCategory(user.id, id);
-  after(() => sortPending(user.id));
+  after(() => organizeInBackground(user.id));
   revalidatePath('/library');
   revalidatePath('/categories');
 }
@@ -140,27 +182,62 @@ export async function revokeTokenAction(id: string): Promise<void> {
   revalidatePath('/settings');
 }
 
-const MAX_BOOKMARK_FILE = 20 * 1024 * 1024;
+const MAX_IMPORT_FILE = 20 * 1024 * 1024;
 
 export async function importBookmarksFileAction(form: FormData): Promise<{error?: string; added?: number; existing?: number}> {
   const user = await requireUser();
   const file = form.get('file');
-  if (!(file instanceof File) || file.size === 0) return {error: 'Choose a bookmarks file to import.'};
-  if (file.size > MAX_BOOKMARK_FILE) return {error: 'That file is over 20 MB. Export only the bookmarks, not the whole profile.'};
-  const items = parseBookmarksHtml(await file.text());
-  if (items.length === 0) return {error: 'No bookmarks found in that file. Use the HTML file your browser exports.'};
-  let added = 0;
-  let existing = 0;
-  for (const batch of chunk(items, MAX_INGEST_BATCH)) {
-    const r = await ingestItems(user.id, batch);
-    added += r.added;
-    existing += r.existing;
+  if (!(file instanceof File) || file.size === 0) return {error: 'Choose a file to import.'};
+  if (file.size > MAX_IMPORT_FILE) return {error: 'That file is over 20 MB. Export only the bookmarks, not the whole profile.'};
+  try {
+    const r = await importBookmarksFile(user.id, file.name, await file.text());
+    if (r.added > 0) after(() => organizeInBackground(user.id));
+    revalidatePath('/library');
+    revalidatePath('/settings');
+    return {added: r.added, existing: r.existing};
+  } catch (err) {
+    if (err instanceof ImportError) return {error: err.message};
+    throw err;
   }
-  await query('insert into sync_runs (user_id, source, items_seen, items_added) values ($1, $2, $3, $4)', [user.id, 'bookmark', items.length, added]);
-  if (added > 0) after(() => sortPending(user.id));
-  revalidatePath('/library');
+}
+
+export async function importGitHubStarsAction(_: FormState, form: FormData): Promise<FormState> {
+  const user = await requireUser();
+  try {
+    const r = await importGitHubStars(user.id, String(form.get('username') ?? ''));
+    if (r.added > 0) after(() => organizeInBackground(user.id));
+    revalidatePath('/library');
+    revalidatePath('/settings');
+    return {message: r.found === 0
+      ? 'That account has no starred repositories yet.'
+      : `Imported ${r.added} new starred ${r.added === 1 ? 'repository' : 'repositories'}${r.existing ? `, ${r.existing} you already had` : ''}.`};
+  } catch (err) {
+    if (err instanceof ImportError) return {error: err.message};
+    throw err;
+  }
+}
+
+export async function setDigestAction(enabled: boolean): Promise<void> {
+  const user = await requireUser();
+  await query('update users set digest_enabled = $2 where id = $1', [user.id, enabled]);
   revalidatePath('/settings');
-  return {added, existing};
+}
+
+export async function sendDigestNowAction(): Promise<{error?: string; message?: string}> {
+  const user = await requireUser();
+  if (!emailConfigured()) return {error: 'Set RESEND_API_KEY and STASH_EMAIL_FROM on the server to send email.'};
+  try {
+    const sent = await sendDigest(user.id);
+    return {message: sent ? `Sent to ${user.email}.` : 'Nothing new was saved this week, so there was nothing to send.'};
+  } catch (err) {
+    return {error: err instanceof Error ? err.message : 'Could not send the digest.'};
+  }
+}
+
+export async function startLinkCheckAction(): Promise<void> {
+  const user = await requireUser();
+  after(() => checkLinks(user.id));
+  revalidatePath('/settings');
 }
 
 export async function deleteAllDataAction(): Promise<void> {

@@ -22,6 +22,7 @@ export type Item = {
   tags: string[];
   summary: string | null;
   classifiedAt: string | null;
+  linkStatus: 'ok' | 'broken' | null;
 };
 
 export type Category = {
@@ -32,12 +33,12 @@ export type Category = {
   count: number;
 };
 
-const ITEM_COLUMNS = `
+export const ITEM_COLUMNS = `
   id, sources, url, title, body, author_name as "authorName", author_handle as "authorHandle",
   author_avatar as "authorAvatar", media, links, folder_path as "folderPath",
   saved_at as "savedAt", posted_at as "postedAt", imported_at as "importedAt",
   category_id as "categoryId", category_assigned_by as "categoryAssignedBy", tags, summary,
-  classified_at as "classifiedAt"`;
+  classified_at as "classifiedAt", link_status as "linkStatus"`;
 
 /**
  * Adds saved things to a person's library. The same link saved twice (or from two sources) becomes one
@@ -101,7 +102,7 @@ export async function ingestItems(userId: string, items: ItemInput[]): Promise<I
 }
 
 export type ItemFilter = {
-  /** A category id, 'inbox' for items the AI could not place, or 'all'. */
+  /** A category id, 'inbox' for items the AI could not place, 'broken' for dead links, or 'all'. */
   view: string;
   source?: Source | null;
   q?: string | null;
@@ -118,15 +119,17 @@ export async function listItems(userId: string, filter: ItemFilter): Promise<{it
     where.push(sql.replace('?', `$${params.length}`));
   };
   if (filter.view === 'inbox') where.push('category_id is null');
+  else if (filter.view === 'broken') where.push(`link_status = 'broken'`);
   else if (filter.view !== 'all') add('category_id = ?', filter.view);
   if (filter.source) add('? = any(sources)', filter.source);
   const q = filter.q?.trim();
   let order = 'coalesce(saved_at, imported_at) desc, id';
   if (q) {
-    add(`(search @@ websearch_to_tsquery('simple', ?) or ? = any(tags))`, q);
-    // The second placeholder reuses the same text.
-    where[where.length - 1] = where[where.length - 1]!.replace('?', `$${params.length}`);
-    order = `ts_rank(search, websearch_to_tsquery('simple', $${params.length})) desc, ${order}`;
+    // English stems (indexing matches indexes) plus the exact words, for names and other languages.
+    add(`(search @@ (websearch_to_tsquery('english', ?) || websearch_to_tsquery('simple', ?)) or ? = any(tags))`, q);
+    // The other placeholders reuse the same text.
+    where[where.length - 1] = where[where.length - 1]!.replaceAll('?', `$${params.length}`);
+    order = `ts_rank(search, websearch_to_tsquery('english', $${params.length})) desc, ${order}`;
   }
   const page = Math.max(1, filter.page ?? 1);
   const whereSql = where.join(' and ');
@@ -148,13 +151,14 @@ export async function listCategories(userId: string): Promise<Category[]> {
   );
 }
 
-export type LibraryStats = {total: number; inbox: number; unclassified: number; bySource: Partial<Record<Source, number>>};
+export type LibraryStats = {total: number; inbox: number; unclassified: number; broken: number; bySource: Partial<Record<Source, number>>};
 
 export async function libraryStats(userId: string): Promise<LibraryStats> {
-  const row = await queryOne<{total: number; inbox: number; unclassified: number}>(
+  const row = await queryOne<{total: number; inbox: number; unclassified: number; broken: number}>(
     `select count(*)::int as total,
             count(*) filter (where category_id is null)::int as inbox,
-            count(*) filter (where classified_at is null)::int as unclassified
+            count(*) filter (where classified_at is null)::int as unclassified,
+            count(*) filter (where link_status = 'broken')::int as broken
      from items where user_id = $1`,
     [userId],
   );
@@ -166,6 +170,7 @@ export async function libraryStats(userId: string): Promise<LibraryStats> {
     total: row?.total ?? 0,
     inbox: row?.inbox ?? 0,
     unclassified: row?.unclassified ?? 0,
+    broken: row?.broken ?? 0,
     bySource: Object.fromEntries(sources.map((s) => [s.source, s.count])),
   };
 }
@@ -183,6 +188,26 @@ export async function moveItem(userId: string, itemId: string, categoryId: strin
 
 export async function deleteItem(userId: string, itemId: string): Promise<void> {
   await query('delete from items where user_id = $1 and id = $2', [userId, itemId]);
+}
+
+/** Moves many items at once; like moveItem, the person's choice is final. */
+export async function moveItems(userId: string, itemIds: string[], categoryId: string | null): Promise<number> {
+  if (itemIds.length === 0) return 0;
+  const rows = await query(
+    `update items set category_id = $3, category_assigned_by = 'user', category_assigned_at = now(),
+       category_confidence = null, classified_at = coalesce(classified_at, now())
+     where user_id = $1 and id = any($2::uuid[])
+       and ($3::uuid is null or exists (select 1 from categories where id = $3 and user_id = $1))
+     returning id`,
+    [userId, itemIds, categoryId],
+  );
+  return rows.length;
+}
+
+export async function deleteItems(userId: string, itemIds: string[]): Promise<number> {
+  if (itemIds.length === 0) return 0;
+  const rows = await query('delete from items where user_id = $1 and id = any($2::uuid[]) returning id', [userId, itemIds]);
+  return rows.length;
 }
 
 export async function recordSyncRun(userId: string, run: {source: Source; itemsSeen: number; itemsAdded: number; error?: string | null}): Promise<void> {
@@ -207,5 +232,19 @@ export async function exportItems(userId: string): Promise<Array<Item & {categor
      from items i left join categories c on c.id = i.category_id
      where i.user_id = $1 order by coalesce(i.saved_at, i.imported_at) desc`,
     [userId],
+  );
+}
+
+/**
+ * A few older saves to look at again today. The pick changes once a day and stays the same within a
+ * day, so the section does not reshuffle on every visit.
+ */
+export async function resurfaceItems(userId: string, count = 3, olderThanDays = 30): Promise<Item[]> {
+  return query<Item>(
+    `select ${ITEM_COLUMNS} from items
+     where user_id = $1 and coalesce(saved_at, imported_at) < now() - make_interval(days => $2)
+       and link_status is distinct from 'broken'
+     order by md5(id::text || current_date::text) limit $3`,
+    [userId, olderThanDays, count],
   );
 }

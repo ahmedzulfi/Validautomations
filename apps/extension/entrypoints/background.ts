@@ -1,14 +1,17 @@
 import {canonicalUrl, flattenBookmarkTree, type ItemInput} from '@stash/shared';
 import {ingest, reportSync} from '../utils/api';
+import {instagramPager, pageThrough, redditPager} from '../utils/fetch-sync';
 import type {BackgroundMessage, CollectRequest, CollectResult, ItemsReply, SavePageReply, SyncSource} from '../utils/messages';
 import {getSettings, getStatus, setStatus, type Settings} from '../utils/settings';
 
-const PAGES: Record<'x' | 'linkedin', string> = {
-  x: 'https://x.com/i/bookmarks',
-  linkedin: 'https://www.linkedin.com/my-items/saved-posts/',
+type PageSource = 'x' | 'linkedin' | 'youtube';
+const PAGES: Record<PageSource, string[]> = {
+  x: ['https://x.com/i/bookmarks'],
+  linkedin: ['https://www.linkedin.com/my-items/saved-posts/'],
+  youtube: ['https://www.youtube.com/playlist?list=WL', 'https://www.youtube.com/playlist?list=LL'],
 };
 const AUTO_SYNC_ALARM = 'stash-auto-sync';
-const SYNC_ORDER: SyncSource[] = ['bookmark', 'x', 'linkedin'];
+const SYNC_ORDER: SyncSource[] = ['bookmark', 'x', 'linkedin', 'reddit', 'youtube', 'instagram'];
 
 export default defineBackground(() => {
   browser.runtime.onInstalled.addListener(() => {
@@ -83,7 +86,12 @@ async function syncOne(source: SyncSource, manual: boolean): Promise<void> {
   await setStatus(source, {state: 'running', found: 0, added: 0, message: null});
   let result: CollectResult;
   try {
-    result = source === 'bookmark' ? await syncBookmarks(settings) : await syncFromPage(source, manual);
+    const incremental = (await getStatus(source)).lastSuccessAt !== null;
+    const send = async (items: ItemInput[]) => ingest(settings, items);
+    if (source === 'bookmark') result = await syncBookmarks(settings);
+    else if (source === 'reddit') result = await pageThrough({fetchPage: redditPager(), send, incremental});
+    else if (source === 'instagram') result = await pageThrough({fetchPage: instagramPager(), send, incremental, delayMs: 2500, maxPages: 60});
+    else result = await syncFromPages(source, manual, incremental);
   } catch (err) {
     result = {ok: false, error: err instanceof Error ? err.message : 'Sync stopped.', found: 0, added: 0};
   } finally {
@@ -102,21 +110,32 @@ async function syncBookmarks(settings: Settings): Promise<CollectResult> {
   return {ok: true, found: items.length, added: r.added};
 }
 
+/** Collects each of a source's saved lists in turn, adding up what was found. */
+async function syncFromPages(source: PageSource, manual: boolean, incremental: boolean): Promise<CollectResult> {
+  let found = 0;
+  let added = 0;
+  for (const url of PAGES[source]) {
+    const r = await syncFromPage(url, manual, incremental);
+    found += r.found;
+    added += r.added;
+    if (!r.ok) return {...r, found, added};
+  }
+  return {ok: true, found, added};
+}
+
 /**
- * Opens the saved list on X or LinkedIn (or uses a tab already showing it), and asks the content script
- * there to collect it. A manual sync shows the tab so the person sees what is happening; the daily
- * sync keeps it in the background. A tab Stash opened is closed afterwards.
+ * Opens a saved list (or uses a tab already showing it), and asks the content script there to collect
+ * it. A manual sync shows the tab so the person sees what is happening; the daily sync keeps it in the
+ * background. A tab Stash opened is closed afterwards.
  */
-async function syncFromPage(source: 'x' | 'linkedin', manual: boolean): Promise<CollectResult> {
-  const url = PAGES[source];
-  const previous = await getStatus(source);
-  const existing = (await browser.tabs.query({url: `${url}*`}))[0];
+async function syncFromPage(url: string, manual: boolean, incremental: boolean): Promise<CollectResult> {
+  const existing = (await browser.tabs.query({url: `${url.split('?')[0]}*`})).find((t) => t.url?.startsWith(url));
   const tab = existing ?? (await browser.tabs.create({url, active: manual}));
   if (!tab.id) throw new Error('Could not open the page.');
   if (existing) await browser.tabs.reload(tab.id);
   await waitForTabLoad(tab.id);
   try {
-    const request: CollectRequest = {type: 'stash:collect', incremental: previous.lastSuccessAt !== null};
+    const request: CollectRequest = {type: 'stash:collect', incremental};
     return await sendWithRetry<CollectResult>(tab.id, request);
   } finally {
     if (!existing) await browser.tabs.remove(tab.id).catch(() => {});

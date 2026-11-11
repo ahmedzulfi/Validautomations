@@ -25,11 +25,24 @@ export default defineConfig({
       },
     },
   }),
-  manifest: {
+  manifest: ({browser}) => ({
     name: 'Stash',
-    description: 'Brings your X bookmarks, LinkedIn saved posts and browser bookmarks into your Stash library.',
+    description: 'Brings your saves from X, LinkedIn, Reddit, YouTube, Instagram and your browser into your Stash library, sorted by AI.',
     permissions: ['bookmarks', 'storage', 'alarms', 'tabs'],
-    host_permissions: ['https://x.com/*', 'https://www.linkedin.com/*'],
+    host_permissions: ['https://x.com/*', 'https://www.linkedin.com/*', 'https://www.reddit.com/*', 'https://www.youtube.com/*', 'https://www.instagram.com/*'],
     action: {default_title: 'Stash'},
-  },
+    ...(browser === 'firefox'
+      ? {
+          browser_specific_settings: {
+            gecko: {
+              // Change this id to your own before submitting to addons.mozilla.org.
+              id: 'stash@stash.example',
+              strict_min_version: '128.0',
+              // Bookmarks and the content of saved posts go to the person's own Stash server.
+              data_collection_permissions: {required: ['bookmarksInfo', 'websiteContent']},
+            },
+          },
+        }
+      : {}),
+  }),
 });

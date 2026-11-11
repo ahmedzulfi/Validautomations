@@ -1,0 +1,5 @@
+{"kind":"Listing","data":{"after":"t3_abc999","children":[
+ {"kind":"t3","data":{"name":"t3_1a2b3c","id":"1a2b3c","title":"I built a self-hosted read-it-later app","selftext":"","url":"https://github.com/example/readlater","permalink":"/r/selfhosted/comments/1a2b3c/i_built_a_selfhosted_readitlater_app/","author":"tinkerer","subreddit_name_prefixed":"r/selfhosted","created_utc":1729500000,"preview":{"images":[{"source":{"url":"https://preview.redd.it/abc.png?width=1200&format=png"}}]}}},
+ {"kind":"t3","data":{"name":"t3_4d5e6f","title":"How do you structure a Postgres schema for multi-tenant SaaS?","selftext":"We have 40 tenants and growing.","url":"https://www.reddit.com/r/PostgreSQL/comments/4d5e6f/how/","permalink":"/r/PostgreSQL/comments/4d5e6f/how/","author":"dbnewbie","subreddit_name_prefixed":"r/PostgreSQL","created_utc":1729400000}},
+ {"kind":"t1","data":{"name":"t1_ggg","body":"Use row level security and a tenant_id on every table.","link_title":"How do you structure a Postgres schema for multi-tenant SaaS?","permalink":"/r/PostgreSQL/comments/4d5e6f/how/ggg/","author":"pgexpert","subreddit_name_prefixed":"r/PostgreSQL","created_utc":1729410000}}
+]}}
