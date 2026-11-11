@@ -12,48 +12,91 @@ use std::f32::consts::{PI, TAU};
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Icon {
+    /// Two overlapping sheets (copy).
     Copy,
+    /// Check mark.
     Check,
+    /// Cross (close / remove).
     X,
+    /// Plus (add / attach).
     Plus,
+    /// Circular arrow (regenerate / reload).
     Refresh,
+    /// Thumbs up.
     ThumbUp,
+    /// Thumbs down.
     ThumbDown,
+    /// Chevron pointing down.
     ChevronDown,
+    /// Chevron pointing up.
     ChevronUp,
+    /// Chevron pointing left.
     ChevronLeft,
+    /// Chevron pointing right.
     ChevronRight,
+    /// Arrow up (send).
     ArrowUp,
+    /// Arrow down (scroll to bottom).
     ArrowDown,
+    /// Arrow right.
     ArrowRight,
+    /// Filled square (stop).
     Stop,
+    /// Microphone.
     Mic,
+    /// Paperclip (attachment).
     Paperclip,
+    /// Four-point sparkles (AI).
     Sparkle,
+    /// Globe (web).
     Globe,
+    /// Angle brackets (code).
     Code,
+    /// Gear (tool / settings).
     Gear,
+    /// Magnifier.
     Search,
+    /// Document.
     File,
+    /// Picture.
     Image,
+    /// Eye (preview).
     Eye,
+    /// Box with arrow (open externally).
     External,
+    /// Clock (pending).
     Clock,
+    /// Robot head.
     Bot,
+    /// Person.
     User,
+    /// Lightning bolt (trigger).
     Bolt,
+    /// Padlock.
     Lock,
+    /// Pencil (edit).
     Pencil,
+    /// Three dots (more).
     More,
+    /// Bookmark.
     Bookmark,
+    /// Light bulb (reasoning).
     Lightbulb,
+    /// Terminal prompt.
     Terminal,
+    /// Tray with arrow (download).
     Download,
+    /// Circle with exclamation mark.
     AlertCircle,
+    /// Empty circle.
     Circle,
+    /// Play triangle.
     Play,
+    /// Pause bars.
     Pause,
+    /// Brain.
     Brain,
+    /// Counter-clockwise arrow with clock hands (restore).
     History,
 }
 

@@ -173,8 +173,8 @@ impl ColorPicker<'_> {
                     let (prev, _) = ui.allocate_exact_size(vec2(pv, pv), Sense::hover());
                     let cur = hsv(st.hsv[0], st.hsv[1], st.hsv[2]);
                     let pr = CornerRadius::same(6);
-                    {
-                        let p = ui.painter().with_clip_rect(prev);
+                    if st.alpha < 0.999 {
+                        let p = ui.painter().with_clip_rect(prev.shrink(3.0));
                         checker(&p, prev, 5.0, &t);
                     }
                     ui.painter().rect(prev, pr, with_alpha(cur, st.alpha), Stroke::new(1.0, t.border), StrokeKind::Inside);

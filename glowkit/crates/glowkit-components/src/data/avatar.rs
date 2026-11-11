@@ -199,7 +199,7 @@ pub struct AvatarGroup {
 impl AvatarGroup {
     /// A group of avatars for these names.
     pub fn new(names: &[&str]) -> Self {
-        Self { names: names.iter().map(|s| s.to_string()).collect(), max: 5, size: 36.0, overlap: 0.3, extra: 0, style: AvatarStyle::Solid, ring: None, accent_more: false }
+        Self { names: names.iter().map(|s| s.to_string()).collect(), max: 5, size: 36.0, overlap: 0.22, extra: 0, style: AvatarStyle::Solid, ring: None, accent_more: false }
     }
     /// Show at most this many avatars, then "+N".
     pub fn max(mut self, m: usize) -> Self {
@@ -279,7 +279,7 @@ pub struct AvatarCircles {
 impl AvatarCircles {
     /// Avatars for `names` followed by a "+`extra`" bubble.
     pub fn new(names: &[&str], extra: usize) -> Self {
-        let mut group = AvatarGroup::new(names).max(names.len().max(1)).extra(extra).overlap(0.25).size(40.0);
+        let mut group = AvatarGroup::new(names).max(names.len().max(1)).extra(extra).overlap(0.18).size(40.0);
         group.accent_more = true;
         Self { group }
     }

@@ -88,15 +88,17 @@ impl BorderBeam {
         let dir = if self.reverse { -1.0 } else { 1.0 };
         let p = ui.painter();
         let hp = util::perimeter_point(rect, radius, head);
-        paint::glow(p, hp, 26.0, with_alpha(to, 0.22));
-        util::border_fn(p, rect, radius, self.thickness, |_, s| {
-            let d = ((head - s) * dir).rem_euclid(1.0);
-            if d < len {
-                let k = 1.0 - d / len;
-                mix(from, to, k).gamma_multiply(k.powf(1.3))
-            } else {
-                Color32::TRANSPARENT
+        util::inner_glow(p, rect, radius, hp, 40.0, with_alpha(to, 0.12));
+        util::inner_border_fn(p, rect, radius, self.thickness, |_, s| {
+            let mut d = ((head - s) * dir).rem_euclid(1.0);
+            if d > 0.5 + len / 2.0 {
+                d -= 1.0;
             }
+            // soft rounded head, long fading tail: no hard ends
+            let front = (-(d / 0.012).powi(2)).exp();
+            let k = if d >= 0.0 && d < len { let u = 1.0 - d / len; u * u * (3.0 - 2.0 * u) } else { 0.0 };
+            let k = k.max(if d < 0.0 { front } else { 0.0 });
+            mix(from, to, k).gamma_multiply(k)
         });
         glowkit_core::animate(ui);
     }

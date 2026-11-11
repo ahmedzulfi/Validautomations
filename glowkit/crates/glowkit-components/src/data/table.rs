@@ -341,14 +341,14 @@ impl Widget for DataTable<'_> {
             }
             let tc = t.muted_foreground.lerp_to_gamma(t.foreground, if sorted.is_some() { 1.0 } else { hov });
             let g = p.layout_no_wrap(col.title.clone(), FontId::proportional(13.0), tc);
-            let gx = if col.right { cx + cw - g.size().x - if col.sortable { 18.0 } else { 0.0 } } else { cx };
+            let gx = if col.right { cx + cw - g.size().x } else { cx };
             let gw = g.size().x;
             p.galley(pos2(gx, header.center().y - g.size().y / 2.0), g, tc);
             if col.sortable {
                 let vis = kit::anim(ui, id.with(("sv", ci)), sorted.is_some(), 0.15).max(hov * 0.5);
                 let ang = glowkit_core::anim::spring(ui, id.with(("sa", ci)), if sorted == Some(false) { PI } else { 0.0 }, 300.0, 22.0);
                 if vis > 0.01 {
-                    let c = pos2(gx + gw + 10.0, header.center().y);
+                    let c = if col.right { pos2(gx - 10.0, header.center().y) } else { pos2(gx + gw + 10.0, header.center().y) };
                     let rot = |v: egui::Vec2| c + vec2(v.x * ang.cos() - v.y * ang.sin(), v.x * ang.sin() + v.y * ang.cos());
                     let col_a = with_alpha(t.foreground, vis);
                     p.line_segment([rot(vec2(0.0, 5.0)), rot(vec2(0.0, -5.0))], Stroke::new(1.4, col_a));
@@ -372,7 +372,7 @@ impl Widget for DataTable<'_> {
             let rcr = if last { CornerRadius { nw: 0, ne: 0, sw: cr.sw.saturating_sub(1), se: cr.se.saturating_sub(1) } } else { CornerRadius::ZERO };
             let inner = Rect::from_min_max(pos2(rr.min.x + 1.0, rr.min.y), pos2(rr.max.x - 1.0, rr.max.y - if last { 1.0 } else { 0.0 }));
             if self.striped && vi % 2 == 1 {
-                p.rect_filled(inner, rcr, with_alpha(t.muted, if t.dark { 0.35 } else { 0.45 }));
+                p.rect_filled(inner, rcr, if t.dark { with_alpha(t.secondary, 0.35) } else { with_alpha(t.muted, 0.8) });
             }
             if sk > 0.0 {
                 p.rect_filled(inner, rcr, with_alpha(t.accent, (if t.dark { 0.10 } else { 0.06 }) * sk));

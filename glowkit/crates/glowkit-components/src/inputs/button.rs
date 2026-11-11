@@ -199,7 +199,7 @@ impl Widget for Button {
         let scale = glowkit_core::anim::spring(ui, id.with("press"), if pressed { 0.965 } else { 1.0 }, 500.0, 22.0);
         let focus = kit::anim(ui, id.with("f"), resp.has_focus(), 0.15);
         let p = palette(&t, self.variant, self.fill);
-        let alpha = if self.disabled { 0.5 } else if self.loading { 0.8 } else { 1.0 };
+        let alpha = if self.disabled { 0.5 } else if self.loading { 0.9 } else { 1.0 };
         let fade = |c: Color32| c.gamma_multiply(alpha);
         let r = self.corners.unwrap_or_else(|| control_radius(&t));
         let painter = ui.painter();

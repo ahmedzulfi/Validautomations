@@ -174,7 +174,7 @@ fn paint_kind(p: &egui::Painter, kind: SpinnerKind, rect: Rect, col: Color32, ti
             let tail = shrink * 0.75;
             let base = time * TAU * 0.8 + (time / 1.4).floor() * TAU * 0.75;
             let a0 = base + tail * TAU;
-            let a1 = base + (head + 0.04) * TAU;
+            let a1 = base + (head + 0.1) * TAU;
             paint::arc(p, c, r - w / 2.0, a0, a1, w, col);
         }
         SpinnerKind::Gradient => {
@@ -384,7 +384,7 @@ impl Widget for LoadingDots {
         let t = Theme::of(ui);
         let col = self.color.unwrap_or(t.muted_foreground);
         let g = ui.painter().layout_no_wrap(self.text, FontId::proportional(self.size), col);
-        let dot_r = self.size * 0.09;
+        let dot_r = (self.size * 0.1).max(1.8);
         let w = g.size().x + self.size * 1.2;
         let (rect, resp) = ui.allocate_exact_size(vec2(w, g.size().y), Sense::hover());
         let base_y = rect.min.y + g.size().y * 0.72;
@@ -393,7 +393,7 @@ impl Widget for LoadingDots {
         for i in 0..3 {
             let ph = (time * 1.2 - i as f32 * 0.15).rem_euclid(1.0);
             let k = (ph * TAU).sin().max(0.0);
-            let x = rect.min.x + g.size().x + self.size * 0.22 + i as f32 * self.size * 0.33;
+            let x = rect.min.x + g.size().x + self.size * 0.3 + i as f32 * self.size * 0.36;
             ui.painter().circle_filled(pos2(x, base_y - k * self.size * 0.18), dot_r, with_alpha(col, 0.35 + 0.65 * k));
         }
         glowkit_core::animate(ui);

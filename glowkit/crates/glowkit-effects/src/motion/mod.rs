@@ -1,3 +1,4 @@
+#![warn(missing_docs)]
 //! Motion & layout components: docks, marquees, animated lists, card stacks, carousels,
 //! tabs, steppers, beams, orbits and presence transitions.
 

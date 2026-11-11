@@ -1,3 +1,4 @@
+#![warn(missing_docs)]
 //! Cursor & interaction effects: click sparks, ripples, pointer trails, custom cursors,
 //! crosshairs, magnets, confetti and fireworks.
 //!

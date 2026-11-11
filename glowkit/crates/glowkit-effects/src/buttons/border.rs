@@ -62,16 +62,15 @@ impl Widget for MovingBorderButton {
         let head = (glowkit_core::time(ui) / self.duration.max(0.3)).fract();
         let hp = util::perimeter_point(rect, radius, head);
         paint::soft_shadow(p, rect, radius, 16.0, vec2(0.0, 4.0), with_alpha(Color32::BLACK, if t.dark { 0.4 } else { 0.08 }));
-        paint::glow(p, hp, 34.0 + 8.0 * hover, with_alpha(color, 0.35 + 0.15 * hover));
         p.rect_filled(rect, cr(radius), bg);
+        // the blob is only seen through the border ring, plus a soft spill inside
+        util::inner_glow(p, rect, radius, hp, 40.0, with_alpha(color, 0.12 + 0.08 * hover));
         let base = if t.dark { mix(t.border, t.background, 0.2) } else { t.border };
-        util::border_fn(p, rect, radius, 1.5, |q, _| {
+        util::inner_border_fn(p, rect, radius, 1.6, |q, _| {
             let d = q.distance(hp) / 46.0;
             let k = (-d * d).exp();
             base.lerp_to_gamma(color, k)
         });
-        // a whisper of the light bleeding inside
-        paint::glow(p, hp, 22.0, with_alpha(color, 0.10));
         let g = util::text_galley(ui, &self.label, self.size, text);
         util::galley_centered(p, &g, rect.center(), text);
         glowkit_core::animate(ui);
@@ -250,13 +249,14 @@ impl Widget for StarBorderButton {
             let b = q.distance(bottom) / spread;
             ((-a * a).exp() * ft + (-b * b).exp() * fb).min(1.0)
         };
-        for (s, f) in [(top, ft), (bottom, fb)] {
-            paint::glow_ellipse(p, s, vec2(spread * 1.1, 10.0), with_alpha(color, (0.30 + 0.2 * hover) * f));
-        }
         let bg_top = self.background.unwrap_or(if t.dark { mix(t.background, t.accent, 0.08) } else { t.card });
         let bg_bot = self.background.unwrap_or(if t.dark { t.background } else { mix(t.card, t.muted, 0.6) });
         paint::fill_convex_fn(p, &paint::rounded_rect_points(rect, radius, 10), 5, paint::linear_fn(rect, 90.0, &[bg_top, bg_bot]));
-        util::border_fn(p, rect, radius, 1.3, |q, _| t.border.lerp_to_gamma(color, star(q) * 0.95));
+        // star light spills inward only, so nothing floats outside the button
+        for (s, f) in [(top, ft), (bottom, fb)] {
+            util::inner_glow(p, rect, radius, s, spread * 0.9, with_alpha(color, (0.16 + 0.1 * hover) * f));
+        }
+        util::inner_border_fn(p, rect, radius, 1.4, |q, _| t.border.lerp_to_gamma(color, star(q) * 0.95));
         let g = util::text_galley(ui, &self.label, self.size, text);
         util::galley_centered(p, &g, rect.center(), text);
         glowkit_core::animate(ui);

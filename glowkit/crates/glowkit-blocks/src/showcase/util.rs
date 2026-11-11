@@ -11,17 +11,6 @@ pub(crate) fn bold_text(p: &Painter, pos: Pos2, anchor: Align2, text: &str, font
     p.text(pos, anchor, text, font, color)
 }
 
-/// Lay out a galley in `PLACEHOLDER` color so it can be tinted at paint time.
-pub(crate) fn galley(p: &Painter, text: &str, font: FontId) -> Arc<Galley> {
-    p.layout_no_wrap(text.to_owned(), font, Color32::PLACEHOLDER)
-}
-
-/// Bold galley paint.
-pub(crate) fn galley_bold(p: &Painter, pos: Pos2, g: &Arc<Galley>, color: Color32) {
-    p.galley(pos + vec2(0.45, 0.0), g.clone(), color);
-    p.galley(pos, g.clone(), color);
-}
-
 /// Seconds since the widget was last interacted with (`active` = hovered / dragged / focused).
 pub(crate) fn idle_time(ui: &Ui, id: Id, active: bool) -> f32 {
     let now = ui.input(|i| i.time);

@@ -75,11 +75,11 @@ impl Widget for ShimmerButton {
         let time = glowkit_core::time(ui);
         let head = (time / self.duration.max(0.2)).fract();
 
-        // outer halo where the spark is
-        let hp = util::perimeter_point(rect, radius, head - 0.03);
+        let hp = util::perimeter_point(rect, radius, head);
         paint::soft_shadow(p, rect, radius, 18.0, vec2(0.0, 6.0), with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.25 }));
-        paint::glow(p, hp, rect.height() * 0.7, with_alpha(spark, if t.dark { 0.08 + 0.06 * hover } else { 0.0 }));
         p.rect_filled(rect, cr(radius), bg);
+        // light spilling inward from the spark (clipped to the button)
+        util::inner_glow(p, rect, radius, hp, rect.height() * 0.9, with_alpha(spark, 0.10 + 0.06 * hover));
         // inner highlight rising from the bottom on hover
         let inner = rect.shrink(1.0);
         paint::fill_convex_fn(p, &paint::rounded_rect_points(inner, radius - 1.0, 10), 6, |q: Pos2| {
@@ -88,13 +88,9 @@ impl Widget for ShimmerButton {
             with_alpha(spark, k)
         });
         // hairline + spark
-        util::border_fn(p, rect, radius, 1.0, |_, _| with_alpha(spark, 0.12));
-        let comet = paint::comet_fn(head, 0.28, spark);
-        let comet2 = paint::comet_fn(head, 0.08, spark);
-        util::border_fn(p, rect, radius, 1.6, |_, s| {
-            let a = comet(s);
-            let b = comet2(s);
-            a.gamma_multiply(0.75) + b.gamma_multiply(0.6)
+        util::inner_border_fn(p, rect, radius, 1.4, |_, s| {
+            let k = util::sweep_profile(head, s, 0.035, 0.16);
+            with_alpha(spark, 0.12 + 0.88 * k)
         });
         let g = util::text_galley(ui, &self.label, self.size, text);
         util::galley_centered(p, &g, rect.center(), text);

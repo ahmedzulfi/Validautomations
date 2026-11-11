@@ -363,12 +363,12 @@ impl Widget for EmptyState {
             let time = glowkit_core::time(ui);
             let hov = kit::anim(ui, ui.next_auto_id().with("es"), ui.rect_contains_pointer(Rect::from_min_size(start, vec2(w, 260.0))), 0.3);
             let p = ui.painter();
-            for (i, (dx, ang)) in [(-30.0f32, -0.21f32), (30.0, 0.21)].iter().enumerate() {
+            for (i, (dx, ang)) in [(-38.0f32, -0.24f32), (38.0, 0.24)].iter().enumerate() {
                 let spread = 1.0 + 0.25 * hov;
-                let c = ir.center() + vec2(dx * spread, 6.0 - 2.0 * hov);
+                let c = ir.center() + vec2(dx * spread, 8.0 - 2.0 * hov);
                 let pts = rotated_rect(c, 46.0, ang * spread, 10.0);
                 p.add(Shape::convex_polygon(pts.clone(), t.card, Stroke::new(1.0, t.border)));
-                let icon_r = Rect::from_center_size(c, vec2(20.0, 20.0));
+                let icon_r = Rect::from_center_size(c + vec2(dx.signum() * 6.0, 0.0), vec2(18.0, 18.0));
                 self.icons[if i == 0 { 0 } else { 2 }].paint(p, icon_r, t.muted_foreground);
             }
             let bob = (time * 1.6).sin() * 1.5 * hov;
@@ -562,7 +562,7 @@ impl Widget for StatCard {
         }
         if self.spark.len() >= 2 {
             let col = self.color.unwrap_or_else(|| self.delta.map(good_col).unwrap_or(t.chart[0]));
-            let area = Rect::from_min_max(pos2(rect.min.x + 1.0, rect.max.y - 54.0), pos2(rect.max.x - 1.0, rect.max.y - 8.0));
+            let area = Rect::from_min_max(pos2(rect.min.x + pad, rect.max.y - 58.0), pos2(rect.max.x - pad - 4.0, rect.max.y - 18.0));
             let (lo, hi) = self.spark.iter().fold((f32::MAX, f32::MIN), |(a, b), &v| (a.min(v), b.max(v)));
             let n = self.spark.len();
             let pts: Vec<Pos2> = self
@@ -575,7 +575,7 @@ impl Widget for StatCard {
             let draw = glowkit_core::ease(glowkit_core::Easing::InOutCubic, el / 1.2);
             let clip = Rect::from_min_max(area.min - vec2(2.0, 6.0), pos2(area.min.x + area.width() * draw + 2.0, rect.max.y));
             let cp = p.with_clip_rect(clip.intersect(p.clip_rect()));
-            glowkit_core::paint::area_fill(&cp, &smooth, rect.max.y - 2.0, with_alpha(col, if t.dark { 0.28 } else { 0.18 }), with_alpha(col, 0.0));
+            glowkit_core::paint::area_fill(&cp, &smooth, rect.max.y - 10.0, with_alpha(col, if t.dark { 0.28 } else { 0.18 }), with_alpha(col, 0.0));
             glowkit_core::paint::gradient_polyline(&cp, &smooth, false, 2.0, |_| col);
             if draw >= 1.0 {
                 let last = *pts.last().unwrap();

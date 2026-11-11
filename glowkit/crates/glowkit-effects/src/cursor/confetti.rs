@@ -139,8 +139,9 @@ impl ConfettiBurst {
         let id = self.id(ui);
         let t = Theme::of(ui);
         let colors = self.colors.clone().unwrap_or_else(|| t.chart.to_vec());
-        let now = glowkit_core::time(ui);
-        let seed = (now * 1000.0) as u64 ^ (origin.x as u64).wrapping_mul(31) ^ (origin.y as u64).wrapping_mul(131);
+        // simulation clock (advanced by `show`), so low frame rates never cut lifetimes short
+        let now: f32 = glowkit_core::state(ui, id.with("clock"), || 0.0);
+        let seed = (glowkit_core::time(ui) * 1000.0) as u64 ^ (origin.x as u64).wrapping_mul(31) ^ (origin.y as u64).wrapping_mul(131);
         let mut rng = Rng::new(seed);
         let count = self.count;
         let sc = self.scalar;
@@ -191,7 +192,10 @@ impl ConfettiBurst {
             }
         }
         let dt = glowkit_core::dt(ui);
-        let now = glowkit_core::time(ui);
+        let now = glowkit_core::with_state(ui, id.with("clock"), || 0.0f32, |c| {
+            *c += dt;
+            *c
+        });
         let g = self.gravity;
         let life = self.lifetime;
         let pieces = glowkit_core::with_state(ui, id.with("pieces"), Vec::<Piece>::new, |v| {
@@ -325,8 +329,11 @@ impl Fireworks {
     pub fn show(self, ui: &mut Ui, rect: Rect) {
         let id = ui.scope_id().with(("fireworks", self.salt));
         let input = area_input(ui, rect, id, false, 0.0);
-        let now = glowkit_core::time(ui);
         let dt = glowkit_core::dt(ui);
+        let now = glowkit_core::with_state(ui, id.with("clock"), || 0.0f32, |c| {
+            *c += dt;
+            *c
+        });
         let auto = self.autoplay && self.interval > 0.0;
         let colors = self.colors.clone();
         let n_sparks = self.sparks;

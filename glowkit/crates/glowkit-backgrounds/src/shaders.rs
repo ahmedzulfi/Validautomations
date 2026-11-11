@@ -84,6 +84,7 @@ impl Silk {
         let time = f.time * self.speed;
         let aspect = rect.width() / rect.height().max(1.0);
         let (scale, rotation) = (self.scale * 2.2, self.rotation.to_radians());
+        let light_theme = !t.dark;
         shader_grid(&f.painter, rect, 96, 48, |uv| {
             let p = rot(centered(uv, aspect), rotation) * scale;
             let (x, y) = (p.x, p.y);
@@ -93,7 +94,7 @@ impl Silk {
             let fold = phase.sin();
             let fine = (phase * 2.7 + 0.6 * (x * 2.0 - time * 0.2).sin()).sin() * 0.12;
             let s = (0.5 + 0.5 * fold + fine).clamp(0.0, 1.0);
-            let shade = 0.22 + 0.85 * s.powf(1.3);
+            let shade = if light_theme { 0.6 + 0.55 * s.powf(1.3) } else { 0.22 + 0.85 * s.powf(1.3) };
             let spec = s.powi(8) * 0.28;
             base.scale(shade).lerp(Rgb(1.0, 1.0, 1.0), spec).to_color()
         });

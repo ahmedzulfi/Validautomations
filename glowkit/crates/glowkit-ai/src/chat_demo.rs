@@ -35,10 +35,10 @@ struct ChatState {
 }
 
 const MODELS: [ModelInfo<'static>; 4] = [
-    ModelInfo::new("Sonnet 4.5", "Anthropic").description("Best balance of speed and smarts").tag("New"),
-    ModelInfo::new("Haiku 4.5", "Anthropic").description("Fastest for everyday tasks").tag("Fast"),
-    ModelInfo::new("GPT-5", "OpenAI").description("Flagship reasoning model"),
-    ModelInfo::new("Llama 4 Maverick", "Meta").description("Open weights, runs locally"),
+    ModelInfo::new("Nova 2", "Lumen Labs").description("Best balance of speed and smarts").tag("New"),
+    ModelInfo::new("Nova Flash", "Lumen Labs").description("Fastest for everyday tasks").tag("Fast"),
+    ModelInfo::new("Orbit 5", "Orbit AI").description("Flagship reasoning model"),
+    ModelInfo::new("Local 70B", "Open Weights").description("Open weights, runs locally"),
 ];
 
 pub(crate) const SOURCES: [Source<'static>; 5] = [

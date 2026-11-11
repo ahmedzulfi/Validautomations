@@ -244,8 +244,133 @@ fn scene(p: &egui::Painter, r: Rect, which: usize) {
     }
 }
 
+/// Frame a background demo: rounded corners, optional centered headline.
+fn bg_demo(ui: &mut Ui, title: &str, light_text: bool, add: impl FnOnce(&mut Ui)) {
+    let t = Theme::of(ui);
+    let r = ui.available_rect_before_wrap();
+    let rect = Rect::from_min_size(r.min, vec2(r.width(), 380.0));
+    let mut child = ui.new_child(egui::UiBuilder::new().max_rect(rect));
+    add(&mut child);
+    ui.allocate_rect(rect, egui::Sense::hover());
+    let p = ui.painter();
+    super::util::corner_mask(p, rect, 12.0, t.card);
+    p.rect_stroke(rect, 12.0, Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
+    if !title.is_empty() {
+        let col = if light_text { Color32::WHITE } else { t.foreground };
+        let g = p.layout_no_wrap(title.to_owned(), FontId::proportional(40.0), Color32::PLACEHOLDER);
+        let pos = rect.center() - g.size() / 2.0;
+        paint::glow_ellipse(p, rect.center(), vec2(g.size().x * 0.7, 50.0), Color32::from_black_alpha(if light_text { 70 } else { 0 }));
+        p.galley(pos + vec2(0.5, 0.0), g.clone(), col);
+        p.galley(pos, g, col);
+    }
+}
+
 pub fn all() -> Vec<Demo> {
     vec![
+        Demo {
+            id: "meta-balls",
+            name: "Meta Balls",
+            category: Category::Backgrounds,
+            description: "Organic blobs that merge and split like liquid, colored by the dominant blob; one follows the pointer.",
+            covers: &["React Bits: Meta Balls", "Magic UI: Blob background"],
+            code: r##"ui.add(MetaBalls::new().count(9));
+// behind other content: MetaBalls::new().paint_at(ui, rect, pointer_pos)"##,
+            show: |ui| bg_demo(ui, "", false, |ui| {
+                ui.add(MetaBalls::new().count(9).size(ui.available_width(), 380.0));
+            }),
+        },
+        Demo {
+            id: "ball-pit",
+            name: "Ball Pit",
+            category: Category::Backgrounds,
+            description: "Glossy balls with gravity, collisions and bounce; the pointer shoves them around and an invisible hand stirs them when idle.",
+            covers: &["React Bits: Ballpit"],
+            code: r##"ui.add(BallPit::new().count(40));"##,
+            show: |ui| bg_demo(ui, "", false, |ui| {
+                ui.add(BallPit::new().count(42).size(ui.available_width(), 380.0));
+            }),
+        },
+        Demo {
+            id: "ripple-grid",
+            name: "Ripple Grid",
+            category: Category::Backgrounds,
+            description: "Grid lines rippling with waves from the center and the pointer, crests lit in the accent color.",
+            covers: &["React Bits: Ripple Grid", "React Bits: Grid Distortion"],
+            code: r##"ui.add(RippleGrid::new().spacing(30.0).amplitude(10.0));"##,
+            show: |ui| bg_demo(ui, "Ripple Grid", false, |ui| {
+                ui.add(RippleGrid::new().size(ui.available_width(), 380.0));
+            }),
+        },
+        Demo {
+            id: "dark-veil",
+            name: "Dark Veil",
+            category: Category::Backgrounds,
+            description: "A dark, slowly flowing veil of tinted light, like light through smoke.",
+            covers: &["React Bits: Dark Veil"],
+            code: r##"ui.add(DarkVeil::new());"##,
+            show: |ui| {
+                let dark = Theme::of(ui).dark;
+                bg_demo(ui, "Into the veil", dark, |ui| {
+                    ui.add(DarkVeil::new().size(ui.available_width(), 380.0));
+                })
+            },
+        },
+        Demo {
+            id: "color-bends",
+            name: "Color Bends",
+            category: Category::Backgrounds,
+            description: "Bands of vivid color that bend and flow, leaning toward the pointer.",
+            covers: &["React Bits: Color Bends", "React Bits: Prism"],
+            code: r##"ui.add(ColorBends::new().bands(2.5));"##,
+            show: |ui| bg_demo(ui, "Color Bends", true, |ui| {
+                ui.add(ColorBends::new().size(ui.available_width(), 380.0));
+            }),
+        },
+        Demo {
+            id: "gradient-blinds",
+            name: "Gradient Blinds",
+            category: Category::Backgrounds,
+            description: "Venetian-blind slats of flowing gradient, each lit across its width, with a spotlight that follows the pointer.",
+            covers: &["React Bits: Gradient Blinds"],
+            code: r##"ui.add(GradientBlinds::new().slats(16).angle(8.0));"##,
+            show: |ui| {
+                let dark = Theme::of(ui).dark;
+                bg_demo(ui, "", dark, |ui| {
+                    ui.add(GradientBlinds::new().slats(18).angle(6.0).size(ui.available_width(), 380.0));
+                })
+            },
+        },
+        Demo {
+            id: "pixel-blast",
+            name: "Pixel Blast / Dither",
+            category: Category::Backgrounds,
+            description: "Animated noise or waves quantized with a 4x4 Bayer ordered dither into pixels, dots or diamonds; ripples burst from the pointer.",
+            covers: &["React Bits: Pixel Blast", "React Bits: Dither"],
+            code: r##"ui.add(PixelBlast::new().shape(PixelShape::Square).pixel_size(8.0));
+ui.add(PixelBlast::new().pattern(PixelPattern::Waves).shape(PixelShape::Circle));"##,
+            show: |ui| {
+                let w = ui.available_width();
+                let half = (w - 16.0) / 2.0;
+                bg_demo(ui, "", false, |ui| {
+                    ui.horizontal(|ui| {
+                        ui.spacing_mut().item_spacing.x = 16.0;
+                        ui.add(PixelBlast::new().pixel_size(9.0).size(half, 380.0));
+                        ui.add(PixelBlast::new().pattern(PixelPattern::Waves).shape(PixelShape::Circle).pixel_size(7.0).size(half, 380.0));
+                    });
+                });
+            },
+        },
+        Demo {
+            id: "faulty-terminal",
+            name: "Faulty Terminal",
+            category: Category::Backgrounds,
+            description: "A glitchy green CRT: flickering glyphs under a brightness wave, scanlines, rolling interference and row glitches.",
+            covers: &["React Bits: Faulty Terminal", "Magic UI: Retro Grid (CRT)"],
+            code: r##"ui.add(FaultyTerminal::new().glyph_size(13.0));"##,
+            show: |ui| bg_demo(ui, "", false, |ui| {
+                ui.add(FaultyTerminal::new().size(ui.available_width(), 380.0));
+            }),
+        },
         Demo {
             id: "text-hover-effect",
             name: "Text Hover Effect",

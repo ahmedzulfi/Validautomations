@@ -122,11 +122,11 @@ impl Widget for Progress {
             }
             None => {
                 let time = glowkit_core::time(ui);
-                let ph = (time / 1.6).fract();
-                let a = glowkit_core::ease(glowkit_core::Easing::InOutCubic, ph);
-                let b = glowkit_core::ease(glowkit_core::Easing::InOutCubic, (ph * 1.25).min(1.0));
-                let x0 = track.min.x + (a * 1.4 - 0.4) * w;
-                let x1 = track.min.x + (b * 1.4 - 0.1) * w;
+                let ph = (time / 1.5).fract();
+                let e = glowkit_core::ease(glowkit_core::Easing::InOutSine, ph);
+                let len = 0.3 + 0.12 * (ph * std::f32::consts::PI).sin();
+                let x0 = track.min.x + (e * (1.0 + len) - len) * w;
+                let x1 = x0 + len * w;
                 let fr = Rect::from_min_max(pos2(x0.max(track.min.x), track.min.y), pos2(x1.min(track.max.x), track.max.y));
                 if fr.width() > 0.0 {
                     fill_painter(&painter.with_clip_rect(track), fr);

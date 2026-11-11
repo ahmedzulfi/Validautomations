@@ -126,14 +126,12 @@ impl<'a> Accordion<'a> {
                     p.line_segment([pos2(tr.min.x, tr.max.y), pos2(tr.min.x + tr.width() * hov, tr.max.y)], Stroke::new(1.0, with_alpha(t.foreground, 0.6)));
                 }
                 chevron(ui, pos2(row.max.x - pad - 8.0, row.center().y), PI * k, 9.0, t.muted_foreground.lerp_to_gamma(t.foreground, hov));
-                ui.horizontal(|ui| {
-                    ui.add_space(pad);
-                    ui.allocate_ui_with_layout(vec2(iw, 0.0), Layout::top_down(Align::Min), |ui| {
-                        reveal(ui, id.with(("body", i)), open[i], |ui| {
-                            ui.set_width(iw);
-                            content(ui);
-                            ui.add_space(16.0);
-                        });
+                egui::Frame::NONE.inner_margin(egui::Margin { left: pad as i8, right: pad as i8, top: 0, bottom: 0 }).show(ui, |ui| {
+                    ui.set_width(iw);
+                    reveal(ui, id.with(("body", i)), open[i], |ui| {
+                        ui.set_width(iw);
+                        content(ui);
+                        ui.add_space(16.0);
                     });
                 });
                 if i + 1 < n {

@@ -9,9 +9,9 @@ use glowkit_core::{paint, Theme};
 /// A model offered by a [`ModelSelector`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ModelInfo<'a> {
-    /// Display name, e.g. "Sonnet 4.5".
+    /// Display name, e.g. "Nova 2".
     pub name: &'a str,
-    /// Provider, e.g. "Anthropic" (drives the badge color and letter).
+    /// Provider, e.g. "Lumen Labs" (drives the badge color and letter).
     pub provider: &'a str,
     /// One-line description.
     pub description: &'a str,
@@ -57,7 +57,7 @@ pub(crate) fn provider_badge(p: &egui::Painter, center: Pos2, size: f32, provide
 /// ```no_run
 /// # let ui: &mut egui::Ui = todo!();
 /// use glowkit_ai::{ModelInfo, ModelSelector};
-/// let models = [ModelInfo::new("Sonnet 4.5", "Anthropic"), ModelInfo::new("GPT-5", "OpenAI")];
+/// let models = [ModelInfo::new("Nova 2", "Lumen Labs"), ModelInfo::new("Orbit 5", "Orbit AI")];
 /// let mut selected = 0;
 /// ui.add(ModelSelector::new(&models, &mut selected));
 /// ```

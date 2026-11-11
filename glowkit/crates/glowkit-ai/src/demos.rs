@@ -152,7 +152,7 @@ let out = ChatMessage::new(Role::Assistant, answer)
                     .id_salt("m2")
                     .show(ui, |_| {});
                 glowkit_core::set_state(ui, id, b);
-                ui.add(ChatMessage::new(Role::System, "Model switched to Haiku 4.5"));
+                ui.add(ChatMessage::new(Role::System, "Model switched to Nova Flash"));
             }),
         },
         Demo {
@@ -212,7 +212,7 @@ if out.stop { cancel(); }"##,
                     last: String::new(),
                 });
                 let now = ui.input(|i| i.time);
-                let models = [ModelInfo::new("Sonnet 4.5", "Anthropic"), ModelInfo::new("GPT-5", "OpenAI"), ModelInfo::new("Gemini 2.5 Pro", "Google")];
+                let models = [ModelInfo::new("Nova 2", "Lumen Labs"), ModelInfo::new("Orbit 5", "Orbit AI"), ModelInfo::new("Helix Pro", "Helix")];
                 ui.add_space(40.0);
                 let mut model = s.model;
                 let out = PromptInput::new(&mut s.text).attachments(&mut s.files).generating(now < s.busy_until).max_chars(500).mic_button(true).id_salt("pi1").show(ui, |ui| {
@@ -519,11 +519,11 @@ if ui.add(VoiceButton::new(listening).amplitude(mic_level)).clicked() {
                 let e = looped(ui, 12.0);
                 let used = (20_000.0 + e / 12.0 * 100_000.0) as u64;
                 ui.horizontal(|ui| {
-                    ui.add(ContextMeter::new(used, 128_000).segment("Input", used * 6 / 10).segment("Output", used * 3 / 10).segment("Reasoning", used / 10).model("Sonnet 4.5").cost(used as f64 * 3e-6));
+                    ui.add(ContextMeter::new(used, 128_000).segment("Input", used * 6 / 10).segment("Output", used * 3 / 10).segment("Reasoning", used / 10).model("Nova 2").cost(used as f64 * 3e-6));
                     label(ui, "  ← hover for the breakdown");
                 });
                 ui.add_space(30.0);
-                ui.add(ContextMeter::new(used, 128_000).style(MeterStyle::Bar).segment("Input", used * 6 / 10).segment("Output", used * 3 / 10).segment("Reasoning", used / 10).model("Sonnet 4.5").cost(used as f64 * 3e-6));
+                ui.add(ContextMeter::new(used, 128_000).style(MeterStyle::Bar).segment("Input", used * 6 / 10).segment("Output", used * 3 / 10).segment("Reasoning", used / 10).model("Nova 2").cost(used as f64 * 3e-6));
             }),
         },
         Demo {
@@ -652,11 +652,11 @@ if ui.add(Checkpoint::new().time("2 min ago")).clicked() { restore(); }"##,
                 let id = ui.scope_id().with("models");
                 let mut sel: usize = glowkit_core::state(ui, id, || 0);
                 let models = [
-                    ModelInfo::new("Sonnet 4.5", "Anthropic").description("Best for coding and agents").tag("New"),
-                    ModelInfo::new("Opus 4.1", "Anthropic").description("Most capable for hard problems"),
-                    ModelInfo::new("GPT-5", "OpenAI").description("Flagship reasoning model"),
-                    ModelInfo::new("GPT-5 mini", "OpenAI").description("Fast and affordable").tag("Fast"),
-                    ModelInfo::new("Gemini 2.5 Pro", "Google").description("Long context, multimodal"),
+                    ModelInfo::new("Nova 2", "Lumen Labs").description("Best for coding and agents").tag("New"),
+                    ModelInfo::new("Nova Ultra", "Lumen Labs").description("Most capable for hard problems"),
+                    ModelInfo::new("Orbit 5", "Orbit AI").description("Flagship reasoning model"),
+                    ModelInfo::new("Orbit Mini", "Orbit AI").description("Fast and affordable").tag("Fast"),
+                    ModelInfo::new("Helix Pro", "Helix").description("Long context, multimodal"),
                 ];
                 ui.add_space(10.0);
                 ui.add(ModelSelector::new(&models, &mut sel));

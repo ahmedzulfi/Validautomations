@@ -521,11 +521,14 @@ AnimatedBeam::new(hub.center(), b.center()).reverse(true).paint(ui);
                 let tick = (now / 3.5) as u64;
                 let last: u64 = mem(ui, "tick", || tick);
                 ui.horizontal(|ui| {
-                    if ui.button("🔀 Shuffle").clicked() || last != tick {
+                    if ui.button("🔀 Shuffle").clicked() {
                         let mut rng = glowkit_core::Rng::new(tick.wrapping_mul(2654435761) ^ (now * 1000.0) as u64);
                         for i in (1..order.len()).rev() {
                             order.swap(i, rng.below(i + 1));
                         }
+                    } else if last != tick {
+                        // idle demo: move the first tile to the end so everything reflows one slot
+                        order.rotate_left(1);
                     }
                     for c in [3usize, 4, 5] {
                         if ui.selectable_label(cols == c, format!("{c} columns")).clicked() {

@@ -534,15 +534,15 @@ impl Beams {
         let n = self.count as f32;
         let time = f.time * self.speed;
         let (bw, noise) = (self.width, self.noise);
-        shader_grid(&f.painter, rect, (self.count * 9).clamp(48, 160), 40, |uv| {
+        shader_grid(&f.painter, rect, (self.count * 12).clamp(48, 150), 56, |uv| {
             let p = vec2((uv.x - 0.5) * aspect, uv.y - 0.5);
             let q = vec2(p.x * c + p.y * s, -p.x * s + p.y * c);
             let x = (q.x / aspect + 0.5) * n;
             let idx = x.floor();
             let fr = x - idx - 0.5;
-            let core = (-(fr / (bw * 0.3)).powi(2)).exp();
+            let core = (-(fr / (bw * 0.42)).powi(2)).exp();
             let halo = (-(fr / (bw * 0.9)).powi(2)).exp() * 0.35;
-            let flow = fbm3(idx * 1.7, q.y * 1.6 - time * 0.5, time * 0.1, 3);
+            let flow = fbm3(idx * 1.7, q.y * 1.6 - time * 0.5, time * 0.1, 2);
             let tex = 1.0 - noise * 0.6 + noise * 0.6 * smoothstep(-0.45, 0.5, flow);
             let fade = (PI * uv.y).sin().max(0.0).powf(0.5) * (0.7 + 0.3 * h01(idx as i32 as u32, 1));
             let i = (core * tex + halo * (0.5 + 0.5 * tex)) * fade;

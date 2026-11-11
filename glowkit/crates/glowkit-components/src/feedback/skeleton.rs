@@ -47,7 +47,7 @@ impl Skeleton {
     /// Paint into an existing rect.
     pub fn paint(&self, ui: &Ui, rect: Rect) {
         let t = Theme::of(ui);
-        let base = if t.dark { mix(t.muted, t.foreground, 0.04) } else { mix(t.muted, t.input, 0.35) };
+        let base = if t.dark { mix(t.muted, t.foreground, 0.04) } else { mix(t.muted, t.input, 0.7) };
         let hi = if t.dark { mix(t.muted, t.foreground, 0.12) } else { mix(t.muted, t.background, 0.9) };
         let time = glowkit_core::time(ui);
         let outline: Vec<Pos2> = if self.circle {

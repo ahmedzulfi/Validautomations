@@ -20,6 +20,8 @@
 //! ui.add(ChatMessage::new(Role::Assistant, "Ownership is Rust's **memory model**..."));
 //! ```
 
+#![warn(missing_docs)]
+
 mod artifact;
 mod code;
 mod common;

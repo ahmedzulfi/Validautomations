@@ -283,3 +283,31 @@ pub(crate) fn spinner(painter: &Painter, center: Pos2, radius: f32, width: f32, 
     let sweep = TAU * (0.55 + 0.2 * (time * 2.3).sin());
     glowkit_core::paint::arc_gradient(painter, center, radius, a0, a0 + sweep, width, |t| color.gamma_multiply(t.powf(0.8)));
 }
+
+/// Stroke a border ring that stays strictly inside `rect` (anti-aliasing feather included).
+pub(crate) fn inner_border_fn(painter: &Painter, rect: Rect, radius: f32, width: f32, f: impl Fn(Pos2, f32) -> Color32) {
+    border_fn(painter, rect.shrink(0.8), (radius - 0.8).max(0.0), width, f);
+}
+
+/// A soft radial glow around `center`, clipped to the inside of a rounded rect.
+pub(crate) fn inner_glow(painter: &Painter, rect: Rect, radius: f32, center: Pos2, r: f32, color: Color32) {
+    if color.a() == 0 || r <= 0.5 {
+        return;
+    }
+    glowkit_core::paint::fill_convex_fn(painter, &outline(rect.shrink(0.5), (radius - 0.5).max(0.0), 6.0), 4, |q| {
+        let d = q.distance(center) / r;
+        color.gamma_multiply((-d * d * 2.5).exp())
+    });
+}
+
+/// Smooth highlight profile along a closed path: a soft gaussian head at `head` plus a longer
+/// fading tail behind it (direction of travel = increasing `t`). Never has a hard edge.
+pub(crate) fn sweep_profile(head: f32, t: f32, head_width: f32, tail: f32) -> f32 {
+    let mut d = (head - t).rem_euclid(1.0);
+    if d > 0.5 {
+        d -= 1.0;
+    }
+    let h = (-(d / head_width).powi(2)).exp();
+    let tl = if d > 0.0 { (-(d / tail).powi(2)).exp() * 0.55 } else { 0.0 };
+    h.max(tl)
+}
