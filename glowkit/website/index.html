@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>glowkit · Animated components for Rust</title>
+  <meta name="description" content="A big, beautiful, animated component library for Rust desktop apps on Windows, macOS and Linux, and for the web through WebAssembly. Built on egui." />
+  <meta property="og:title" content="glowkit · Animated components for Rust" />
+  <meta property="og:description" content="Shimmering text, aurora backgrounds, border beams, spotlight cards, animated charts and a full AI chat kit, in pure Rust." />
+  <link rel="icon" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #09090b; --bg-2: #0e0e11; --card: #111114; --border: #232328; --border-2: #2e2e35;
+      --fg: #fafafa; --muted: #a1a1aa; --dim: #71717a;
+      --violet: #8b5cf6; --pink: #ec4899; --amber: #f59e0b; --cyan: #22d3ee;
+      --radius: 14px;
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 Inter, system-ui, -apple-system, Segoe UI, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+    @media (max-width: 600px) { .wrap { padding: 0 16px; } }
+
+    /* nav */
+    nav { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(14px); background: rgba(9,9,11,.72); border-bottom: 1px solid rgba(255,255,255,.06); }
+    nav .wrap { display: flex; align-items: center; gap: 24px; height: 60px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; letter-spacing: -.02em; }
+    .brand svg { width: 22px; height: 22px; }
+    nav .links { display: flex; gap: 22px; margin-left: auto; font-size: 14px; color: var(--muted); }
+    nav .links a:hover { color: var(--fg); }
+    @media (max-width: 720px) { nav .links a.opt { display: none; } }
+
+    /* hero */
+    .hero { position: relative; padding: 110px 0 90px; text-align: center; overflow: hidden; }
+    .aurora { position: absolute; inset: -20% -10% auto; height: 620px; pointer-events: none; filter: blur(60px); opacity: .55; }
+    .aurora span { position: absolute; border-radius: 50%; mix-blend-mode: screen; animation: drift 14s ease-in-out infinite alternate; }
+    .aurora span:nth-child(1) { width: 520px; height: 300px; left: 12%; top: 40px; background: var(--violet); }
+    .aurora span:nth-child(2) { width: 440px; height: 280px; left: 46%; top: 0; background: var(--pink); animation-delay: -4s; }
+    .aurora span:nth-child(3) { width: 380px; height: 240px; left: 62%; top: 120px; background: var(--amber); opacity: .7; animation-delay: -8s; }
+    @keyframes drift { from { transform: translate(-40px, 0) scale(1); } to { transform: translate(60px, 30px) scale(1.15); } }
+    .grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px); background-size: 44px 44px; mask-image: radial-gradient(ellipse at 50% 30%, black 20%, transparent 70%); pointer-events: none; }
+    .pill { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; font-size: 13px; color: var(--muted); background: rgba(255,255,255,.04); border: 1px solid var(--border); }
+    .pill b { color: var(--fg); font-weight: 600; }
+    h1 { position: relative; font-size: clamp(40px, 7vw, 76px); line-height: 1.02; letter-spacing: -.045em; margin: 22px auto 18px; max-width: 900px; font-weight: 800; }
+    .shine { background: linear-gradient(110deg, #a1a1aa 35%, #fff 50%, #a1a1aa 65%); background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 4s linear infinite; }
+    @keyframes shine { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+    .grad { background: linear-gradient(90deg, var(--violet), var(--pink), var(--amber), var(--violet)); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: flow 8s linear infinite; }
+    @keyframes flow { to { background-position: 300% 0; } }
+    .lead { position: relative; max-width: 660px; margin: 0 auto; color: var(--muted); font-size: clamp(16px, 2vw, 19px); }
+    .ctas { position: relative; display: flex; gap: 12px; justify-content: center; margin-top: 34px; flex-wrap: wrap; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 22px; border-radius: 12px; font-weight: 600; font-size: 15px; border: 1px solid var(--border-2); background: rgba(255,255,255,.03); transition: transform .15s, border-color .2s, background .2s; }
+    .btn:hover { transform: translateY(-1px); border-color: #3f3f46; background: rgba(255,255,255,.06); }
+    .btn.primary { position: relative; border: 0; color: #0a0a0a; background: var(--fg); overflow: hidden; }
+    .btn.primary::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(139,92,246,.35) 50%, transparent 70%); background-size: 250% 100%; animation: shine 3s linear infinite; }
+    .install { position: relative; display: inline-flex; align-items: center; gap: 12px; margin-top: 26px; padding: 10px 16px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); font: 14px var(--mono); color: var(--muted); }
+    .install b { color: var(--fg); font-weight: 500; }
+    .install button { all: unset; cursor: pointer; color: var(--dim); font-size: 12px; }
+    .install button:hover { color: var(--fg); }
+
+    /* sections */
+    section { padding: 80px 0; }
+    .eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--violet); }
+    h2 { font-size: clamp(30px, 4vw, 44px); letter-spacing: -.035em; line-height: 1.1; margin: 10px 0 14px; font-weight: 750; }
+    .sub { color: var(--muted); max-width: 640px; margin: 0; font-size: 17px; }
+
+    /* live demo */
+    .demo-frame { position: relative; margin-top: 36px; border-radius: 18px; padding: 1px; background: linear-gradient(140deg, rgba(139,92,246,.6), rgba(255,255,255,.08) 30%, rgba(255,255,255,.04) 70%, rgba(236,72,153,.5)); box-shadow: 0 40px 120px -40px rgba(139,92,246,.45); }
+    .demo-inner { border-radius: 17px; overflow: hidden; background: var(--bg); }
+    .demo-bar { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-bottom: 1px solid var(--border); background: var(--bg-2); font-size: 12px; color: var(--dim); }
+    .demo-bar i { width: 11px; height: 11px; border-radius: 50%; background: #3f3f46; display: inline-block; }
+    .demo-bar span { margin-left: 10px; font-family: var(--mono); }
+    .demo-bar a { margin-left: auto; color: var(--muted); }
+    .demo-bar a:hover { color: var(--fg); }
+    iframe.gallery { display: block; width: 100%; height: 720px; border: 0; background: var(--bg); }
+    @media (max-width: 720px) { iframe.gallery { height: 560px; } }
+
+    /* features */
+    .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
+    @media (max-width: 900px) { .features { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { .features { grid-template-columns: 1fr; } }
+    .feature { position: relative; padding: 24px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--border); overflow: hidden; }
+    .feature::before { content: ""; position: absolute; inset: 0; background: radial-gradient(400px circle at var(--x, 50%) var(--y, -20%), rgba(139,92,246,.14), transparent 40%); opacity: 0; transition: opacity .3s; }
+    .feature:hover::before { opacity: 1; }
+    .feature .ic { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-size: 18px; background: rgba(139,92,246,.12); border: 1px solid rgba(139,92,246,.3); margin-bottom: 14px; }
+    .feature h3 { margin: 0 0 6px; font-size: 17px; letter-spacing: -.01em; }
+    .feature p { margin: 0; color: var(--muted); font-size: 14.5px; }
+
+    /* categories */
+    .cats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+    .cat { padding: 10px 16px; border-radius: 999px; background: var(--card); border: 1px solid var(--border); font-size: 14px; color: var(--muted); }
+    .cat b { color: var(--fg); margin-left: 6px; }
+
+    /* code */
+    .split { display: grid; grid-template-columns: 1fr 1.15fr; gap: 40px; align-items: center; }
+    @media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
+    pre { margin: 0; padding: 22px; border-radius: var(--radius); background: #0b0b0e; border: 1px solid var(--border); overflow-x: auto; font: 13.5px/1.7 var(--mono); color: #d4d4d8; }
+    .k { color: #c792ea; } .s { color: #c3e88d; } .t { color: #ffcb6b; } .f { color: #82aaff; } .c { color: #636a80; } .n { color: #f78c6c; }
+    ul.checks { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 10px; }
+    ul.checks li { display: flex; gap: 10px; color: var(--muted); }
+    ul.checks li::before { content: "✓"; color: var(--violet); font-weight: 700; }
+
+    /* catalog */
+    .libs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 36px; }
+    @media (max-width: 760px) { .libs { grid-template-columns: 1fr; } }
+    .lib { padding: 16px 18px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); }
+    .lib .row { display: flex; justify-content: space-between; font-size: 14.5px; }
+    .lib .row span { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .bar { height: 6px; border-radius: 6px; background: #1f1f24; margin-top: 10px; overflow: hidden; }
+    .bar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--violet), var(--pink)); width: 0; transition: width 1.2s cubic-bezier(.2,.8,.2,1); }
+    .search { margin-top: 36px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .search input { flex: 1; min-width: 220px; height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--border-2); background: var(--card); color: var(--fg); font: inherit; outline: none; }
+    .search input:focus { border-color: var(--violet); box-shadow: 0 0 0 3px rgba(139,92,246,.2); }
+    .search .count { color: var(--dim); font-size: 14px; }
+    .comps { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; margin-top: 16px; }
+    .comp { display: block; padding: 14px 16px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); transition: border-color .2s, transform .15s; }
+    .comp:hover { border-color: rgba(139,92,246,.6); transform: translateY(-1px); }
+    .comp h4 { margin: 0; font-size: 14.5px; }
+    .comp small { display: block; color: var(--dim); font-size: 12px; margin-top: 2px; }
+    .comp p { margin: 6px 0 0; color: var(--muted); font-size: 13px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    /* cta + footer */
+    .cta { position: relative; text-align: center; padding: 70px 24px; border-radius: 22px; border: 1px solid var(--border); background: radial-gradient(600px 240px at 50% 0%, rgba(139,92,246,.25), transparent), var(--card); overflow: hidden; }
+    footer { padding: 40px 0 60px; color: var(--dim); font-size: 14px; border-top: 1px solid var(--border); }
+    footer .wrap { display: flex; gap: 20px; flex-wrap: wrap; justify-content: space-between; }
+    footer a:hover { color: var(--fg); }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="wrap">
+      <a class="brand" href="#"><svg viewBox="0 0 24 24"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset=".5" stop-color="#ec4899"/><stop offset="1" stop-color="#f59e0b"/></linearGradient></defs><path fill="url(#g)" d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12C11.4 17.8 6.2 12.6 0 12 6.2 11.4 11.4 6.2 12 0z"/></svg>glowkit</a>
+      <div class="links">
+        <a href="#demo">Live demo</a>
+        <a class="opt" href="#features">Features</a>
+        <a class="opt" href="#catalog">Catalog</a>
+        <a href="#start">Get started</a>
+        <a href="https://github.com/glowkit-rs/glowkit">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="aurora"><span></span><span></span><span></span></div>
+    <div class="grid-bg"></div>
+    <div class="wrap">
+      <a class="pill" href="gallery/"><b>New</b> <span><span id="pill-count">Hundreds of components</span>, all live in WebAssembly →</span></a>
+      <h1><span class="shine">The animated UI kit</span><br /><span class="grad">Rust never had.</span></h1>
+      <p class="lead">Shimmering text, aurora backgrounds, border beams, spotlight cards, magnetic docks, animated charts and a complete AI chat kit. Pure Rust, built on egui. Ship it in native Windows, macOS and Linux apps, or on the web.</p>
+      <div class="ctas">
+        <a class="btn primary" href="gallery/"><span style="position:relative;z-index:1">Open the gallery →</span></a>
+        <a class="btn" href="#start">Get started</a>
+      </div>
+      <div class="install"><span>$</span> <b>cargo add glowkit</b> <button id="copy-install" aria-label="Copy install command">copy</button></div>
+    </div>
+  </header>
+
+  <section id="demo">
+    <div class="wrap">
+      <div class="eyebrow">Live demo</div>
+      <h2>This is Rust, running in your browser.</h2>
+      <p class="sub">The gallery below is the same app that runs natively on the desktop, compiled to WebAssembly. Every component, every theme, all interactive.</p>
+      <div class="demo-frame"><div class="demo-inner">
+        <div class="demo-bar"><i></i><i></i><i></i><span>glowkit-gallery.wasm</span><a href="gallery/" target="_blank" rel="noopener">Open full screen ↗</a></div>
+        <iframe class="gallery" src="gallery/" title="glowkit live gallery" loading="lazy"></iframe>
+      </div></div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="eyebrow">Why glowkit</div>
+      <h2>Website-grade polish for desktop apps.</h2>
+      <p class="sub">Everything you love about the modern web component ecosystem, rebuilt from scratch in Rust.</p>
+      <div class="features">
+        <div class="feature"><div class="ic">✦</div><h3>Animated by default</h3><p>31 easing curves, springs, staggering and triggers (on appear, loop, hover, click) power every component.</p></div>
+        <div class="feature"><div class="ic">🖥</div><h3>Native everywhere</h3><p>One codebase for Windows, macOS, Linux and the web. No webview, no JavaScript, no Electron.</p></div>
+        <div class="feature"><div class="ic">🎨</div><h3>Themeable tokens</h3><p>Semantic tokens with five presets. One call restyles glowkit and egui's own widgets.</p></div>
+        <div class="feature"><div class="ic">⚡</div><h3>GPU meshes</h3><p>Gradients, glows and "shader" backgrounds are vertex-colored meshes: smooth and cheap.</p></div>
+        <div class="feature"><div class="ic">🧩</div><h3>Modular crates</h3><p>Text, backgrounds, effects, components, charts, AI and blocks, each behind a cargo feature.</p></div>
+        <div class="feature"><div class="ic">🤖</div><h3>AI-ready</h3><p>Streaming markdown, prompt input, reasoning, tool calls, sources, voice orb and waveforms.</p></div>
+      </div>
+      <div class="cats" id="cats"></div>
+    </div>
+  </section>
+
+  <section id="start">
+    <div class="wrap split">
+      <div>
+        <div class="eyebrow">Get started</div>
+        <h2>Two lines in Cargo.toml.</h2>
+        <p class="sub">Add glowkit next to eframe, install a theme, and drop components into any egui layout.</p>
+        <ul class="checks">
+          <li>Builder APIs that feel like egui: <code>ui.add(Thing::new(..))</code></li>
+          <li>Theme colors by default, setters to override everything</li>
+          <li>Idle apps stay idle: one-shot animations stop repainting</li>
+          <li>Dual-licensed MIT / Apache-2.0</li>
+        </ul>
+      </div>
+<pre><span class="c">// Cargo.toml: glowkit = "0.1", eframe = "0.37"</span>
+<span class="k">use</span> glowkit::prelude::*;
+<span class="k">use</span> glowkit::{backgrounds::<span class="t">Aurora</span>, effects::<span class="t">ShimmerButton</span>, text::<span class="t">ShinyText</span>};
+
+<span class="k">impl</span> eframe::<span class="t">App</span> <span class="k">for</span> <span class="t">App</span> {
+    <span class="k">fn</span> <span class="f">ui</span>(&amp;<span class="k">mut</span> <span class="k">self</span>, ui: &amp;<span class="k">mut</span> egui::<span class="t">Ui</span>, _: &amp;<span class="k">mut</span> eframe::<span class="t">Frame</span>) {
+        <span class="t">Theme</span>::<span class="f">dark</span>().<span class="f">install</span>(ui.<span class="f">ctx</span>());
+        egui::<span class="t">CentralPanel</span>::<span class="f">default</span>().<span class="f">show</span>(ui, |ui| {
+            <span class="t">Aurora</span>::<span class="f">new</span>().<span class="f">paint</span>(ui, ui.<span class="f">max_rect</span>());
+            ui.<span class="f">add</span>(<span class="t">ShinyText</span>::<span class="f">new</span>(<span class="s">"Hello from Rust"</span>).<span class="f">size</span>(<span class="n">48.0</span>));
+            <span class="k">if</span> ui.<span class="f">add</span>(<span class="t">ShimmerButton</span>::<span class="f">new</span>(<span class="s">"Get started"</span>)).<span class="f">clicked</span>() {
+                <span class="c">// ...</span>
+            }
+        });
+    }
+}</pre>
+    </div>
+  </section>
+
+  <section id="catalog">
+    <div class="wrap">
+      <div class="eyebrow">Catalog</div>
+      <h2>Parity with the web, tracked in code.</h2>
+      <p class="sub">Every glowkit component declares which web components it is equivalent to. This table is generated from that data. These are original Rust implementations, not ports.</p>
+      <div class="libs" id="libs"></div>
+      <div class="search"><input id="q" placeholder="Search components, e.g. aurora, dock, typewriter, tool call…" aria-label="Search components" /><span class="count" id="count"></span></div>
+      <div class="comps" id="comps"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="cta">
+        <h2 style="margin-top:0">Make your Rust app glow.</h2>
+        <p class="sub" style="margin:0 auto 26px">Open source, free forever. Contributions welcome.</p>
+        <div class="ctas" style="margin-top:0"><a class="btn primary" href="gallery/"><span style="position:relative;z-index:1">Explore components</span></a><a class="btn" href="https://github.com/glowkit-rs/glowkit">Star on GitHub</a></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 glowkit contributors · MIT / Apache-2.0</span>
+      <span><a href="gallery/">Gallery</a> · <a href="https://docs.rs/glowkit">Docs</a> · <a href="https://crates.io/crates/glowkit">crates.io</a> · <a href="https://github.com/glowkit-rs/glowkit">GitHub</a></span>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("copy-install").addEventListener("click", (e) => {
+      navigator.clipboard?.writeText("cargo add glowkit");
+      e.target.textContent = "copied";
+      setTimeout(() => (e.target.textContent = "copy"), 1400);
+    });
+    document.querySelectorAll(".feature").forEach((el) => el.addEventListener("pointermove", (e) => {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--x", e.clientX - r.left + "px");
+      el.style.setProperty("--y", e.clientY - r.top + "px");
+    }));
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    fetch("catalog.json").then((r) => r.json()).then((data) => {
+      const demos = data.demos;
+      document.getElementById("pill-count").textContent = `${demos.length} components`;
+      const cats = {};
+      demos.forEach((d) => (cats[d.category] = (cats[d.category] || 0) + 1));
+      document.getElementById("cats").innerHTML = Object.entries(cats).map(([c, n]) => `<span class="cat">${esc(c)}<b>${n}</b></span>`).join("");
+      document.getElementById("libs").innerHTML = data.libraries.map((l) => {
+        const pct = Math.round((100 * l.have) / Math.max(1, l.total));
+        return `<div class="lib"><div class="row"><a href="${esc(l.url)}" rel="noopener">${esc(l.name)}</a><span>${l.have} / ${l.total} · ${pct}%</span></div><div class="bar"><i data-w="${pct}"></i></div></div>`;
+      }).join("");
+      const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.style.width = e.target.dataset.w + "%"; io.unobserve(e.target); } }));
+      document.querySelectorAll(".bar i").forEach((b) => io.observe(b));
+      const render = () => {
+        const q = document.getElementById("q").value.toLowerCase().trim();
+        const hits = demos.filter((d) => !q || [d.name, d.id, d.category, d.description, ...d.covers].join(" ").toLowerCase().includes(q));
+        document.getElementById("count").textContent = `${hits.length} of ${demos.length}`;
+        document.getElementById("comps").innerHTML = hits.map((d) => `<a class="comp" href="gallery/#${esc(d.id)}"><h4>${esc(d.name)}</h4><small>${esc(d.category)}</small><p>${esc(d.description)}</p></a>`).join("");
+      };
+      document.getElementById("q").addEventListener("input", render);
+      render();
+    }).catch(() => {});
+  </script>
+</body>
+</html>

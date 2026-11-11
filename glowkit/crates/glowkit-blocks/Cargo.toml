@@ -20,8 +20,3 @@ demos = []
 [dependencies]
 egui.workspace = true
 glowkit-core.workspace = true
-glowkit-components.workspace = true
-glowkit-text.workspace = true
-glowkit-backgrounds.workspace = true
-glowkit-effects.workspace = true
-glowkit-charts.workspace = true

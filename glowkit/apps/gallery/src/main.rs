@@ -427,9 +427,49 @@ fn set_hash(id: &str) {
     web::set_hash(id);
 }
 
+/// Machine-readable list of every demo (used to generate CATALOG.md and the website catalog).
+#[cfg(not(target_arch = "wasm32"))]
+fn dump_json() -> String {
+    fn esc(s: &str) -> String {
+        let mut o = String::with_capacity(s.len() + 2);
+        for c in s.chars() {
+            match c {
+                '"' => o.push_str("\\\""),
+                '\\' => o.push_str("\\\\"),
+                '\n' => o.push_str("\\n"),
+                '\r' => o.push_str("\\r"),
+                '\t' => o.push_str("\\t"),
+                c if (c as u32) < 0x20 => o.push_str(&format!("\\u{:04x}", c as u32)),
+                c => o.push(c),
+            }
+        }
+        format!("\"{o}\"")
+    }
+    let items: Vec<String> = glowkit::all_demos()
+        .iter()
+        .map(|d| {
+            let covers: Vec<String> = d.covers.iter().map(|c| esc(c)).collect();
+            format!(
+                "  {{\"id\": {}, \"name\": {}, \"category\": {}, \"description\": {}, \"covers\": [{}], \"code\": {}}}",
+                esc(d.id),
+                esc(d.name),
+                esc(d.category.label()),
+                esc(d.description),
+                covers.join(", "),
+                esc(d.code)
+            )
+        })
+        .collect();
+    format!("[\n{}\n]\n", items.join(",\n"))
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result {
     let initial = std::env::args().nth(1);
+    if initial.as_deref() == Some("--dump-json") {
+        print!("{}", dump_json());
+        return Ok(());
+    }
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([1360.0, 880.0]).with_min_inner_size([900.0, 600.0]).with_title("glowkit gallery"),
         ..Default::default()
