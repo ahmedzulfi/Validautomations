@@ -754,6 +754,8 @@ enum Op {
     Erase { before: Box<Document>, hits: Vec<u64>, trail: Vec<(Pos2, f64)> },
 }
 
+type ShapeEdit = Box<dyn Fn(&mut WbShape)>;
+
 /// Current drawing style of a [`Whiteboard`].
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct WbStyle {
@@ -1331,11 +1333,7 @@ impl<'a> Whiteboard<'a> {
                 if erasing.contains(&s.id) {
                     p.set_opacity(0.25);
                 }
-                if st.editing == Some(s.id) && s.kind != ShapeKind::Sticky {
-                    let mut c = s.clone();
-                    c.text.clear();
-                    paint_wb_shape(&p, &t, doc, &c, tsd, zoom);
-                } else if st.editing == Some(s.id) {
+                if st.editing == Some(s.id) {
                     let mut c = s.clone();
                     c.text.clear();
                     paint_wb_shape(&p, &t, doc, &c, tsd, zoom);
@@ -1513,7 +1511,7 @@ impl<'a> Whiteboard<'a> {
             painter.text(pos2(style_rect.left() + 12.0, y + 4.0), Align2::LEFT_CENTER, "Stroke", qfont(10.5), t.muted_foreground);
             y += 14.0;
             let sel_ids = st.selected.clone();
-            let mut apply: Option<Box<dyn Fn(&mut WbShape)>> = None;
+            let mut apply: Option<ShapeEdit> = None;
             for (k, c) in WB_COLORS.iter().enumerate() {
                 let col = k % 4;
                 let row = k / 4;

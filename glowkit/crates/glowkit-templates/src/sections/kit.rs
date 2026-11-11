@@ -247,7 +247,6 @@ impl Tx {
         let pos = pos2(anchor_x, min.y);
         let color = self.color.unwrap_or(fallback);
         let copies = (self.weight / 0.45).ceil() as usize;
-        let alpha_each = if copies == 0 { 1.0 } else { 1.0 / ((copies + 1) as f32).sqrt() };
         for i in 0..=copies {
             let dx = if copies == 0 { 0.0 } else { self.weight * i as f32 / copies as f32 };
             let p = pos + vec2(dx, 0.0);
@@ -256,10 +255,10 @@ impl Tx {
                 let stops = g.clone();
                 paint::galley_with(painter, p, galley, move |q| {
                     let u = ((q.x - b.min.x) / b.width().max(1.0)) * 0.85 + ((q.y - b.min.y) / b.height().max(1.0)) * 0.15;
-                    gradient(&stops, u).gamma_multiply(if i == 0 { 1.0 } else { alpha_each })
+                    gradient(&stops, u)
                 });
             } else {
-                let c = if i == 0 { color } else { color.gamma_multiply(alpha_each) };
+                let c = color;
                 painter.galley(p, galley.clone(), c);
             }
         }
@@ -493,10 +492,12 @@ pub(crate) fn paint_background(ui: &Ui, bg: SectionBackground, rect: Rect, id: I
         }
         SectionBackground::Aurora => {
             glowkit_backgrounds::Aurora::new().id_salt(id).background(base).blend(0.6).paint(ui, rect);
+            // a soft scrim keeps copy readable over the brightest curtains
+            paint::glow_ellipse(&painter, rect.center(), vec2(rect.width() * 0.42, rect.height() * 0.42), with_alpha(base, if t.dark { 0.7 } else { 0.75 }));
             fade(ui);
         }
         SectionBackground::Grid => {
-            glowkit_backgrounds::GridPattern::new().id_salt(id).background(base).cell_size(44.0).squares(14).mask(true).paint(ui, rect);
+            glowkit_backgrounds::GridPattern::new().id_salt(id).background(base).line_color(with_alpha(t.foreground, if t.dark { 0.07 } else { 0.06 })).cell_size(44.0).squares(14).mask(true).paint(ui, rect);
         }
         SectionBackground::Dots => {
             glowkit_backgrounds::DotGrid::new().id_salt(id).background(base).gap(22.0).dot_size(1.6).auto_hover(false).paint(ui, rect);

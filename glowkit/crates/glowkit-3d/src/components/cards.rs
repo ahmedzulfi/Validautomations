@@ -104,8 +104,9 @@ pub(crate) fn draw_card(scene: &mut Scene, center: Vec3, right: Vec3, up: Vec3, 
         let ts = style.text_scale * size.y.min(size.x * 1.4);
         let tc = style.text.gamma_multiply(a);
         let pad = size.x * 0.09;
-        s.text(&card.title, world(-size.x / 2.0 + pad, -size.y / 2.0 + pad + ts * 0.42), right, up, ts * 0.19, tc, Align2::LEFT_BOTTOM);
-        s.text(&card.subtitle, world(-size.x / 2.0 + pad, -size.y / 2.0 + pad), right, up, ts * 0.1, tc.gamma_multiply(0.8), Align2::LEFT_BOTTOM);
+        let maxw = size.x - pad * 2.0;
+        s.text_fitted(&card.title, world(-size.x / 2.0 + pad, -size.y / 2.0 + pad + ts * 0.42), right, up, ts * 0.19, maxw, tc, Align2::LEFT_BOTTOM);
+        s.text_fitted(&card.subtitle, world(-size.x / 2.0 + pad, -size.y / 2.0 + pad), right, up, ts * 0.1, maxw, tc.gamma_multiply(0.8), Align2::LEFT_BOTTOM);
     });
 }
 

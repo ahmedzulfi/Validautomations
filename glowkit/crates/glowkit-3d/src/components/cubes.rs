@@ -328,7 +328,7 @@ impl Widget for PuzzleCube {
         Viewport3D::new(salt_or(&self.id_salt, "puzzle-cube"))
             .height(self.height)
             .fov(34.0)
-            .controls(OrbitControls::new().distance(9.0).pitch(0.5).yaw(0.75).auto_rotate(0.35).distance_range(5.0, 16.0))
+            .controls(OrbitControls::new().distance(9.6).pitch(0.45).yaw(0.75).auto_rotate(0.35).distance_range(5.0, 16.0))
             .show(ui, |scene, ctx| {
                 let now = ctx.time;
                 let (tt, pause) = (self.turn_time, self.pause);
@@ -374,7 +374,7 @@ impl Widget for PuzzleCube {
                 );
                 let body_mesh = ctx.mesh("body", || Mesh::cube(0.97));
                 let sticker = ctx.mesh("sticker", || rounded_quad(0.8, 0.8, 0.13, 4));
-                scene.shadow(vec3(0.0, -2.6, 0.0), 2.6, super::shadow_c(&t, 0.9));
+                scene.shadow(vec3(0.0, -2.0, 0.0), 2.1, super::shadow_c(&t, 0.9));
                 let anim = st.turn.map(|tr| {
                     let k = ease(Easing::InOutCubic, ((now - tr.start) / tt).clamp(0.0, 1.0));
                     (tr, Quat::from_axis_angle(AXES[tr.axis], FRAC_PI_2 * tr.dir as f32 * k))

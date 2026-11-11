@@ -554,7 +554,7 @@ impl<'a> DataGrid<'a> {
 
         // ---- header + gutter (frozen)
         let header = Rect::from_min_max(rect.min, pos2(rect.right(), rect.top() + HEAD_H));
-        painter.rect_filled(header.shrink(1.0), CornerRadius { nw: 9, ne: 9, sw: 0, se: 0 }, if t.dark { t.muted } else { t.muted });
+        painter.rect_filled(header.shrink(1.0), CornerRadius { nw: 9, ne: 9, sw: 0, se: 0 }, t.muted);
         painter.line_segment([pos2(rect.left(), body.top()), pos2(rect.right(), body.top())], Stroke::new(1.0, t.border));
         for pass in 0..2 {
             let clip = if pass == 0 { Rect::from_min_max(pos2(scroll_area.left(), header.top()), pos2(body.right(), header.bottom())) } else { Rect::from_min_max(pos2(body.left(), header.top()), pos2(scroll_area.left(), header.bottom())) };

@@ -628,8 +628,8 @@ impl Graph {
         }
         // longest-path ranks (Kahn)
         let mut indeg = vec![0usize; n];
-        for u in 0..n {
-            for &v in &dag[u] {
+        for d in &dag {
+            for &v in d {
                 indeg[v] += 1;
             }
         }
@@ -655,8 +655,8 @@ impl Graph {
             layers[rank[u]].push(u);
         }
         let mut pred = vec![Vec::new(); n];
-        for u in 0..n {
-            for &v in &dag[u] {
+        for (u, d) in dag.iter().enumerate() {
+            for &v in d {
                 pred[v].push(u);
             }
         }

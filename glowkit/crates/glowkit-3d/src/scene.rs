@@ -655,6 +655,12 @@ impl Scene {
     /// One-sided: invisible from behind.
     #[allow(clippy::too_many_arguments)]
     pub fn text(&mut self, text: &str, origin: Vec3, right: Vec3, up: Vec3, height: f32, color: Color32, anchor: Align2) {
+        self.text_fitted(text, origin, right, up, height, f32::INFINITY, color, anchor);
+    }
+
+    /// Like [`Scene::text`], but shrinks the text so it is at most `max_width` world units wide.
+    #[allow(clippy::too_many_arguments)]
+    pub fn text_fitted(&mut self, text: &str, origin: Vec3, right: Vec3, up: Vec3, height: f32, max_width: f32, color: Color32, anchor: Align2) {
         let normal = right.cross(up);
         let to_cam = if self.proj.ortho { -self.camera.forward() } else { self.camera.position - origin };
         if normal.dot(to_cam) <= 0.0 || text.is_empty() {
@@ -671,7 +677,10 @@ impl Scene {
         let fs = ((px / 2.0).round() * 2.0).clamp(6.0, 160.0);
         let galley = self.painter.layout_no_wrap(text.to_owned(), FontId::proportional(fs), color);
         let size = galley.size();
-        let k = height / fs;
+        let mut k = height / fs;
+        if size.x * k > max_width {
+            k = max_width / size.x.max(1e-3);
+        }
         let off = vec2(-size.x * anchor.x().to_factor(), -size.y * anchor.y().to_factor());
         let color = self.fog_color(color, d);
         let [tw, th] = self.painter.fonts(|f| f.font_image_size());
@@ -922,6 +931,28 @@ mod tests {
         assert!(clip_segment(vec3(0.0, 0.0, 1.0), vec3(0.0, 0.0, 2.0), 0.1).is_none());
         let (a, _) = clip_segment(vec3(0.0, 0.0, 1.0), vec3(0.0, 0.0, -1.0), 0.1).unwrap();
         assert!((a.z + 0.1).abs() < 1e-5);
+    }
+
+    /// `cargo test -p glowkit-3d --release -- --ignored --nocapture bench` prints the frame cost.
+    #[test]
+    #[ignore]
+    fn bench_20k_triangles() {
+        let ctx = egui::Context::default();
+        let knot = Mesh::torus_knot(2, 3, 1.0, 0.3, 1000, 20); // 40k triangles, ~20k front-facing
+        let mut out = ctx.run_ui(egui::RawInput::default(), |ui| {
+            let rect = Rect::from_min_size(Pos2::ZERO, vec2(900.0, 400.0));
+            let n = 30;
+            let t0 = std::time::Instant::now();
+            let mut drawn = 0;
+            for i in 0..n {
+                let mut s = Scene::new(ui.painter().clone(), rect, Camera::looking_at(vec3(0.0, 1.0, 4.0), Vec3::ZERO));
+                s.draw(&knot, Transform::IDENTITY.with_euler(0.0, i as f32 * 0.1, 0.0), &Material::smooth(Color32::WHITE).wire(crate::Wire::new(Color32::WHITE)));
+                drawn = s.stats().triangles_drawn;
+                s.paint();
+            }
+            println!("{} tris in, {drawn} drawn: {:.2} ms/frame", knot.triangle_count(), t0.elapsed().as_secs_f64() * 1000.0 / n as f64);
+        });
+        out.textures_delta.clear();
     }
 
     #[test]

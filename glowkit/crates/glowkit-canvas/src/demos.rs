@@ -1,5 +1,5 @@
 use crate::*;
-use egui::{pos2, vec2, Color32, CornerRadius, Rect, Ui};
+use egui::{pos2, vec2, Color32, CornerRadius, Pos2, Rect, Ui};
 use glowkit_core::color::{hex, mix, with_alpha};
 use glowkit_core::demo::{Category::Canvas as C, Demo};
 use glowkit_core::{noise, paint, Theme};
@@ -175,7 +175,6 @@ fn flow_palette(t: &Theme) -> Vec<PaletteItem> {
     ]
 }
 
-use egui::Pos2;
 
 fn flowchart_graph(t: &Theme) -> Graph {
     let pal = flow_palette(t);
@@ -303,5 +302,530 @@ NodeEditor::new(&mut graph, &mut state)
                 NodeEditor::new(g, st).palette(pal).arrows(true).layout_direction(LayoutDirection::TopToBottom).background(Background::Dots).height(H + 36.0).show(ui);
             },
         },
+        Demo {
+            id: "infinite-canvas",
+            name: "Infinite Canvas",
+            category: C,
+            description: "A pannable, zoomable surface: drag / middle-mouse / space+drag to pan, ctrl+wheel or pinch to zoom smoothly around the cursor, dot / line / cross backgrounds, minimap and fit-to-content.",
+            covers: &["React Flow: Background", "React Flow: Viewport", "tldraw: Infinite canvas", "Figma: Canvas navigation", "react-zoom-pan-pinch"],
+            code: r##"let mut view = CanvasView::default(); // keep it in your app state
+InfiniteCanvas::new(&mut view)
+    .background(Background::Dots)
+    .height(480.0)
+    .show(ui, |cv| {
+        let r = cv.rect_to_screen(Rect::from_min_size(pos2(0.0, 0.0), vec2(200.0, 120.0)));
+        cv.painter.rect_filled(r, 12.0 * cv.zoom(), Color32::DARK_GRAY);
+    });"##,
+            show: |ui| {
+                let s = persist(ui, "inf", || (CanvasView::with_limits(0.1, 6.0), 0usize));
+                let mut s = s.lock().unwrap();
+                let (view, bgk) = &mut *s;
+                *bgk = chips(ui, "Background", &["Dots", "Lines", "Cross", "None"], *bgk);
+                let bg = [Background::Dots, Background::Lines, Background::Cross, Background::None][*bgk];
+                infinite_demo(ui, view, bg);
+            },
+        },
+        Demo {
+            id: "whiteboard",
+            name: "Whiteboard",
+            category: C,
+            description: "An infinite whiteboard: pen with pressure-like strokes, highlighter, shapes, arrows that stick to shapes, text, sticky notes, eraser, resize / rotate handles, a hand-drawn sketchy style, layers, undo and JSON export.",
+            covers: &["tldraw: Editor", "Excalidraw: Canvas", "Miro: Board", "FigJam: Whiteboard", "perfect-freehand", "rough.js: Sketchy shapes"],
+            code: r##"let mut doc = Document::default();
+doc.add(WbShape::sticky(pos2(0.0, 0.0), "Ship it!", STICKY_COLORS[0]));
+doc.add(WbShape::new(ShapeKind::Rect, Rect::from_min_size(pos2(220.0, 0.0), vec2(160.0, 90.0))).sketchy(true).label("API"));
+
+Whiteboard::new(&mut doc, &mut state).height(480.0).show(ui);
+let json = doc.to_json();                  // export
+let doc2 = Document::from_json(&json)?;    // import"##,
+            show: |ui| {
+                let s = persist(ui, "wb", || (whiteboard_doc(), WhiteboardState::default()));
+                let mut s = s.lock().unwrap();
+                let (doc, st) = &mut *s;
+                Whiteboard::new(doc, st).height(H + 36.0).show(ui);
+            },
+        },
+        Demo {
+            id: "kanban-board",
+            name: "Kanban Board",
+            category: C,
+            description: "Drag cards within and between columns: other cards spring aside to open a gap and dropped cards glide into place. Inline add, WIP limits, labels, avatars, due dates and collapsible columns.",
+            covers: &["Trello: Board", "Linear: Board view", "Jira: Board", "dnd-kit: Sortable multiple containers", "Kibo UI: Kanban"],
+            code: r##"let mut board = Board { columns: vec![
+    Column::new(1, "Todo", hex("#71717A")).cards(vec![
+        Card::new(1, "Design onboarding").label("Design", hex("#8B5CF6")).assignees(&["AK"]).due("Nov 14"),
+    ]),
+    Column::new(2, "In progress", hex("#3B82F6")).wip(3),
+] };
+KanbanBoard::new(&mut board, &mut state).height(480.0).show(ui);"##,
+            show: |ui| {
+                let t = Theme::of(ui);
+                let s = persist(ui, "kb", || (kanban_board(&t), KanbanState::default()));
+                let mut s = s.lock().unwrap();
+                let (b, st) = &mut *s;
+                KanbanBoard::new(b, st).height(H + 36.0).show(ui);
+            },
+        },
+        Demo {
+            id: "gantt-chart",
+            name: "Gantt Chart",
+            category: C,
+            description: "A project timeline: grouped rows, bars with progress fill, milestones, dependency arrows (red when violated), a today line and day / week / month zoom. Drag bars to move, edges to resize, the notch to set progress.",
+            covers: &["Frappe Gantt", "dhtmlxGantt", "Linear: Timeline", "Notion: Timeline view", "SVAR: React Gantt"],
+            code: r##"let mut g = Gantt { start: (2026, 11, 2), today: 9.0, groups: vec![
+    GanttGroup::new("Design", vec![
+        GanttTask::new(1, "Research", 0.0, 4.0).progress(1.0),
+        GanttTask::new(2, "Wireframes", 4.0, 5.0).progress(0.6).after(&[1]),
+    ]),
+] };
+GanttChart::new(&mut g, &mut state).height(480.0).show(ui);"##,
+            show: |ui| {
+                let t = Theme::of(ui);
+                let s = persist(ui, "gantt", || (gantt_data(&t), GanttState::default()));
+                let mut s = s.lock().unwrap();
+                let (g, st) = &mut *s;
+                GanttChart::new(g, st).height(H).show(ui);
+            },
+        },
+        Demo {
+            id: "mind-map",
+            name: "Mind Map",
+            category: C,
+            description: "Auto-laid-out mind map with tapered, color-coded branches. Tab adds a child, Enter a sibling, Space folds a branch with an animated collapse; switch between balanced, right and radial layouts.",
+            covers: &["MindNode", "XMind: Mind map", "Miro: Mind map", "Whimsical: Mind maps", "markmap"],
+            code: r##"let mut map = MindMap::new("Product launch");
+let root = map.root().unwrap();
+let mkt = map.add_child(root, "Marketing");
+map.add_child(mkt, "Launch video");
+MindMapEditor::new(&mut map, &mut state).height(480.0).show(ui);"##,
+            show: |ui| {
+                let s = persist(ui, "mm", || (mind_data(), MindMapState::default()));
+                let mut s = s.lock().unwrap();
+                let (m, st) = &mut *s;
+                MindMapEditor::new(m, st).height(H).show(ui);
+            },
+        },
+        Demo {
+            id: "timeline-editor",
+            name: "Timeline Editor",
+            category: C,
+            description: "Video-editor tracks with thumbnail strips and waveforms: drag clips across tracks, trim either edge with magnetic snapping, scrub the playhead on the zoomable ruler, press space to play.",
+            covers: &["Premiere Pro: Timeline", "DaVinci Resolve: Edit page", "CapCut: Timeline", "Remotion: Timeline", "react-timeline-editor"],
+            code: r##"let mut tl = Timeline { fps: 30.0, duration: 90.0, tracks: vec![
+    Track::new("V1", ClipKind::Video, vec![Clip::new(1, "Intro.mp4", 0.0, 8.0)]),
+    Track::new("A1", ClipKind::Audio, vec![Clip::new(2, "Music.wav", 0.0, 60.0)]),
+] };
+TimelineEditor::new(&mut tl, &mut state).height(420.0).show(ui);"##,
+            show: |ui| {
+                let s = persist(ui, "tl", || (timeline_data(), { let mut st = TimelineState::default(); st.playhead = 12.4; st }));
+                let mut s = s.lock().unwrap();
+                let (tl, st) = &mut *s;
+                TimelineEditor::new(tl, st).height(H - 60.0).show(ui);
+            },
+        },
+        Demo {
+            id: "data-grid",
+            name: "Data Grid",
+            category: C,
+            description: "A virtualized spreadsheet with 10,000 rows: frozen header, row numbers and first column, drag-select ranges, type to edit, Enter / Tab navigation, resize columns, TSV copy / paste and a live sum.",
+            covers: &["Glide Data Grid", "AG Grid", "Kibo UI: Table", "TanStack Table: Virtualized", "Excel / Google Sheets grid"],
+            code: r##"let mut data = GridData {
+    columns: vec![
+        GridColumn::new("Customer", 180.0, CellKind::Text),
+        GridColumn::new("MRR", 110.0, CellKind::Currency),
+        GridColumn::new("Usage", 140.0, CellKind::Percent),
+    ],
+    rows, // Vec<Vec<String>>
+};
+DataGrid::new(&mut data, &mut state).height(480.0).frozen_columns(1).show(ui);"##,
+            show: |ui| {
+                let s = persist(ui, "grid", || (grid_data(), GridState::default()));
+                let mut s = s.lock().unwrap();
+                let (d, st) = &mut *s;
+                DataGrid::new(d, st).height(H).show(ui);
+            },
+        },
+        Demo {
+            id: "org-chart",
+            name: "Org Chart",
+            category: C,
+            description: "A tidy top-down tree on a pan / zoom canvas: person cards, collapsible teams with report counts, compact stacking for leaf teams, and the selected person's chain of command highlighted.",
+            covers: &["d3-org-chart", "React Flow: Tree layout", "Lucidchart: Org chart", "Kendo: OrgChart"],
+            code: r##"let mut chart = OrgChart { people: vec![
+    OrgPerson::new(1, None, "Ada Park", "CEO"),
+    OrgPerson::new(2, Some(1), "Lin Chen", "CTO"),
+    OrgPerson::new(3, Some(2), "Sam Ortiz", "Staff Engineer"),
+] };
+OrgChartView::new(&mut chart, &mut state).height(480.0).show(ui);"##,
+            show: |ui| {
+                let t = Theme::of(ui);
+                let s = persist(ui, "org", || (org_data(&t), OrgChartState::default()));
+                let mut s = s.lock().unwrap();
+                let (c, st) = &mut *s;
+                OrgChartView::new(c, st).height(H).show(ui);
+            },
+        },
+        Demo {
+            id: "signature-pad",
+            name: "Signature Pad",
+            category: C,
+            description: "Smooth ink capture with speed-based thinning and tapered ends: a signature field with a baseline and a free drawing pad, with undo, clear and point export.",
+            covers: &["signature_pad", "react-signature-canvas", "perfect-freehand", "shadcn: Signature"],
+            code: r##"let mut ink = Ink::default();
+ui.add(SignaturePad::new(&mut ink).size(vec2(520.0, 200.0)));
+if !ink.is_empty() {
+    let json = ink.to_json();       // [[[x, y, t], ...], ...]
+    let svg = ink.to_svg_path();    // "M1 2 L3 4 ..."
+}"##,
+            show: |ui| {
+                let t = Theme::of(ui);
+                let s = persist(ui, "sig", || (sample_signature(), Ink::default(), 0usize));
+                let mut s = s.lock().unwrap();
+                let (sig, pad, color) = &mut *s;
+                ui.add_space(8.0);
+                ui.horizontal_top(|ui| {
+                    ui.vertical(|ui| {
+                        ui.label(egui::RichText::new("Signature").size(13.0).strong());
+                        ui.add_space(4.0);
+                        ui.add(SignaturePad::new(sig).size(vec2(460.0, 210.0)));
+                        ui.add_space(6.0);
+                        let json = sig.to_json();
+                        ui.label(egui::RichText::new(format!("{} strokes · {} points · {:.1} KB JSON", sig.strokes.len(), sig.point_count(), json.len() as f32 / 1024.0)).size(11.5).color(t.muted_foreground));
+                        let preview: String = json.chars().take(64).collect();
+                        ui.label(egui::RichText::new(format!("{preview}…")).monospace().size(10.5).color(t.muted_foreground));
+                    });
+                    ui.add_space(18.0);
+                    ui.vertical(|ui| {
+                        ui.label(egui::RichText::new("Drawing pad").size(13.0).strong());
+                        ui.add_space(4.0);
+                        let colors = [t.foreground, t.chart[0], t.chart[1], t.chart[2], t.chart[4]];
+                        let w = (ui.available_width()).clamp(240.0, 460.0);
+                        ui.add(SignaturePad::new(pad).size(vec2(w, 210.0)).placeholder("Draw anything").baseline(false).color(colors[*color % colors.len()]).style(InkStyle { size: 6.0, ..InkStyle::default() }));
+                        ui.add_space(6.0);
+                        ui.horizontal(|ui| {
+                            for (k, c) in colors.iter().enumerate() {
+                                let (r, resp) = ui.allocate_exact_size(vec2(22.0, 22.0), egui::Sense::click());
+                                let p = ui.painter();
+                                p.circle(r.center(), if *color == k { 9.0 } else { 7.5 }, *c, egui::Stroke::new(if *color == k { 2.0 } else { 1.0 }, if *color == k { t.ring } else { t.border }));
+                                if resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
+                                    *color = k;
+                                }
+                            }
+                            ui.label(egui::RichText::new(format!("{} points", pad.point_count())).size(11.5).color(t.muted_foreground));
+                        });
+                    });
+                });
+            },
+        },
     ]
+}
+
+// ------------------------------------------------------------------------------------------------
+// Infinite canvas demo content
+// ------------------------------------------------------------------------------------------------
+
+fn infinite_demo(ui: &mut Ui, view: &mut CanvasView, bg: Background) {
+    let t = Theme::of(ui);
+    let frames: [(&str, Rect, Color32); 5] = [
+        ("Home", Rect::from_min_size(pos2(0.0, 0.0), vec2(260.0, 180.0)), t.chart[0]),
+        ("Pricing", Rect::from_min_size(pos2(320.0, -40.0), vec2(220.0, 260.0)), t.chart[1]),
+        ("Checkout", Rect::from_min_size(pos2(600.0, 30.0), vec2(240.0, 170.0)), t.chart[2]),
+        ("Dashboard", Rect::from_min_size(pos2(80.0, 260.0), vec2(360.0, 200.0)), t.chart[3]),
+        ("Settings", Rect::from_min_size(pos2(520.0, 270.0), vec2(200.0, 190.0)), t.chart[4]),
+    ];
+    let content = frames.iter().fold(Rect::NOTHING, |r, f| r.union(f.1)).expand2(vec2(0.0, 24.0));
+    InfiniteCanvas::new(view).background(bg).height(H).show(ui, |cv| {
+        if cv.view.needs_fit {
+            cv.view.fit_now(cv.rect, content, 60.0);
+        }
+        let z = cv.zoom();
+        let time = glowkit_core::time(cv.ui);
+        for (k, (name, r, col)) in frames.iter().enumerate() {
+            let sr = cv.rect_to_screen(*r);
+            if !sr.expand(40.0).intersects(cv.rect) {
+                continue;
+            }
+            cv.painter.text(sr.left_top() - vec2(0.0, 8.0 * z), egui::Align2::LEFT_BOTTOM, *name, crate::common::qfont(12.0 * z), t.muted_foreground);
+            paint::soft_shadow(&cv.painter, sr, 10.0 * z, 18.0 * z, vec2(0.0, 6.0 * z), Color32::from_black_alpha(if t.dark { 120 } else { 30 }));
+            cv.painter.rect(sr, CornerRadius::same((10.0 * z) as u8), t.card, egui::Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
+            // mock UI inside each frame
+            let pad = 14.0 * z;
+            let inner = sr.shrink(pad);
+            cv.painter.rect_filled(Rect::from_min_size(inner.min, vec2(inner.width() * 0.45, 8.0 * z)), CornerRadius::same(3), with_alpha(t.foreground, 0.7));
+            cv.painter.rect_filled(Rect::from_min_size(inner.min + vec2(0.0, 16.0 * z), vec2(inner.width() * 0.7, 6.0 * z)), CornerRadius::same(3), with_alpha(t.foreground, 0.2));
+            let hero = Rect::from_min_max(inner.min + vec2(0.0, 32.0 * z), pos2(inner.right(), inner.bottom() - 26.0 * z));
+            if hero.height() > 4.0 {
+                let c1 = *col;
+                let c2 = t.chart[(k + 2) % 6];
+                let shift = (time * 0.3 + k as f32).sin() * 0.5 + 0.5;
+                paint::gradient_rect(&cv.painter, hero, 8.0 * z, 30.0 + 40.0 * shift, &[with_alpha(c1, 0.85), with_alpha(c2, 0.6)]);
+            }
+            let btn = Rect::from_min_size(pos2(inner.left(), inner.bottom() - 18.0 * z), vec2(70.0 * z, 18.0 * z));
+            cv.painter.rect_filled(btn, CornerRadius::same((9.0 * z) as u8), *col);
+        }
+        glowkit_core::animate(cv.ui);
+        // hint
+        let hint = "Drag or space+drag to pan  ·  Ctrl+wheel / pinch to zoom  ·  middle-drag anywhere";
+        cv.painter.text(pos2(cv.rect.center().x, cv.rect.top() + 22.0), egui::Align2::CENTER_CENTER, hint, crate::common::qfont(11.5), t.muted_foreground);
+        let items: Vec<(Rect, Color32)> = frames.iter().map(|f| (f.1, f.2)).collect();
+        let rect = cv.rect;
+        MiniMap::new(&mut *cv.view, rect).items(&items).show(cv.ui);
+        if let Some(ControlAction::Fit) = Controls::new(&mut *cv.view, rect).show(cv.ui) {
+            cv.view.fit(rect, content, 60.0);
+        }
+    });
+}
+
+// ------------------------------------------------------------------------------------------------
+// Whiteboard content
+// ------------------------------------------------------------------------------------------------
+
+fn whiteboard_doc() -> Document {
+    let mut d = Document::default();
+    let blue = WB_COLORS[4];
+    let red = WB_COLORS[1];
+    let green = WB_COLORS[3];
+    d.add(WbShape::text(pos2(-10.0, -96.0), "Launch plan · Q1", 30.0));
+    d.add(WbShape::freehand(synthetic_stroke(&[pos2(-6.0, -50.0), pos2(80.0, -56.0), pos2(170.0, -50.0), pos2(250.0, -54.0)]), true).stroke(Color32::from_rgb(250, 204, 21)).width(14.0));
+    let design = d.add(WbShape::new(ShapeKind::Rect, Rect::from_min_size(pos2(0.0, 20.0), vec2(170.0, 90.0))).sketchy(true).fill(with_alpha(blue, 0.22)).stroke(blue).label("Design"));
+    let build = d.add(WbShape::new(ShapeKind::Diamond, Rect::from_min_size(pos2(260.0, 0.0), vec2(170.0, 130.0))).sketchy(true).fill(with_alpha(WB_COLORS[2], 0.22)).stroke(WB_COLORS[2]).label("Ready?"));
+    let ship = d.add(WbShape::new(ShapeKind::Ellipse, Rect::from_min_size(pos2(520.0, 15.0), vec2(170.0, 100.0))).sketchy(true).fill(with_alpha(green, 0.22)).stroke(green).label("Ship"));
+    let mut a1 = WbShape::linear(ShapeKind::Arrow, pos2(170.0, 65.0), pos2(260.0, 65.0)).sketchy(true);
+    a1.bind_a = Some(design);
+    a1.bind_b = Some(build);
+    d.add(a1);
+    let mut a2 = WbShape::linear(ShapeKind::Arrow, pos2(430.0, 65.0), pos2(520.0, 65.0)).sketchy(true);
+    a2.bind_a = Some(build);
+    a2.bind_b = Some(ship);
+    d.add(a2);
+    d.add(WbShape::sticky(pos2(-30.0, 170.0), "Talk to 5 customers before freezing scope", STICKY_COLORS[0]).rotated(-0.04));
+    d.add(WbShape::sticky(pos2(170.0, 180.0), "Perf budget:\n< 1 ms / frame", STICKY_COLORS[2]).rotated(0.03));
+    d.add(WbShape::sticky(pos2(370.0, 172.0), "Launch blog post + demo video", STICKY_COLORS[1]).rotated(-0.02));
+    // a hand-drawn circle around "Ship" and a check mark
+    let circle: Vec<Pos2> = (0..=26).map(|i| {
+        let a = -0.6 + i as f32 / 24.0 * std::f32::consts::TAU;
+        pos2(605.0 + a.cos() * (112.0 + (i as f32 * 0.8).sin() * 3.0), 65.0 + a.sin() * 70.0)
+    }).collect();
+    d.add(WbShape::freehand(synthetic_stroke(&circle), false).stroke(red).width(2.6));
+    d.add(WbShape::freehand(synthetic_stroke(&[pos2(600.0, 190.0), pos2(618.0, 212.0), pos2(660.0, 160.0)]), false).stroke(green).width(4.0));
+    d.add(WbShape::text(pos2(670.0, 176.0), "on track!", 20.0).stroke(green));
+    d
+}
+
+// ------------------------------------------------------------------------------------------------
+// Kanban content
+// ------------------------------------------------------------------------------------------------
+
+fn kanban_board(t: &Theme) -> Board {
+    let (design, eng, bug, docs, growth) = (t.chart[0], t.chart[5], t.destructive, t.chart[4], t.chart[3]);
+    Board {
+        columns: vec![
+            Column::new(1, "Backlog", t.muted_foreground).cards(vec![
+                Card::new(1, "Dark mode for the analytics dashboard").label("Design", design).assignees(&["MK"]).checklist(1, 4),
+                Card::new(2, "Export reports as CSV").label("Feature", eng).due("Nov 28"),
+                Card::new(3, "Audit onboarding emails").label("Growth", growth).assignees(&["JS", "AL"]),
+            ]),
+            Column::new(2, "To do", t.info).cards(vec![
+                Card::new(4, "Rate-limit the public API").label("Backend", eng).label("P1", bug).assignees(&["DO"]).due("Nov 18").priority(bug),
+                Card::new(5, "Write migration guide for v2").label("Docs", docs).checklist(2, 6),
+            ]),
+            Column::new(3, "In progress", t.warning).wip(3).cards(vec![
+                Card::new(6, "Kanban drag & drop polish").label("Frontend", design).assignees(&["AK", "MK"]).checklist(5, 7).due("Nov 14"),
+                Card::new(7, "Fix flaky checkout test").label("Bug", bug).assignees(&["DO"]).due("!Nov 10").priority(bug),
+                Card::new(8, "Pricing page experiment").label("Growth", growth).assignees(&["JS"]),
+                Card::new(9, "Search indexing worker").label("Backend", eng).assignees(&["LC"]).checklist(3, 5),
+            ]),
+            Column::new(4, "Review", t.chart[2]).cards(vec![
+                Card::new(10, "New billing settings screen").label("Design", design).assignees(&["AL"]).checklist(8, 8),
+            ]),
+            Column::new(5, "Done", t.success).cards(vec![
+                Card::new(11, "SSO with SAML").label("Backend", eng).assignees(&["LC"]),
+                Card::new(12, "Changelog page").label("Docs", docs),
+            ]),
+        ],
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
+// Gantt content
+// ------------------------------------------------------------------------------------------------
+
+fn gantt_data(t: &Theme) -> Gantt {
+    Gantt {
+        start: (2026, 11, 2),
+        today: 9.0,
+        groups: vec![
+            GanttGroup::new("Discovery", vec![
+                GanttTask::new(1, "User interviews", 0.0, 4.0).progress(1.0).assignee("JS"),
+                GanttTask::new(2, "Competitive audit", 1.0, 3.0).progress(1.0).assignee("MK"),
+                GanttTask::new(3, "Scope sign-off", 5.0, 0.0).after(&[1, 2]),
+            ]).color(t.chart[0]),
+            GanttGroup::new("Design", vec![
+                GanttTask::new(4, "Wireframes", 5.0, 5.0).progress(0.8).after(&[3]).assignee("AL"),
+                GanttTask::new(5, "Visual design", 10.0, 6.0).progress(0.25).after(&[4]).assignee("MK"),
+                GanttTask::new(6, "Prototype review", 16.0, 0.0).after(&[5]),
+            ]).color(t.chart[2]),
+            GanttGroup::new("Engineering", vec![
+                GanttTask::new(7, "API + data model", 7.0, 8.0).progress(0.45).after(&[3]).assignee("LC"),
+                GanttTask::new(8, "Frontend build", 15.0, 10.0).progress(0.0).after(&[5, 7]).assignee("AK"),
+                GanttTask::new(9, "QA & bug bash", 25.0, 4.0).after(&[8]).assignee("DO"),
+            ]).color(t.chart[1]),
+            GanttGroup::new("Launch", vec![
+                GanttTask::new(10, "Marketing site", 20.0, 7.0).progress(0.1).assignee("JS"),
+                GanttTask::new(11, "Public launch", 30.0, 0.0).after(&[9, 10]),
+            ]).color(t.chart[4]),
+        ],
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
+// Mind map content
+// ------------------------------------------------------------------------------------------------
+
+fn mind_data() -> MindMap {
+    let mut m = MindMap::new("Product launch");
+    let r = m.root().unwrap_or(1);
+    let mk = m.add_child(r, "Marketing");
+    for s in ["Launch video", "Press kit", "Social campaign"] {
+        m.add_child(mk, s);
+    }
+    let pr = m.add_child(r, "Product");
+    let core = m.add_child(pr, "Core features");
+    m.add_child(core, "Realtime sync");
+    m.add_child(core, "Offline mode");
+    m.add_child(pr, "Beta feedback");
+    let eng = m.add_child(r, "Engineering");
+    m.add_child(eng, "Load testing");
+    m.add_child(eng, "Rollout plan");
+    let sales = m.add_child(r, "Sales");
+    m.add_child(sales, "Pricing tiers");
+    m.add_child(sales, "Partner deals");
+    let sup = m.add_child(r, "Support");
+    m.add_child(sup, "Help center");
+    m.add_child(sup, "On-call rota");
+    m
+}
+
+// ------------------------------------------------------------------------------------------------
+// Timeline content
+// ------------------------------------------------------------------------------------------------
+
+fn timeline_data() -> Timeline {
+    Timeline {
+        fps: 30.0,
+        duration: 64.0,
+        tracks: vec![
+            Track::new("Titles", ClipKind::Title, vec![Clip::new(1, "Opening title", 1.0, 4.5), Clip::new(2, "Lower third · Maya", 14.0, 5.0), Clip::new(3, "End card", 52.0, 6.0)]),
+            Track::new("Video 2", ClipKind::Video, vec![Clip::new(4, "B-roll city.mp4", 9.0, 7.5), Clip::new(5, "Drone.mov", 33.0, 9.0)]),
+            Track::new("Video 1", ClipKind::Video, vec![Clip::new(6, "Intro.mp4", 0.0, 9.0), Clip::new(7, "Interview A.mp4", 9.0, 15.0), Clip::new(8, "Demo screen.mov", 24.0, 18.0), Clip::new(9, "Outro.mp4", 42.0, 16.0)]),
+            Track::new("Voice", ClipKind::Audio, vec![Clip::new(10, "VO take 3.wav", 2.0, 20.0), Clip::new(11, "VO take 5.wav", 25.0, 16.0)]),
+            Track::new("Music", ClipKind::Audio, vec![Clip::new(12, "Lo-fi bed.mp3", 0.0, 58.0)]),
+        ],
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
+// Grid content
+// ------------------------------------------------------------------------------------------------
+
+fn grid_data() -> GridData {
+    let first = ["Ada", "Lin", "Sam", "Maya", "Noah", "Iris", "Omar", "Zoe", "Liam", "Aria", "Kenji", "Lena", "Mateo", "Priya", "Elias", "Nora"];
+    let last = ["Park", "Chen", "Ortiz", "Patel", "Kim", "Novak", "Haddad", "Silva", "Berg", "Rossi", "Tanaka", "Fischer", "Diaz", "Rao", "Weber", "Lund"];
+    let company = ["Northwind", "Acme Labs", "Globex", "Initech", "Umbrella", "Hooli", "Vandelay", "Stark Ind.", "Wayne Corp", "Pied Piper", "Soylent", "Tyrell"];
+    let plan = ["Enterprise", "Pro", "Starter", "Trial", "Churned", "Paused"];
+    let country = ["US", "DE", "JP", "BR", "IN", "FR", "UK", "CA", "SE", "KR"];
+    let mut rng = glowkit_core::Rng::new(42);
+    let rows = (0..10_000)
+        .map(|i| {
+            let f = *rng.pick(&first);
+            let l = *rng.pick(&last);
+            let p = *rng.pick(&plan);
+            let seats = match p {
+                "Enterprise" => 50 + rng.below(950),
+                "Pro" => 5 + rng.below(60),
+                _ => 1 + rng.below(8),
+            };
+            let mrr = match p {
+                "Churned" | "Trial" => 0.0,
+                "Enterprise" => seats as f32 * rng.range(28.0, 42.0),
+                "Pro" => seats as f32 * 19.0,
+                _ => seats as f32 * 9.0,
+            };
+            let day = 1 + rng.below(28);
+            let month = 1 + rng.below(12);
+            vec![
+                format!("{f} {l}"),
+                format!("CUS-{:05}", 10_000 + i),
+                rng.pick(&company).to_string(),
+                p.to_string(),
+                format!("{mrr:.2}"),
+                seats.to_string(),
+                format!("{:.0}", rng.range(3.0, 100.0)),
+                format!("2025-{month:02}-{day:02}"),
+                rng.pick(&country).to_string(),
+            ]
+        })
+        .collect();
+    GridData {
+        columns: vec![
+            GridColumn::new("Customer", 170.0, CellKind::Text),
+            GridColumn::new("ID", 104.0, CellKind::Mono),
+            GridColumn::new("Company", 130.0, CellKind::Text),
+            GridColumn::new("Plan", 120.0, CellKind::Status),
+            GridColumn::new("MRR", 110.0, CellKind::Currency),
+            GridColumn::new("Seats", 80.0, CellKind::Number),
+            GridColumn::new("Usage", 150.0, CellKind::Percent),
+            GridColumn::new("Signed up", 110.0, CellKind::Mono),
+            GridColumn::new("Country", 90.0, CellKind::Text),
+        ],
+        rows,
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
+// Org chart content
+// ------------------------------------------------------------------------------------------------
+
+fn org_data(t: &Theme) -> OrgChart {
+    let (exec, eng, design, gtm) = (t.chart[0], t.chart[1], t.chart[2], t.chart[4]);
+    OrgChart {
+        people: vec![
+            OrgPerson::new(1, None, "Ada Park", "Chief Executive Officer").color(exec),
+            OrgPerson::new(2, Some(1), "Lin Chen", "Chief Technology Officer").color(eng),
+            OrgPerson::new(3, Some(1), "Maya Patel", "Head of Design").color(design),
+            OrgPerson::new(4, Some(1), "Omar Haddad", "VP Go-to-Market").color(gtm),
+            OrgPerson::new(5, Some(2), "Sam Ortiz", "Eng Manager · Platform").color(eng),
+            OrgPerson::new(6, Some(2), "Iris Novak", "Eng Manager · Product").color(eng),
+            OrgPerson::new(7, Some(5), "Kenji Tanaka", "Staff Engineer").color(eng),
+            OrgPerson::new(8, Some(5), "Lena Fischer", "Senior SRE").color(eng),
+            OrgPerson::new(9, Some(5), "Elias Weber", "Backend Engineer").color(eng),
+            OrgPerson::new(10, Some(6), "Zoe Silva", "Frontend Engineer").color(eng),
+            OrgPerson::new(11, Some(6), "Liam Berg", "Mobile Engineer").color(eng),
+            OrgPerson::new(12, Some(3), "Aria Rossi", "Product Designer").color(design),
+            OrgPerson::new(13, Some(3), "Noah Kim", "Brand Designer").color(design),
+            OrgPerson::new(14, Some(4), "Priya Rao", "Sales Lead").color(gtm),
+            OrgPerson::new(15, Some(4), "Mateo Diaz", "Marketing Lead").color(gtm),
+            OrgPerson::new(16, Some(14), "Nora Lund", "Account Executive").color(gtm),
+            OrgPerson::new(17, Some(14), "Jon Snell", "SDR").color(gtm),
+        ],
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
+// Signature content
+// ------------------------------------------------------------------------------------------------
+
+fn sample_signature() -> Ink {
+    // a cursive-ish "Ada Park" made of a few smooth strokes
+    let s1: Vec<Pos2> = vec![pos2(60.0, 150.0), pos2(84.0, 92.0), pos2(104.0, 60.0), pos2(116.0, 70.0), pos2(124.0, 120.0), pos2(132.0, 150.0)];
+    let s2: Vec<Pos2> = vec![pos2(80.0, 116.0), pos2(124.0, 110.0)];
+    let s3: Vec<Pos2> = vec![pos2(160.0, 130.0), pos2(146.0, 140.0), pos2(150.0, 150.0), pos2(168.0, 138.0), pos2(174.0, 96.0), pos2(176.0, 150.0), pos2(196.0, 134.0), pos2(184.0, 132.0), pos2(186.0, 148.0), pos2(206.0, 140.0), pos2(212.0, 134.0)];
+    let s4: Vec<Pos2> = vec![pos2(250.0, 170.0), pos2(258.0, 70.0), pos2(290.0, 72.0), pos2(292.0, 102.0), pos2(256.0, 112.0)];
+    let s5: Vec<Pos2> = vec![pos2(306.0, 132.0), pos2(296.0, 142.0), pos2(304.0, 150.0), pos2(318.0, 134.0), pos2(320.0, 150.0), pos2(336.0, 128.0), pos2(340.0, 150.0), pos2(350.0, 132.0), pos2(364.0, 128.0)];
+    let s6: Vec<Pos2> = vec![pos2(372.0, 150.0), pos2(380.0, 92.0), pos2(384.0, 150.0), pos2(400.0, 124.0), pos2(388.0, 134.0), pos2(408.0, 150.0), pos2(432.0, 118.0)];
+    let mut ink = Ink::default();
+    for s in [s1, s2, s3, s4, s5, s6] {
+        ink.strokes.push(synthetic_stroke(&s));
+    }
+    ink
 }
