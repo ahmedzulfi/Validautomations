@@ -46,12 +46,13 @@ pub struct ScratchToReveal {
     label: String,
     autoplay: bool,
     reset_after: Option<f32>,
+    corner: f32,
 }
 
 impl ScratchToReveal {
     /// A scratch card of `size` points.
     pub fn new(size: Vec2) -> Self {
-        Self { size, brush: 22.0, threshold: 0.5, foil: None, label: "Scratch to reveal".into(), autoplay: true, reset_after: None }
+        Self { size, brush: 26.0, threshold: 0.5, foil: None, label: "Scratch to reveal".into(), autoplay: true, reset_after: None, corner: 16.0 }
     }
     /// Brush radius in points.
     pub fn brush(mut self, r: f32) -> Self {
@@ -76,6 +77,11 @@ impl ScratchToReveal {
     /// Scratch automatically along a zig-zag when nobody has touched it for a while.
     pub fn autoplay(mut self, b: bool) -> Self {
         self.autoplay = b;
+        self
+    }
+    /// Corner radius of the foil (match your content's rounding).
+    pub fn corner_radius(mut self, r: f32) -> Self {
+        self.corner = r.max(0.0);
         self
     }
     /// Re-cover the card this many seconds after it was revealed.
@@ -124,10 +130,11 @@ impl ScratchToReveal {
         if resp.dragged() {
             brush_at = resp.interact_pointer_pos();
         } else if self.autoplay && idle > 1.2 && st.revealed_at.is_none() {
-            st.auto_t += dt;
+            st.auto_t += dt * 1.6;
             let a = st.auto_t;
-            let u = 0.5 + 0.44 * (a * 2.3).sin();
-            let v = 0.5 + 0.40 * (a * 0.55 + 1.2).sin() * (a * 0.27).cos().signum().max(0.6);
+            let u = 0.5 + 0.45 * (a * 3.2).sin();
+            let tri = 1.0 - ((a * 0.18).fract() * 2.0 - 1.0).abs();
+            let v = 0.12 + 0.76 * tri;
             let pp = pos2(rect.min.x + u * rect.width(), rect.min.y + v * rect.height());
             brush_at = Some(pp);
             auto_cursor = Some(pp);
@@ -150,7 +157,7 @@ impl ScratchToReveal {
                     for x in x0..=x1 {
                         let d = pos2(x as f32 * cell, y as f32 * cell).distance(c);
                         if d < r {
-                            let v = smoothstep(r * 0.55, r, d);
+                            let v = smoothstep(r * 0.78, r, d);
                             let i = y * (cols + 1) + x;
                             cov[i] = cov[i].min(v);
                         }
@@ -186,20 +193,45 @@ impl ScratchToReveal {
             let cov = st.cov.clone();
             let w1 = cols + 1;
             let aspect = rect.width() / rect.height();
-            paint::shader_grid(&p, Rect::from_min_size(rect.min, vec2(cols as f32 * cell, rows as f32 * cell)), cols, rows, |uv| {
-                let x = (uv.x * cols as f32).round() as usize;
-                let y = (uv.y * rows as f32).round() as usize;
-                let a = cov[y * w1 + x] * fade;
-                if a <= 0.0 {
-                    return Color32::TRANSPARENT;
+            let corner = self.corner;
+            let grid_rect = Rect::from_min_size(rect.min, vec2(cols as f32 * cell, rows as f32 * cell));
+            let mut m = egui::epaint::Mesh::default();
+            m.reserve_vertices(w1 * (rows + 1));
+            for y in 0..=rows {
+                for x in 0..=cols {
+                    let uv = vec2(x as f32 / cols as f32, y as f32 / rows as f32);
+                    let a = cov[y * w1 + x] * fade;
+                    // project vertices that fall outside the rounded rect onto its edge
+                    let mut pp = pos2(grid_rect.min.x + uv.x * grid_rect.width(), grid_rect.min.y + uv.y * grid_rect.height());
+                    pp.x = pp.x.min(rect.max.x);
+                    pp.y = pp.y.min(rect.max.y);
+                    let cx = pp.x.clamp(rect.min.x + corner, rect.max.x - corner);
+                    let cy = pp.y.clamp(rect.min.y + corner, rect.max.y - corner);
+                    let d = pp - pos2(cx, cy);
+                    if d.length() > corner {
+                        pp = pos2(cx, cy) + d.normalized() * corner;
+                    }
+                    let col = if a <= 0.0 {
+                        Color32::TRANSPARENT
+                    } else {
+                        let g = glowkit_core::color::gradient(&stops, (uv.x * aspect * 0.5 + uv.y * 0.5) / (aspect * 0.5 + 0.5));
+                        let dd = (uv.x * 0.8 + uv.y * 0.4 - band).abs();
+                        let shine = (1.0 - dd / 0.18).clamp(0.0, 1.0);
+                        let grain = glowkit_core::rng::hash01((x * 7919 + y * 104729) as u64) * 0.08;
+                        with_alpha(mix(g, Color32::WHITE, shine * 0.45 + grain), a)
+                    };
+                    m.colored_vertex(pp, col);
                 }
-                let g = glowkit_core::color::gradient(&stops, (uv.x * aspect * 0.5 + uv.y * 0.5) / (aspect * 0.5 + 0.5));
-                let d = (uv.x * 0.8 + uv.y * 0.4 - band).abs();
-                let shine = (1.0 - d / 0.18).clamp(0.0, 1.0);
-                let grain = glowkit_core::rng::hash01((x * 7919 + y * 104729) as u64) * 0.08;
-                let c = mix(g, Color32::WHITE, shine * 0.45 + grain);
-                with_alpha(c, a)
-            });
+            }
+            let w = w1 as u32;
+            for y in 0..rows as u32 {
+                for x in 0..cols as u32 {
+                    let i = y * w + x;
+                    m.add_triangle(i, i + 1, i + w + 1);
+                    m.add_triangle(i, i + w + 1, i + w);
+                }
+            }
+            p.add(egui::Shape::mesh(m));
             let label_a = fade * (1.0 - cleared * 2.5).clamp(0.0, 1.0);
             if label_a > 0.0 {
                 let ink = with_alpha(mix(stops[0], Color32::BLACK, 0.55), label_a);

@@ -1,6 +1,6 @@
 use crate::util;
 use egui::{vec2, Color32, Response, Sense, Ui, Widget};
-use glowkit_core::{anim::approach, text::Glyphs, Theme};
+use glowkit_core::{anim::approach, Theme};
 use std::f32::consts::TAU;
 
 /// What [`CircularText`] does while hovered.
@@ -118,9 +118,9 @@ impl Widget for CircularText {
         let t = Theme::of(ui);
         let font = util::font(self.size, false);
         let bold = util::weight(self.bold, self.size);
-        let glyphs = Glyphs::layout(ui.painter(), &self.text, font.clone(), None);
+        let glyphs = crate::util::glyphs(ui.painter(), &self.text, font.clone(), None);
         let total = glyphs.size.x.max(1.0);
-        let radius = self.radius.unwrap_or(total / TAU * 1.08).max(self.size);
+        let radius = self.radius.unwrap_or(total / TAU * 1.3).max(self.size);
         let side = 2.0 * (radius + self.size * 0.9);
         let (rect, resp) = ui.allocate_exact_size(vec2(side, side), Sense::hover());
         let dt = glowkit_core::dt(ui);

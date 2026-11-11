@@ -116,7 +116,7 @@ impl Lightning {
                 let pts: Vec<Pos2> = (0..=m)
                     .map(|k| {
                         let u = k as f32 / m as f32;
-                        let jag = noise3(u * 8.0, seed as f32 * 0.37, time * 6.0) * 10.0 * u;
+                        let jag = (noise3(u * 7.0, seed as f32 * 0.37, time * 4.0) * 26.0 + noise3(u * 23.0, seed as f32 * 0.71, time * 7.0) * 8.0) * u.sqrt();
                         o + vec2(side * u * len * 0.75 + jag, u * len * 0.85 + jag * 0.5)
                     })
                     .collect();
@@ -244,7 +244,6 @@ impl Orb {
             }
         }
         p.add(Shape::mesh(m));
-        let _ = PI;
     }
 }
 
@@ -451,6 +450,7 @@ impl Spotlight {
         self
     }
 
+    #[allow(clippy::too_many_arguments)]
     /// A ray as a mesh: bright along its axis and near the source, fading to the sides and end.
     fn ray(m: &mut Mesh, o: Pos2, angle: f32, half_width: f32, len: f32, color: Color32, a: f32, dark: bool) {
         let along = [0.0, 0.12, 0.35, 0.65, 1.0];

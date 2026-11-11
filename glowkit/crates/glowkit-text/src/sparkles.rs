@@ -105,7 +105,7 @@ impl Widget for SparklesText {
                 ink.min.x - self.size * 0.15 + r.f32() * (ink.width() + self.size * 0.3),
                 ink.min.y - self.size * 0.2 + r.f32() * (ink.height() + self.size * 0.4),
             );
-            let rad = self.size * r.range(0.1, 0.2);
+            let rad = self.size * r.range(0.13, 0.26);
             let col = colors[r.below(colors.len())];
             let k = (local * PI).sin().max(0.0);
             let k = k * k * (3.0 - 2.0 * k);

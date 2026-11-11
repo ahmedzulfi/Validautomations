@@ -131,12 +131,12 @@ impl Widget for Folder {
         // papers
         let paper_size = [vec2(w * 0.7, h * 0.8), vec2(w * 0.8, h * 0.7), vec2(w * 0.9, h * 0.6)];
         let closed_off = [vec2(0.0, -h * 0.02), vec2(0.0, h * 0.06), vec2(0.0, h * 0.13)];
-        let open_off = [vec2(-w * 0.42, -h * 0.62), vec2(w * 0.38, -h * 0.6), vec2(-w * 0.02, -h * 0.88)];
+        let open_off = [vec2(-w * 0.46, -h * 0.72), vec2(w * 0.42, -h * 0.7), vec2(-w * 0.02, -h * 1.0)];
         let open_rot = [-15f32, 15.0, 5.0];
         let pointer = response.hover_pos();
         let paper_cols = [mix(Color32::from_gray(230), color, 0.06), mix(Color32::from_gray(242), color, 0.04), Color32::WHITE];
         for i in 0..3 {
-            let base = body.center() + vec2(0.0, h * 0.05) + closed_off[i].lerp(open_off[i], o) + vec2(0.0, -h * 0.12 * lift);
+            let base = body.center() + vec2(0.0, h * 0.05) + (closed_off[i] + (open_off[i] - closed_off[i]) * o) + vec2(0.0, -h * 0.12 * lift);
             let mut magnet = Vec2::ZERO;
             if let Some(p) = pointer {
                 if o > 0.8 && p.distance(base) < w * 0.55 {

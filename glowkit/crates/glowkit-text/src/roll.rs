@@ -1,6 +1,6 @@
 use crate::util;
 use egui::{pos2, vec2, Color32, Rect, Response, Sense, Ui, Widget};
-use glowkit_core::{anim::stagger, ease, text::Glyphs, Clock, Easing, Theme, Trigger};
+use glowkit_core::{anim::stagger, ease, Clock, Easing, Theme, Trigger};
 
 /// Each letter rolls up out of view while an identical letter rolls in from below, staggered
 /// across the word. With the default [`Trigger::OnHover`] the roll holds while hovered and rolls
@@ -86,7 +86,7 @@ impl Widget for TextRoll {
         let t = Theme::of(ui);
         let font = util::font(self.size, false);
         let bold = util::weight(self.bold, self.size);
-        let glyphs = Glyphs::layout(ui.painter(), &self.text, font.clone(), None);
+        let glyphs = crate::util::glyphs(ui.painter(), &self.text, font.clone(), None);
         let (rect, mut resp) = ui.allocate_exact_size(glyphs.size + vec2(bold, 0.0), Sense::click());
         if self.trigger == Trigger::OnHover {
             resp = resp.on_hover_cursor(egui::CursorIcon::PointingHand);

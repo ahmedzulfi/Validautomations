@@ -42,7 +42,7 @@ pub use shimmer::{GradientOutlineButton, RainbowButton, ShimmerButton, ShinyButt
 pub use stateful::{CopyButton, ParticleBurstButton, StatefulButton, StatefulButtonState, SubscribeButton};
 
 #[cfg(feature = "demos")]
-mod demos;
+pub(crate) mod demos;
 
 /// Gallery demos for this module.
 #[cfg(feature = "demos")]

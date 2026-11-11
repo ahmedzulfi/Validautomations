@@ -487,7 +487,7 @@ impl<'a> Sheet<'a> {
         let desc = self.description.clone();
         let (primary, secondary) = (self.primary.clone(), self.secondary.clone());
         let side = self.side;
-        let res = kit::float_layer(&ctx, lid, Order::Foreground, paint_rect, clip, 1.0, rect.center(), p.max(0.6).min(1.0), |ui| {
+        let res = kit::float_layer(&ctx, lid, Order::Foreground, paint_rect, clip, 1.0, rect.center(), p.clamp(0.6, 1.0), |ui| {
             ui.interact(rect, lid.with("block"), Sense::click());
             let pnt = ui.painter();
             glowkit_core::paint::soft_shadow(pnt, paint_rect, t.radius, 30.0, vec2(0.0, 0.0), kit::shadow_color(&t));

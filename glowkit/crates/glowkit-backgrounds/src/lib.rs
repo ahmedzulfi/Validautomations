@@ -119,9 +119,9 @@ impl Base {
         }
         glowkit_core::animate(ui);
         let id = match (self.salt, self.auto) {
-            (Some(s), _) => ui.id().with((name, s)),
+            (Some(s), _) => ui.scope_id().with((name, s)),
             (None, Some(a)) => a,
-            _ => ui.id().with(name),
+            _ => ui.scope_id().with(name),
         };
         Some(Frame { painter, id, theme, time: glowkit_core::time(ui), dt: glowkit_core::dt(ui), rect, bg })
     }
@@ -310,19 +310,6 @@ pub(crate) fn radial_mask(painter: &Painter, rect: Rect, bg: Color32, inner: f32
         let d = vec2((p.x - c.x) / r.x, (p.y - c.y) / r.y).length();
         bg.gamma_multiply(smoothstep(inner, outer, d))
     });
-}
-
-/// Fade the top and/or bottom edge of `rect` into `bg`.
-pub(crate) fn fade_vertical(painter: &Painter, rect: Rect, top: f32, bottom: f32, bg: Color32) {
-    let clear = glowkit_core::color::with_alpha(bg, 0.0);
-    if top > 0.0 {
-        let t = Rect::from_min_size(rect.min, vec2(rect.width(), top));
-        glowkit_core::paint::quad(painter, [t.left_top(), t.right_top(), t.right_bottom(), t.left_bottom()], [bg, bg, clear, clear]);
-    }
-    if bottom > 0.0 {
-        let b = Rect::from_min_max(pos2(rect.min.x, rect.max.y - bottom), rect.max);
-        glowkit_core::paint::quad(painter, [b.left_top(), b.right_top(), b.right_bottom(), b.left_bottom()], [clear, clear, bg, bg]);
-    }
 }
 
 /// Cheap hash of integers to `0..1`.

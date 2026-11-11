@@ -255,13 +255,14 @@ pub struct RingCarousel<'a> {
     radius: Option<f32>,
     speed: f32,
     perspective: f32,
+    tilt: f32,
     height: Option<f32>,
 }
 
 impl<'a> RingCarousel<'a> {
     /// A ring of `faces`.
     pub fn new(faces: &'a [CardFace]) -> Self {
-        Self { faces, card_size: vec2(140.0, 186.0), radius: None, speed: 14.0, perspective: 2.6, height: None }
+        Self { faces, card_size: vec2(150.0, 200.0), radius: None, speed: 14.0, perspective: 3.0, tilt: 9.0, height: None }
     }
     /// Card size in points.
     pub fn card_size(mut self, s: Vec2) -> Self {
@@ -283,6 +284,11 @@ impl<'a> RingCarousel<'a> {
         self.perspective = p.max(1.3);
         self
     }
+    /// Camera tilt in degrees (looking down onto the ring).
+    pub fn tilt(mut self, deg: f32) -> Self {
+        self.tilt = deg.clamp(-45.0, 45.0);
+        self
+    }
     /// Height of the widget.
     pub fn height(mut self, h: f32) -> Self {
         self.height = Some(h);
@@ -293,7 +299,7 @@ impl<'a> RingCarousel<'a> {
 impl egui::Widget for RingCarousel<'_> {
     fn ui(self, ui: &mut Ui) -> Response {
         let n = self.faces.len();
-        let h = self.height.unwrap_or(self.card_size.y * 1.15 + 90.0);
+        let h = self.height.unwrap_or(self.card_size.y * 1.3 + 80.0);
         let (rect, response) = ui.allocate_exact_size(vec2(ui.available_width(), h), Sense::drag());
         let id = response.id;
         if n == 0 {
@@ -322,12 +328,16 @@ impl egui::Widget for RingCarousel<'_> {
             return response;
         }
         let t = Theme::of(ui);
-        let radius = self.radius.unwrap_or_else(|| (self.card_size.x * 1.08 * n as f32 / TAU).max(self.card_size.x * 0.9));
+        let radius = self.radius.unwrap_or_else(|| (self.card_size.x * 1.3 * n as f32 / TAU).max(self.card_size.x * 0.9));
         let f = radius * self.perspective;
         let c = rect.center() - vec2(0.0, 10.0);
+        let (tilt_s, tilt_c) = self.tilt.to_radians().sin_cos();
         let project = |p: [f32; 3]| -> (Pos2, f32) {
-            let s = f / (f - p[2]);
-            (c + vec2(p[0], p[1]) * s, s)
+            // look slightly down onto the ring, then perspective-divide (front card at scale 1)
+            let y = p[1] * tilt_c + p[2] * tilt_s;
+            let z = p[2] * tilt_c - p[1] * tilt_s;
+            let s = (f - radius) / (f - z);
+            (c + vec2(p[0], y) * s, s)
         };
         let painter = ui.painter_at(rect);
         // floor shadow
@@ -369,8 +379,8 @@ impl egui::Widget for RingCarousel<'_> {
             painter.add(Shape::mesh(mesh));
             let rim: Vec<Pos2> = outline_local.iter().map(|l| project(world(*l)).0).collect();
             painter.add(Shape::closed_line(rim, Stroke::new(1.0, with_alpha(Color32::WHITE, 0.18 * (0.3 + 0.7 * depth)))));
-            if facing > 0.15 {
-                let a = ((facing - 0.15) / 0.5).min(1.0) * (1.0 - fog);
+            if facing > 0.55 {
+                let a = ((facing - 0.55) / 0.3).min(1.0) * (1.0 - fog);
                 let (ip, _) = project(world(pos2(0.0, -half.y * 0.15)));
                 painter.text(ip, Align2::CENTER_CENTER, &face.icon, FontId::proportional(self.card_size.y * 0.24 * s), with_alpha(Color32::WHITE, a));
                 let (tp, _) = project(world(pos2(0.0, half.y * 0.5)));

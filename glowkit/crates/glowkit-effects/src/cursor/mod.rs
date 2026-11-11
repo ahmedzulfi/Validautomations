@@ -40,8 +40,6 @@ pub(crate) struct AreaInput {
     pub clicks: Vec<Pos2>,
     /// `true` when `pos` comes from the real pointer.
     pub real: bool,
-    /// Primary button held (real pointer only).
-    pub down: bool,
 }
 
 /// A smooth, never-repeating-looking path inside `rect` (a Lissajous curve), used by autoplay.
@@ -62,7 +60,7 @@ pub(crate) fn lissajous(rect: Rect, t: f32) -> Pos2 {
 pub(crate) fn area_input(ui: &Ui, rect: Rect, id: Id, autoplay: bool, click_every: f32) -> AreaInput {
     let hovering = ui.rect_contains_pointer(rect);
     if hovering {
-        let (pos, pressed, down) = ui.input(|i| (i.pointer.hover_pos(), i.pointer.primary_pressed(), i.pointer.primary_down()));
+        let (pos, pressed) = ui.input(|i| (i.pointer.hover_pos(), i.pointer.primary_pressed()));
         let mut clicks = Vec::new();
         if pressed {
             if let Some(p) = pos {
@@ -70,7 +68,7 @@ pub(crate) fn area_input(ui: &Ui, rect: Rect, id: Id, autoplay: bool, click_ever
             }
         }
         glowkit_core::set_state(ui, id.with("auto_t"), -1.0f32);
-        return AreaInput { pos, clicks, real: true, down };
+        return AreaInput { pos, clicks, real: true };
     }
     if !autoplay {
         return AreaInput::default();
@@ -86,5 +84,5 @@ pub(crate) fn area_input(ui: &Ui, rect: Rect, id: Id, autoplay: bool, click_ever
         }
         glowkit_core::set_state(ui, id.with("auto_t"), now);
     }
-    AreaInput { pos: Some(pos), clicks, real: false, down: false }
+    AreaInput { pos: Some(pos), clicks, real: false }
 }

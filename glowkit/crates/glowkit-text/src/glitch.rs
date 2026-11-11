@@ -106,10 +106,10 @@ impl Widget for GlitchText {
         let window = (time / 0.6) as u64;
         let mut wr = Rng::new(window.wrapping_mul(7919) ^ id.value());
         let burst_start = wr.range(0.0, 0.4);
-        let burst_len = wr.range(0.12, 0.3);
+        let burst_len = wr.range(0.15, 0.4);
         let in_window = (time / 0.6).fract() * 0.6;
-        let bursting = wr.bool(0.55) && in_window > burst_start && in_window < burst_start + burst_len;
-        let level = on * self.intensity * if bursting { 1.0 } else { 0.12 };
+        let bursting = wr.bool(0.75) && in_window > burst_start && in_window < burst_start + burst_len;
+        let level = on * self.intensity * if bursting { 1.0 } else { 0.2 };
 
         let color = self.color.unwrap_or(t.foreground);
         let origin = pos2(rect.min.x + pad, rect.min.y);

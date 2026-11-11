@@ -2,7 +2,6 @@
 
 use crate::{background, ghost, pointer, smoothstep, Base, Lut, Rgb};
 use egui::{vec2, Color32, Rect, Ui, Vec2};
-use glowkit_core::noise::fbm3;
 use glowkit_core::paint::shader_grid;
 use std::f32::consts::TAU;
 
@@ -85,14 +84,18 @@ impl Silk {
         let time = f.time * self.speed;
         let aspect = rect.width() / rect.height().max(1.0);
         let (scale, rotation) = (self.scale * 2.2, self.rotation.to_radians());
-        shader_grid(&f.painter, rect, 80, 40, |uv| {
+        shader_grid(&f.painter, rect, 96, 48, |uv| {
             let p = rot(centered(uv, aspect), rotation) * scale;
             let (x, y) = (p.x, p.y);
-            let fold = (2.4 * x + 1.4 * (1.9 * y + 0.35 * time).sin() + 0.8 * (1.2 * x - 1.6 * y + 0.27 * time).cos() + 0.45 * time).sin();
-            let fine = (5.5 * (x + 0.55 * y) + 1.8 * fold - 0.5 * time).sin() * 0.16;
+            // long diagonal folds, gently warped
+            let warp = 0.55 * (1.3 * x - 0.35 * time).sin() + 0.4 * (1.7 * y + 0.9 * x + 0.3 * time).cos();
+            let phase = (x * 0.8 + y) * 2.2 + warp * 1.4 - time * 0.4;
+            let fold = phase.sin();
+            let fine = (phase * 2.7 + 0.6 * (x * 2.0 - time * 0.2).sin()).sin() * 0.12;
             let s = (0.5 + 0.5 * fold + fine).clamp(0.0, 1.0);
-            let spec = s.powi(10) * 0.55;
-            base.scale(0.18 + 1.05 * s).lerp(Rgb(1.0, 1.0, 1.0), spec).to_color()
+            let shade = 0.22 + 0.85 * s.powf(1.3);
+            let spec = s.powi(8) * 0.28;
+            base.scale(shade).lerp(Rgb(1.0, 1.0, 1.0), spec).to_color()
         });
     }
 }
@@ -161,19 +164,22 @@ impl Iridescence {
         let aspect = rect.width() / rect.height().max(1.0);
         let m = if self.interactive { centered_pointer(ui, rect) } else { None };
         let amp = self.amplitude;
-        shader_grid(&f.painter, rect, 64, 36, |uv| {
-            let mut p = centered(uv, aspect) * 2.4;
+        shader_grid(&f.painter, rect, 80, 44, |uv| {
+            let mut p = centered(uv, aspect) * 3.0;
             if let Some(m) = m {
-                let d = p - m * 2.4;
-                p += d * 0.35 * (-d.length_sq() * 1.5).exp();
+                let d = p - m * 3.0;
+                p += d * 0.4 * (-d.length_sq() * 1.2).exp();
             }
-            for i in 0..4 {
+            for i in 0..5 {
                 let fi = i as f32;
-                p += vec2((p.y * 1.3 + time + fi * 1.1).sin(), (p.x * 1.1 - time * 0.8 + fi * 1.7).cos()) * 0.32 * amp;
+                let k = 0.8 + fi * 0.25;
+                p += vec2((p.y * k + time + fi * 1.1).sin(), (p.x * k * 0.9 - time * 0.8 + fi * 1.7).cos()) * (0.3 / k) * amp;
             }
-            let v = p.x * 0.22 + p.y * 0.3 + time * 0.12;
-            let c = Rgb(0.5 + 0.5 * (TAU * v).cos(), 0.5 + 0.5 * (TAU * (v + 0.33)).cos(), 0.5 + 0.5 * (TAU * (v + 0.67)).cos());
-            let c = c.lerp(Rgb(1.0, 1.0, 1.0), 0.28);
+            let v = p.x * 0.18 + p.y * 0.26 + time * 0.1;
+            let film = Rgb(0.5 + 0.5 * (TAU * v).cos(), 0.5 + 0.5 * (TAU * (v + 0.3)).cos(), 0.5 + 0.5 * (TAU * (v + 0.62)).cos());
+            // soft sheen: brighter where the film folds
+            let sheen = 0.5 + 0.5 * (p.x * 1.3 - p.y * 0.9).sin();
+            let c = film.lerp(Rgb(1.0, 1.0, 1.0), 0.38 + 0.2 * sheen).scale(0.86 + 0.14 * sheen);
             Rgb(c.0 * tint.0, c.1 * tint.1, c.2 * tint.2).to_color()
         });
     }
@@ -342,26 +348,26 @@ impl LiquidMetal {
         let m = if self.interactive { centered_pointer(ui, rect) } else { None };
         let amp = self.amplitude;
         let height = |p: Vec2| -> f32 {
-            let mut h = (p.x * 3.0 + 1.6 * (p.y * 2.3 + time).sin() + time * 0.8).sin() * 0.5
-                + (p.y * 3.4 - 1.2 * (p.x * 1.7 - time * 0.9).cos()).sin() * 0.35
-                + fbm3(p.x * 1.2, p.y * 1.2, time * 0.4, 2) * 0.6;
+            let mut h = (p.x * 2.2 + 1.3 * (p.y * 1.8 + time).sin() + time * 0.7).sin() * 0.5
+                + (p.y * 2.6 - 1.1 * (p.x * 1.4 - time * 0.8).cos()).sin() * 0.35
+                + ((p.x + p.y) * 1.3 + time * 0.5).sin() * 0.25;
             if let Some(m) = m {
                 let d = (p - m).length();
-                h += (d * 26.0 - time * 10.0).sin() * 0.25 * (-d * 4.0).exp();
+                h += (d * 18.0 - time * 8.0).sin() * 0.18 * (-d * 3.5).exp();
             }
             h * amp
         };
-        shader_grid(&f.painter, rect, 72, 40, |uv| {
-            let p = centered(uv, aspect) * 1.6;
-            let e = 0.02;
+        shader_grid(&f.painter, rect, 96, 52, |uv| {
+            let p = centered(uv, aspect) * 1.4;
+            let e = 0.015;
             let h = height(p);
             let nx = (height(p + vec2(e, 0.0)) - h) / e;
             let ny = (height(p + vec2(0.0, e)) - h) / e;
-            // reflect a banded "studio" environment
-            let r = nx * 0.11 + ny * 0.16 + h * 0.35 + p.y * 0.25;
-            let env = 0.5 + 0.5 * (r * 7.0 + 0.8).sin();
-            let v = smoothstep(0.15, 0.95, env).powf(1.4);
-            let rim = smoothstep(0.92, 1.0, env) * 0.6;
+            // reflect a soft, banded "studio" environment
+            let r = nx * 0.07 + ny * 0.1 + h * 0.3 + p.y * 0.5;
+            let env = 0.5 + 0.5 * (r * 3.6 + 0.6).sin();
+            let v = smoothstep(0.05, 1.0, env).powf(1.2);
+            let rim = smoothstep(0.85, 1.0, env) * 0.45;
             dark.lerp(tint, v).lerp(Rgb(1.0, 1.0, 1.0), rim).to_color()
         });
     }
@@ -432,7 +438,7 @@ impl Plasma {
     pub fn paint(&self, ui: &Ui, rect: Rect) {
         let Some(f) = self.base.begin(ui, rect, "glowkit_plasma") else { return };
         let t = &f.theme;
-        let colors = self.colors.clone().unwrap_or_else(|| vec![t.gradient[0], t.gradient[1], t.gradient[2], t.chart[1]]);
+        let colors = self.colors.clone().unwrap_or_else(|| vec![t.gradient[0], t.gradient[1], t.chart[1], t.chart[5]]);
         let lut = Lut::new(&colors, true);
         let bg = Rgb::of(f.bg);
         let dark = t.dark;
@@ -455,12 +461,12 @@ impl Plasma {
                 + ((x * 0.6 + y * 0.8 + time) * 0.8).sin()
                 + ((cx * cx + cy * cy + 1.0).sqrt() + time).sin()
                 + (d * 0.9 - time * 1.5).sin() * 0.6;
-            let c = lut.sample(v * 0.14 + time * 0.05);
-            let glow = (0.5 + 0.5 * (v * 1.7).sin()).powf(1.3) * intensity;
+            let c = lut.sample(v * 0.2 + time * 0.05);
+            let glow = (0.5 + 0.5 * (v * 1.4).sin()).powf(0.8) * intensity;
             if dark {
-                bg.lerp(c, (0.15 + glow).min(1.0)).add(c.scale((glow - 0.85).max(0.0) * 0.6)).to_color()
+                bg.add(c.scale((0.12 + glow * 0.9).min(1.0))).add(Rgb(1.0, 1.0, 1.0).scale((glow - 0.9).max(0.0) * 0.5)).to_color()
             } else {
-                bg.lerp(c, (0.1 + glow * 0.85).min(1.0)).to_color()
+                bg.lerp(c, (0.15 + glow * 0.8).min(1.0)).to_color()
             }
         });
     }

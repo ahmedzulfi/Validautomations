@@ -155,7 +155,7 @@ impl Widget for SlidingNumber {
                 }
             }
             s.cols.retain(|c| c.k >= lo && (c.k <= hi || c.presence.value > 0.01));
-            s.cols.sort_by(|a, b| b.k.cmp(&a.k));
+            s.cols.sort_by_key(|c| std::cmp::Reverse(c.k));
             for c in &mut s.cols {
                 c.roll.stiffness = stiff;
                 c.roll.damping = damp;
@@ -203,14 +203,14 @@ impl Widget for SlidingNumber {
             for j in -1..=2 {
                 let digit = ((base as i64 + j).rem_euclid(10)) as u8;
                 let dy = (j as f32 - frac) * line_h;
-                let a = (1.0 - dy.abs() / line_h).clamp(0.0, 1.0);
+                let a = glowkit_core::anim::smoothstep(0.75, 0.0, dy.abs() / line_h);
                 if a <= 0.0 {
                     continue;
                 }
                 let g = util::layout_char(&p, (b'0' + digit) as char, &font);
                 let gx = col_rect.center().x - g.size().x / 2.0;
                 // higher digits wait below and roll up into place as the value grows
-                util::paint_galley(&p, pos2(gx, rect.min.y + dy), &g, color.gamma_multiply(a * a * pres.min(1.0)), bold);
+                util::paint_galley(&p, pos2(gx, rect.min.y + dy), &g, color.gamma_multiply(a * pres.min(1.0)), bold);
             }
             x += cw;
         }

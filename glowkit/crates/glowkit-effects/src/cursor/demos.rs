@@ -293,8 +293,10 @@ confetti.show(ui, area);"##,
                 paint::soft_shadow(p, btn_rect, 23.0, 20.0, vec2(0.0, 6.0), with_alpha(t.accent, 0.35));
                 paint::gradient_rect(p, btn_rect, 23.0, 0.0, &[glowkit_core::color::shade(t.gradient[0], hover), glowkit_core::color::shade(t.gradient[1], hover)]);
                 p.text(btn_rect.center(), Align2::CENTER_CENTER, "🎉  Celebrate", FontId::proportional(16.0), Color32::WHITE);
-                if resp.clicked() {
+                let first: bool = glowkit_core::state(ui, ui.scope_id().with("first_fire"), || true);
+                if resp.clicked() || first {
                     confetti.fire_with(ui, btn_rect.center(), -90.0, 80.0);
+                    glowkit_core::set_state(ui, ui.scope_id().with("first_fire"), false);
                 }
                 confetti.fire_on_click(false).show(ui, area);
             },

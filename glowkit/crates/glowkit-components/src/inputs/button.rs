@@ -166,7 +166,7 @@ impl Widget for Button {
         let fs = self.size.font();
         let is = self.size.icon();
         let font = FontId::proportional(fs);
-        let galley = ui.painter().layout_no_wrap(self.text.clone(), font, Color32::WHITE);
+        let galley = ui.painter().layout_no_wrap(self.text.clone(), font, Color32::PLACEHOLDER);
         let has_text = !self.text.is_empty();
         let lead = self.icon.is_some() || self.loading;
         let gap = 8.0;

@@ -325,14 +325,14 @@ impl AnimatedGradientBorder {
         let colors = self.colors_for(&t);
         let rot = glowkit_core::time(ui) / self.duration.max(0.3);
         let p = ui.painter();
-        let n = 14;
+        let n = 36;
         for i in 0..n {
             let s = i as f32 / n as f32;
             let q = util::perimeter_point(rect, radius, s);
             let d = q - rect.center();
             let a = (d.y / rect.height()).atan2(d.x / rect.width()) / TAU + 0.5;
             let c = gradient_cyclic(&colors, a - rot);
-            paint::glow(p, q, rect.width().min(rect.height()) * 0.38, with_alpha(c, if t.dark { 0.22 } else { 0.16 }));
+            paint::glow(p, q, rect.width().min(rect.height()) * 0.42, with_alpha(c, if t.dark { 0.10 } else { 0.07 }));
         }
     }
 
@@ -526,12 +526,12 @@ impl NeonGradientCard {
                     gradient(&stops, 1.0 - (u * 2.0 - 1.0).abs())
                 };
                 let p = ui.painter();
-                let n = 16;
-                let glow_a = (if t.dark { 0.30 } else { 0.22 }) * self.glow;
+                let n = 40;
+                let glow_a = (if t.dark { 0.13 } else { 0.10 }) * self.glow;
                 for i in 0..n {
                     let s = i as f32 / n as f32;
                     let q = util::perimeter_point(rect, radius, s);
-                    paint::glow(p, q, rect.width().min(rect.height()) * 0.45, with_alpha(color_at(q), glow_a));
+                    paint::glow(p, q, rect.width().min(rect.height()) * 0.5, with_alpha(color_at(q), glow_a));
                 }
                 paint::fill_convex_fn(p, &paint::rounded_rect_points(rect, radius, 10), 8, color_at);
                 let inner = rect.shrink(self.border_size);

@@ -17,10 +17,24 @@
 //! repainting; value changes glide with a spring; legends toggle series; hovering shows a
 //! crosshair and a tooltip card.
 
+mod bar;
 mod cartesian;
 mod common;
+mod heatmap;
+mod lists;
+mod pie;
+mod radial;
+mod spark;
+mod xy;
 
+pub use bar::{BarChart, BarFill, ComboChart, Orientation};
 pub use cartesian::{AreaChart, LineChart};
+pub use heatmap::{CalendarHeatmap, Heatmap};
+pub use lists::{BarList, FunnelChart, ProgressList, Treemap};
+pub use pie::{DonutChart, PieChart, PieLabels};
+pub use radial::{DonutProgress, Gauge, RadarChart, RadarGrid, RadialBarChart};
+pub use spark::{SparkKind, Sparkline, StatTile, Status, Tracker, TrackerBlock};
+pub use xy::{Candle, CandlestickChart, ScatterChart, ScatterSeries};
 pub use common::{
     format_compact, format_percent, format_thousands, format_tick, nice_number, nice_ticks, palette, squarify, stack, Curve,
     Datum, Formatter, LineStyle, Series, Stacking, Ticks,

@@ -1,14 +1,30 @@
 //! Showcase widgets: terminals, globes, device mockups, reveal effects, hover cards and
 //! shader-style backgrounds.
 
+mod cards;
+mod code;
 mod devices;
 mod globe;
+mod highlight;
+mod people;
+mod progress;
+mod reveal;
 mod terminal;
+mod toggles;
+mod vanish;
 mod util;
 
+pub use cards::{CanvasRevealCard, DirectionAwareHover, GlowingStarsCard, Pin3D, TextHoverEffect};
+pub use code::{CodeComparison, ScriptCopyBox, StickyBanner};
 pub use devices::{LaptopFrame, PhoneFrame, PhoneStyle, SafariWindow};
 pub use globe::{CloudIcon, Globe, GlobeMarker, IconCloud};
+pub use highlight::{Cover, GeminiEffect, PointerHighlight};
+pub use people::{AnimatedTestimonials, AnimatedTooltip, Person, Testimonial, Tweet, TweetCard};
+pub use progress::{MultiStepLoader, TracingBeam};
+pub use reveal::{CompareSlider, ScratchResponse, ScratchToReveal};
 pub use terminal::{Terminal, TerminalLine};
+pub use toggles::{DayNightSwitch, ThemeToggler};
+pub use vanish::{VanishInput, VanishOutput};
 
 #[cfg(feature = "demos")]
 mod demos;

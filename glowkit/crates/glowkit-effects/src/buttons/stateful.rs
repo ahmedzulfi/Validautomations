@@ -302,7 +302,7 @@ impl CopyButton {
         demo_loop: bool);
 }
 
-fn copy_icon(painter: &egui::Painter, c: Pos2, s: f32, color: Color32, scale: f32, angle_k: f32) {
+fn copy_icon(painter: &egui::Painter, c: Pos2, s: f32, color: Color32, bg: Color32, scale: f32, angle_k: f32) {
     if scale <= 0.01 {
         return;
     }
@@ -310,11 +310,11 @@ fn copy_icon(painter: &egui::Painter, c: Pos2, s: f32, color: Color32, scale: f3
     let sq = s * 0.58;
     let stroke = Stroke::new(1.6, color);
     let r = cr(s * 0.12);
-    let off = vec2(s * 0.14, s * 0.14) * (1.0 - angle_k);
-    let back = Rect::from_center_size(c - vec2(s * 0.12, s * 0.12) + off, vec2(sq, sq));
-    let front = Rect::from_center_size(c + vec2(s * 0.12, s * 0.12) - off, vec2(sq, sq));
+    let off = vec2(s, s) * (0.13 + 0.03 * angle_k);
+    let back = Rect::from_center_size(c - off, vec2(sq, sq));
+    let front = Rect::from_center_size(c + off, vec2(sq, sq));
     painter.rect_stroke(back, r, stroke, StrokeKind::Middle);
-    painter.rect_filled(front, r, Color32::TRANSPARENT);
+    painter.rect_filled(front, r, bg);
     painter.rect_stroke(front, r, stroke, StrokeKind::Middle);
 }
 
@@ -357,12 +357,13 @@ impl Widget for CopyButton {
         let ok = self.color.unwrap_or(t.success);
         let radius = t.radius * 0.8;
         let p = ui.painter();
-        p.rect_filled(rect, cr(radius), shade(t.card, if t.dark { 0.03 } else { -0.02 } * hover).lerp_to_gamma(ok, 0.08 * k.clamp(0.0, 1.0)));
+        let fill = shade(t.card, if t.dark { 0.03 } else { -0.02 } * hover).lerp_to_gamma(ok, 0.08 * k.clamp(0.0, 1.0));
+        p.rect_filled(rect, cr(radius), fill);
         p.rect_stroke(rect, cr(radius), Stroke::new(1.0, t.border.lerp_to_gamma(ok, 0.5 * k.clamp(0.0, 1.0))), StrokeKind::Inside);
         let ic = if label_w > 0.0 { pos2(rect.min.x + h * 0.5, rect.center().y) } else { rect.center() };
         let icon_s = self.size * 1.25;
         let kc = k.clamp(0.0, 1.2);
-        copy_icon(p, ic, icon_s, t.muted_foreground.lerp_to_gamma(t.foreground, hover), (1.0 - kc).max(0.0), hover);
+        copy_icon(p, ic, icon_s, t.muted_foreground.lerp_to_gamma(t.foreground, hover), fill, (1.0 - kc).max(0.0), hover);
         if k > 0.01 {
             util::check_mark(p, ic, icon_s * 0.55 * k.max(0.0), 2.0, ok, k.clamp(0.0, 1.0));
         }
@@ -373,8 +374,8 @@ impl Widget for CopyButton {
             let g1 = util::text_galley(ui, l, self.size * 0.93, t.foreground);
             let g2 = util::text_galley(ui, cl, self.size * 0.93, ok);
             let y = rect.center().y;
-            clip.galley(pos2(x, y - g1.size().y / 2.0 - kk * h * 0.6), g1, t.foreground);
-            clip.galley(pos2(x, y - g2.size().y / 2.0 + (1.0 - kk) * h * 0.6), g2, ok);
+            clip.galley_with_override_text_color(pos2(x, y - g1.size().y / 2.0 - kk * h * 0.8), g1, t.foreground.gamma_multiply(1.0 - kk));
+            clip.galley_with_override_text_color(pos2(x, y - g2.size().y / 2.0 + (1.0 - kk) * h * 0.8), g2, ok.gamma_multiply(kk));
         }
         resp
     }

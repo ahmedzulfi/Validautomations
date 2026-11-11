@@ -529,10 +529,20 @@ impl Galaxy {
         glow_ellipse(painter, c, vec2(radius * 0.75, radius * 0.75 * self.tilt), light(lut.sample(0.45).to_color(), 0.22, dark));
         glow_ellipse(painter, c, vec2(radius * 0.32, radius * 0.32 * self.tilt), light(cc, 0.55, dark));
         let rot = time * 0.08;
+        // soft dust glow along the arms
+        for arm in 0..self.arms {
+            for k in 1..12 {
+                let d = k as f32 / 12.0;
+                let a = arm as f32 * TAU / self.arms as f32 + d * self.twist + rot * (1.0 + 0.3 / (d + 0.3));
+                let pos = c + vec2(a.cos() * d * radius, a.sin() * d * radius * self.tilt);
+                let col = lut.sample(d).to_color();
+                glow_ellipse(painter, pos, vec2(radius * 0.22, radius * 0.22 * self.tilt.max(0.35)), light(col, 0.13 * (1.0 - d * 0.6), dark));
+            }
+        }
         for i in 0..self.stars as u32 {
             let arm = (i as usize % self.arms) as f32;
-            let d = h01(i, 1).powf(0.85);
-            let spread = (h01(i, 2) - 0.5 + h01(i, 3) - 0.5) * (0.55 - d * 0.25);
+            let d = h01(i, 1).powf(0.75);
+            let spread = (h01(i, 2) - 0.5 + h01(i, 3) - 0.5 + h01(i, 9) - 0.5) * (0.9 - d * 0.35);
             let a = arm * TAU / self.arms as f32 + d * self.twist + spread + rot * (1.0 + 0.3 / (d + 0.3));
             let rr = d * radius * (1.0 + (h01(i, 4) - 0.5) * 0.15);
             let mut pos = c + vec2(a.cos() * rr, a.sin() * rr * self.tilt);
@@ -664,7 +674,7 @@ impl WarpSpeed {
             let head = proj(st.z);
             let tail = proj((st.z + streak * (1.0 - st.z * 0.5)).min(1.2));
             let near = (1.0 - st.z).clamp(0.0, 1.0);
-            let a = near.powf(1.3).min(1.0) * (st.z / 0.06).min(1.0).max(0.3);
+            let a = near.powf(1.3).min(1.0) * (st.z / 0.06).clamp(0.3, 1.0);
             let w = 0.6 + near * 2.2;
             let col = colors[st.c as usize % ncol];
             painter.line_segment([tail, head], Stroke::new(w, light(col, a, dark)));

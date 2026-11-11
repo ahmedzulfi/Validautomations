@@ -1,6 +1,6 @@
 //! Glyph backgrounds: glitching letter walls and falling code rain.
 
-use crate::{background, h01, light, radial_mask, Base};
+use crate::{background, h01, radial_mask, Base};
 use egui::{vec2, Color32, FontId, Galley, Painter, Rect, Ui};
 use glowkit_core::Rng;
 use std::sync::Arc;
@@ -265,9 +265,6 @@ impl MatrixRain {
                     let pos = rect.min + vec2(c as f32 * cw, r as f32 * ch);
                     let a = (1.0 - k as f32 / trail as f32).powf(1.4) * depth;
                     let col = if k == 0 { head } else { color.gamma_multiply(a) };
-                    if k == 0 && dark {
-                        f.painter.circle_filled(pos + vec2(cw * 0.5, ch * 0.5), ch * 0.8, light(color, 0.12, dark));
-                    }
                     f.painter.galley(pos, glyphs[gi.min(glyphs.len() - 1)].clone(), col);
                 }
             }

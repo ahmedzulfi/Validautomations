@@ -24,7 +24,7 @@ pub struct TrueFocus {
 impl TrueFocus {
     /// Create the effect for `text` (split on whitespace).
     pub fn new(text: impl Into<String>) -> Self {
-        Self { text: text.into(), size: 56.0, color: None, frame_color: None, bold: true, blur: 5.0, interval: 1.4, manual: false }
+        Self { text: text.into(), size: 56.0, color: None, frame_color: None, bold: true, blur: 5.0, interval: 1.8, manual: false }
     }
     /// Font size in points.
     pub fn size(mut self, size: f32) -> Self {
@@ -112,7 +112,7 @@ impl Widget for TrueFocus {
         let sharp = glowkit_core::with_state(ui, id.with("sharp"), || vec![0.0f32; n], |v| {
             v.resize(n, 0.0);
             for (i, s) in v.iter_mut().enumerate() {
-                *s = approach(*s, if i == active { 1.0 } else { 0.0 }, 9.0, dt);
+                *s = approach(*s, if i == active { 1.0 } else { 0.0 }, 12.0, dt);
             }
             v.clone()
         });
@@ -121,8 +121,8 @@ impl Widget for TrueFocus {
         }
         let Some(target) = rects.get(active).copied() else { return resp };
         let target = target.expand2(pad + vec2(0.0, 3.0));
-        let a = spring2(ui, id.with("fmin"), target.min.to_vec2(), 210.0, 24.0);
-        let b = spring2(ui, id.with("fmax"), target.max.to_vec2(), 210.0, 24.0);
+        let a = spring2(ui, id.with("fmin"), target.min.to_vec2(), 320.0, 30.0);
+        let b = spring2(ui, id.with("fmax"), target.max.to_vec2(), 320.0, 30.0);
         if !ui.is_rect_visible(rect) {
             return resp;
         }

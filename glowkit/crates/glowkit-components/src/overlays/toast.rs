@@ -122,6 +122,7 @@ struct Entry {
     drag_x: f32,
     height: f32,
     rev: u32,
+    born: Option<f64>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -150,7 +151,7 @@ pub fn toast(ctx: &Context, toast: Toast) -> ToastId {
         let id = ToastId(s.next);
         s.entries.insert(
             0,
-            Entry { id, toast, elapsed: 0.0, appear: 0.0, leaving: None, y: Spring::new(0.0), scale: Spring::new(1.0), drag_x: 0.0, height: 56.0, rev: 0 },
+            Entry { id, toast, elapsed: 0.0, appear: 0.0, leaving: None, y: Spring::new(0.0), scale: Spring::new(1.0), drag_x: 0.0, height: 56.0, rev: 0, born: None },
         );
         id
     });
@@ -291,6 +292,7 @@ impl Toaster {
         let t = Theme::of(ui);
         let dt = glowkit_core::dt(ui);
         let time = glowkit_core::time(ui);
+        let now = ctx.input(|i| i.time);
         let area = kit::screen(&ctx, self.within);
         let clip = if self.within.is_some() { area.intersect(ui.clip_rect()) } else { area };
         let mut entries = with_store(&ctx, |s| s.entries.clone());
@@ -360,7 +362,8 @@ impl Toaster {
             e.scale.stiffness = 300.0;
             e.scale.damping = 26.0;
             e.scale.step(dt);
-            e.appear = (e.appear + dt * 3.2).min(1.0);
+            let born = *e.born.get_or_insert(now);
+            e.appear = (((now - born) as f32) / 0.32).clamp(0.0, 1.0);
             if let Some(l) = &mut e.leaving {
                 *l += dt * 4.0;
             }
@@ -475,7 +478,7 @@ impl Toaster {
                     if let Some(d) = e.toast.duration {
                         let frac = (1.0 - e.elapsed / d).clamp(0.0, 1.0);
                         let line = Rect::from_min_size(pos2(rect.min.x + t.radius, rect.max.y - 2.5), vec2((rect.width() - t.radius * 2.0) * frac, 1.5));
-                        cp.rect_filled(line, 1.0, with_alpha(if e.toast.kind == ToastKind::Default { t.muted_foreground } else { col }, 0.55));
+                        cp.rect_filled(line, 1.0, with_alpha(if e.toast.kind == ToastKind::Default { t.muted_foreground } else { col }, 0.35));
                     }
                     // close button
                     let show_close = close_button && (resp.hovered() || pointer_in && expanded);

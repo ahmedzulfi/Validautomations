@@ -2,7 +2,7 @@
 
 use crate::common::*;
 use egui::epaint::Mesh;
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, Widget};
+use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, Widget};
 use glowkit_core::anim::{ease, stagger, Easing};
 use glowkit_core::color::{contrast_text, mix, shade, with_alpha};
 use glowkit_core::Theme;
@@ -342,7 +342,7 @@ impl Widget for ProgressList<'_> {
             painter.text(pos2(pr.left() - 10.0, y + 9.0), Align2::RIGHT_CENTER, format!("{} / {}", (self.format)(d.value), (self.format)(target)), FontId::proportional(11.5), t.muted_foreground);
             let track = Rect::from_min_size(pos2(rect.left(), y + 24.0), vec2(rect.width(), self.thickness));
             let cr = CornerRadius::same((self.thickness / 2.0) as u8);
-            painter.rect_filled(track, cr, with_alpha(t.muted_foreground, if t.dark { 0.12 } else { 0.14 }));
+            painter.rect_filled(track, cr, track_color(&t));
             let g = ease(Easing::OutCubic, stagger(e, i, 0.08, 0.8));
             let fw = track.width() * cur[i].min(1.0) * g;
             if fw > 0.5 {
@@ -352,7 +352,6 @@ impl Widget for ProgressList<'_> {
                 glowkit_core::paint::fill_convex_fn(&painter, &pts, 2, glowkit_core::paint::linear_fn(fr, 0.0, &stops));
             }
         }
-        let _ = Pos2::ZERO;
         resp
     }
 }
@@ -449,12 +448,16 @@ impl Widget for Treemap<'_> {
                 painter.rect_stroke(r, cr, Stroke::new(1.5, with_alpha(Color32::WHITE, 0.6 * hov)), StrokeKind::Inside);
             }
             let tc = contrast_text(base_c).gamma_multiply(g.clamp(0.0, 1.0));
-            let name_w = text_width(&painter, &d.label, &FontId::proportional(12.5));
-            if r.width() > name_w + 16.0 && r.height() > 40.0 {
-                painter.text(r.left_top() + vec2(10.0, 9.0), Align2::LEFT_TOP, &d.label, FontId::proportional(12.5), tc);
-                painter.text(r.left_top() + vec2(10.0, 26.0), Align2::LEFT_TOP, (self.base.format)(d.value), FontId::proportional(11.5), tc.gamma_multiply(0.75));
-            } else if r.width() > name_w + 8.0 && r.height() > 20.0 {
-                painter.text(r.center(), Align2::CENTER_CENTER, &d.label, FontId::proportional(11.0), tc);
+            let f1 = FontId::proportional(12.5);
+            if r.width() > 34.0 && r.height() > 40.0 {
+                let name = truncate(&painter, &d.label, &f1, r.width() - 18.0);
+                painter.text(r.left_top() + vec2(10.0, 9.0), Align2::LEFT_TOP, name, f1, tc);
+                let val = truncate(&painter, &(self.base.format)(d.value), &FontId::proportional(11.5), r.width() - 18.0);
+                painter.text(r.left_top() + vec2(10.0, 26.0), Align2::LEFT_TOP, val, FontId::proportional(11.5), tc.gamma_multiply(0.75));
+            } else if r.width() > 24.0 && r.height() > 18.0 {
+                let f2 = FontId::proportional(11.0);
+                let name = truncate(&painter, &d.label, &f2, r.width() - 8.0);
+                painter.text(r.center(), Align2::CENTER_CENTER, name, f2, tc);
             }
         }
         if let (Some(i), true) = (hover, self.base.tooltip) {

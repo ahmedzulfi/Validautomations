@@ -1,5 +1,5 @@
 use egui::{vec2, Color32, FontId, Response, Sense, Ui, Widget};
-use glowkit_core::{anim::stagger, ease, paint, text::Glyphs, Clock, Easing, Theme, Trigger};
+use glowkit_core::{anim::stagger, ease, paint, Clock, Easing, Theme, Trigger};
 
 /// How [`BlurText`] splits its text.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
@@ -120,7 +120,7 @@ impl Widget for BlurText {
         let t = Theme::of(ui);
         let color = self.color.unwrap_or(t.foreground);
         let font = FontId::proportional(self.size);
-        let glyphs = Glyphs::layout(ui.painter(), &self.text, font.clone(), Some(ui.available_width()));
+        let glyphs = crate::util::glyphs(ui.painter(), &self.text, font.clone(), Some(ui.available_width()));
         let (rect, resp) = ui.allocate_exact_size(glyphs.size, Sense::click());
         let pieces = match self.split {
             SplitBy::Words => glyphs.word_count(),

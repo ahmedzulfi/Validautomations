@@ -1,6 +1,6 @@
 use crate::util;
 use egui::{vec2, Color32, Response, Sense, Ui, Widget};
-use glowkit_core::{anim::stagger, mix, text::Glyphs, Clock, Theme};
+use glowkit_core::{anim::stagger, mix, Clock, Theme};
 
 /// Every letter gets its own color from a palette; every few seconds the colors reshuffle and a
 /// wave of tiny blur-and-bounce passes through the letters as they change.
@@ -69,8 +69,8 @@ impl Widget for ColorfulText {
         let t = Theme::of(ui);
         let font = util::font(self.size, false);
         let bold = util::weight(self.bold, self.size);
-        let glyphs = Glyphs::layout(ui.painter(), &self.text, font.clone(), Some(ui.available_width()));
-        let (rect, resp) = ui.allocate_exact_size(glyphs.size + vec2(bold, self.size * 0.15), Sense::hover());
+        let glyphs = crate::util::glyphs(ui.painter(), &self.text, font.clone(), Some(ui.available_width()));
+        let (rect, resp) = ui.allocate_exact_size(glyphs.size + vec2(bold, self.size * 0.16), Sense::hover());
         glowkit_core::animate(ui);
         if !ui.is_rect_visible(rect) {
             return resp;
@@ -92,7 +92,7 @@ impl Widget for ColorfulText {
             let c = mix(before, now, p);
             let bump = util::bump(p);
             let gal = util::layout_char(painter, g.ch, &font);
-            let pos = rect.min + vec2(0.0, self.size * 0.1) + g.offset + vec2(0.0, -bump * self.size * 0.08);
+            let pos = rect.min + vec2(0.0, self.size * 0.08) + g.offset + vec2(0.0, -bump * self.size * 0.08);
             util::paint_blurred(painter, pos, &gal, c.gamma_multiply(1.0 - 0.2 * bump), bump * self.size * 0.07, bold);
         }
         resp

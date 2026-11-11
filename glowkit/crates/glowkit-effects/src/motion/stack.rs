@@ -38,7 +38,8 @@ impl CardAnim {
 
 fn hash_angle(i: usize) -> f32 {
     let mut r = glowkit_core::Rng::new(i as u64 * 104_729 + 17);
-    r.range(-6.0, 6.0)
+    let mag = r.range(4.0, 9.0);
+    if i % 2 == 0 { mag } else { -mag }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -182,9 +183,9 @@ impl egui::Widget for StackCards<'_> {
             let mut settled = true;
             for (depth_from_bottom, &card) in st.order.iter().enumerate() {
                 let depth = n - 1 - depth_from_bottom;
-                let base_angle = if random { hash_angle(card) * (depth.min(1) as f32) + depth as f32 * 2.0 } else { depth as f32 * 4.0 };
-                let scale = 1.0 - depth as f32 * 0.05;
-                let off = vec2(0.0, depth as f32 * -6.0);
+                let base_angle = if depth == 0 { 0.0 } else if random { hash_angle(card) } else { depth as f32 * 4.0 };
+                let scale = 1.0 - depth as f32 * 0.04;
+                let off = vec2(hash_angle(card) * depth.min(1) as f32 * 0.8, depth as f32 * -7.0);
                 if depth == 0 && (st.dragging || st.drag != Vec2::ZERO) {
                     let a = &mut st.anims[card];
                     a.x.value = st.drag.x;
@@ -200,11 +201,12 @@ impl egui::Widget for StackCards<'_> {
                     settled &= st.anims[card].step(off, base_angle, scale, dt);
                 }
             }
-            if !settled || autoplay.is_some() {
-                ui.ctx().request_repaint();
-            }
-            st.clone()
+            (st.clone(), settled)
         });
+        let (st, settled) = st;
+        if !settled || autoplay.is_some() {
+            ui.ctx().request_repaint();
+        }
         if !ui.is_rect_visible(rect) {
             return response;
         }
@@ -496,8 +498,7 @@ impl egui::Widget for BounceCards<'_> {
         let t = Theme::of(ui);
         let painter = ui.painter_at(rect.expand(30.0));
         let mut poses = Vec::with_capacity(n);
-        for i in 0..n {
-            let (mut off, mut ang) = base[i];
+        for (i, &(mut off, mut ang)) in base.iter().enumerate() {
             if let Some(h) = hovered {
                 if h == i {
                     ang = 0.0;
@@ -517,9 +518,9 @@ impl egui::Widget for BounceCards<'_> {
             pose.alpha = (p * 4.0).min(1.0);
             poses.push(pose);
         }
-        for i in 0..n {
+        for (i, pose) in poses.iter().enumerate() {
             if Some(i) != hovered {
-                paint_card_face(&painter, &t, &self.faces[i], i, poses[i]);
+                paint_card_face(&painter, &t, &self.faces[i], i, *pose);
             }
         }
         if let Some(h) = hovered {

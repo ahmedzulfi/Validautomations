@@ -151,8 +151,18 @@ impl Widget for PieChart<'_> {
         let total_raw: f64 = self.data.iter().enumerate().filter(|(i, _)| !hidden[*i]).map(|(_, d)| d.value.max(0.0)).sum();
         let area = Rect::from_min_max(rect.min, pos2(rect.right(), rect.bottom() - if legend_on { LEGEND_H + 4.0 } else { 0.0 }));
         let outside = self.labels == PieLabels::Outside;
-        let margin = if outside { 34.0 } else { self.pop_out + 4.0 };
-        let r_out = (area.width().min(area.height()) / 2.0 - margin).max(8.0);
+        let label_w = if outside {
+            let f = FontId::proportional(11.5);
+            let tot: f64 = self.data.iter().map(|d| d.value.max(0.0)).sum::<f64>().max(1e-9);
+            self.data.iter().map(|d| text_width(&painter, &format!("{} {}", d.label, format_percent(d.value.max(0.0) / tot)), &f)).fold(0.0, f32::max)
+        } else {
+            0.0
+        };
+        let r_out = if outside {
+            (area.width() / 2.0 - label_w - 26.0).min(area.height() / 2.0 - 24.0).max(8.0)
+        } else {
+            (area.width().min(area.height()) / 2.0 - self.pop_out - 4.0).max(8.0)
+        };
         let r_in = r_out * self.inner;
         let c = area.center();
 
@@ -183,7 +193,7 @@ impl Widget for PieChart<'_> {
         let active = hover.or(focus.filter(|i| !hidden[*i]));
         let mut acc = start;
         let mut slices = Vec::with_capacity(n);
-        for (i, v) in cur.iter().enumerate() {
+        for v in cur.iter() {
             let span = v / total * TAU * sweep;
             slices.push((acc, acc + span));
             acc += span;
@@ -199,7 +209,7 @@ impl Widget for PieChart<'_> {
             let off = if r_in > 0.0 { egui::Vec2::ZERO } else { dir * self.pop_out * pop };
             let ro = r_out * scale + if r_in > 0.0 { self.pop_out * pop } else { 0.0 };
             let ri = r_in * scale;
-            let dim = if active.is_some() && active != Some(i) { 0.55 } else { 1.0 };
+            let dim = if active.is_some() && active != Some(i) { 0.6 } else { 1.0 };
             let col = color_of(i).gamma_multiply(dim);
             let p = pad.min((a1 - a0) * 0.5);
             if self.rounded && r_in > 0.0 {
@@ -244,9 +254,9 @@ impl Widget for PieChart<'_> {
                     }
                     PieLabels::Outside => {
                         let p0 = c + dir * (r_out + 3.0);
-                        let p1 = c + dir * (r_out + 14.0);
+                        let p1 = c + dir * (r_out + 10.0);
                         let right = dir.x >= 0.0;
-                        let p2 = p1 + vec2(if right { 10.0 } else { -10.0 }, 0.0);
+                        let p2 = p1 + vec2(if right { 8.0 } else { -8.0 }, 0.0);
                         painter.add(egui::Shape::line(vec![p0, p1, p2], Stroke::new(1.0, t.muted_foreground.gamma_multiply(0.6))));
                         let txt = format!("{} {}", self.data[i].label, format_percent(frac as f64));
                         painter.text(p2 + vec2(if right { 4.0 } else { -4.0 }, 0.0), if right { Align2::LEFT_CENTER } else { Align2::RIGHT_CENTER }, txt, font.clone(), t.foreground.gamma_multiply(0.85));
@@ -256,7 +266,7 @@ impl Widget for PieChart<'_> {
         }
 
         // center label
-        if r_in > 0.0 {
+        if r_in > 26.0 {
             let (title, caption) = match active {
                 Some(i) => ((self.base.format)(self.data[i].value), self.data[i].label.clone()),
                 None => (self.center_title.clone().unwrap_or_else(|| (self.base.format)(total_raw * ease(Easing::OutCubic, e / 1.1) as f64)), self.center_caption.clone().unwrap_or_else(|| "Total".into())),

@@ -1,6 +1,6 @@
 use crate::util;
 use egui::{Color32, Response, Sense, Ui, Widget};
-use glowkit_core::text::{scramble_char, Glyphs, SCRAMBLE_CHARS};
+use glowkit_core::text::{scramble_char, SCRAMBLE_CHARS};
 use glowkit_core::{mix, Clock, Theme, Trigger};
 use crate::stagger::{stagger_ranks, StaggerFrom};
 
@@ -110,7 +110,7 @@ impl Widget for DecryptedText {
         let color = self.color.unwrap_or(t.foreground);
         let scol = self.scramble_color.unwrap_or(t.accent);
         let font = util::font(self.size, self.mono);
-        let glyphs = Glyphs::layout(ui.painter(), &self.text, font.clone(), Some(ui.available_width()));
+        let glyphs = crate::util::glyphs(ui.painter(), &self.text, font.clone(), Some(ui.available_width()));
         let bold = util::weight(self.bold, self.size);
         let (rect, resp) = ui.allocate_exact_size(glyphs.size + egui::vec2(bold, 0.0), Sense::click());
         let n = glyphs.visible_count();

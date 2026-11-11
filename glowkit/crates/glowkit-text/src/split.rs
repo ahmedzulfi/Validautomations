@@ -1,7 +1,7 @@
 use crate::util;
 use crate::{Direction, SplitBy};
 use egui::{pos2, Color32, Rect, Response, Sense, Ui, Widget};
-use glowkit_core::{anim::stagger, ease, text::Glyphs, Clock, Easing, Theme, Trigger};
+use glowkit_core::{anim::stagger, ease, Clock, Easing, Theme, Trigger};
 
 /// Letters (or words) rise into place one after another while fading in.
 ///
@@ -118,7 +118,7 @@ impl Widget for SplitText {
         let color = self.color.unwrap_or(t.foreground);
         let font = util::font(self.size, false);
         let wrap = self.wrap.unwrap_or(ui.available_width());
-        let glyphs = Glyphs::layout(ui.painter(), &self.text, font.clone(), Some(wrap));
+        let glyphs = crate::util::glyphs(ui.painter(), &self.text, font.clone(), Some(wrap));
         let bold = util::weight(self.bold, self.size);
         let (rect, resp) = ui.allocate_exact_size(glyphs.size + egui::vec2(bold, 0.0), Sense::click());
         let pieces = match self.split {

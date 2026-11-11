@@ -67,14 +67,6 @@ pub(crate) fn sample_faces() -> Vec<CardFace> {
     ]
 }
 
-/// Rotate `p` around `c` by `angle` radians.
-#[inline]
-pub(crate) fn rotate_around(p: Pos2, c: Pos2, angle: f32) -> Pos2 {
-    let (s, co) = angle.sin_cos();
-    let d = p - c;
-    c + vec2(d.x * co - d.y * s, d.x * s + d.y * co)
-}
-
 /// Fill a (possibly transformed) convex outline with a soft drop shadow made of stacked
 /// translucent copies, so rotated cards still cast believable shadows.
 pub(crate) fn polygon_shadow(painter: &Painter, outline: &[Pos2], center: Pos2, offset: Vec2, spread: f32, color: Color32) {

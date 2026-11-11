@@ -1,6 +1,6 @@
 use crate::util;
 use egui::{Color32, Response, Sense, Ui, Widget};
-use glowkit_core::{anim::stagger, ease, text::Glyphs, Clock, Easing, Theme, Trigger};
+use glowkit_core::{anim::stagger, ease, Clock, Easing, Theme, Trigger};
 
 /// A paragraph whose words appear one after another, each fading in out of a blur, like text
 /// streaming from an AI model.
@@ -85,7 +85,7 @@ impl Widget for TextGenerate {
         let font = util::font(self.size, false);
         let bold = util::weight(self.bold, self.size);
         let wrap = self.max_width.unwrap_or(ui.available_width()).min(ui.available_width());
-        let glyphs = Glyphs::layout(ui.painter(), &self.text, font.clone(), Some(wrap));
+        let glyphs = crate::util::glyphs(ui.painter(), &self.text, font.clone(), Some(wrap));
         let (rect, resp) = ui.allocate_exact_size(glyphs.size + egui::vec2(bold, 0.0), Sense::click());
         let words = glyphs.word_count();
         let total = self.duration + self.delay * words.saturating_sub(1) as f32;

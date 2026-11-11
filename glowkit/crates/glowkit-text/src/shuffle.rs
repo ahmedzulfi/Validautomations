@@ -1,6 +1,6 @@
 use crate::util;
 use egui::{pos2, vec2, Color32, Rect, Response, Sense, Ui, Widget};
-use glowkit_core::{anim::stagger, ease, text::Glyphs, Clock, Easing, Rng, Theme, Trigger};
+use glowkit_core::{anim::stagger, ease, Clock, Easing, Rng, Theme, Trigger};
 
 /// Direction the letter reels travel in [`ShuffleText`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
@@ -115,7 +115,7 @@ impl Widget for ShuffleText {
         let t = Theme::of(ui);
         let font = util::font(self.size, false);
         let bold = util::weight(self.bold, self.size);
-        let glyphs = Glyphs::layout(ui.painter(), &self.text, font.clone(), None);
+        let glyphs = crate::util::glyphs(ui.painter(), &self.text, font.clone(), None);
         let (rect, resp) = ui.allocate_exact_size(glyphs.size + vec2(bold, 0.0), Sense::click());
         let n = glyphs.glyphs.len();
         let total = self.duration + self.stagger * n.saturating_sub(1) as f32;
@@ -140,7 +140,7 @@ impl Widget for ShuffleText {
             let painter = base_painter.with_clip_rect(clip);
             let reel: Vec<char> = (0..len).map(|_| similar(g.ch, &mut r)).chain(std::iter::once(g.ch)).collect();
             let base = pos.floor() as usize;
-            for j in base..=(base + 1).min(len) {
+            for (j, &ch) in reel.iter().enumerate().skip(base).take(2) {
                 let d = j as f32 - pos; // 0 = centered
                 let off = match self.direction {
                     ShuffleDirection::Up => vec2(0.0, d * cell.height()),
@@ -151,7 +151,7 @@ impl Widget for ShuffleText {
                 let a = (1.0 - d.abs()).clamp(0.0, 1.0);
                 let c = if j == len { color } else { color.gamma_multiply(0.75) };
                 let tl = pos2(cell.min.x, cell.min.y) + off;
-                util::paint_char_in(&painter, reel[j], &font, tl, cell.width(), c.gamma_multiply(0.3 + 0.7 * a), bold);
+                util::paint_char_in(&painter, ch, &font, tl, cell.width(), c.gamma_multiply(0.3 + 0.7 * a), bold);
             }
         }
         resp

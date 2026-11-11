@@ -258,7 +258,8 @@ pub struct ChatMessage<'a> {
     name: Option<&'a str>,
     timestamp: Option<&'a str>,
     avatar: bool,
-    initials: &'a str,
+    user_avatar: Option<&'a str>,
+    branch: Option<(&'a mut usize, usize)>,
     actions: bool,
     actions_always: bool,
     streaming: bool,
@@ -277,7 +278,8 @@ impl<'a> ChatMessage<'a> {
             name: None,
             timestamp: None,
             avatar: true,
-            initials: "Y",
+            user_avatar: None,
+            branch: None,
             actions: false,
             actions_always: false,
             streaming: false,
@@ -297,14 +299,19 @@ impl<'a> ChatMessage<'a> {
         self.timestamp = Some(ts);
         self
     }
-    /// Show the avatar (assistant: gradient sparkle; user: initials).
+    /// Show the assistant avatar (gradient sparkle). Default on.
     pub fn avatar(mut self, on: bool) -> Self {
         self.avatar = on;
         self
     }
-    /// Initials for the user avatar (only drawn when `avatar` is on for user messages).
-    pub fn initials(mut self, initials: &'a str) -> Self {
-        self.initials = initials;
+    /// Show an initials avatar next to user bubbles.
+    pub fn user_avatar(mut self, initials: &'a str) -> Self {
+        self.user_avatar = Some(initials);
+        self
+    }
+    /// Show a [`BranchSwitcher`] (`current` is zero-based) at the start of the action row.
+    pub fn branch(mut self, current: &'a mut usize, total: usize) -> Self {
+        self.branch = Some((current, total));
         self
     }
     /// Show the [`MessageActions`] row (revealed on hover).
@@ -368,7 +375,7 @@ impl<'a> ChatMessage<'a> {
 
     fn user(self, ui: &mut Ui, t: &Theme, id: Id, extra: impl FnOnce(&mut Ui)) -> MessageOutput {
         let avail = ui.available_width();
-        let av = 0.0;
+        let av = if self.user_avatar.is_some() { 40.0 } else { 0.0 };
         let max_w = (avail * self.max_bubble).max(120.0);
         let pad = vec2(16.0, 10.0);
         let g = ui.painter().layout(self.content.to_owned(), FontId::proportional(self.size), t.foreground, max_w - pad.x * 2.0);
@@ -384,6 +391,9 @@ impl<'a> ChatMessage<'a> {
             p.rect_stroke(bubble, CornerRadius { nw: 18, ne: 18, sw: 18, se: 6 }, Stroke::new(1.0, with_alpha(t.border, 0.6)), StrokeKind::Inside);
         }
         p.galley(bubble.min + pad, g, t.foreground);
+        if let Some(ini) = self.user_avatar {
+            common::avatar(ui.painter(), pos2(rect.max.x - 15.0, rect.min.y + 15.0), 15.0, t, AvatarKind::Initials(ini));
+        }
         let mut action = None;
         if ts_h > 0.0 {
             let row = Rect::from_min_max(pos2(rect.min.x, bubble.max.y + 2.0), pos2(bubble.max.x, rect.max.y));
@@ -437,10 +447,21 @@ impl<'a> ChatMessage<'a> {
             if !self.content.is_empty() || self.streaming {
                 ui.add(Markdown::new(self.content).size(self.size).caret(self.streaming).fade_tail(if self.streaming { 28 } else { 0 }));
             }
-            if self.actions && !self.streaming {
+            if (self.actions || self.branch.is_some()) && !self.streaming {
                 let op = common::anim_bool(ui, id.with("hover"), hovered || self.actions_always, 0.18);
                 ui.add_space(-4.0);
-                action = MessageActions::new().copy_text(self.content).opacity(op).id(id).show(ui);
+                let content = self.content;
+                let actions = self.actions;
+                let branch = self.branch;
+                ui.horizontal(|ui| {
+                    ui.spacing_mut().item_spacing.x = 4.0;
+                    if let Some((cur, total)) = branch {
+                        ui.add(BranchSwitcher::new(cur, total));
+                    }
+                    if actions {
+                        action = MessageActions::new().copy_text(content).opacity(op).id(id).show(ui);
+                    }
+                });
             }
         });
         let rect = Rect::from_min_max(avail.min, pos2(avail.max.x, inner.response.rect.max.y));

@@ -1,6 +1,6 @@
 use crate::util;
 use egui::{pos2, vec2, Color32, CornerRadius, Pos2, Rect, Response, Sense, Stroke, Ui, Widget};
-use glowkit_core::{ease, paint, text::Glyphs, Clock, Easing, Theme, Trigger};
+use glowkit_core::{ease, paint, Clock, Easing, Theme, Trigger};
 use std::f32::consts::TAU;
 
 /// The kind of mark [`HighlightText`] draws.
@@ -146,7 +146,7 @@ impl Widget for HighlightText {
         let font = util::font(self.size, false);
         let bold = util::weight(self.bold, self.size);
         let wrap = self.wrap.unwrap_or(ui.available_width());
-        let glyphs = Glyphs::layout(ui.painter(), &self.text, font.clone(), Some(wrap));
+        let glyphs = crate::util::glyphs(ui.painter(), &self.text, font.clone(), Some(wrap));
         let pad = vec2(self.size * 0.3, self.size * 0.25);
         let (rect, resp) = ui.allocate_exact_size(glyphs.size + vec2(bold, 0.0) + pad * 2.0, Sense::click());
         let total = self.delay + self.duration;
@@ -232,9 +232,9 @@ impl Widget for HighlightText {
                 for (r, rp) in rows.iter().zip(&row_p) {
                     let b = Rect::from_min_max(pos2(r.min.x - s * 0.18, r.min.y + s * 0.02), pos2(r.max.x + bold + s * 0.18, r.max.y + s * 0.04));
                     let mut pts = paint::rounded_rect_points(b, s * 0.16, 6);
-                    // start at the top-left corner and close the loop
-                    let k = pts.len() * 3 / 4 + 3;
-                    pts.rotate_left(k.min(pts.len() - 1));
+                    // start at the top-left corner (last point), go clockwise and close the loop
+                    let last = pts.len() - 1;
+                    pts.rotate_left(last);
                     pts.push(pts[0]);
                     partial_line(painter, &pts, *rp, Stroke::new((s * 0.06).max(2.0), c0));
                 }

@@ -67,8 +67,8 @@ impl Widget for PulsatingButton {
             let ph = (time + k as f32 * 0.5).fract();
             let e = 1.0 - (1.0 - ph).powi(3);
             let grow = e * self.spread;
-            let a = (1.0 - ph).powf(1.6) * 0.45;
-            p.rect_filled(rect.expand(grow), cr(radius + grow), with_alpha(pulse, a));
+            let a = (1.0 - ph).powf(1.8) * 0.5;
+            paint::soft_shadow(p, rect.expand(grow * 0.7), radius + grow * 0.7, 2.0 + grow * 0.8, egui::Vec2::ZERO, with_alpha(pulse, a));
         }
         let fill = shade(bg, 0.04 * hover);
         p.rect_filled(rect, cr(radius), fill);
@@ -142,7 +142,7 @@ impl Widget for GlowButton {
         let p = ui.painter();
         let time = glowkit_core::time(ui);
         let breathe = 0.85 + 0.15 * (time * 2.0).sin();
-        let a = (if t.dark { 0.55 } else { 0.4 }) * self.intensity * (breathe + 0.4 * hover);
+        let a = (if t.dark { 0.75 } else { 0.5 }) * self.intensity * (breathe + 0.4 * hover);
         let n = 5;
         for i in 0..n {
             let u = (i as f32 + 0.5) / n as f32;
@@ -242,7 +242,8 @@ impl Widget for NeonButton {
         }
         p.rect_stroke(rect.shrink(1.0), cr(radius), Stroke::new(2.0, color.gamma_multiply(0.5 + 0.5 * on)), StrokeKind::Middle);
         p.rect_stroke(rect.shrink(1.0), cr(radius), Stroke::new(0.8, with_alpha(Color32::WHITE, 0.5 * on * (1.0 - hover))), StrokeKind::Middle);
-        let text_col = color.lerp_to_gamma(contrast_text(color), hover);
+        let ink = if t.dark { color } else { shade(color, -0.12) };
+        let text_col = ink.lerp_to_gamma(contrast_text(color), hover);
         let g = util::text_galley(ui, &self.label, self.size, text_col);
         // text glow
         if hover < 0.99 {

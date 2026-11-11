@@ -35,7 +35,7 @@ pub(crate) use switch::paint_checkbox;
 pub(crate) use tag_input::star_aa;
 
 #[cfg(feature = "demos")]
-mod demos;
+pub(crate) mod demos;
 
 /// Gallery demos for this module.
 #[cfg(feature = "demos")]

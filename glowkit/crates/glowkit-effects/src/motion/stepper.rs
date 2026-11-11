@@ -75,7 +75,7 @@ impl<'a> Stepper<'a> {
         }
         let content_h: f32 = glowkit_core::state(ui, id.with(("h", cur)), || 80.0);
         let panel_body_h = glowkit_core::anim::spring(ui, id.with("body_h"), content_h, 240.0, 26.0);
-        let header_h = 64.0;
+        let header_h = 88.0;
         let footer_h = if self.buttons { 64.0 } else { 0.0 };
         let pad = 24.0;
         let w = self.width.min(ui.available_width());

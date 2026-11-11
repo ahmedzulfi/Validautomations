@@ -1,4 +1,4 @@
-use super::shell::{base_setters, card_surface, show_shell, tracked_pointer, Base, Content};
+use super::shell::{base_setters, show_shell, tracked_pointer, Base, Content};
 use crate::buttons::setter;
 use crate::buttons::util::{self, cr};
 use egui::{pos2, vec2, Color32, InnerResponse, Pos2, Rect, Ui, Vec2};
@@ -289,7 +289,7 @@ impl GlassCard {
                 let tint = self.tint.unwrap_or(Color32::WHITE);
                 let p = ui.painter();
                 paint::soft_shadow(p, rect, radius, 32.0, vec2(0.0, 12.0), with_alpha(Color32::BLACK, if t.dark { 0.35 } else { 0.10 }));
-                let (a0, a1) = if t.dark { (0.16, 0.05) } else { (0.62, 0.38) };
+                let (a0, a1) = if t.dark { (0.20, 0.07) } else { (0.62, 0.38) };
                 let op = self.opacity;
                 paint::fill_convex_fn(p, &paint::rounded_rect_points(rect, radius, 10), 6, |q| {
                     let u = (((q.x - rect.min.x) / rect.width() + (q.y - rect.min.y) / rect.height()) / 2.0).clamp(0.0, 1.0);

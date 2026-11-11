@@ -128,7 +128,7 @@ impl Widget for RotatingText {
         let cur = cycle % n;
         let prev = (cycle + n - 1) % n;
         let has_prev = cycle > 0;
-        let layout = |i: usize| Glyphs::layout(&painter, self.words.get(i).map(String::as_str).unwrap_or(""), font.clone(), None);
+        let layout = |i: usize| crate::util::glyphs(&painter, self.words.get(i).map(String::as_str).unwrap_or(""), font.clone(), None);
         let g_cur = layout(cur);
         let g_prev = layout(prev);
         let w_cur = g_cur.size.x + bold;

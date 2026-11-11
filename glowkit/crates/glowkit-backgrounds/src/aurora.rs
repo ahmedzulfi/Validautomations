@@ -75,34 +75,49 @@ impl Aurora {
         let time = f.time * self.speed;
         let dark = f.dark();
         let (amp, blend, hgt) = (self.amplitude, self.blend, self.height);
-        shader_grid(&f.painter, rect, 72, 44, |uv| {
-            let x = uv.x;
+        // everything that depends only on x is computed once per column
+        let (cols, rows) = (96usize, 56usize);
+        let layers: Vec<[(f32, f32, f32); 3]> = (0..=cols)
+            .map(|c| {
+                let x = c as f32 / cols as f32;
+                let mut out = [(0.0, 0.0, 0.0); 3];
+                for (k, o) in out.iter_mut().enumerate() {
+                    let kf = k as f32;
+                    let edge = hgt + 0.07 * (kf - 1.0)
+                        + amp * (0.16 * fbm3(x * 2.1 + kf * 3.7 + time * 0.03, kf * 5.3, time * 0.12, 3)
+                            + 0.035 * (x * 9.0 + time * 0.7 + kf * 2.1).sin());
+                    let reach = 0.18 + 0.32 * (0.5 + 0.5 * noise3(x * 1.6 + kf * 7.0, time * 0.09, kf + 3.0));
+                    let rays = 0.55 + 0.45 * (0.5 + 0.5 * noise3(x * 13.0 + kf * 13.0 + time * 0.1, time * 0.25, kf)).powf(1.5);
+                    *o = (edge, reach, rays);
+                }
+                out
+            })
+            .collect();
+        shader_grid(&f.painter, rect, cols, rows, |uv| {
+            let ci = ((uv.x * cols as f32).round() as usize).min(cols);
             let y = uv.y;
             let mut glow = 0.0;
             let mut hue = 0.0;
-            for k in 0..3 {
-                let kf = k as f32;
-                let edge = hgt - 0.08 * kf + 0.16 * amp * fbm3(x * 1.4 + kf * 3.7, kf * 5.3, time * 0.11, 3);
-                let rays = 0.45 + 0.55 * noise3(x * 11.0 + kf * 13.0 + time * 0.08, time * 0.22, kf).abs().powf(0.6);
+            for (k, &(edge, reach, rays)) in layers[ci].iter().enumerate() {
                 let d = edge - y;
-                let v = if d > 0.0 {
-                    (-d * (3.2 + kf)).exp() * rays
-                } else {
-                    (-(d / 0.045).powi(2)).exp()
-                };
-                let w = [1.0, 0.7, 0.45][k];
+                // bright lower rim, rays reaching up, soft fall-off below
+                let rim = (-(d / 0.07).powi(2)).exp();
+                let up = if d > 0.0 { (-d / reach).exp() * rays } else { 0.0 };
+                let v = rim * 0.55 + up * 0.75;
+                let w = [1.0, 0.75, 0.55][k];
                 glow += v * w;
-                hue += v * w * (kf * 0.12);
+                hue += v * w * (k as f32 * 0.1 - 0.1);
             }
-            let ct = (x * 0.9 + 0.05 + hue * 0.3 + 0.08 * (time * 0.15 + x * 3.0).sin()).clamp(0.0, 1.0);
+            let x = uv.x;
+            let ct = (x * 0.9 + 0.05 + hue * 0.35 + 0.06 * (time * 0.15 + x * 3.0).sin()).clamp(0.0, 1.0);
             let c = lut.sample(ct);
-            let i = (glow * blend).min(1.6);
+            let i = (glow * blend * 0.85).min(1.6);
             if dark {
                 // additive light, slightly whitened where it is brightest
                 let lit = bg.add(c.scale(i.min(1.0)));
-                lit.lerp(Rgb(1.0, 1.0, 1.0), ((i - 1.0) * 0.25).clamp(0.0, 0.15)).to_color()
+                lit.lerp(Rgb(1.0, 1.0, 1.0), ((i - 0.9) * 0.3).clamp(0.0, 0.18)).to_color()
             } else {
-                bg.lerp(c, (i * 0.75).min(1.0)).to_color()
+                bg.lerp(c, (i * 0.7).min(1.0)).to_color()
             }
         });
     }
@@ -210,16 +225,16 @@ impl GradientBlobs {
             .enumerate()
             .map(|(i, c)| {
                 let fi = i as f32;
-                let cx = 0.5 + 0.35 * (time * (0.13 + 0.03 * fi) + fi * 1.9).sin();
+                let cx = (0.5 + 0.42 * (time * (0.13 + 0.03 * fi) + fi * 1.9).sin()) * 1.0;
                 let cy = 0.5 + 0.32 * (time * (0.17 + 0.02 * fi) + fi * 2.7).cos();
-                let r = (0.32 + 0.08 * (fi * 1.3).sin()) * self.size;
+                let r = (0.5 + 0.12 * (fi * 1.3).sin()) * self.size;
                 (vec2(cx * aspect, cy), r, *c)
             })
             .collect();
         if self.interactive {
             let pc = Rgb::of(self.pointer_color.unwrap_or(t.accent));
             let u = (follow - rect.min) / rect.size();
-            blobs.push((vec2(u.x * aspect, u.y), 0.26 * self.size, pc));
+            blobs.push((vec2(u.x * aspect, u.y), 0.4 * self.size, pc));
         }
         let dark = t.dark;
         shader_grid(&f.painter, rect, 56, 32, |uv| {
@@ -227,7 +242,7 @@ impl GradientBlobs {
             let p = vec2(uv.x * aspect, uv.y);
             for (center, r, col) in &blobs {
                 let d2 = (p - *center).length_sq() / (r * r);
-                let w = (-d2 * 1.4).exp();
+                let w = (-d2 * 1.1).exp();
                 c = c.lerp(*col, w * if dark { 0.8 } else { 0.7 });
             }
             c.to_color()
@@ -309,7 +324,7 @@ impl MeshGradient {
         let pts: Vec<Vec2> = (0..4)
             .map(|i| {
                 let fi = i as f32;
-                let a = time * (0.6 + 0.15 * fi) + fi * 1.5708;
+                let a = time * (0.6 + 0.15 * fi) + fi * std::f32::consts::FRAC_PI_2;
                 vec2(0.5 + 0.32 * a.cos() + 0.08 * (time * 1.3 + fi).sin(), 0.5 + 0.32 * (a * 1.2 + fi).sin())
             })
             .collect();

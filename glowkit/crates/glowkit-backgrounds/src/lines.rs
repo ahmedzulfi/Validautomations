@@ -91,7 +91,19 @@ impl BackgroundBeams {
                 let dur = (5.0 + 6.0 * h01(id, 1)) / self.speed.max(0.01);
                 let head = ((f.time + h01(id, 2) * dur) / dur).fract() * 1.5 - 0.1;
                 let len = 0.18 + 0.12 * h01(id, 3);
-                gradient_polyline(p, &pts, false, 1.4, |u| {
+                let pulse = |u: f32| {
+                    let d = head - u;
+                    if d > 0.0 && d < len {
+                        1.0 - d / len
+                    } else {
+                        0.0
+                    }
+                };
+                gradient_polyline(p, &pts, false, 6.0, |u| {
+                    let k = pulse(u);
+                    light(lut.sample(k).to_color(), k * k * 0.18, dark)
+                });
+                gradient_polyline(p, &pts, false, 1.6, |u| {
                     let d = head - u;
                     if d > 0.0 && d < len {
                         let k = 1.0 - d / len;
@@ -425,9 +437,9 @@ impl Threads {
                 .map(|k| {
                     let u = k as f32 / samples as f32;
                     let x = rect.min.x + u * w;
-                    let spread = s * h * (0.03 + 0.42 * u.powf(1.3)) * self.distance;
-                    let wave = fbm3(u * 2.3 - time * 0.22, s * 1.2 + time * 0.03, time * 0.1, 3) * h * 0.38 * u.powf(1.15) * self.amplitude;
-                    let ripple = (u * 9.0 + s * 4.0 - time * 1.1).sin() * h * 0.012 * u;
+                    let spread = s * h * (0.04 + 0.7 * u.powf(1.2)) * self.distance;
+                    let wave = fbm3(u * 1.8 - time * 0.2, s * 0.9 + time * 0.03, time * 0.08, 3) * h * 0.9 * u.powf(1.1) * self.amplitude;
+                    let ripple = (u * 7.0 + s * 5.0 - time * 1.1).sin() * h * 0.025 * u * self.amplitude;
                     let mut y = cy + spread + wave + ripple;
                     if let Some(m) = pull.pos {
                         let dx = (x - m.x) / (w * 0.18);
@@ -436,8 +448,8 @@ impl Threads {
                     pos2(x, y)
                 })
                 .collect();
-            let a = 0.25 + 0.6 * (1.0 - (s.abs() * 2.0)).powf(0.7);
-            gradient_polyline(&f.painter, &pts, false, 1.1, |u| color.gamma_multiply(a * smoothstep(0.0, 0.12, u) * (1.0 - smoothstep(0.9, 1.0, u))));
+            let a = 0.18 + 0.4 * (1.0 - (s.abs() * 2.0)).powf(0.7);
+            gradient_polyline(&f.painter, &pts, false, 1.0, |u| color.gamma_multiply(a * (0.35 + 0.65 * smoothstep(0.0, 0.5, u)) * (1.0 - smoothstep(0.9, 1.0, u))));
         }
     }
 }

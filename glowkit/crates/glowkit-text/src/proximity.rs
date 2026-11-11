@@ -1,6 +1,6 @@
 use crate::util;
 use egui::{pos2, vec2, Color32, Response, Sense, Ui, Widget};
-use glowkit_core::{anim::approach, mix, text::Glyphs, Theme};
+use glowkit_core::{anim::approach, mix, Theme};
 
 /// How emphasis falls off with distance from the pointer.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
@@ -106,7 +106,7 @@ impl Widget for ProximityText {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
         let font = util::font(self.size, false);
-        let glyphs = Glyphs::layout(ui.painter(), &self.text, font.clone(), None);
+        let glyphs = crate::util::glyphs(ui.painter(), &self.text, font.clone(), None);
         let base_w = util::bold_px(self.size) * 0.5;
         let extra_room = glyphs.size.x * (self.max_scale - 1.0) * 0.35;
         let (rect, resp) = ui.allocate_exact_size(glyphs.size + vec2(extra_room, self.size * 0.3), Sense::hover());

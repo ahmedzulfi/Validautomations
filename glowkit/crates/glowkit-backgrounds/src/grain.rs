@@ -51,7 +51,7 @@ impl GrainNoise {
         self.fps = fps.max(0.0);
         self
     }
-    /// Grain size in points (default 1).
+    /// Grain size in screen pixels (default 1).
     pub fn grain_size(mut self, s: f32) -> Self {
         self.scale = s.clamp(0.25, 8.0);
         self
@@ -60,27 +60,30 @@ impl GrainNoise {
     /// Paint the grain into `rect`.
     pub fn paint(&self, ui: &Ui, rect: Rect) {
         let Some(f) = self.base.begin(ui, rect, "glowkit_grain_noise") else { return };
-        let tex = glowkit_core::with_state(ui, f.id, GrainTex::default, |s| {
-            s.tex
-                .get_or_insert_with(|| {
-                    let mut rng = Rng::new(2024);
-                    let pixels = (0..TEX * TEX)
-                        .map(|_| {
-                            let v = rng.f32();
-                            // half the specks lighten, half darken, most are near-neutral
-                            let a = ((v - 0.5).abs() * 2.0).powf(1.5);
-                            let a8 = (a * 255.0) as u8;
-                            if v > 0.5 {
-                                Color32::from_rgba_premultiplied(a8, a8, a8, a8)
-                            } else {
-                                Color32::from_rgba_premultiplied(0, 0, 0, a8)
-                            }
-                        })
-                        .collect();
-                    ui.ctx().load_texture("glowkit_grain", ColorImage::new([TEX, TEX], pixels), TextureOptions::NEAREST_REPEAT)
-                })
-                .clone()
-        });
+        // never call into the context while holding the memory lock (with_state), so the
+        // texture is created outside of it
+        let tex = match glowkit_core::state(ui, f.id, GrainTex::default).tex {
+            Some(t) => t,
+            None => {
+                let mut rng = Rng::new(2024);
+                let pixels = (0..TEX * TEX)
+                    .map(|_| {
+                        let v = rng.f32();
+                        // half the specks lighten, half darken, most are near-neutral
+                        let a = ((v - 0.5).abs() * 2.0).powf(1.5);
+                        let a8 = (a * 255.0) as u8;
+                        if v > 0.5 {
+                            Color32::from_rgba_premultiplied(a8, a8, a8, a8)
+                        } else {
+                            Color32::from_rgba_premultiplied(0, 0, 0, a8)
+                        }
+                    })
+                    .collect();
+                let t = ui.ctx().load_texture("glowkit_grain", ColorImage::new([TEX, TEX], pixels), TextureOptions::NEAREST_REPEAT);
+                glowkit_core::set_state(ui, f.id, GrainTex { tex: Some(t.clone()) });
+                t
+            }
+        };
         let frame = if self.fps > 0.0 { (f.time * self.fps).floor() as u64 } else { 0 };
         let mut rng = Rng::new(frame.wrapping_mul(0x9E37) + 1);
         let ppp = ui.ctx().pixels_per_point();

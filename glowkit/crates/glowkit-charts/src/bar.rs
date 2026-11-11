@@ -60,6 +60,21 @@ pub(crate) fn paint_bar(painter: &egui::Painter, r: Rect, radius: [f32; 4], colo
     }
 }
 
+/// Ticks for a secondary axis whose grid lines coincide with `primary`'s: same number of
+/// intervals, a nice-ish step large enough to cover `lo..hi`.
+pub(crate) fn aligned_ticks(primary: &Ticks, lo: f64, hi: f64) -> Ticks {
+    let intervals = primary.values.len().saturating_sub(1).max(1);
+    // where zero sits on the primary axis (in intervals from the bottom)
+    let zero_at = if primary.min < 0.0 && primary.max > 0.0 { (-primary.min / primary.step).round() as usize } else { 0 };
+    let above = (intervals - zero_at).max(1) as f64;
+    let below = zero_at as f64;
+    let need = (hi.max(0.0) / above).max(if below > 0.0 { (-lo.min(0.0)) / below } else { 0.0 });
+    let step = nice_number(need.max(1e-9), false);
+    let min = if zero_at > 0 { -step * below } else if lo < 0.0 { (lo / step).floor() * step } else { 0.0 };
+    let values: Vec<f64> = (0..=intervals).map(|k| min + k as f64 * step).collect();
+    Ticks { min, max: *values.last().unwrap(), step, values }
+}
+
 /// Corner radii `[nw, ne, se, sw]` rounding the value end of a bar.
 pub(crate) fn end_radius(vertical: bool, positive: bool, r: f32) -> [f32; 4] {
     match (vertical, positive) {
@@ -532,7 +547,8 @@ impl Widget for ComboChart<'_> {
         let (ticks, ticks2) = if self.dual {
             let (a, b) = data_range(bar_vals, true);
             let (c, d) = data_range(line_vals, true);
-            (nice_ticks(a, b, tc), Some(nice_ticks(c, d, tc)))
+            let left = nice_ticks(a, b, tc);
+            (left.clone(), Some(aligned_ticks(&left, c, d)))
         } else {
             let (a, b) = data_range(bar_vals.chain(line_vals), true);
             (nice_ticks(a, b, tc), None)

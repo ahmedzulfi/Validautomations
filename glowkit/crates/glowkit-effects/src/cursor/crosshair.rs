@@ -239,8 +239,7 @@ impl TargetCursor {
                 st.angle = (st.angle + spin * dt).rem_euclid(TAU);
             }
             let (sn, cs) = st.angle.sin_cos();
-            for k in 0..4 {
-                let (qx, qy) = QUADS[k];
+            for (k, &(qx, qy)) in QUADS.iter().enumerate() {
                 let rq = vec2(qx * cs - qy * sn, qx * sn + qy * cs);
                 let goal = match target {
                     Some(r) => {
@@ -263,8 +262,7 @@ impl TargetCursor {
         let (sn, cs) = st.angle.sin_cos();
         let arm = 9.0 + 3.0 * st.locked;
         let stroke = Stroke::new(2.4, c);
-        for k in 0..4 {
-            let (qx, qy) = QUADS[k];
+        for (k, &(qx, qy)) in QUADS.iter().enumerate() {
             let corner = st.corners[k].pos();
             // arms point back toward the inside of the square
             let ax = vec2(-qx * cs, -qx * sn) * arm;

@@ -2,7 +2,7 @@ use super::shell::{base_setters, card_surface, shade_rounded, show_shell, tracke
 use crate::buttons::util;
 use crate::buttons::{opt_setter, setter};
 use egui::epaint::Mesh;
-use egui::{pos2, vec2, Color32, FontId, InnerResponse, Pos2, Rect, Shape, Ui};
+use egui::{pos2, vec2, Color32, FontId, InnerResponse, Pos2, Shape, Ui};
 use glowkit_core::anim::smoothstep;
 use glowkit_core::color::{gradient, gradient_cyclic, mix, with_alpha};
 use glowkit_core::{paint, Rng, Theme};
@@ -117,7 +117,7 @@ impl Default for SpotlightCard {
 impl SpotlightCard {
     /// A spotlight card.
     pub fn new() -> Self {
-        Self { base: Base::default(), color: None, radius_light: 260.0, dots: false, ambient: false }
+        Self { base: Base::default(), color: None, radius_light: 200.0, dots: false, ambient: false }
     }
     base_setters!();
     opt_setter!(/// Spotlight color (alpha controls strength). Defaults to soft white / accent.
@@ -155,7 +155,7 @@ impl SpotlightCard {
                             let mut x = rect.min.x + step / 2.0;
                             while x < rect.max.x {
                                 let q = pos2(x, y);
-                                let f = falloff(q.distance(ptr), r * 0.75) * k;
+                                let f = falloff(q.distance(ptr), r * 0.55) * k;
                                 if f > 0.02 {
                                     p.circle_filled(q, 1.3, with_alpha(dot, f * 0.9));
                                 }
@@ -495,7 +495,7 @@ impl PixelCard {
                     self.colors.clone()
                 };
                 let gap = self.gap.max(3.0);
-                let max_s = gap * 0.45;
+                let max_s = gap * 0.3;
                 let c = rect.center();
                 let maxd = (rect.size() / 2.0).length();
                 let mut mesh = Mesh::default();
@@ -523,7 +523,7 @@ impl PixelCard {
                             continue;
                         }
                         let col = colors[(glowkit_core::rng::hash01(seed ^ 0xABCD) * colors.len() as f32) as usize % colors.len()];
-                        let col = col.gamma_multiply(0.35 + 0.65 * k);
+                        let col = col.gamma_multiply((0.3 + 0.5 * k) * if t.dark { 1.0 } else { 0.85 });
                         let idx = mesh.vertices.len() as u32;
                         mesh.colored_vertex(q + vec2(-s, -s), col);
                         mesh.colored_vertex(q + vec2(s, -s), col);

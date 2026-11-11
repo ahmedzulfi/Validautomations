@@ -123,7 +123,7 @@ impl CardHoverEffect {
             let p = ui.painter();
             let on = Some(i) == target;
             let k = glowkit_core::anim::follow(ui, id.with(("on", i)), if on { 1.0 } else { 0.0 }, 10.0);
-            let fill = if t.dark { mix(t.background, t.card, 0.5) } else { t.card };
+            let fill = with_alpha(if t.dark { mix(t.background, t.card, 0.5) } else { t.card }, 0.55);
             p.rect_filled(*cell, cr(radius), fill);
             p.rect_stroke(*cell, cr(radius), egui::Stroke::new(1.0, t.border.lerp_to_gamma(mix(t.border, t.foreground, 0.25), k)), egui::StrokeKind::Inside);
             let inner = cell.shrink(self.padding);

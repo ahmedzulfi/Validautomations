@@ -1,6 +1,6 @@
 use super::kit;
 use super::LineIcon;
-use egui::{pos2, vec2, Align2, Color32, CursorIcon, FontId, Rect, Sense, Stroke, StrokeKind, Ui};
+use egui::{pos2, vec2, Color32, CursorIcon, FontId, Rect, Sense, Stroke, StrokeKind, Ui};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{paint, Theme};
 
@@ -176,7 +176,9 @@ impl<'a> NoticeBanner<'a> {
             let hv = kit::hover_anim(ui, id.with("action"), ar_resp.hovered());
             pnt.galley(pos2(x, cy - a.size().y / 2.0), a.clone(), fg);
             let ul_w = a.size().x * hv;
-            pnt.line_segment([pos2(x, cy + 9.0), pos2(x + ul_w, cy + 9.0)], Stroke::new(1.0, fg));
+            if hv > 0.02 {
+                pnt.line_segment([pos2(x, cy + 9.0), pos2(x + ul_w, cy + 9.0)], Stroke::new(1.0, fg));
+            }
             LineIcon::ArrowRight.paint(&pnt, Rect::from_center_size(pos2(x + a.size().x + 10.0 + hv * 3.0, cy), vec2(13.0, 13.0)), fg);
             out.action_clicked = ar_resp.clicked();
         }
@@ -191,7 +193,6 @@ impl<'a> NoticeBanner<'a> {
                 out.dismissed = true;
             }
         }
-        let _ = Align2::CENTER_CENTER;
         out
     }
 }

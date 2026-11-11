@@ -78,7 +78,7 @@ impl Widget for ShimmerButton {
         // outer halo where the spark is
         let hp = util::perimeter_point(rect, radius, head - 0.03);
         paint::soft_shadow(p, rect, radius, 18.0, vec2(0.0, 6.0), with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.25 }));
-        paint::glow(p, hp, rect.height() * 0.9, with_alpha(spark, 0.12 + 0.08 * hover));
+        paint::glow(p, hp, rect.height() * 0.7, with_alpha(spark, if t.dark { 0.08 + 0.06 * hover } else { 0.0 }));
         p.rect_filled(rect, cr(radius), bg);
         // inner highlight rising from the bottom on hover
         let inner = rect.shrink(1.0);
@@ -252,8 +252,8 @@ impl Widget for RainbowButton {
             let u = (i as f32 + 0.5) / n as f32;
             let x = rect.min.x + rect.width() * (0.1 + 0.8 * u);
             let c = gradient_cyclic(colors, u * 0.8 - shift);
-            let a = if t.dark { 0.42 } else { 0.30 } + 0.15 * hover;
-            paint::glow_ellipse(p, egui::pos2(x, rect.max.y - rect.height() * 0.08), vec2(rect.width() * 0.16, rect.height() * (0.42 + 0.12 * hover)), with_alpha(c, a));
+            let a = if t.dark { 0.55 } else { 0.40 } + 0.2 * hover;
+            paint::glow_ellipse(p, egui::pos2(x, rect.max.y + rect.height() * 0.05), vec2(rect.width() * 0.2, rect.height() * (0.55 + 0.15 * hover)), with_alpha(c, a));
         }
         p.rect_filled(rect, cr(radius), bg);
         util::border_fn(p, rect, radius, 2.0, |q, _| {

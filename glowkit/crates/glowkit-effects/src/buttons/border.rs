@@ -165,7 +165,7 @@ impl Widget for HoverBorderGradient {
             (-d * d).exp()
         };
         // halo around the spot / whole pill when hovered
-        paint::glow_ellipse(p, spot, vec2(rect.height() * 1.4, rect.height() * 0.9), with_alpha(col, 0.18 * (1.0 - hover)));
+        paint::glow_ellipse(p, spot, vec2(rect.height() * 1.4, rect.height() * 0.9), with_alpha(col, if t.dark { 0.18 } else { 0.0 } * (1.0 - hover)));
         if hover > 0.01 {
             paint::soft_shadow(p, rect, radius, 22.0, egui::Vec2::ZERO, with_alpha(hc, 0.45 * hover));
         }
@@ -239,14 +239,19 @@ impl Widget for StarBorderButton {
         let top = pos2(rect.min.x + rect.width() * u(ph), rect.min.y);
         let bottom = pos2(rect.max.x - rect.width() * u((ph + 0.5).fract()), rect.max.y);
         let spread = rect.width() * 0.22;
+        // stars fade in/out near the ends of their run
+        let fade = |s: Pos2| {
+            let u = (s.x - rect.min.x) / rect.width();
+            glowkit_core::anim::smoothstep(-0.2, 0.15, u) * glowkit_core::anim::smoothstep(1.2, 0.85, u)
+        };
+        let (ft, fb) = (fade(top), fade(bottom));
         let star = |q: Pos2| {
             let a = q.distance(top) / spread;
             let b = q.distance(bottom) / spread;
-            ((-a * a).exp() + (-b * b).exp()).min(1.0)
+            ((-a * a).exp() * ft + (-b * b).exp() * fb).min(1.0)
         };
-        let clip = p.with_clip_rect(rect.expand(14.0));
-        for s in [top, bottom] {
-            paint::glow_ellipse(&clip, s, vec2(spread * 1.3, 12.0), with_alpha(color, 0.30 + 0.2 * hover));
+        for (s, f) in [(top, ft), (bottom, fb)] {
+            paint::glow_ellipse(p, s, vec2(spread * 1.1, 10.0), with_alpha(color, (0.30 + 0.2 * hover) * f));
         }
         let bg_top = self.background.unwrap_or(if t.dark { mix(t.background, t.accent, 0.08) } else { t.card });
         let bg_bot = self.background.unwrap_or(if t.dark { t.background } else { mix(t.card, t.muted, 0.6) });

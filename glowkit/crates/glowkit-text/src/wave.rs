@@ -1,6 +1,6 @@
 use crate::util;
 use egui::{vec2, Color32, Response, Sense, Ui, Widget};
-use glowkit_core::{color::gradient_cyclic, text::Glyphs, Theme};
+use glowkit_core::{color::gradient_cyclic, Theme};
 use std::f32::consts::TAU;
 
 /// Letters bob up and down on a travelling sine wave, optionally tinted by a gradient that rides
@@ -85,7 +85,7 @@ impl Widget for WaveText {
         let t = Theme::of(ui);
         let font = util::font(self.size, false);
         let bold = util::weight(self.bold, self.size);
-        let glyphs = Glyphs::layout(ui.painter(), &self.text, font.clone(), Some(ui.available_width()));
+        let glyphs = crate::util::glyphs(ui.painter(), &self.text, font.clone(), Some(ui.available_width()));
         let amp = self.amplitude.unwrap_or(self.size * 0.2);
         let (rect, resp) = ui.allocate_exact_size(glyphs.size + vec2(bold, amp * 2.0), Sense::hover());
         glowkit_core::animate(ui);

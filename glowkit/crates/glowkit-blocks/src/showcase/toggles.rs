@@ -1,4 +1,4 @@
-use egui::{pos2, vec2, Color32, CornerRadius, Id, LayerId, Order, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2, Widget};
+use egui::{pos2, vec2, Color32, Id, LayerId, Order, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2, Widget};
 use glowkit_core::{anim::ease, color::with_alpha, hex, mix, paint, Easing, Theme};
 use std::f32::consts::TAU;
 
@@ -21,7 +21,8 @@ fn sun_moon(p: &egui::Painter, c: Pos2, s: f32, k: f32, sun: Color32, moon: Colo
     p.circle_filled(c, body_r, col);
     if k > 0.01 {
         // crescent: a background-colored disc slides over the body
-        let dir = vec2((rot - 0.8).cos(), (rot - 0.8).sin());
+        let da = -0.55 - 0.35 * (1.0 - k);
+        let dir = vec2(da.cos(), da.sin());
         let mc = c + dir * body_r * (1.6 - 0.95 * k);
         p.circle_filled(mc, body_r * (0.2 + 0.68 * k.sqrt()), bg);
         // re-stroke a tiny rim to hide aliasing between the two discs
@@ -188,7 +189,6 @@ impl Widget for DayNightSwitch<'_> {
         let time = glowkit_core::time(ui);
         let p = ui.painter_at(rect.expand(6.0));
         let h = rect.height();
-        let cr = CornerRadius::same((h / 2.0) as u8);
         let top = hex("#60A5FA").lerp_to_gamma(hex("#0B1026"), kc);
         let bot = hex("#BAE6FD").lerp_to_gamma(hex("#312E81"), kc);
         paint::gradient_rect(&p, rect, h / 2.0, 90.0, &[top, bot]);
@@ -197,15 +197,23 @@ impl Widget for DayNightSwitch<'_> {
         for i in 0..9 {
             let r = glowkit_core::rng::hash01(i * 7 + 1);
             let r2 = glowkit_core::rng::hash01(i * 13 + 5);
-            let sp = pos2(rect.min.x + h * 0.35 + r * (self.width - h * 1.4), rect.min.y + h * (0.18 + r2 * 0.64) - (1.0 - kc) * h * 0.5);
+            let sp = pos2(rect.min.x + h * 0.3 + r * (self.width - h * 1.15), rect.min.y + h * (0.2 + r2 * 0.6) - (1.0 - kc) * h * 0.5);
             let tw = 0.55 + 0.45 * (time * 2.0 + i as f32).sin();
-            paint::sparkle(&clip, sp, h * (0.07 + r2 * 0.06), 0.0, with_alpha(Color32::WHITE, kc * tw));
+            if i % 3 == 0 {
+                paint::sparkle(&clip, sp, h * (0.06 + r2 * 0.05), 0.0, with_alpha(Color32::WHITE, kc * tw));
+            } else {
+                clip.circle_filled(sp, h * 0.025 + 0.4, with_alpha(Color32::WHITE, kc * tw));
+            }
         }
         // clouds
         let cloud_off = kc * h * 0.9;
         let cc = Color32::from_white_alpha(((1.0 - kc) * 235.0) as u8);
         for (dx, dy, rr) in [(0.78, 0.78, 0.26), (0.62, 0.86, 0.22), (0.92, 0.7, 0.24), (0.86, 0.95, 0.2), (0.5, 0.98, 0.16)] {
-            clip.circle_filled(pos2(rect.min.x + self.width * dx, rect.min.y + h * dy + cloud_off), h * rr, cc);
+            let pts: Vec<Pos2> = paint::circle_points(pos2(rect.min.x + self.width * dx, rect.min.y + h * dy + cloud_off), h * rr, 32)
+                .into_iter()
+                .map(|q| clamp_to_stadium(q, rect))
+                .collect();
+            clip.add(egui::Shape::convex_polygon(pts, cc, Stroke::NONE));
         }
         // knob
         let pad = h * 0.1;
@@ -214,7 +222,8 @@ impl Widget for DayNightSwitch<'_> {
         let kcen = pos2(x, rect.center().y);
         // halo rings
         for i in 1..=3 {
-            clip.circle_filled(kcen, kr + h * 0.16 * i as f32, Color32::from_white_alpha((14.0 - i as f32 * 3.0) as u8));
+            let pts: Vec<Pos2> = paint::circle_points(kcen, kr + h * 0.16 * i as f32, 48).into_iter().map(|q| clamp_to_stadium(q, rect)).collect();
+            clip.add(egui::Shape::convex_polygon(pts, Color32::from_white_alpha((14.0 - i as f32 * 3.0) as u8), Stroke::NONE));
         }
         paint::soft_shadow(&p, Rect::from_center_size(kcen, Vec2::splat(kr * 2.0)), kr, 6.0, vec2(0.0, 2.0), Color32::from_black_alpha(70));
         let sun_c = hex("#FCD34D");
@@ -229,5 +238,19 @@ impl Widget for DayNightSwitch<'_> {
             p.circle_filled(kcen + vec2(-kr * 0.05, kr * 0.42), kr * 0.12, crc);
         }
         resp
+    }
+}
+
+/// Project `q` into the pill (stadium) shape inscribed in `r`.
+fn clamp_to_stadium(q: Pos2, r: Rect) -> Pos2 {
+    let rad = r.height() / 2.0 - 0.5;
+    let cy = r.center().y;
+    let cx = q.x.clamp(r.min.x + rad + 0.5, r.max.x - rad - 0.5);
+    let c = pos2(cx, cy);
+    let d = q - c;
+    if d.length() > rad {
+        c + d.normalized() * rad
+    } else {
+        q
     }
 }

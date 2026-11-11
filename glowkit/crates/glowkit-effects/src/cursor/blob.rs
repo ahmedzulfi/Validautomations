@@ -381,7 +381,8 @@ impl FollowingPointer {
         }
         let t = Theme::of(ui);
         let color = self.color.unwrap_or(t.accent);
-        let painter = ui.painter_at(rect);
+        // the tag may hang past the area's edge
+        let painter = ui.painter().with_clip_rect(rect.expand(80.0).intersect(ui.clip_rect()));
         let v = visible.clamp(0.0, 1.2);
         // pointer: classic arrow tilted up-left, tip at the pointer
         let size = 9.0 * v;

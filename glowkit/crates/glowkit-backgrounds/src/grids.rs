@@ -168,7 +168,7 @@ impl SquaresGrid {
             }), f.dt, 1.8, 1);
             s.cells.clone()
         });
-        let fill = self.hover.unwrap_or_else(|| if t.dark { mix(t.muted, t.accent, 0.25) } else { mix(t.muted, t.accent, 0.15) });
+        let fill = self.hover.unwrap_or_else(|| if t.dark { mix(t.muted, t.accent, 0.45) } else { mix(t.muted, t.accent, 0.25) });
         for (x, y, a, _) in trail {
             let r = Rect::from_min_size(origin + vec2((x + base_ix) as f32 * cell, (y + base_iy) as f32 * cell), vec2(cell, cell));
             f.painter.rect_filled(r, 0.0, fill.gamma_multiply(a.min(1.0)));
@@ -608,8 +608,10 @@ impl RetroGrid {
         }
         let depth_alpha = |z: f32| (1.0 - ((z - near) / (focal * 9.0)).clamp(0.0, 1.0)).powf(1.8);
         // horizontal lines (scroll toward the viewer)
-        let scroll = (f.time * self.speed * cell_world * 1.2).rem_euclid(cell_world);
-        let mut z = near - scroll + cell_world;
+        // depth spacing chosen so cells at the bottom edge look roughly square
+        let dz = cell_world * focal / cam_h.max(1.0) * 0.8;
+        let scroll = (f.time * self.speed * dz * 1.2).rem_euclid(dz);
+        let mut z = near - scroll + dz;
         let mut n = 0;
         while z < far && n < 400 {
             let a = depth_alpha(z);
@@ -618,7 +620,7 @@ impl RetroGrid {
                 let w = (1.3 * focal / z).clamp(0.5, 1.6);
                 p.hline(rect.x_range(), y, Stroke::new(w, color.gamma_multiply(a)));
             }
-            z += cell_world;
+            z += dz;
             n += 1;
         }
         // depth lines converging at the vanishing point
@@ -638,7 +640,9 @@ impl RetroGrid {
         if !self.glow {
             p.rect_filled(Rect::from_min_max(rect.min, pos2(rect.max.x, hy)), 0.0, f.bg);
         }
-        glowkit_core::paint::quad(p, [pos2(rect.min.x, hy), pos2(rect.max.x, hy), pos2(rect.max.x, y_fade), pos2(rect.min.x, y_fade)], [f.bg, f.bg, clear, clear]);
+        if !self.glow {
+            glowkit_core::paint::quad(p, [pos2(rect.min.x, hy), pos2(rect.max.x, hy), pos2(rect.max.x, y_fade), pos2(rect.min.x, y_fade)], [f.bg, f.bg, clear, clear]);
+        }
     }
 }
 

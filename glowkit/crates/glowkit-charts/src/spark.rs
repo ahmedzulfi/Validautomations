@@ -82,17 +82,27 @@ pub(crate) fn paint_spark(ui: &Ui, painter: &egui::Painter, rect: Rect, values: 
         return;
     }
     let (lo, hi) = values.iter().fold((f64::INFINITY, f64::NEG_INFINITY), |(a, b), v| (a.min(*v), b.max(*v)));
-    let (lo, hi) = if kind == SparkKind::Bar { (lo.min(0.0), hi.max(0.0)) } else { (lo, hi) };
+    let (lo, hi) = if kind == SparkKind::Bar {
+        if lo > 0.0 && lo > hi * 0.5 {
+            // all values far from zero: start bars below the minimum so differences show
+            (lo - (hi - lo).max(hi * 0.02) * 0.6, hi)
+        } else {
+            (lo.min(0.0), hi.max(0.0))
+        }
+    } else {
+        (lo, hi)
+    };
     let pad = if kind == SparkKind::Bar { 0.0 } else { (hi - lo) * 0.08 };
     let (lo, hi) = (lo - pad, hi + pad + if (hi - lo).abs() < 1e-12 { 1.0 } else { 0.0 });
     let inner = rect.shrink2(vec2(if end_dot && kind != SparkKind::Bar { 4.0 } else { 0.0 }, 3.0));
     match kind {
         SparkKind::Bar => {
             let bw = inner.width() / n as f32;
-            let base = val_y(inner, lo, hi, 0.0);
+            let base = val_y(inner, lo, hi, 0.0f64.max(lo));
             for (i, v) in values.iter().enumerate() {
                 let g = ease(Easing::OutCubic, stagger(progress * 1.4, i, 0.4 / n as f32, 0.6));
-                let y = val_y(inner, lo, hi, v * g as f64);
+                let from = 0.0f64.max(lo);
+                let y = val_y(inner, lo, hi, from + (v - from) * g as f64);
                 let x0 = inner.left() + i as f32 * bw + bw * 0.15;
                 let r = Rect::from_min_max(pos2(x0, y.min(base)), pos2(x0 + bw * 0.7, y.max(base).max(y.min(base) + 1.0)));
                 let col = if *v < 0.0 { t.destructive } else { color };
@@ -176,7 +186,7 @@ impl<'a> StatTile<'a> {
             spark: None,
             kind: SparkKind::Area,
             color: None,
-            size: vec2(260.0, 150.0),
+            size: vec2(260.0, 170.0),
             animate: true,
         }
     }
@@ -225,7 +235,7 @@ impl<'a> StatTile<'a> {
         self.color = Some(c);
         self
     }
-    /// Card size (default 260 × 150).
+    /// Card size (default 260 × 170).
     pub fn size(mut self, s: egui::Vec2) -> Self {
         self.size = s;
         self
@@ -283,8 +293,14 @@ impl Widget for StatTile<'_> {
             painter.text(pos2(rect.left() + pad, row_y), Align2::LEFT_CENTER, &self.caption, FontId::proportional(11.5), t.muted_foreground);
         }
         if let Some(sp) = self.spark {
-            // sparkline in the top-right corner area if the tile is wide, else along the bottom
-            let sr = Rect::from_min_max(pos2(rect.right() - pad - (rect.width() * 0.38), rect.top() + pad + 22.0), pos2(rect.right() - pad, vr.bottom() + 2.0));
+            let top = row_y + 16.0;
+            let sr = if rect.bottom() - pad - top >= 24.0 {
+                // full-width sparkline along the bottom of the card
+                Rect::from_min_max(pos2(rect.left() + pad, top), pos2(rect.right() - pad, rect.bottom() - pad + 2.0))
+            } else {
+                // compact tile: sparkline next to the number
+                Rect::from_min_max(pos2(rect.right() - pad - rect.width() * 0.36, vr.top() + 2.0), pos2(rect.right() - pad, vr.bottom()))
+            };
             paint_spark(ui, &painter, sr, sp, self.kind, accent, true, (e / 1.0).min(1.0), Curve::Monotone);
         }
         resp

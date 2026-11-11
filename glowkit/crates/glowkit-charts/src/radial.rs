@@ -124,7 +124,7 @@ impl Widget for RadarChart<'_> {
         let c = area.center();
         let font = axis_font();
         let label_w = self.labels.iter().map(|l| text_width(&painter, l, &font)).fold(0.0, f32::max);
-        let radius = ((area.width() / 2.0 - label_w - 14.0).min(area.height() / 2.0 - 22.0)).max(10.0);
+        let radius = ((area.width() / 2.0 - label_w - 14.0).min(area.height() / 2.0 - 28.0)).max(10.0);
         let data_max = self.series.iter().flat_map(|s| s.values.iter()).fold(0.0f64, |m, v| m.max(*v));
         let max = self.max.unwrap_or_else(|| nice_ticks(0.0, data_max, self.levels + 1).max).max(1e-9);
         let mut targets: Vec<f32> = self.series.iter().flat_map(|s| (0..n).map(|i| s.values.get(i).copied().unwrap_or(0.0) as f32)).collect();
@@ -309,7 +309,7 @@ impl Widget for RadialBarChart<'_> {
             let rm = radius - ring * (i as f32 + 0.5);
             let color = d.color.unwrap_or_else(|| palette(&t, i));
             if self.track {
-                arc(&painter, c, rm, a0, a0 + full, w, with_alpha(t.muted_foreground, if t.dark { 0.1 } else { 0.12 }));
+                arc(&painter, c, rm, a0, a0 + full, w, track_color(&t));
             }
             let p = ease(Easing::OutCubic, stagger(e, i, 0.1, 1.0));
             let dim = if hover.is_some() && hover != Some(i) { 1.0 - 0.45 * halpha } else { 1.0 };
@@ -460,7 +460,7 @@ impl Widget for Gauge {
         let c = pos2(rect.center().x, rect.top() + r + self.thickness / 2.0 + 4.0);
         let colors = self.colors.clone().unwrap_or_else(|| vec![t.success, t.warning, t.destructive]);
         let (a0, a1) = (PI, TAU);
-        arc(&painter, c, r, a0, a1, self.thickness, with_alpha(t.muted_foreground, if t.dark { 0.12 } else { 0.14 }));
+        arc(&painter, c, r, a0, a1, self.thickness, track_color(&t));
         let fv = frac.clamp(0.0, 1.0);
         if fv > 0.002 {
             let end = a0 + PI * fv;
@@ -582,7 +582,7 @@ impl Widget for DonutProgress {
         let e = entry_time(ui, id, self.animate, 1.4);
         let target = tween(ui, id, &[self.value])[0];
         let v = target * ease(Easing::OutCubic, e / 1.2);
-        arc(&painter, c, r, 0.0, TAU, self.thickness, with_alpha(t.muted_foreground, if t.dark { 0.12 } else { 0.14 }));
+        arc(&painter, c, r, 0.0, TAU, self.thickness, track_color(&t));
         let color = self.color.unwrap_or(t.accent);
         let a0 = -FRAC_PI_2;
         if v > 0.002 {

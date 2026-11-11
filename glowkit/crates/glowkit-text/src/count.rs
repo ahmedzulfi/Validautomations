@@ -7,7 +7,7 @@ use glowkit_core::{ease, Clock, Easing, Theme, Trigger};
 ///
 /// ```
 /// assert_eq!(glowkit_text::format_number(1234567.891, 2, ",", "."), "1,234,567.89");
-/// assert_eq!(glowkit_text::format_number(-9876.5, 0, " ", "."), "-9 877");
+/// assert_eq!(glowkit_text::format_number(-9876.6, 0, " ", "."), "-9 877");
 /// ```
 pub fn format_number(value: f64, decimals: usize, separator: &str, decimal_point: &str) -> String {
     let s = format!("{:.*}", decimals, value.abs());

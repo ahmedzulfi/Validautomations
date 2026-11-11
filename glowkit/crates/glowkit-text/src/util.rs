@@ -3,6 +3,7 @@
 use egui::epaint::{Mesh, TextShape, Vertex};
 use egui::emath::Rot2;
 use egui::{pos2, vec2, Color32, FontId, Galley, Id, Painter, Pos2, Ui, Vec2};
+use glowkit_core::text::Glyphs;
 use std::sync::Arc;
 
 /// Proportional or monospace font of `size` points.
@@ -27,7 +28,7 @@ pub(crate) fn layout_char(painter: &Painter, ch: char, font: &FontId) -> Arc<Gal
 
 /// Fake-bold thickness (points) that reads well at `size`.
 pub(crate) fn bold_px(size: f32) -> f32 {
-    (size * 0.03).clamp(0.6, 2.8)
+    (size * 0.045).clamp(0.8, 4.5)
 }
 
 /// Thickness to use for a `bold` flag.
@@ -209,4 +210,36 @@ pub(crate) fn paint_blurred(painter: &Painter, pos: Pos2, galley: &Arc<Galley>, 
     if core > 0.0 {
         paint_galley(painter, pos, galley, color.gamma_multiply(core * 0.6), bold);
     }
+}
+
+/// [`Glyphs::layout`] with ligatures split back into per-character boxes.
+///
+/// egui shapes text, so "ff" may become one ligature glyph followed by a zero-width continuation
+/// glyph. Effects that paint characters one by one need every character to have its own box,
+/// so each cluster's advance is shared out in proportion to the characters' standalone widths.
+pub(crate) fn glyphs(painter: &Painter, text: &str, font: FontId, wrap: Option<f32>) -> Glyphs {
+    let mut g = Glyphs::layout(painter, text, font.clone(), wrap);
+    let n = g.glyphs.len();
+    let mut i = 0;
+    while i < n {
+        let mut j = i + 1;
+        while j < n && g.glyphs[j].size.x <= 1e-3 && g.glyphs[j].line == g.glyphs[i].line && !g.glyphs[j].ch.is_whitespace() {
+            j += 1;
+        }
+        if j > i + 1 {
+            let widths: Vec<f32> = (i..j).map(|k| layout_char(painter, g.glyphs[k].ch, &font).size().x).collect();
+            let sum: f32 = widths.iter().sum::<f32>().max(1e-3);
+            let total = g.glyphs[i].size.x;
+            let x0 = g.glyphs[i].offset.x;
+            let mut x = x0;
+            for (k, w) in (i..j).zip(widths) {
+                let w = w * total / sum;
+                g.glyphs[k].offset.x = x;
+                g.glyphs[k].size.x = w;
+                x += w;
+            }
+        }
+        i = j;
+    }
+    g
 }

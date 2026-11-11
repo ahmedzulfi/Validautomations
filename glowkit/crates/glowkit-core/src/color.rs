@@ -1,3 +1,4 @@
+#![allow(clippy::excessive_precision)] // OKLab matrices are published reference constants
 //! Color helpers: hex parsing, HSV, OKLab mixing, gradients.
 
 use egui::Color32;

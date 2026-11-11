@@ -14,7 +14,13 @@ pub(crate) fn cr(r: f32) -> CornerRadius {
 /// Rounded-rect outline, subdivided finely enough for smooth per-vertex color.
 pub(crate) fn outline(rect: Rect, radius: f32, max_seg: f32) -> Vec<Pos2> {
     let segs = ((radius / 2.0).ceil() as usize).clamp(3, 16);
-    subdivide_closed(&rounded_rect_points(rect, radius, segs), max_seg)
+    let mut pts = rounded_rect_points(rect, radius, segs);
+    // drop coincident points (pills have zero-length straight edges) so normals stay sane
+    pts.dedup_by(|a, b| a.distance(*b) < 0.05);
+    while pts.len() > 3 && pts[0].distance(*pts.last().unwrap()) < 0.05 {
+        pts.pop();
+    }
+    subdivide_closed(&pts, max_seg)
 }
 
 /// A closed anti-aliased ribbon along `pts` with a per-vertex color `f(point, t)`, where `t` is
@@ -114,11 +120,12 @@ pub(crate) fn clip_convex(subject: &[Pos2], clip: &[Pos2]) -> Vec<Pos2> {
     let intersect = |a: Pos2, b: Pos2, p: Pos2, q: Pos2| {
         let r = b - a;
         let s = q - p;
-        let den = r.x * s.y - r.y * s.x;
+        // a + r*t = p + s*u  =>  u = ((a - p) x r) / (s x r)
+        let den = s.x * r.y - s.y * r.x;
         if den.abs() < 1e-9 {
             return p;
         }
-        let u = ((a - p).x * r.y - (a - p).y * r.x) / den;
+        let u = (((a - p).x * r.y - (a - p).y * r.x) / den).clamp(0.0, 1.0);
         p + s * u
     };
     let mut out = subject.to_vec();

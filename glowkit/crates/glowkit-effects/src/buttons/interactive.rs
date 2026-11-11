@@ -184,9 +184,9 @@ impl Widget for InteractiveHoverButton {
         let content_w = g1.size().x + dot_r * 2.0 + 10.0;
         let dot0 = pos2(rect.center().x - content_w / 2.0 + dot_r, rect.center().y);
         // the dot grows to cover the farthest corner
-        let far = rect.right_bottom().distance(dot0).max(rect.right_top().distance(dot0)) + 2.0;
-        let r = egui::lerp(dot_r..=far, h.clamp(0.0, 1.0).powf(1.4));
         let dot_c = dot0.lerp(pos2(rect.min.x + radius * 0.6, rect.center().y), h.clamp(0.0, 1.0) * 0.6);
+        let far = rect.right_bottom().distance(dot_c).max(rect.right_top().distance(dot_c)) + 2.0;
+        let r = egui::lerp(dot_r..=far, h.clamp(0.0, 1.0).powf(1.4));
         util::circle_in_rounded(p, rect, radius, dot_c, r, color);
         p.rect_stroke(rect, cr(radius), Stroke::new(1.0, t.border.lerp_to_gamma(color, h.clamp(0.0, 1.0))), StrokeKind::Inside);
         let clip = p.with_clip_rect(rect.shrink(1.0));
@@ -648,14 +648,12 @@ impl Widget for PixelButton {
         if self.blink {
             let time = glowkit_core::time(ui);
             if (time * 2.0).fract() < 0.55 || hovered {
-                let s = (self.size * 0.5 / u).round() * u;
-                let cx = snap(c.x - g.size().x / 2.0 - self.size);
-                let cy = snap(c.y - s / 2.0);
-                // a little pixel triangle cursor
-                for i in 0..(s / u) as i32 {
-                    let hh = s - 2.0 * (i as f32 * u).min(s / 2.0);
-                    let hh = hh.max(u);
-                    p.rect_filled(Rect::from_min_size(pos2(cx + i as f32 * u, cy + (s - hh) / 2.0), vec2(u, hh)), 0.0, text);
+                // a little pixel triangle cursor: columns of 5, 3 and 1 pixels
+                let px = (u * 0.75).max(1.0);
+                let cx = (c.x - g.size().x / 2.0 - self.size).round();
+                for i in 0..3 {
+                    let hh = (5 - 2 * i) as f32 * px;
+                    p.rect_filled(Rect::from_min_size(pos2(cx + i as f32 * px, (c.y - hh / 2.0).round()), vec2(px, hh)), 0.0, text);
                 }
             }
             glowkit_core::animate(ui);

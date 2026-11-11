@@ -1,6 +1,6 @@
 use crate::util;
 use egui::{Color32, Response, Sense, Ui, Widget};
-use glowkit_core::{anim::smoothstep, ease, mix, text::Glyphs, Clock, Easing, Theme, Trigger};
+use glowkit_core::{anim::smoothstep, ease, mix, Clock, Easing, Theme, Trigger};
 
 /// Where [`ScrollRevealText`] gets its progress from.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -116,7 +116,7 @@ impl Widget for ScrollRevealText {
         let font = util::font(self.size, false);
         let bold = util::weight(self.bold, self.size);
         let wrap = self.max_width.unwrap_or(ui.available_width()).min(ui.available_width());
-        let glyphs = Glyphs::layout(ui.painter(), &self.text, font.clone(), Some(wrap));
+        let glyphs = crate::util::glyphs(ui.painter(), &self.text, font.clone(), Some(wrap));
         let (rect, resp) = ui.allocate_exact_size(glyphs.size + egui::vec2(bold, 0.0), Sense::click());
         let progress = match self.source {
             Source::Fixed(p) => p,

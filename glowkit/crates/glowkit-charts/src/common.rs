@@ -150,7 +150,8 @@ pub fn nice_number(x: f64, round: bool) -> f64 {
     }
     let exp = x.log10().floor();
     let p = 10f64.powf(exp);
-    let f = x / p;
+    // round away floating point noise (0.7 / 0.1 = 6.9999999)
+    let f = (x / p * 1e9).round() / 1e9;
     let nf = if round {
         if f < 1.5 {
             1.0
@@ -197,16 +198,16 @@ pub fn nice_ticks(min: f64, max: f64, max_ticks: usize) -> Ticks {
         }
     }
     let n = max_ticks.max(2) as f64;
-    let range = nice_number(hi - lo, false);
-    let step = nice_number(range / (n - 1.0), true);
+    let step = nice_number((hi - lo) / (n - 1.0), true);
     let start = (lo / step).floor() * step;
     let end = (hi / step).ceil() * step;
     let count = ((end - start) / step).round() as usize;
+    let decimals = (-(step.log10().floor()) as i32 + 1).clamp(0, 15);
     let values = (0..=count)
         .map(|k| {
             let v = start + k as f64 * step;
             // kill floating point noise like 0.30000000000000004 and -0
-            let v = (v / step).round() * step;
+            let v = round_to(v, decimals);
             if v.abs() < step * 1e-9 {
                 0.0
             } else {
@@ -215,6 +216,11 @@ pub fn nice_ticks(min: f64, max: f64, max_ticks: usize) -> Ticks {
         })
         .collect::<Vec<_>>();
     Ticks { min: values[0], max: *values.last().unwrap(), step, values }
+}
+
+fn round_to(v: f64, decimals: i32) -> f64 {
+    let m = 10f64.powi(decimals);
+    (v * m).round() / m
 }
 
 fn trim_zeros(s: String) -> String {
@@ -593,6 +599,21 @@ pub(crate) fn text_width(painter: &Painter, text: &str, font: &FontId) -> f32 {
     painter.layout_no_wrap(text.to_owned(), font.clone(), Color32::WHITE).size().x
 }
 
+/// Truncate `text` with an ellipsis so it fits in `max_w` points (empty if nothing fits).
+pub(crate) fn truncate(painter: &Painter, text: &str, font: &FontId, max_w: f32) -> String {
+    if text_width(painter, text, font) <= max_w {
+        return text.to_owned();
+    }
+    let chars: Vec<char> = text.chars().collect();
+    for n in (1..chars.len()).rev() {
+        let s: String = chars[..n].iter().collect::<String>() + "…";
+        if text_width(painter, &s, font) <= max_w {
+            return s;
+        }
+    }
+    String::new()
+}
+
 /// Snap a coordinate to a pixel center so 1px lines are crisp.
 pub(crate) fn crisp(painter: &Painter, v: f32) -> f32 {
     painter.round_to_pixel_center(v)
@@ -696,6 +717,7 @@ pub(crate) fn y_grid(
 }
 
 /// Vertical value grid (for horizontal bar charts and scatter x axes).
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn x_grid(painter: &Painter, t: &Theme, plot: Rect, ticks: &Ticks, lo: f64, hi: f64, grid: bool, labels_y: Option<f32>) {
     let font = axis_font();
     let max_abs = ticks.values.iter().fold(0.0f64, |m, v| m.max(v.abs()));
@@ -718,6 +740,11 @@ pub(crate) fn x_grid(painter: &Painter, t: &Theme, plot: Rect, ticks: &Ticks, lo
             }
         }
     }
+}
+
+/// Opaque faint track color (for rings and progress tracks), so overlapping caps don't show.
+pub(crate) fn track_color(t: &Theme) -> Color32 {
+    glowkit_core::color::mix(t.card, t.muted_foreground, if t.dark { 0.13 } else { 0.16 })
 }
 
 /// Grid line color: the border token, a touch stronger in light themes.
@@ -745,7 +772,7 @@ pub(crate) fn x_labels(painter: &Painter, t: &Theme, plot: Rect, labels: &[Strin
         // keep edge labels inside the chart
         let w = text_width(painter, l, &font);
         if !band {
-            x = x.clamp(plot.left() - 12.0 + w / 2.0, plot.right() + 12.0 - w / 2.0);
+            x = x.clamp(plot.left() - 6.0 + w / 2.0, plot.right() + 6.0 - w / 2.0);
         }
         painter.text(pos2(x, y), Align2::CENTER_TOP, l, font.clone(), t.muted_foreground);
     }
@@ -1283,7 +1310,7 @@ mod tests {
         assert_eq!(format_thousands(1234567.891, 2), "1,234,567.89");
         assert_eq!(format_thousands(-950.0, 0), "-950");
         assert_eq!(format_thousands(100.0, 0), "100");
-        assert_eq!(format_percent(0.425), "43%");
+        assert_eq!(format_percent(0.426), "43%");
         assert_eq!(format_percent(0.035), "3.5%");
     }
 

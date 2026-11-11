@@ -118,7 +118,7 @@ impl Widget for Heatmap<'_> {
                 let a = if self.base.animate { ease(Easing::OutCubic, (e - delay) / 0.5) } else { 1.0 };
                 let cell = Rect::from_min_size(pos2(grid.left() + c as f32 * cw, grid.top() + r as f32 * ch), vec2(cw - self.gap, ch - self.gap));
                 let cell = Rect::from_center_size(cell.center(), cell.size() * (0.6 + 0.4 * a));
-                let col = ramp(&t, color, k);
+                let col = ramp(&t, color, k.max(0.001));
                 let cr = CornerRadius::same(self.radius.min(cell.width().min(cell.height()) / 2.0) as u8);
                 painter.rect_filled(cell, cr, col.gamma_multiply(a));
                 if hover == Some((r, c)) {
@@ -278,7 +278,7 @@ impl Widget for CalendarHeatmap<'_> {
         let hover = resp.hover_pos().and_then(|p| {
             let c = ((p.x - origin.x) / step).floor();
             let r = ((p.y - origin.y) / step).floor();
-            if c < 0.0 || r < 0.0 || r >= 7.0 {
+            if c < 0.0 || !(0.0..7.0).contains(&r) {
                 return None;
             }
             let idx = c as usize * 7 + r as usize;

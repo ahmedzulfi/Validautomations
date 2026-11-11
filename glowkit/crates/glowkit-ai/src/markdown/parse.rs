@@ -727,14 +727,7 @@ pub fn parse_inline(src: &str) -> Vec<Span> {
 }
 
 fn starts_with(chars: &[char], i: usize, pat: &str) -> bool {
-    let mut k = i;
-    for p in pat.chars() {
-        if chars.get(k) != Some(&p) {
-            return false;
-        }
-        k += 1;
-    }
-    true
+    (i..).zip(pat.chars()).all(|(k, p)| chars.get(k) == Some(&p))
 }
 
 /// Concatenated visible text of spans.

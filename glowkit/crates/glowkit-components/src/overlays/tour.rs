@@ -4,7 +4,7 @@ use super::{LineIcon, Placement};
 use egui::epaint::Mesh;
 use egui::{pos2, vec2, Color32, Key, Order, Pos2, Rect, Sense, Shape, Stroke, Ui};
 use glowkit_core::color::with_alpha;
-use glowkit_core::{paint, Theme};
+use glowkit_core::Theme;
 
 /// One stop of a [`SpotlightTour`].
 #[derive(Clone, Debug)]

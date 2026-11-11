@@ -1,6 +1,6 @@
 use crate::util;
 use egui::{vec2, Color32, Response, Sense, Ui, Widget};
-use glowkit_core::{anim::stagger, ease, text::Glyphs, Clock, Easing, Theme, Trigger};
+use glowkit_core::{anim::stagger, ease, Clock, Easing, Theme, Trigger};
 
 /// Letters start squeezed together at the center and fade in while the letter spacing opens up
 /// to its natural width.
@@ -84,7 +84,7 @@ impl Widget for GradualSpacing {
         let t = Theme::of(ui);
         let font = util::font(self.size, false);
         let bold = util::weight(self.bold, self.size);
-        let glyphs = Glyphs::layout(ui.painter(), &self.text, font.clone(), None);
+        let glyphs = crate::util::glyphs(ui.painter(), &self.text, font.clone(), None);
         let (rect, resp) = ui.allocate_exact_size(glyphs.size + vec2(bold, 0.0), Sense::click());
         let n = glyphs.glyphs.len();
         let total = self.duration + self.stagger * (n / 2) as f32;

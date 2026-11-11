@@ -246,6 +246,8 @@ area_widget!(ConfettiBurst);
 
 // ---------------------------------------------------------------------------------------------
 
+const ROCKET_G: f32 = 520.0;
+
 #[derive(Clone, Copy)]
 struct Rocket {
     pos: Pos2,
@@ -340,8 +342,8 @@ impl Fireworks {
                     let mut r = Rng::new(*seed * 977);
                     let x0 = (target.x + r.range(-60.0, 60.0)).clamp(rect.min.x + 10.0, rect.max.x - 10.0);
                     let rise = (rect.max.y - target.y).max(40.0);
-                    let vy = -(2.0 * 300.0 * rise).sqrt();
-                    let t_up = -vy / 300.0;
+                    let vy = -(2.0 * ROCKET_G * rise).sqrt();
+                    let t_up = -vy / ROCKET_G;
                     rockets.push(Rocket { pos: pos2(x0, rect.max.y), vel: vec2((target.x - x0) / t_up, vy), target_y: target.y, hue: r.range(0.0, 360.0) });
                 };
                 for c in &input.clicks {
@@ -355,7 +357,7 @@ impl Fireworks {
                 }
                 let mut boom = Vec::new();
                 rockets.retain_mut(|r| {
-                    r.vel.y += 300.0 * dt;
+                    r.vel.y += ROCKET_G * dt;
                     r.pos += r.vel * dt;
                     if r.vel.y >= -20.0 || r.pos.y <= r.target_y {
                         boom.push(*r);
