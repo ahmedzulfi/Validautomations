@@ -126,7 +126,7 @@ impl Widget for ShuffleText {
         let color = self.color.unwrap_or(t.foreground);
         let base_painter = ui.painter();
         // a new random reel every time the animation restarts
-        let run = glowkit_core::state(ui, resp.id.with("clock").with("glowkit_clock"), || Clock { start: 0.0 }).start;
+        let run = glowkit_core::state(ui, resp.id.with("glowkit_clock"), || Clock { start: 0.0 }).start;
         for g in &glyphs.glyphs {
             if g.ch.is_whitespace() {
                 continue;

@@ -87,9 +87,9 @@ impl Widget for TextRoll {
         let font = util::font(self.size, false);
         let bold = util::weight(self.bold, self.size);
         let glyphs = Glyphs::layout(ui.painter(), &self.text, font.clone(), None);
-        let (rect, resp) = ui.allocate_exact_size(glyphs.size + vec2(bold, 0.0), Sense::click());
+        let (rect, mut resp) = ui.allocate_exact_size(glyphs.size + vec2(bold, 0.0), Sense::click());
         if self.trigger == Trigger::OnHover {
-            ui.ctx().set_cursor_icon(if resp.hovered() { egui::CursorIcon::PointingHand } else { egui::CursorIcon::Default });
+            resp = resp.on_hover_cursor(egui::CursorIcon::PointingHand);
         }
         let n = glyphs.glyphs.len();
         let span = self.duration + self.stagger * n.saturating_sub(1) as f32;
