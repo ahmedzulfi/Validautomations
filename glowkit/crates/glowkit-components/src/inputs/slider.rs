@@ -182,7 +182,7 @@ fn paint_thumb(ui: &Ui, id: Id, c: Pos2, active: bool, hover: bool, value: &str,
     }
     glowkit_core::paint::soft_shadow(painter, Rect::from_center_size(c, vec2(THUMB_R * 2.0, THUMB_R * 2.0)), THUMB_R, 4.0, vec2(0.0, 1.0), Color32::from_black_alpha(if t.dark { 60 } else { 30 }));
     let r = THUMB_R * (1.0 + 0.08 * a);
-    painter.circle(c, r, if t.dark { t.foreground } else { t.background }, Stroke::new(1.0, accent));
+    painter.circle(c, r, t.background, Stroke::new(1.5, accent));
     if style.tooltip && h > 0.01 && !style.disabled {
         let font = FontId::proportional(12.0);
         let g = painter.layout_no_wrap(value.to_owned(), font, t.primary_foreground);

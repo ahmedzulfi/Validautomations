@@ -532,23 +532,23 @@ impl Widget for Textarea<'_> {
             painter.set(chrome_idx, Shape::Vec(shapes));
             let resp = inner.inner;
             // footer: description / error on the left, counter on the right
-            if self.max_len.is_some() || decor.error.is_some() || decor.description.is_some() {
-                ui.horizontal(|ui| {
-                    ui.set_width(width);
-                    let n = text.chars().count();
-                    if let Some(max) = self.max_len {
-                        let s = format!("{n}/{max}");
-                        let near = n as f32 / max as f32;
-                        let col = if near >= 1.0 { t.destructive } else if near > 0.9 { t.warning } else { t.muted_foreground };
-                        let tw = kit::text_width(ui, &s, 12.0);
-                        ui.allocate_ui_with_layout(vec2(width - tw - 12.0, 16.0), Layout::left_to_right(Align::Min), |ui| decor.bottom(ui));
-                        ui.with_layout(Layout::right_to_left(Align::Min), |ui| {
-                            ui.label(RichText::new(s).size(12.0).color(col));
-                        });
-                    } else {
-                        decor.bottom(ui);
-                    }
-                });
+            if let Some(max) = self.max_len {
+                let (row, _) = ui.allocate_exact_size(vec2(width, 16.0), Sense::hover());
+                let n = text.chars().count();
+                let near = n as f32 / max as f32;
+                let col = if near >= 1.0 { t.destructive } else if near > 0.9 { t.warning } else { t.muted_foreground };
+                let p = ui.painter();
+                let cr = p.text(row.right_center(), egui::Align2::RIGHT_CENTER, format!("{n}/{max}"), FontId::proportional(12.0), col);
+                let (msg, mcol) = match (&decor.error, &decor.description) {
+                    (Some(e), _) => (Some(e.clone()), t.destructive),
+                    (None, Some(d)) => (Some(d.clone()), t.muted_foreground),
+                    _ => (None, t.muted_foreground),
+                };
+                if let Some(m) = msg {
+                    p.with_clip_rect(Rect::from_min_max(row.min, pos2(cr.min.x - 8.0, row.max.y))).text(row.left_center(), egui::Align2::LEFT_CENTER, m, FontId::proportional(12.5), mcol);
+                }
+            } else {
+                decor.bottom(ui);
             }
             resp
         })

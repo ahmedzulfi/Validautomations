@@ -219,7 +219,7 @@ impl ColorPicker<'_> {
                 // hex + alpha fields
                 ui.horizontal(|ui| {
                     ui.spacing_mut().item_spacing.x = 8.0;
-                    let fw = if self.alpha { w - 72.0 - 8.0 } else { w };
+                    let fw = if self.alpha { w - 72.0 - 16.0 } else { w };
                     let (fr, _) = ui.allocate_exact_size(vec2(fw, 32.0), Sense::hover());
                     let te_id = id.with("hex");
                     let focused = ui.memory(|m| m.has_focus(te_id));
@@ -253,6 +253,7 @@ impl ColorPicker<'_> {
                         }
                     }
                     if self.alpha {
+                        ui.add_space(8.0);
                         let (ar, _) = ui.allocate_exact_size(vec2(72.0, 32.0), Sense::hover());
                         kit::field_chrome(ui.painter(), ar, &t, 0.0, 0.0, false, false);
                         ui.painter().text(ar.center(), egui::Align2::CENTER_CENTER, format!("{:.0}%", st.alpha * 100.0), FontId::proportional(13.0), t.foreground);

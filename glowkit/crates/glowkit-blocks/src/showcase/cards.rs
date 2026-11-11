@@ -359,7 +359,7 @@ impl Widget for GlowingStarsCard {
         let (cols, rows) = self.grid;
         let area = Rect::from_min_size(rect.min + vec2(24.0, 26.0), vec2(rect.width() - 48.0, rect.height() * 0.42));
         let time = glowkit_core::time(ui);
-        let epoch = (time / 1.3).floor() as u64;
+        let epoch = (time / 1.3).floor() as u64 + 1000;
         let f = (time / 1.3).fract();
         let density = 0.10 + 0.32 * hk;
         let mut m = Mesh::default();
@@ -369,7 +369,7 @@ impl Widget for GlowingStarsCard {
             for x in 0..cols {
                 let i = (y * cols + x) as u64;
                 let on_now = hash01(i * 92821 + epoch * 7919) < density;
-                let on_prev = hash01(i * 92821 + epoch.wrapping_sub(1).wrapping_mul(7919)) < density;
+                let on_prev = hash01(i * 92821 + (epoch - 1) * 7919) < density;
                 let g = match (on_prev, on_now) {
                     (true, true) => 1.0,
                     (false, false) => 0.0,

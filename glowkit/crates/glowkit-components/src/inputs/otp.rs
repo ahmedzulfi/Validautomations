@@ -80,12 +80,11 @@ impl Widget for OtpInput<'_> {
         let te_id = resp.id.with("otp_te");
         // a clipped-away TextEdit captures typing, paste and backspace
         let before = self.code.clone();
-        let te_resp = ui
-            .scope_builder(UiBuilder::new().max_rect(Rect::from_min_size(rect.min, vec2(1.0, 1.0))).layout(Layout::left_to_right(Align::Min)), |ui| {
-                ui.set_clip_rect(Rect::NOTHING);
-                ui.add(TextEdit::singleline(&mut *self.code).id(te_id).desired_width(1.0).char_limit(n * 2))
-            })
-            .inner;
+        let te_resp = {
+            let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_size(rect.min, vec2(1.0, 1.0))).layout(Layout::left_to_right(Align::Min)));
+            child.set_clip_rect(Rect::NOTHING);
+            child.add(TextEdit::singleline(&mut *self.code).id(te_id).desired_width(1.0).char_limit(n * 2))
+        };
         if resp.clicked() {
             te_resp.request_focus();
         }

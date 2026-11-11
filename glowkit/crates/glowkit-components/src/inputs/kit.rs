@@ -349,12 +349,17 @@ impl UiIcon {
                 painter.add(Shape::line(arc(17.0, 20.5, 5.0, PI * 1.5, TAU), st));
             }
             UiIcon::Settings => {
-                circle(12.0, 12.0, 3.0);
-                circle(12.0, 12.0, 7.0);
+                let mut pts = Vec::new();
                 for i in 0..8 {
-                    let a = i as f32 / 8.0 * TAU;
-                    line(&[(12.0 + 7.0 * a.cos(), 12.0 + 7.0 * a.sin()), (12.0 + 10.0 * a.cos(), 12.0 + 10.0 * a.sin())]);
+                    let base = i as f32 / 8.0 * TAU;
+                    let tw = 0.2;
+                    for (da, r) in [(-0.39 + 0.02, 7.6), (-tw, 7.9), (-tw * 0.8, 10.2), (tw * 0.8, 10.2), (tw, 7.9)] {
+                        let a = base + da;
+                        pts.push(p(12.0 + r * a.cos(), 12.0 + r * a.sin()));
+                    }
                 }
+                painter.add(Shape::closed_line(pts, st));
+                circle(12.0, 12.0, 3.0);
             }
             UiIcon::Star => {
                 let pts: Vec<Pos2> = (0..10)
@@ -367,14 +372,10 @@ impl UiIcon {
                 painter.add(Shape::closed_line(pts, st));
             }
             UiIcon::Heart => {
-                let pts: Vec<Pos2> = (0..40)
-                    .map(|i| {
-                        let t = i as f32 / 40.0 * TAU;
-                        let x = 16.0 * t.sin().powi(3);
-                        let y = 13.0 * t.cos() - 5.0 * (2.0 * t).cos() - 2.0 * (3.0 * t).cos() - (4.0 * t).cos();
-                        p(12.0 + x * 0.58, 11.5 - y * 0.58)
-                    })
-                    .collect();
+                let mut pts = vec![p(12.0, 20.5)];
+                pts.extend(arc(7.5, 8.75, 5.25, PI * 0.75, PI * 1.75));
+                pts.push(p(12.0, 5.6));
+                pts.extend(arc(16.5, 8.75, 5.25, PI * 1.25, PI * 2.25));
                 painter.add(Shape::closed_line(pts, st));
             }
             UiIcon::ArrowRight => {
