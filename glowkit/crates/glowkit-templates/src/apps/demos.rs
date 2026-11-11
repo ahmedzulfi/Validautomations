@@ -106,5 +106,15 @@ app.show(ui);"##,
 app.show(ui);"##,
         show: |ui| run_demo(ui, || embedded::<MailApp>(|a| a.scoped_theme = true), MailApp::show),
     },
+    Demo {
+        id: "app-chat",
+        name: "Team Chat",
+        category: Category::Templates,
+        description: "Dual sidebar of channels and DMs, a message stream with day divider, grouped messages, toggleable reactions and threads, and a composer where teammates type back.",
+        covers: &["Slack: Channel view", "Discord: Text channel", "Tailwind UI: Chat"],
+        code: r##"let mut app = ChatApp::default();
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<ChatApp>(|a| a.scoped_theme = true), ChatApp::show),
+    },
     ]
 }
