@@ -824,7 +824,7 @@ fn presence_demo(ui: &mut Ui) {
         toasts: Vec::new(),
         next_toast: now + 0.3,
         chips: (0..4).map(|i| Chip { id: i, color: i as usize }).collect(),
-        next_id: 100,
+        next_id: 4,
         next_op: now + 1.0,
         auto: true,
         rng: Rng::new(9),
@@ -1326,7 +1326,6 @@ fn reorder_demo(ui: &mut Ui) {
 fn scroll_demo(ui: &mut Ui) {
     let t = Theme::of(ui);
     let id = ui.scope_id().with("scroll_demo");
-    let now = glowkit_core::time(ui);
     let view_h = 300.0;
     let (bar_rect, _) = ui.allocate_exact_size(vec2(ui.available_width(), 22.0), Sense::hover());
     let content_h: f32 = state(ui, id.with("content_h"), || 1200.0);
@@ -1337,7 +1336,13 @@ fn scroll_demo(ui: &mut Ui) {
     let mut sa = egui::ScrollArea::vertical().id_salt(id.with("scroll")).max_height(view_h).auto_shrink([false, false]);
     if auto {
         let max = (content_h - view_h).max(0.0);
-        let o = ((now * 0.42 - std::f32::consts::FRAC_PI_2).sin() * 0.5 + 0.5) * max;
+        // dogfooding: the auto-scroll itself is a keyframe animation (hold, scroll down, hold, back up)
+        let k: f32 = Keyframes::new([(0.0, 0.0_f32), (0.12, 0.0), (0.5, 1.0), (0.62, 1.0), (1.0, 0.0)])
+            .ease(Easing::InOutSine)
+            .duration(14.0)
+            .repeat(Repeat::Infinite)
+            .play(ui, id.with("auto_scroll"));
+        let o = k * max;
         sa = sa.vertical_scroll_offset(o);
         ui.ctx().request_repaint();
     }
@@ -1621,6 +1626,7 @@ fn morph_demo(ui: &mut Ui) {
 struct ChainDemo {
     dots: SpringChain,
     ribbon: SpringChain,
+    last: f64,
 }
 
 fn spring_chain_demo(ui: &mut Ui) {
@@ -1628,11 +1634,16 @@ fn spring_chain_demo(ui: &mut Ui) {
     let id = ui.scope_id().with("spring_chain");
     let (rect, resp) = stage(ui, 330.0);
     let time = glowkit_core::time(ui);
-    let dt = glowkit_core::dt(ui);
     let mut s: ChainDemo = state(ui, id, || ChainDemo {
         dots: SpringChain::new(16, rect.center()).stiffness(700.0).damping(26.0).falloff(0.97),
         ribbon: SpringChain::new(28, rect.center()).stiffness(520.0).damping(30.0).falloff(0.99),
+        last: ui.input(|i| i.time),
     });
+    // follow wall-clock time (not the clamped frame delta) so the trail stays coherent even when
+    // frames are slow; the chain sub-steps internally
+    let now = ui.input(|i| i.time);
+    let dt = ((now - s.last) as f32).clamp(0.0, 0.25);
+    s.last = now;
     let c = rect.center();
     let auto = c + vec2((time * 0.9).sin() * rect.width() * 0.36, (time * 1.5).sin() * rect.height() * 0.3);
     let head = resp.hover_pos().unwrap_or(auto);

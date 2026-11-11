@@ -3,6 +3,9 @@
 //! Canvas-style productivity components for egui.
 pub mod common;
 mod freehand;
+mod gantt;
+mod kanban;
+mod mindmap;
 pub mod graph;
 mod node_editor;
 pub mod json;
@@ -26,3 +29,6 @@ pub fn demos() -> Vec<glowkit_core::demo::Demo> {
 pub use graph::{ConnectError, Edge, EdgeAnim, EdgeId, EdgeKind, Graph, LayoutDirection, Node, NodeId, NodeShape, NodeStatus, Port, PortLayout, PortRef, PortSide, PortType};
 pub use node_editor::{paint_node, shape_points, NodeEditor, NodeEditorResponse, NodeEditorState, PaletteItem};
 pub use whiteboard::{paint_wb_shape, rough_segment, synthetic_stroke, Document, ShapeKind, Tool, WbShape, WbStyle, Whiteboard, WhiteboardState, INK, STICKY_COLORS, WB_COLORS};
+pub use gantt::{civil_from_days, days_from_civil, weekday, Gantt, GanttChart, GanttGroup, GanttState, GanttTask, GanttZoom};
+pub use kanban::{insertion_index, Board, Card, Column, KanbanBoard, KanbanState, Label};
+pub use mindmap::{mind_layout, MindLayout, MindMap, MindMapEditor, MindMapState, MindNode};

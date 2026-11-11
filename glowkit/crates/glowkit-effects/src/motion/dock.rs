@@ -121,7 +121,7 @@ impl<'a> Dock<'a> {
     pub fn show(self, ui: &mut Ui) -> DockResponse {
         let t = Theme::of(ui);
         let n = self.items.len();
-        let pad = 9.0;
+        let pad = 10.0;
         let big = self.size * self.magnification;
         let height = big + pad * 2.0 + 44.0;
         let (rect, response) = ui.allocate_exact_size(vec2(ui.available_width(), height), Sense::click());
@@ -173,14 +173,15 @@ impl<'a> Dock<'a> {
             .collect();
         let total_w = sizes.iter().sum::<f32>() + (n as f32 - 1.0) * self.gap + pad * 2.0;
         let left = rect.center().x - total_w / 2.0;
-        let panel = Rect::from_min_max(pos2(left, panel_bottom - panel_h), pos2(left + total_w, panel_bottom));
-
+        // items sit on a shared baseline and grow upward; the bar always spans them plus padding
         let mut x = left + pad;
         let mut item_rects = Vec::with_capacity(n);
         for s in &sizes {
-            item_rects.push(Rect::from_min_size(pos2(x, panel.max.y - pad - s), Vec2::splat(*s)));
+            item_rects.push(Rect::from_min_size(pos2(x, panel_bottom - pad - s), Vec2::splat(*s)));
             x += s + self.gap;
         }
+        let items_top = item_rects.iter().map(|r| r.min.y).fold(panel_bottom - pad - self.size, f32::min);
+        let panel = Rect::from_min_max(pos2(left, (items_top - pad).min(panel_bottom - panel_h)), pos2(left + total_w, panel_bottom));
         let hovered = real.and_then(|p| item_rects.iter().position(|r| r.expand2(vec2(self.gap / 2.0, pad)).contains(p))).or_else(|| {
             if real.is_none() {
                 pointer_x.and_then(|px| item_rects.iter().position(|r| px >= r.min.x - self.gap / 2.0 && px <= r.max.x + self.gap / 2.0))

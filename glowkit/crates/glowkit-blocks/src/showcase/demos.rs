@@ -399,8 +399,12 @@ ui.add(PixelBlast::new().pattern(PixelPattern::Waves).shape(PixelShape::Circle))
                 row(ui, w, 20.0, |ui| {
                     ui.spacing_mut().item_spacing.x = 24.0;
                     let titles = [("Lagoon retreat", "$1299 / night"), ("Desert sunset", "$899 / night"), ("Starlit cabin", "$1049 / night")];
+                    let card = Theme::of(ui).card;
                     for (i, (a, b)) in titles.iter().enumerate() {
-                        ui.add(DirectionAwareHover::new(move |p, r| scene(p, r, i)).size(260.0, 320.0).title(*a).subtitle(*b));
+                        ui.add(DirectionAwareHover::new(move |p, r| {
+                            scene(p, r, i);
+                            super::util::corner_mask(p, r, 16.0, card);
+                        }).size(260.0, 320.0).title(*a).subtitle(*b));
                     }
                 });
             },
@@ -561,7 +565,7 @@ ui.add(PixelBlast::new().pattern(PixelPattern::Waves).shape(PixelShape::Circle))
                 let t = Theme::of(ui);
                 let w = 820.0f32.min(ui.available_width());
                 row(ui, w, 10.0, |ui| {
-                    egui::Frame::new().fill(t.background).stroke(t.border_stroke()).corner_radius(14).inner_margin(0).show(ui, |ui| {
+                    let fr = egui::Frame::new().fill(t.background).stroke(t.border_stroke()).corner_radius(14).inner_margin(0).show(ui, |ui| {
                         ui.set_width(w);
                         ui.set_height(330.0);
                         ui.vertical(|ui| {
@@ -580,9 +584,7 @@ ui.add(PixelBlast::new().pattern(PixelPattern::Waves).shape(PixelShape::Circle))
                         child.set_clip_rect(pr.intersect(ui.clip_rect()));
                         mock_site(&mut child);
                         });
-                    });
-                    let fr = ui.min_rect();
-                    let fr = Rect::from_min_size(pos2(fr.max.x - w, fr.min.y), vec2(w, fr.height()));
+                    }).response.rect;
                     super::util::corner_mask(ui.painter(), fr, 14.0, t.card);
                     ui.painter().rect_stroke(fr, 14.0, t.border_stroke(), egui::StrokeKind::Inside);
                 });

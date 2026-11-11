@@ -56,9 +56,10 @@ impl SpringChain {
     pub fn is_settled(&self, head: Pos2) -> bool {
         self.velocities.iter().all(|v| v.length() < 0.5) && self.points.iter().all(|p| p.distance(head) < 0.5)
     }
-    /// Advance by `dt` seconds with the head chasing `head`.
+    /// Advance by `dt` seconds (up to 0.25 s per call) with the head chasing `head`.
     pub fn update(&mut self, head: Pos2, dt: f32) {
-        let steps = ((dt / (1.0 / 240.0)).ceil() as usize).clamp(1, 16);
+        let dt = dt.clamp(0.0, 0.25);
+        let steps = ((dt / (1.0 / 240.0)).ceil() as usize).clamp(1, 64);
         let h = dt / steps as f32;
         for _ in 0..steps {
             let mut k = self.stiffness;
