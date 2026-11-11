@@ -518,7 +518,8 @@ AnimatedBeam::new(hub.center(), b.center()).reverse(true).paint(ui);
                 let mut order: Vec<usize> = mem(ui, "order", || (0..heights.len()).collect());
                 let mut cols: usize = mem(ui, "cols", || 5);
                 let now = glowkit_core::time(ui);
-                let tick = (now / 3.5) as u64;
+                let start: f32 = mem(ui, "start", || now);
+                let tick = ((now - start) / 4.0) as u64;
                 let last: u64 = mem(ui, "tick", || tick);
                 ui.horizontal(|ui| {
                     if ui.button("🔀 Shuffle").clicked() {

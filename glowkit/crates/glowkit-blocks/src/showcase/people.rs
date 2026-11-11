@@ -287,7 +287,7 @@ impl Widget for AnimatedTestimonials<'_> {
         order.sort_by(|a, b| a.0.total_cmp(&b.0));
         for (_, i) in order {
             let is_active = i == st.active;
-            let seed_rot = (glowkit_core::rng::hash01(i as u64 * 31 + 7) - 0.5) * 0.36;
+            let seed_rot = (glowkit_core::rng::hash01(i as u64 * 31 + 7) - 0.5) * 0.5;
             let rot = glowkit_core::anim::spring(ui, id.with(("rot", i)), if is_active { 0.0 } else { seed_rot }, 140.0, 16.0);
             let scale = glowkit_core::anim::spring(ui, id.with(("sc", i)), if is_active { 1.0 } else { 0.94 }, 160.0, 18.0);
             let hop = if is_active { -(std::f32::consts::PI * (since / 0.55).clamp(0.0, 1.0)).sin() * 30.0 } else { 0.0 };
@@ -300,13 +300,13 @@ impl Widget for AnimatedTestimonials<'_> {
             if is_active {
                 paint::soft_shadow(&p, r, 24.0, 30.0, vec2(0.0, 14.0), Color32::from_black_alpha(if t.dark { 120 } else { 40 }));
             }
+            let lc = rotate(r.min + r.size() * vec2(0.3, 0.25), c, rot);
+            let lr = r.width() * 0.7;
             paint::fill_convex_fn(&p, &pts, 6, |q| {
                 let u = ((q - r.min).dot(vec2(0.7, 0.7)) / (r.width() * 1.4)).clamp(0.0, 1.0);
-                a.lerp_to_gamma(b, u)
+                let hl = (1.0 - q.distance(lc) / lr).clamp(0.0, 1.0).powf(2.0) * 0.22;
+                a.lerp_to_gamma(b, u).lerp_to_gamma(Color32::WHITE, hl)
             });
-            // soft light + big initials
-            let lc = rotate(r.min + r.size() * vec2(0.3, 0.25), c, rot);
-            paint::glow(&p, lc, r.width() * 0.55, Color32::from_white_alpha(if is_active { 40 } else { 20 }));
             let ini = person.initials();
             glowkit_core::text::paint_rotated(&p, &ini, c, FontId::proportional(r.width() * 0.32), Color32::from_white_alpha(if is_active { 235 } else { 140 }), rot);
             glowkit_core::text::paint_rotated(&p, &ini, c + vec2(1.0, 0.0), FontId::proportional(r.width() * 0.32), Color32::from_white_alpha(if is_active { 235 } else { 140 }), rot);

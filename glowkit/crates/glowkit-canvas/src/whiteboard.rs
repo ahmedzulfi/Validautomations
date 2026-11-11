@@ -373,9 +373,20 @@ impl Document {
             }
         }
     }
-    /// Topmost shape hit by `p`.
+    /// Topmost shape hit by `p` (bound arrow ends resolved).
     pub fn hit(&self, p: Pos2, tol: f32) -> Option<u64> {
-        self.shapes.iter().rev().find(|s| s.hit(p, tol)).map(|s| s.id)
+        self.shapes
+            .iter()
+            .rev()
+            .find(|s| {
+                if s.kind.is_linear() {
+                    let (a, b) = self.arrow_ends(s);
+                    common::dist_to_segment(p, a, b) <= tol + s.width
+                } else {
+                    s.hit(p, tol)
+                }
+            })
+            .map(|s| s.id)
     }
     /// Topmost shape an arrow endpoint at `p` could bind to.
     pub fn bind_target(&self, p: Pos2, exclude: u64) -> Option<u64> {
@@ -1445,7 +1456,7 @@ impl<'a> Whiteboard<'a> {
                         .text_color(color)
                         .frame(egui::Frame::NONE)
                         .background_color(Color32::TRANSPARENT)
-                        .horizontal_align(if s.kind == ShapeKind::Text || s.kind == ShapeKind::Sticky { egui::Align::LEFT } else { egui::Align::Center })
+                        .align(if s.kind == ShapeKind::Text || s.kind == ShapeKind::Sticky { Align2::LEFT_TOP } else { Align2::CENTER_TOP })
                         .desired_width(area.width())
                         .hint_text("Type…");
                     let r = ui.put(area, te);
@@ -1847,7 +1858,7 @@ mod tests {
     fn hit_testing() {
         let d = sample();
         assert_eq!(d.hit(pos2(50.0, 30.0), 2.0), Some(1)); // filled rect interior
-        assert_eq!(d.hit(pos2(350.0, 30.0), 2.0), None.or(d.hit(pos2(350.0, 30.0), 2.0))); // arrow passes
+        assert_eq!(d.hit(pos2(200.0, 31.0), 2.0), Some(3)); // the arrow between the shapes
         assert!(d.hit(pos2(1000.0, 1000.0), 2.0).is_none());
         let rotated = WbShape::new(ShapeKind::Rect, Rect::from_min_size(pos2(0.0, 0.0), vec2(100.0, 10.0))).fill(Color32::RED).rotated(std::f32::consts::FRAC_PI_2);
         assert!(rotated.hit(pos2(50.0, 40.0), 1.0));

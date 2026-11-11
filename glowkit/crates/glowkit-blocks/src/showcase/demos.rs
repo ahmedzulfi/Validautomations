@@ -19,7 +19,7 @@ pub(crate) fn mock_site(ui: &mut Ui) {
     let t = Theme::of(ui);
     let r = ui.max_rect();
     let p = ui.painter().clone();
-    let s = (r.width() / 600.0).clamp(0.35, 1.4);
+    let s = (r.width() / 600.0).clamp(0.35, 1.1);
     // backdrop glow
     paint::glow(&p, pos2(r.center().x, r.min.y + 40.0 * s), r.width() * 0.6, with_alpha(t.gradient[0], if t.dark { 0.25 } else { 0.12 }));
     // nav
@@ -581,6 +581,10 @@ ui.add(PixelBlast::new().pattern(PixelPattern::Waves).shape(PixelShape::Circle))
                         mock_site(&mut child);
                         });
                     });
+                    let fr = ui.min_rect();
+                    let fr = Rect::from_min_size(pos2(fr.max.x - w, fr.min.y), vec2(w, fr.height()));
+                    super::util::corner_mask(ui.painter(), fr, 14.0, t.card);
+                    ui.painter().rect_stroke(fr, 14.0, t.border_stroke(), egui::StrokeKind::Inside);
                 });
                 glowkit_core::animate(ui);
             },

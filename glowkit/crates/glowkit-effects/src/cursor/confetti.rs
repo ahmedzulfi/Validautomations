@@ -263,7 +263,6 @@ struct Rocket {
 #[derive(Clone, Copy)]
 struct Ember {
     pos: Pos2,
-    prev: Pos2,
     vel: Vec2,
     color: Color32,
     t0: f32,
@@ -299,7 +298,7 @@ impl Default for Fireworks {
 impl Fireworks {
     /// Auto-launching fireworks in random hues.
     pub fn new() -> Self {
-        Self { colors: None, interval: 0.9, sparks: 70, power: 1.0, autoplay: true, area: None, salt: 0 }
+        Self { colors: None, interval: 0.9, sparks: 90, power: 1.0, autoplay: true, area: None, salt: 0 }
     }
     /// Pick burst colors from this list instead of random hues.
     pub fn colors(mut self, colors: &[Color32]) -> Self {
@@ -387,10 +386,9 @@ impl Fireworks {
                     let ring = rng.bool(0.35);
                     for k in 0..n_sparks {
                         let a = k as f32 / n_sparks as f32 * TAU + rng.range(-0.05, 0.05);
-                        let sp = if ring { 170.0 * rng.range(0.92, 1.0) } else { 190.0 * rng.range(0.15, 1.0).sqrt() } * power;
+                        let sp = if ring { 240.0 * rng.range(0.92, 1.0) } else { 270.0 * rng.range(0.15, 1.0).sqrt() } * power;
                         embers.push(Ember {
                             pos: b.pos,
-                            prev: b.pos,
                             vel: vec2(a.cos(), a.sin()) * sp + b.vel * 0.15,
                             color: if rng.bool(0.25) { accent } else { base },
                             t0: now,
@@ -400,8 +398,7 @@ impl Fireworks {
                     }
                 }
                 for e in embers.iter_mut() {
-                    e.prev = e.pos;
-                    e.vel *= (-1.6 * dt).exp();
+                    e.vel *= (-1.9 * dt).exp();
                     e.vel.y += 70.0 * dt;
                     e.pos += e.vel * dt;
                 }
@@ -432,8 +429,8 @@ impl Fireworks {
             let tw = 0.75 + 0.25 * (e.twinkle + now * 18.0).sin();
             let a = (1.0 - age).powf(1.4) * tw;
             let hot = mix(e.color, Color32::WHITE, (1.0 - age * 3.0).clamp(0.0, 1.0) * 0.6);
-            let tail = e.prev - (e.pos - e.prev) * 3.0;
-            painter.line_segment([tail, e.pos], Stroke::new(1.8, with_alpha(hot, a)));
+            let tail = e.pos - e.vel * 0.035;
+            painter.line_segment([tail, e.pos], Stroke::new(2.0, with_alpha(hot, a)));
             if glow_budget > 0 && age < 0.12 {
                 glow_budget -= 1;
                 paint::glow(&painter, e.pos, 16.0, with_alpha(e.color, 0.3 * a));
@@ -444,7 +441,7 @@ impl Fireworks {
 area_widget!(Fireworks);
 
 #[cfg(test)]
-mod fw_tests {
+mod tests {
     #[test]
     fn fireworks_explode() {
         let ctx = egui::Context::default();
