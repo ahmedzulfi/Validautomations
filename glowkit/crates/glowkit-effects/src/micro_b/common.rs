@@ -128,27 +128,58 @@ pub(crate) fn avatar(painter: &Painter, center: Pos2, r: f32, colors: [Color32; 
 // ---------------------------------------------------------------------------------------------
 // Icons
 
-/// Line icons painted with strokes so they look the same everywhere (no font glyphs needed).
+/// Small line icons used by the micro-interaction components, painted with strokes so they look
+/// the same on every platform (no font glyphs needed).
+///
+/// ```no_run
+/// # let ui: &mut egui::Ui = todo!();
+/// glowkit_effects::MicroIcon::Folder.paint(ui.painter(), egui::pos2(20.0, 20.0), 16.0, egui::Color32::GRAY);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MicroIcon {
+    /// A plus sign.
     Plus,
+    /// Arrow pointing up.
     ArrowUp,
+    /// Arrow pointing down.
     ArrowDown,
+    /// Arrow pointing right.
     ArrowRight,
+    /// Diagonal arrow (up and right).
     ArrowUpRight,
+    /// A check mark.
     Check,
+    /// Two chain links.
     Link,
+    /// Two overlapping squares.
     Copy,
+    /// Two slider rails with knobs.
     Sliders,
+    /// A page with a folded corner.
     Doc,
+    /// A spreadsheet grid.
     Sheet,
+    /// Four tiles.
     Board,
+    /// A folder.
     Folder,
+    /// Two circling arrows.
     Refresh,
+    /// An x.
     Close,
+    /// A downward chevron.
     ChevronDown,
+    /// A circle on a wire.
     Node,
+    /// A heart outline.
     Heart,
+}
+
+impl MicroIcon {
+    /// Paint the icon centered at `center` in a box of `size` points.
+    pub fn paint(self, painter: &Painter, center: Pos2, size: f32, color: Color32) {
+        icon(painter, self, center, size, color, (size * 0.11).clamp(1.2, 2.4));
+    }
 }
 
 /// Paint `icon` centered at `c` within a box of `size` points.
