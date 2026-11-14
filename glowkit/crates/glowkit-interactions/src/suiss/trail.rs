@@ -17,7 +17,6 @@ struct TrailState {
     menu: f32,
     menu_v: f32,
     menu_open: bool,
-    choice: Vec<(String, usize)>,
     g: Gesture,
     cycle: u32,
 }

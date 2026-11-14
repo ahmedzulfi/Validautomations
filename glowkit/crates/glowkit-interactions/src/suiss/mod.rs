@@ -9,15 +9,19 @@
 //! rubber-bands, and releases settle on springs that carry the flick's velocity.
 
 mod banner;
+mod gallery;
 pub(crate) mod common;
 mod index;
 mod island;
 mod otp;
 mod preview_menu;
+mod reel;
 mod reorder;
 mod search;
 mod select;
 mod sheets;
+mod showcase;
+mod status;
 mod swipe;
 mod tip;
 mod trail;
@@ -25,14 +29,18 @@ mod undo;
 mod viewer;
 
 pub use banner::{BannerSpec, TopBanner};
+pub use gallery::{DraggableMarquee, LensGallery, ParallaxSlider};
 pub use index::SectionIndex;
 pub use island::{IslandNotice, LiveIsland};
 pub use otp::OtpAutofill;
 pub use preview_menu::PreviewMenu;
+pub use reel::{FlipLetters, TextReel};
 pub use reorder::{ReorderList, TouchRow};
 pub use search::SearchReveal;
 pub use select::SelectionList;
 pub use sheets::{ActionBarSheet, ConfirmSheet, ConfirmStyle};
+pub use showcase::{HoverImageList, PrismBeam, ShowcaseSide, SplitShowcase};
+pub use status::{ActiveSessions, DeviceSession, UptimeBars};
 pub use swipe::SwipeActions;
 pub use tip::CoachTip;
 pub use trail::TrailNav;

@@ -212,9 +212,9 @@ impl Widget for CardBookmark {
             }
             // brand on the tab line
             let on = lerp_c(if t.dark { hex("#E4E4E7") } else { hex("#18181B") }, Color32::WHITE, k);
-            painter.text(pos2(r.max.x - 12.0 * scale, r.min.y + tab * 0.55), Align2::RIGHT_CENTER, format!("— {}®", c.brand), FontId::proportional(8.5 * scale.max(0.8)), on);
+            painter.text(pos2(r.max.x - 12.0 * scale, r.min.y + tab + 9.0 * scale), Align2::RIGHT_CENTER, format!("— {}®", c.brand), FontId::proportional(8.5 * scale.max(0.8)), on);
             // art panel
-            let art = Rect::from_min_max(pos2(r.min.x + 10.0 * scale, r.min.y + tab + 10.0 * scale), pos2(r.max.x - 10.0 * scale, r.min.y + tab + r.height() * 0.5));
+            let art = Rect::from_min_max(pos2(r.min.x + 10.0 * scale, r.min.y + tab + 20.0 * scale), pos2(r.max.x - 10.0 * scale, r.min.y + tab + r.height() * 0.52));
             let art_bg = lerp_c(if t.dark { hex("#0B0B0E") } else { hex("#121216") }, shade(c.color, -0.32), k);
             painter.rect_filled(art, 10.0 * scale, art_bg);
             let ap = painter.with_clip_rect(art.shrink(1.0).intersect(painter.clip_rect()));

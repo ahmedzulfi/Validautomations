@@ -92,17 +92,23 @@ fn pool(p: Pos2, time: f32) -> [f32; 3] {
     let tile = 34.0;
     let gx = (p.x / tile).fract().abs();
     let gy = (p.y / tile).fract().abs();
-    let grout = (1.0 - (gx.min(1.0 - gx).min(gy.min(1.0 - gy)) / 0.05).clamp(0.0, 1.0)) * 0.6;
-    let n1 = noise3(p.x * 0.012, p.y * 0.012, time * 0.25);
-    let n2 = noise3(p.x * 0.021 + 7.0, p.y * 0.019, time * 0.33 + 3.0);
-    let caustic = (1.0 - n1.abs() * 4.0).max(0.0).powi(3) + 0.6 * (1.0 - n2.abs() * 4.0).max(0.0).powi(3);
-    let base = [0.55, 0.80, 0.82];
+    let grout = (1.0 - (gx.min(1.0 - gx).min(gy.min(1.0 - gy)) / 0.05).clamp(0.0, 1.0)) * 0.5;
+    // caustics: two layers of domain-warped sine waves, sharpened into a bright web
+    let web = |s: f32, t: f32, o: f32| {
+        let (x, y) = (p.x * s + o, p.y * s - o);
+        let a = (x * 1.3 + (y * 1.7 + t * 0.6).sin() * 1.6 + t * 0.4).sin();
+        let b = (y * 1.1 + (x * 1.9 - t * 0.5).sin() * 1.6 - t * 0.3).sin();
+        (1.0 - (a + b).abs() * 0.5).powi(7)
+    };
+    let n = noise3(p.x * 0.004, p.y * 0.004, time * 0.1) * 0.5;
+    let caustic = web(0.03, time, 0.0) + 0.55 * web(0.047, time * 1.2, 3.0) + n * 0.05;
+    let base = [0.52, 0.79, 0.81];
     let mut c = [
-        base[0] + caustic * 0.35 + grout * 0.25,
-        base[1] + caustic * 0.2 + grout * 0.15,
-        base[2] + caustic * 0.16 + grout * 0.12,
+        base[0] + caustic * 0.42 + grout * 0.22,
+        base[1] + caustic * 0.22 + grout * 0.12,
+        base[2] + caustic * 0.18 + grout * 0.1,
     ];
-    c.iter_mut().for_each(|x| *x = x.min(1.0));
+    c.iter_mut().for_each(|x| *x = x.clamp(0.0, 1.0));
     c
 }
 
@@ -212,7 +218,7 @@ impl Widget for Meniscus {
             MeniscusBackdrop::Poster => poster,
         };
         // ---- backdrop
-        let cell = 9.0;
+        let cell = 7.0;
         let (nx, ny) = ((rect.width() / cell).ceil() as usize, (rect.height() / cell).ceil() as usize);
         let mut m = Mesh::default();
         for j in 0..=ny {
@@ -312,15 +318,14 @@ impl Widget for Meniscus {
                     painter.line_segment([c + vec2(-3.0, 3.0), c + vec2(3.0, 3.0)], s);
                 }
                 _ => {
-                    let pts: Vec<Pos2> = (0..=20)
+                    // a water drop: a round belly that narrows to a point
+                    let mut pts: Vec<Pos2> = (0..=16)
                         .map(|k| {
-                            let a = k as f32 / 20.0 * std::f32::consts::TAU;
-                            let r = 5.0;
-                            let y = a.sin() * r + 2.0;
-                            let x = a.cos() * r * (1.0 - (0.5 - (y + 3.0) / 14.0).max(0.0));
-                            c + vec2(x, y.min(r + 2.0)) - vec2(0.0, if a.sin() < -0.6 { (a.sin() + 0.6) * 6.0 } else { 0.0 })
+                            let a = -0.35 + k as f32 / 16.0 * (std::f32::consts::PI + 0.7);
+                            c + vec2(a.cos() * 5.0, 2.0 + a.sin() * 5.0)
                         })
                         .collect();
+                    pts.push(c + vec2(0.0, -8.0));
                     painter.add(Shape::closed_line(pts, s));
                 }
             }

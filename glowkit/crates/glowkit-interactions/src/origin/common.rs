@@ -133,20 +133,6 @@ impl Dots {
             }
         }
     }
-    /// Add a soft dot: solid core plus a transparent rim (looks round and anti-aliased).
-    pub fn soft(&mut self, p: Pos2, r: f32, c: Color32, transparent: Color32) {
-        let m = &mut self.mesh;
-        let i = m.vertices.len() as u32;
-        m.vertices.push(Vertex { pos: p, uv: WHITE_UV, color: c });
-        let n = 8u32;
-        for k in 0..n {
-            let a = k as f32 * std::f32::consts::TAU / n as f32;
-            m.vertices.push(Vertex { pos: p + vec2(a.cos(), a.sin()) * r, uv: WHITE_UV, color: transparent });
-        }
-        for k in 0..n {
-            m.add_triangle(i, i + 1 + k, i + 1 + (k + 1) % n);
-        }
-    }
     pub fn paint(self, painter: &Painter) {
         if !self.mesh.vertices.is_empty() {
             painter.add(Shape::mesh(self.mesh));
@@ -206,11 +192,6 @@ pub(crate) fn scale_color(c: Color32, k: f32) -> Color32 {
     )
 }
 
-/// The transparent fringe color for a premultiplied color: fully transparent.
-pub(crate) fn clear(_c: Color32) -> Color32 {
-    Color32::TRANSPARENT
-}
-
 /// Pointer position inside `rect` if hovering, else a smooth ghost path (for idle showcases).
 /// Returns `(position, is_real_pointer)`.
 pub(crate) fn pointer_or_ghost(ui: &Ui, rect: Rect, response: &Response, time: f32, ghost: bool) -> (Option<Pos2>, bool) {
@@ -267,26 +248,6 @@ pub(crate) fn textured_quad(
     let w = (n + 1) as u32;
     for j in 0..n as u32 {
         for i in 0..n as u32 {
-            let a = j * w + i;
-            m.add_triangle(a, a + 1, a + w + 1);
-            m.add_triangle(a, a + w + 1, a + w);
-        }
-    }
-    painter.add(Shape::mesh(m));
-}
-
-/// Textured mesh from a grid of projected points (`cols+1` x `rows+1`, row-major), with tint.
-pub(crate) fn textured_grid(painter: &Painter, tex: TextureId, pts: &[(Pos2, Color32)], cols: usize, rows: usize) {
-    let mut m = Mesh::with_texture(tex);
-    for j in 0..=rows {
-        for i in 0..=cols {
-            let (p, c) = pts[j * (cols + 1) + i];
-            m.vertices.push(Vertex { pos: p, uv: pos2(i as f32 / cols as f32, j as f32 / rows as f32), color: c });
-        }
-    }
-    let w = (cols + 1) as u32;
-    for j in 0..rows as u32 {
-        for i in 0..cols as u32 {
             let a = j * w + i;
             m.add_triangle(a, a + 1, a + w + 1);
             m.add_triangle(a, a + w + 1, a + w);

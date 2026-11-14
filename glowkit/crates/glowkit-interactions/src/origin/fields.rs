@@ -925,8 +925,8 @@ impl Fluid {
                 let i = self.idx(x, y);
                 self.u[i] += fx * k;
                 self.v[i] += fy * k;
-                for c in 0..3 {
-                    self.d[i][c] = (self.d[i][c] + color[c] * k).min(1.0);
+                for (d, c) in self.d[i].iter_mut().zip(color) {
+                    *d = (*d + c * k).min(1.0);
                 }
             }
         }

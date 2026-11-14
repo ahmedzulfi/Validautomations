@@ -15,7 +15,6 @@ use std::f32::consts::PI;
 struct FlipState {
     starts: Vec<f32>,
     last_hover: Option<usize>,
-    ghost_x: f32,
 }
 
 /// A word whose letters roll over like a split-flap when the pointer passes.

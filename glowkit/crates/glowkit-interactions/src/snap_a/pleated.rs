@@ -2,7 +2,7 @@ use super::common::{cached_ink, idle_time, lerp_c, wall_dt, Cam, Sheet, Soup, V3
 use super::posters::{poster_bg, poster_ink, poster_title, POSTERS};
 use egui::{pos2, vec2, Align2, FontId, Rect, Response, Sense, Stroke, Ui, Vec2, Widget};
 use glowkit_core::color::with_alpha;
-use glowkit_core::{paint, Theme};
+use glowkit_core::Theme;
 
 #[derive(Clone, Copy, Debug, Default)]
 struct PleatState {
@@ -251,9 +251,20 @@ impl Widget for PleatedStrip {
         }
         // drum shadow on the floor
         super::common::contact_shadow(&painter, pos2(drum_x + 10.0, rect.max.y - 14.0), vec2(w * 0.7, 8.0), 0.18);
+        // posters fade out as they roll round the top and bottom of the drum
+        soup.fade_y(rect.center().y, r * 0.55, r * 0.98);
         soup.paint(&painter);
-        // fade top and bottom into the background so the drum reads as round
-        paint::fade_edges_vertical(&painter, rect, 46.0, t.background);
+        // ---- studio card on the left
+        let lx = rect.min.x + 18.0;
+        let ly = rect.center().y - 40.0;
+        painter.text(pos2(lx, ly), Align2::LEFT_TOP, "STUDIO FERRO", FontId::monospace(10.5), t.foreground);
+        painter.text(pos2(lx, ly + 18.0), Align2::LEFT_TOP, "Posters, sleeves & type", FontId::proportional(11.0), t.muted_foreground);
+        painter.text(pos2(lx, ly + 33.0), Align2::LEFT_TOP, "Lisbon, PT", FontId::proportional(11.0), t.muted_foreground);
+        for (k, l) in ["Instagram", "Are.na", "Email"].iter().enumerate() {
+            painter.text(pos2(lx, ly + 60.0 + k as f32 * 15.0), Align2::LEFT_TOP, *l, FontId::proportional(11.0), t.foreground);
+        }
+        painter.circle_filled(pos2(lx + 3.0, rect.max.y - 16.0), 3.0, t.success);
+        painter.text(pos2(lx + 12.0, rect.max.y - 16.0), Align2::LEFT_CENTER, "Booking from February", FontId::proportional(10.5), t.muted_foreground);
         // ---- title + list
         let cur = (st.offset.round().rem_euclid(nf)) as usize % n;
         painter.text(list.min, Align2::LEFT_TOP, format!("{:02} / {:02}", cur + 1, n), FontId::monospace(10.0), t.muted_foreground);

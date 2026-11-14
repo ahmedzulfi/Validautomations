@@ -165,6 +165,15 @@ impl Soup {
     pub fn push(&mut self, z: f32, v: [Vertex; 3]) {
         self.tris.push((z, v));
     }
+    /// Fade every vertex by its vertical distance from `cy` (full inside `inner`, gone at `outer`).
+    pub fn fade_y(&mut self, cy: f32, inner: f32, outer: f32) {
+        for (_, v) in &mut self.tris {
+            for vx in v.iter_mut() {
+                let k = 1.0 - sstep(inner, outer, (vx.pos.y - cy).abs());
+                vx.color = vx.color.gamma_multiply(k);
+            }
+        }
+    }
     pub fn paint(mut self, painter: &Painter) {
         self.tris.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
         let mut m = Mesh::default();
@@ -732,20 +741,12 @@ pub(crate) fn photo(kind: usize, u: f32, v: f32) -> Color32 {
     }
 }
 
-/// Tessellate ink once and keep it (keyed by `key` and the current pixel density).
-pub(crate) fn cached_ink(ui: &Ui, key: Id, max_edge: f32, draw: impl FnOnce(&mut Ink)) -> Arc<Mesh> {
-    let ppp = ui.ctx().pixels_per_point();
-    // glyph UVs are normalised to the atlas size, so a grown atlas invalidates the cache
-    let atlas = ui.ctx().fonts(|f| f.font_image_size());
-    let id = key.with(("snap_ink", (ppp * 100.0) as i32, (max_edge * 10.0) as i32, atlas));
-    if let Some(m) = ui.data(|d| d.get_temp::<Arc<Mesh>>(id)) {
-        return m;
-    }
+/// Tessellate ink for this frame. (Glyph UVs point into the live font atlas, which egui may
+/// grow or repack between frames, so printed ink is rebuilt every frame rather than cached.)
+pub(crate) fn cached_ink(ui: &Ui, _key: Id, max_edge: f32, draw: impl FnOnce(&mut Ink)) -> Arc<Mesh> {
     let mut ink = Ink::new(ui.painter());
     draw(&mut ink);
-    let m = Arc::new(ink.mesh(ui.ctx(), max_edge));
-    ui.data_mut(|d| d.insert_temp(id, m.clone()));
-    m
+    Arc::new(ink.mesh(ui.ctx(), max_edge))
 }
 
 /// Ellipse outline, optionally rotated by `angle` radians.
@@ -788,6 +789,37 @@ pub(crate) fn soft_quad(painter: &Painter, q: [Pos2; 4], blur: f32, color: Color
         let j = (i + 1) % 4;
         m.add_triangle(i, 4 + i, 4 + j);
         m.add_triangle(i, 4 + j, j);
+    }
+    painter.add(Shape::mesh(m));
+}
+
+/// An anti-aliased polyline with a per-point width (a ribbon with feathered edges).
+pub(crate) fn ribbon_line(painter: &Painter, pts: &[Pos2], widths: &[f32], color: Color32, closed: bool) {
+    let n = pts.len();
+    if n < 2 {
+        return;
+    }
+    let mut m = Mesh::default();
+    for i in 0..n {
+        let prev = if closed { pts[(i + n - 1) % n] } else { pts[i.saturating_sub(1)] };
+        let next = if closed { pts[(i + 1) % n] } else { pts[(i + 1).min(n - 1)] };
+        let d = next - prev;
+        let nrm = if d.length() > 1e-4 { vec2(-d.y, d.x).normalized() } else { vec2(0.0, 1.0) };
+        let w = widths[i.min(widths.len() - 1)] * 0.5;
+        let p = pts[i];
+        m.colored_vertex(p + nrm * (w + 0.8), Color32::TRANSPARENT);
+        m.colored_vertex(p + nrm * (w - 0.3).max(0.0), color);
+        m.colored_vertex(p - nrm * (w - 0.3).max(0.0), color);
+        m.colored_vertex(p - nrm * (w + 0.8), Color32::TRANSPARENT);
+    }
+    let segs = if closed { n } else { n - 1 };
+    for i in 0..segs as u32 {
+        let j = (i + 1) % n as u32;
+        for l in 0..3u32 {
+            let (a, b, c, d) = (i * 4 + l, i * 4 + l + 1, j * 4 + l, j * 4 + l + 1);
+            m.add_triangle(a, b, d);
+            m.add_triangle(a, d, c);
+        }
     }
     painter.add(Shape::mesh(m));
 }

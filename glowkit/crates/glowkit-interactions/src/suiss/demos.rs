@@ -655,6 +655,254 @@ ui.add(TrailNav::new(&mut path)
             set_mem(ui, "p", p);
         },
     }, Demo {
+        id: "draggable-marquee",
+        name: "Draggable Marquee",
+        category: Category::Motion,
+        description: "A looping strip of portrait images that cruises on its own; grab it, fling it, and it coasts on momentum with cards leaning into the speed.",
+        covers: &["ObsidianUI: Draggable Marquee"],
+        code: r##"ui.add(DraggableMarquee::new().speed(40.0).gap(20.0).lean(50.0));"##,
+        show: |ui| {
+            let mut p = params(ui, "p", [40.0, 20.0, 50.0]);
+            bench(
+                ui,
+                380.0,
+                &mut p,
+                |ui, p| {
+                    ui.add(DraggableMarquee::new().speed(p[0]).gap(p[1]).lean(p[2]).autoplay(true));
+                },
+                |ui, p| {
+                    ui.add(ControlSlider::new("Speed", &mut p[0], 0.0..=160.0));
+                    ui.add(ControlSlider::new("Gap", &mut p[1], 0.0..=48.0).suffix("px"));
+                    ui.add(ControlSlider::new("Lean", &mut p[2], 0.0..=100.0));
+                },
+            );
+            set_mem(ui, "p", p);
+        },
+    }, Demo {
+        id: "flip-letters",
+        name: "Flip Letters",
+        category: Category::TextAnimations,
+        description: "Letters that roll over like a split-flap as the pointer passes, rippling to their neighbours with a springy overshoot.",
+        covers: &["ObsidianUI: Flip Text"],
+        code: r##"ui.add(FlipLetters::new("Gesture").size(64.0).ripple(50.0));"##,
+        show: |ui| {
+            let mut p = params(ui, "p", [50.0, 0.6, 72.0]);
+            bench(
+                ui,
+                360.0,
+                &mut p,
+                |ui, p| {
+                    let t = Theme::of(ui);
+                    ui.add(FlipLetters::new("Springboard").size(p[2]).ripple(p[0]).duration(p[1]).autoplay(true));
+                    ui.add_space(18.0);
+                    ui.add(FlipLetters::new("hover each letter").size(p[2] * 0.4).ripple(p[0]).duration(p[1]).color(t.muted_foreground).accent(t.accent));
+                },
+                |ui, p| {
+                    ui.add(ControlSlider::new("Ripple", &mut p[0], 0.0..=100.0));
+                    ui.add(ControlSlider::new("Duration", &mut p[1], 0.2..=1.5).decimals(2).suffix("s"));
+                    ui.add(ControlSlider::new("Size", &mut p[2], 32.0..=96.0).suffix("px"));
+                },
+            );
+            set_mem(ui, "p", p);
+        },
+    }, Demo {
+        id: "hover-image-list",
+        name: "Hover Image List",
+        category: Category::CursorAndInteraction,
+        description: "Big project titles; hovering one summons a photo that trails the pointer on a spring, tilting as it moves and sliding to the next image.",
+        covers: &["ObsidianUI: Hover Image"],
+        code: r##"ui.add(HoverImageList::new(&[("Northern Lights", "Field study"), ("Salt Flats", "Long exposure")]).lag(50.0).tilt(50.0));"##,
+        show: |ui| {
+            let mut p = params(ui, "p", [50.0, 50.0]);
+            bench(
+                ui,
+                380.0,
+                &mut p,
+                |ui, p| {
+                    ui.add(
+                        HoverImageList::new(&[("Northern Lights", "Field study, 2024"), ("Salt Flats", "Long exposure"), ("Neon Harbour", "Night series"), ("Pine Ridge", "Morning fog")])
+                            .lag(p[0])
+                            .tilt(p[1])
+                            .autoplay(true),
+                    );
+                },
+                |ui, p| {
+                    ui.add(ControlSlider::new("Lag", &mut p[0], 0.0..=100.0));
+                    ui.add(ControlSlider::new("Tilt", &mut p[1], 0.0..=100.0));
+                },
+            );
+            set_mem(ui, "p", p);
+        },
+    }, Demo {
+        id: "parallax-slider",
+        name: "Parallax Slider",
+        category: Category::Motion,
+        description: "An endless strip of tall frames: drag, flick or scroll and each picture drifts against the motion inside its frame; titles rise on hover once still.",
+        covers: &["ObsidianUI: Parallax Slider"],
+        code: r##"ui.add(ParallaxSlider::new().depth(60.0).friction(50.0));"##,
+        show: |ui| {
+            let mut p = params(ui, "p", [60.0, 50.0]);
+            bench(
+                ui,
+                380.0,
+                &mut p,
+                |ui, p| {
+                    ui.add(ParallaxSlider::new().depth(p[0]).friction(p[1]).autoplay(true));
+                },
+                |ui, p| {
+                    ui.add(ControlSlider::new("Depth", &mut p[0], 0.0..=100.0));
+                    ui.add(ControlSlider::new("Friction", &mut p[1], 0.0..=100.0));
+                },
+            );
+            set_mem(ui, "p", p);
+        },
+    }, Demo {
+        id: "split-showcase",
+        name: "Split Showcase",
+        category: Category::CardsAndBorders,
+        description: "Two partner cards joined into one capsule by a dotted seam; the hovered half springs outward and rounds its inner corners.",
+        covers: &["ObsidianUI: Split Showcase"],
+        code: r##"ui.add(SplitShowcase::new(
+    ShowcaseSide::new("Northwind", "HOSTING PARTNER"),
+    ShowcaseSide::new("Lumen", "ANALYTICS PARTNER").mark(1, None),
+).shift(50.0));"##,
+        show: |ui| {
+            let mut p = params(ui, "p", [50.0, 35.0]);
+            bench(
+                ui,
+                360.0,
+                &mut p,
+                |ui, p| {
+                    ui.add(
+                        SplitShowcase::new(ShowcaseSide::new("Northwind", "HOSTING PARTNER"), ShowcaseSide::new("Lumen", "ANALYTICS PARTNER").mark(1, None))
+                            .shift(p[0])
+                            .bounce(p[1])
+                            .autoplay(true),
+                    );
+                },
+                |ui, p| {
+                    ui.add(ControlSlider::new("Shift", &mut p[0], 0.0..=100.0));
+                    ui.add(ControlSlider::new("Bounce", &mut p[1], 0.0..=100.0));
+                },
+            );
+            set_mem(ui, "p", p);
+        },
+    }, Demo {
+        id: "prism-beam",
+        name: "Prism Beam",
+        category: Category::ThreeD,
+        description: "A glass prism that refracts a white beam into a rainbow fan with real Snell's law; drag to aim the light and watch the spectrum sweep.",
+        covers: &["ObsidianUI: V Prism"],
+        code: r##"ui.add(PrismBeam::new().dispersion(60.0).glow(50.0));"##,
+        show: |ui| {
+            let mut p = params(ui, "p", [60.0, 50.0, 190.0]);
+            bench(
+                ui,
+                380.0,
+                &mut p,
+                |ui, p| {
+                    ui.add(PrismBeam::new().dispersion(p[0]).glow(p[1]).prism(p[2]).autoplay(true));
+                },
+                |ui, p| {
+                    ui.add(ControlSlider::new("Dispersion", &mut p[0], 0.0..=100.0));
+                    ui.add(ControlSlider::new("Glow", &mut p[1], 0.0..=100.0));
+                    ui.add(ControlSlider::new("Prism", &mut p[2], 100.0..=260.0).suffix("px"));
+                },
+            );
+            set_mem(ui, "p", p);
+        },
+    }, Demo {
+        id: "uptime-bars",
+        name: "Uptime Bars",
+        category: Category::Charts,
+        description: "Daily status strips per service; scrub a row and bars swell in a fisheye under a gliding tooltip, while range changes cascade and the uptime counts.",
+        covers: &["ObsidianUI: Status Bars"],
+        code: r##"ui.add(UptimeBars::new(&["Component registry", "Docs and previews"]).days(60).magnify(50.0));"##,
+        show: |ui| {
+            let mut p = params(ui, "p", [50.0]);
+            bench(
+                ui,
+                380.0,
+                &mut p,
+                |ui, p| {
+                    ui.add(UptimeBars::new(&["Component registry", "Docs and previews", "Edge API"]).magnify(p[0]).autoplay(true));
+                },
+                |ui, p| {
+                    ui.add(ControlSlider::new("Magnify", &mut p[0], 0.0..=100.0));
+                },
+            );
+            set_mem(ui, "p", p);
+        },
+    }, Demo {
+        id: "text-reel",
+        name: "Text Reel",
+        category: Category::TextAnimations,
+        description: "A vertical stream of words under a fixed label; scroll or drag to inject momentum, reverse it, and let it ease back to cruising.",
+        covers: &["ObsidianUI: Text Stream"],
+        code: r##"ui.add(TextReel::new("LET'S", &["Build", "Ship", "Iterate", "Learn", "Design"]).speed(40.0));"##,
+        show: |ui| {
+            let mut p = params(ui, "p", [40.0, 42.0]);
+            bench(
+                ui,
+                360.0,
+                &mut p,
+                |ui, p| {
+                    ui.add(TextReel::new("LET'S", &["Build", "Ship", "Iterate", "Learn", "Design", "Launch", "Polish"]).speed(p[0]).size(p[1]).autoplay(true));
+                },
+                |ui, p| {
+                    ui.add(ControlSlider::new("Speed", &mut p[0], 0.0..=160.0));
+                    ui.add(ControlSlider::new("Size", &mut p[1], 24.0..=64.0).suffix("px"));
+                },
+            );
+            set_mem(ui, "p", p);
+        },
+    }, Demo {
+        id: "lens-gallery",
+        name: "Lens Gallery",
+        category: Category::Motion,
+        description: "An endless wall of photos seen through a fisheye: drag and fling to pan while every tile bows through the barrel lens.",
+        covers: &["ObsidianUI: Art Gallery"],
+        code: r##"ui.add(LensGallery::new().lens(60.0).tile(egui::vec2(150.0, 110.0)));"##,
+        show: |ui| {
+            let mut p = params(ui, "p", [60.0, 150.0]);
+            bench(
+                ui,
+                400.0,
+                &mut p,
+                |ui, p| {
+                    ui.add(LensGallery::new().lens(p[0]).tile(vec2(p[1], p[1] * 0.73)).autoplay(true));
+                },
+                |ui, p| {
+                    ui.add(ControlSlider::new("Lens", &mut p[0], 0.0..=100.0));
+                    ui.add(ControlSlider::new("Tile", &mut p[1], 90.0..=220.0).suffix("px"));
+                },
+            );
+            set_mem(ui, "p", p);
+        },
+    }, Demo {
+        id: "active-sessions",
+        name: "Active Sessions",
+        category: Category::DataDisplay,
+        description: "Signed-in devices: sign one out and its row spins then folds away; sign out the rest and they fold one after another; restore unfolds them.",
+        covers: &["ObsidianUI: Active Sessions"],
+        code: r##"ui.add(ActiveSessions::new().delay(0.8));"##,
+        show: |ui| {
+            let mut p = params(ui, "p", [0.8, 20.0]);
+            bench(
+                ui,
+                380.0,
+                &mut p,
+                |ui, p| {
+                    ui.add(ActiveSessions::new().delay(p[0]).bounce(p[1]).autoplay(true));
+                },
+                |ui, p| {
+                    ui.add(ControlSlider::new("Delay", &mut p[0], 0.0..=2.0).decimals(1).suffix("s"));
+                    ui.add(ControlSlider::new("Bounce", &mut p[1], 0.0..=100.0));
+                },
+            );
+            set_mem(ui, "p", p);
+        },
+    }, Demo {
         id: "swipe-image-viewer",
         name: "Swipe Image Viewer",
         category: Category::MicroInteractions,

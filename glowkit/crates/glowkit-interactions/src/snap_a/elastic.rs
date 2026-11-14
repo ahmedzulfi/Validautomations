@@ -1,6 +1,6 @@
 use super::common::{ghost_cursor, idle_time, sstep, wall_dt};
 use egui::epaint::Mesh;
-use egui::{vec2, Color32, FontId, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2, Widget};
+use egui::{vec2, Color32, FontId, Pos2, Rect, Response, Sense, Ui, Vec2, Widget};
 use glowkit_core::color::with_alpha;
 use glowkit_core::paint::rounded_rect_points;
 use glowkit_core::Theme;
@@ -222,13 +222,8 @@ impl ElasticFrame {
         }
         painter.add(egui::Shape::mesh(m));
         // the string: thins as it stretches
-        for i in 0..N {
-            let j = (i + 1) % N;
-            let stretch = (st.d[i].abs() + st.d[j].abs()) * 0.5;
-            let w = 5.0 / (1.0 + stretch / 14.0);
-            painter.line_segment([pts[i], pts[j]], Stroke::new(w.max(1.0), line));
-            painter.circle_filled(pts[i], w.max(1.0) * 0.5, line);
-        }
+        let widths: Vec<f32> = (0..N).map(|i| (5.0 / (1.0 + st.d[i].abs() / 14.0)).max(1.2)).collect();
+        super::common::ribbon_line(&painter, &pts, &widths, line, true);
         if let Some(g) = ghost {
             ghost_cursor(&painter, t.dark, g, 0.9, false);
         }

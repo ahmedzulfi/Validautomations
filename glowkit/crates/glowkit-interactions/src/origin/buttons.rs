@@ -38,11 +38,6 @@ pub(crate) fn glove(painter: &Painter, tip: Pos2, scale: f32, press: f32, ink: C
     painter.line_segment([p(-3.0, 26.0), p(12.0, 26.0)], st);
 }
 
-/// Points on a pill outline (rounded rect with radius h/2).
-fn pill_points(r: Rect, n_cap: usize) -> Vec<Pos2> {
-    paint::rounded_rect_points(r, r.height() * 0.5, n_cap)
-}
-
 /// Closest point on the pill boundary to `p`, with outward normal.
 fn pill_closest(r: Rect, p: Pos2) -> (Pos2, Vec2) {
     let rad = r.height() * 0.5;
@@ -214,7 +209,7 @@ impl Widget for VenomButton {
             }
             // bulge at the root
             let bulge = base + nrm * 4.0 * k;
-            painter.circle_filled(bulge, 18.0 * k.min(1.0).max(0.0), goo);
+            painter.circle_filled(bulge, 18.0 * k.clamp(0.0, 1.0), goo);
         }
         painter.add(Shape::mesh(mesh));
         // the pill

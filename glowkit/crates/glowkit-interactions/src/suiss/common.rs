@@ -266,6 +266,7 @@ pub(crate) fn keys(t: f32, k: &[(f32, f32)]) -> f32 {
 
 /// Small line icons painted with strokes.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[allow(dead_code)] // a small icon set; not every icon is used by every build
 pub(crate) enum Glyph {
     Trash,
     Archive,
@@ -528,25 +529,6 @@ pub(crate) fn text_width(painter: &Painter, s: &str, size: f32) -> f32 {
     painter.layout_no_wrap(s.to_string(), egui::FontId::proportional(size), Color32::WHITE).size().x
 }
 
-/// A colorful painted avatar disc with initials.
-pub(crate) fn avatar(painter: &Painter, c: Pos2, r: f32, seed: usize, initials: &str) {
-    let hues = [
-        hexa(0xF4, 0x72, 0xB6),
-        hexa(0x60, 0xA5, 0xFA),
-        hexa(0x34, 0xD3, 0x99),
-        hexa(0xFB, 0x92, 0x3C),
-        hexa(0xA7, 0x8B, 0xFA),
-        hexa(0x22, 0xD3, 0xEE),
-        hexa(0xFA, 0xCC, 0x15),
-        hexa(0xF8, 0x71, 0x71),
-    ];
-    let a = hues[seed % hues.len()];
-    let b = hues[(seed + 3) % hues.len()];
-    let rect = Rect::from_center_size(c, Vec2::splat(r * 2.0));
-    let pts = paint::circle_points(c, r, 32);
-    paint::fill_convex_fn(painter, &pts, 2, paint::linear_fn(rect, 135.0, &[a, b]));
-    painter.text(c, egui::Align2::CENTER_CENTER, initials, egui::FontId::proportional(r * 0.8), Color32::WHITE);
-}
 
 // ---------------------------------------------------------------------------------------------
 // Touch input: the real pointer, or a scripted ghost finger while the demo idles
@@ -625,7 +607,8 @@ pub(crate) fn touch(
         if tr.0 != cyc {
             tr = (cyc, 0, None, 0);
         }
-        let (mut p, mut down) = ghost_pos(t, script);
+        let (mut p, _) = ghost_pos(t, script);
+        let down;
         match tr.2 {
             None => {
                 if let Some(s) = script.get(tr.1) {

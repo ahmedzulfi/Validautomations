@@ -154,7 +154,7 @@ fn controls(ui: &mut Ui, add: impl FnOnce(&mut Ui)) {
     );
     child.spacing_mut().item_spacing.x = 12.0;
     let base = ui.scope_id();
-    child.data_mut(|d| d.insert_temp(egui::Id::new("tx_knob_base"), base));
+    child.data_mut(|d| d.insert_temp(egui::Id::unique("tx_knob_base"), base));
     add(&mut child);
     let got = child.min_rect().width();
     if (got - w).abs() > 0.5 {
@@ -169,7 +169,7 @@ fn knob(ui: &mut Ui, key: &str, label: &str, default: f32, range: std::ops::Rang
 }
 
 fn knob_with(ui: &mut Ui, key: &str, label: &str, default: f32, range: std::ops::RangeInclusive<f32>, suffix: &str, decimals: Option<usize>) -> f32 {
-    let base: egui::Id = ui.data(|d| d.get_temp(egui::Id::new("tx_knob_base"))).unwrap_or(ui.scope_id());
+    let base: egui::Id = ui.data(|d| d.get_temp(egui::Id::unique("tx_knob_base"))).unwrap_or(ui.scope_id());
     let id = base.with(key);
     let mut v: f32 = glowkit_core::state(ui, id, || default);
     let s = ControlSlider::new(label, &mut v, range).suffix(suffix).width(210.0);
@@ -1108,7 +1108,8 @@ ui.add(DotMatrixLoader::new(DotPattern::Orbit).dot(6.0).cycle(1.2));"##,
                 stage(ui, "dots", 300.0, &sc, |ui| {
                     ui.vertical_centered(|ui| {
                         ui.spacing_mut().item_spacing.y = 26.0;
-                        ui.horizontal(|ui| {
+                        let side = dot * 4.0 + dot * 0.45 * 3.0;
+                        ui.allocate_ui_with_layout(vec2(side * 4.0 + 44.0 * 3.0, side), Layout::left_to_right(Align::Center), |ui| {
                             ui.spacing_mut().item_spacing.x = 44.0;
                             for p in [DotPattern::Scan, DotPattern::Twinkle, DotPattern::Orbit, DotPattern::Pulse] {
                                 ui.add(DotMatrixLoader::new(p).dot(dot).gap(dot * 0.45).cycle(cycle / 1000.0));

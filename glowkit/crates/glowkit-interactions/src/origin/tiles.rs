@@ -63,7 +63,7 @@ impl PlushMark {
             PlushMark::Bolt => {
                 let (x, y) = (p.x, p.y);
                 let upper = y < 0.05 && y > -0.7 && x > -0.35 + (y + 0.7) * 0.25 - 0.05 && x < 0.25 + (y + 0.7) * 0.05 && x - y * 0.55 < 0.35;
-                let lower = y >= -0.05 && y < 0.72 && x > -0.2 + (y * 0.1) && x < 0.42 - (y + 0.05) * 0.75 && x + 0.1 > (y - 0.05) * 0.2 - 0.25;
+                let lower = (-0.05..0.72).contains(&y) && x > -0.2 + (y * 0.1) && x < 0.42 - (y + 0.05) * 0.75 && x + 0.1 > (y - 0.05) * 0.2 - 0.25;
                 if upper || lower {
                     Some(0)
                 } else {
@@ -329,7 +329,7 @@ impl Widget for CorollaGleam {
         let unit = rect.height().min(rect.width() * 0.55);
         let cam = Cam { center: pos2(rect.center().x, rect.max.y - unit * 0.06), focal: unit * 3.5, dist: 7.0 };
         let yaw = time * 0.18 * self.speed + lean.x * 0.4;
-        let pitch = 0.12 + lean.y * 0.12;
+        let pitch = 0.62 + lean.y * 0.12;
         let breathe = 1.0 + (time * 0.9).sin() * 0.04;
         let n = self.slabs;
         // each slab is a petal in a radial plane, opened outward by `open` from the vertical axis

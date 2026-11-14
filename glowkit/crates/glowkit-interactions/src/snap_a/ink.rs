@@ -167,7 +167,6 @@ impl Widget for InkReveal {
 struct TrailPoint {
     pos: Pos2,
     age: f32,
-    seed: f32,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -270,10 +269,10 @@ impl InkTrail {
             for p in &mut s.pts {
                 p.age += dt;
                 let n = vec2(
-                    noise3(p.pos.x * 0.008, p.pos.y * 0.008, tt * 0.25 + p.seed),
-                    noise3(p.pos.x * 0.008 + 31.0, p.pos.y * 0.008, tt * 0.25 + p.seed),
+                    noise3(p.pos.x * 0.006, p.pos.y * 0.006, tt * 0.2),
+                    noise3(p.pos.x * 0.006 + 31.0, p.pos.y * 0.006, tt * 0.2),
                 );
-                p.pos += n * 70.0 * drift * dt;
+                p.pos += n * 90.0 * drift * dt * sstep(0.0, 0.4, p.age);
             }
             s.pts.retain(|p| p.age < life);
             if let Some(h) = head {
@@ -282,7 +281,7 @@ impl InkTrail {
                 let steps = ((d / 5.0).ceil() as usize).clamp(1, 40);
                 for k in 1..=steps {
                     let q = from.lerp(h, k as f32 / steps as f32);
-                    s.pts.push(TrailPoint { pos: q, age: dt * (1.0 - k as f32 / steps as f32), seed: (tt * 13.0).fract() });
+                    s.pts.push(TrailPoint { pos: q, age: dt * (1.0 - k as f32 / steps as f32) });
                 }
                 if s.pts.len() > 600 {
                     let extra = s.pts.len() - 600;
@@ -307,10 +306,20 @@ impl InkTrail {
         // one ribbon mesh with a soft cross-section: halo | body | core | body | halo
         let mut m = Mesh::default();
         let n = st.pts.len();
+        // smooth the drifted centre line so the ribbon edges stay clean
+        let mut line: Vec<Pos2> = st.pts.iter().map(|p| p.pos).collect();
+        for _ in 0..3 {
+            let prev = line.clone();
+            for i in 1..n - 1 {
+                if prev[i - 1].distance(prev[i + 1]) < 60.0 {
+                    line[i] = pos2((prev[i - 1].x + 2.0 * prev[i].x + prev[i + 1].x) * 0.25, (prev[i - 1].y + 2.0 * prev[i].y + prev[i + 1].y) * 0.25);
+                }
+            }
+        }
         for i in 0..n {
-            let p = st.pts[i];
-            let prev = st.pts[i.saturating_sub(1)].pos;
-            let next = st.pts[(i + 1).min(n - 1)].pos;
+            let p = TrailPoint { pos: line[i], ..st.pts[i] };
+            let prev = line[i.saturating_sub(4)];
+            let next = line[(i + 4).min(n - 1)];
             let dir = next - prev;
             let nrm = if dir.length() > 1e-3 { vec2(-dir.y, dir.x).normalized() } else { vec2(0.0, 1.0) };
             let k = 1.0 - p.age / life;

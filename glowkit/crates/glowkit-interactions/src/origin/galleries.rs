@@ -22,6 +22,7 @@ fn cover_uv(tex: f32, frame: f32) -> Rect {
 }
 
 /// A rotated, rounded image card (texture cropped to cover).
+#[allow(clippy::too_many_arguments)]
 fn image_card(painter: &Painter, tex: TextureId, tex_aspect: f32, center: Pos2, size: Vec2, angle: f32, radius: f32, tint: Color32) {
     let uv = cover_uv(tex_aspect, size.x / size.y.max(1.0));
     let local = Rect::from_center_size(Pos2::ZERO, size);
@@ -636,7 +637,7 @@ impl Widget for HoverImageReveal {
     fn ui(self, ui: &mut Ui) -> Response {
         let rows = self.items.len().max(1);
         let row_h = self.font_size * 1.18;
-        let size = vec2(ui.available_width(), row_h * rows as f32 + 40.0);
+        let size = vec2(ui.available_width(), row_h * rows as f32 + 80.0);
         let (rect, response) = ui.allocate_exact_size(size, Sense::hover());
         if !ui.is_rect_visible(rect) {
             return response;
@@ -647,7 +648,7 @@ impl Widget for HoverImageReveal {
         let dt = glowkit_core::dt(ui);
         let painter = ui.painter_at(rect.expand(self.window.max_elem()));
         let font = FontId::proportional(self.font_size);
-        let top = rect.min.y + 20.0;
+        let top = rect.min.y + 40.0;
         let idle = idle_secs(ui, id, response.hovered());
         let ghost = self.autoplay && !response.hovered() && idle > 1.0;
         let pointer = response.hover_pos().or(if ghost {
@@ -655,7 +656,7 @@ impl Widget for HoverImageReveal {
             let y = top + row_h * (0.5 + (cyc * 1.25 * rows as f32).min(rows as f32 - 0.5));
             let on = cyc < 0.8;
             if on {
-                Some(pos2(rect.center().x + (time * 0.9).sin() * rect.width() * 0.16, y))
+                Some(pos2(rect.center().x - rect.width() * 0.12 + (time * 0.9).sin() * rect.width() * 0.1, y))
             } else {
                 None
             }
@@ -700,14 +701,16 @@ impl Widget for HoverImageReveal {
             let dim = if hov { 0.28 + 0.72 * k } else { 1.0 };
             let col = with_alpha(t.foreground, dim);
             let x = rect.center().x + k * 10.0;
+            // a faux-bold display weight: the label twice, half a point apart
             painter.text(pos2(x, y), Align2::CENTER_CENTER, item.to_uppercase(), font.clone(), col);
+            painter.text(pos2(x + 0.6, y), Align2::CENTER_CENTER, item.to_uppercase(), font.clone(), col);
         }
         // floating window
         let show = st.show.value.clamp(0.0, 1.2);
         if show > 0.01 {
             let vel = st.x.velocity;
             let tilt = (vel / 3000.0).clamp(-0.25, 0.25);
-            let c = pos2(st.x.value, st.y.value) + vec2(self.window.x * 0.15, -self.window.y * 0.55);
+            let c = pos2(st.x.value, st.y.value) + vec2(self.window.x * 0.62, 0.0);
             let sz = self.window * (0.6 + 0.4 * show);
             paint::soft_shadow(&painter, Rect::from_center_size(c + vec2(0.0, 12.0), sz), 12.0, 24.0, Vec2::ZERO, with_alpha(Color32::BLACK, 0.3 * show.min(1.0)));
             let e = glowkit_core::ease(glowkit_core::Easing::OutCubic, st.switch_t);

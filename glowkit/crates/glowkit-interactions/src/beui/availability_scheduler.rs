@@ -91,8 +91,8 @@ impl<'a> AvailabilityScheduler<'a> {
     }
 }
 
-const SLOT_H: f32 = 40.0;
-const ROW_PAD: f32 = 7.0;
+const SLOT_H: f32 = 38.0;
+const ROW_PAD: f32 = 6.0;
 
 impl egui::Widget for AvailabilityScheduler<'_> {
     fn ui(self, ui: &mut Ui) -> egui::Response {

@@ -835,7 +835,7 @@ impl CosmicOrb {
             let size = (0.5 + 1.2 * h01(seed + 5).powi(3)) * (r / 140.0).clamp(0.6, 1.6);
             dots.add(s, size, lum(Color32::WHITE, (0.35 + 0.65 * tw) * front, true));
         }
-        dots.paint(&painter);
+        dots.paint(painter);
         // rim: fresnel glow + chromatic fringes
         let rim = |rad: f32, w: f32, col: Color32| {
             painter.circle_stroke(c, rad, egui::Stroke::new(w, col));
