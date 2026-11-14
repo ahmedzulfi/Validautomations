@@ -146,7 +146,7 @@ impl Widget for AsciiText {
         let origin = rect.min + pad;
         let colors: Vec<Color32> = if self.colors.is_empty() { t.gradient.to_vec() } else { self.colors.clone() };
         if self.glow {
-            let gc = if t.dark { 0.05 } else { 0.035 };
+            let gc = if t.dark { 0.05 } else { 0.022 };
             for i in 0..8 {
                 let a = i as f32 / 8.0 * std::f32::consts::TAU;
                 galley_with(&painter, origin + vec2(a.cos(), a.sin()) * thick, &galley, |p| {

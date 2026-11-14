@@ -246,39 +246,50 @@ pub(crate) fn paint_avatar(painter: &Painter, rect: Rect, radius: f32, colors: [
         painter.circle_stroke(ring_c, w * 0.16, Stroke::new(1.5, with_alpha(Color32::WHITE, 0.22)));
         painter.circle_filled(ring_c + vec2(w * 0.22, h * 0.1), w * 0.025, with_alpha(Color32::WHITE, 0.4));
     }
-    let body = mix(shade(b, -0.42), Color32::from_rgb(12, 10, 24), 0.45);
-    let skin = mix(body, a, 0.18);
-    let head_r = w * 0.16;
-    let head = pos2(cx, rect.min.y + h * 0.47);
+    const SKIN: [&str; 5] = ["#F1C27D", "#E0AC69", "#C68642", "#8D5524", "#FFDBAC"];
+    const HAIR: [&str; 5] = ["#2B1B17", "#4A2C1D", "#1C1C28", "#A5682A", "#5A3218"];
+    let skin = glowkit_core::hex(SKIN[(seed as usize * 2 + 1) % SKIN.len()]);
+    let hair = glowkit_core::hex(HAIR[(seed as usize * 3) % HAIR.len()]);
+    let shirt = mix(b, Color32::from_rgb(18, 16, 32), 0.5);
+    let style = seed % 3;
+    let r = w.min(h) * 0.16;
+    let head = pos2(cx, rect.min.y + h * 0.44);
+    if style == 1 {
+        // long hair falls behind the shoulders
+        painter.add(Shape::ellipse_filled(head + vec2(0.0, r * 0.6), vec2(r * 1.28, r * 1.7), hair));
+    }
     // shoulders
-    painter.add(Shape::ellipse_filled(pos2(cx, rect.max.y + h * 0.06), vec2(w * 0.4, h * 0.3), body));
+    painter.add(Shape::ellipse_filled(pos2(cx, head.y + r * 1.55 + h * 0.3), vec2(w * 0.42, h * 0.32), shirt));
+    painter.add(Shape::ellipse_filled(
+        pos2(cx, head.y + r * 1.55 + h * 0.3 + 2.0),
+        vec2(w * 0.42 - 3.0, h * 0.32 - 3.0),
+        mix(shirt, a, 0.18),
+    ));
     // neck
     painter.rect_filled(
-        Rect::from_center_size(pos2(cx, head.y + head_r * 1.2), vec2(head_r * 0.85, head_r * 1.4)),
-        egui::CornerRadius::same(4),
-        skin,
+        Rect::from_min_max(pos2(cx - r * 0.42, head.y + r * 0.5), pos2(cx + r * 0.42, head.y + r * 1.75)),
+        egui::CornerRadius::same((r * 0.3) as u8),
+        shade(skin, -0.12),
     );
-    painter.circle_filled(head, head_r, skin);
-    // hair
-    let hair = shade(body, -0.25);
-    match seed % 3 {
+    if style != 1 {
+        painter.circle_filled(head - vec2(0.0, r * 0.12), r * 1.1, hair);
+    }
+    painter.circle_filled(head, r, skin);
+    // fringe
+    match style {
         0 => {
-            painter.add(Shape::ellipse_filled(head - vec2(0.0, head_r * 0.45), vec2(head_r * 1.08, head_r * 0.7), hair));
+            painter.add(Shape::ellipse_filled(head - vec2(r * 0.18, r * 0.6), vec2(r * 0.98, r * 0.48), hair));
         }
         1 => {
-            painter.add(Shape::ellipse_filled(head - vec2(0.0, head_r * 0.2), vec2(head_r * 1.2, head_r * 1.1), hair));
-            painter.circle_filled(head + vec2(0.0, head_r * 0.12), head_r * 0.9, skin);
+            painter.add(Shape::ellipse_filled(head - vec2(0.0, r * 0.68), vec2(r * 1.02, r * 0.42), hair));
         }
         _ => {
-            painter.add(Shape::ellipse_filled(
-                head - vec2(head_r * 0.15, head_r * 0.55),
-                vec2(head_r * 1.0, head_r * 0.55),
-                hair,
-            ));
+            painter.circle_filled(head - vec2(0.0, r * 1.3), r * 0.5, hair);
+            painter.add(Shape::ellipse_filled(head - vec2(-r * 0.2, r * 0.66), vec2(r * 0.9, r * 0.4), hair));
         }
     }
-    // rim light on the shoulder / head
-    paint::arc(painter, head, head_r - 0.5, -2.6, -1.2, 1.6, with_alpha(Color32::WHITE, 0.35));
+    // soft rim light
+    paint::arc(painter, head, r - 0.6, -2.7, -1.6, 1.4, with_alpha(Color32::WHITE, 0.3));
 }
 
 /// Pleasant gradient pairs for default item colors.

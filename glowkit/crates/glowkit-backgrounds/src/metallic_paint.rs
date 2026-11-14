@@ -217,7 +217,7 @@ impl MetallicPaint {
         };
         // mesh: concentric rings from the center out to the outline, plus a feathered edge
         let n = outline.len();
-        let rings = 14;
+        let rings = 16;
         let feather = 1.2;
         let mut mesh = Mesh::default();
         let to_screen = |q: Vec2| -> Pos2 { center + q * r };
@@ -238,8 +238,8 @@ impl MetallicPaint {
             .collect();
         for ring in 1..=rings {
             let k = ring as f32 / rings as f32;
-            // denser near the rim, where the bevel lives
-            let k = 1.0 - (1.0 - k).powf(1.6);
+            // slightly denser near the rim, where the bevel lives
+            let k = 1.0 - (1.0 - k).powf(1.15);
             for i in 0..n {
                 let q = outline[i] * k;
                 mesh.colored_vertex(to_screen(q), shade(q, k, normals[i] * k));
