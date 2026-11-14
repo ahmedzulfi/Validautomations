@@ -72,7 +72,7 @@ impl Default for CloudSky {
 impl CloudSky {
     /// A sky with default settings.
     pub fn new() -> Self {
-        Self { size: None, clouds: 9, speed: 1.0, dusk: None, cirrus: 0.6 }
+        Self { size: None, clouds: 7, speed: 1.0, dusk: None, cirrus: 0.6 }
     }
     /// Widget size (default: available width x 380).
     pub fn size(mut self, s: Vec2) -> Self {
@@ -136,7 +136,7 @@ impl CloudSky {
                 let seed = (layer * 100 + i) as u64 * 7919 + 3;
                 let base_x = h01(seed) * span + time * speed;
                 let x = rect.min.x - 200.0 * scale + base_x.rem_euclid(span);
-                let y = rect.min.y + rect.height() * (if far { 0.18 + 0.4 * h01(seed + 1) } else { 0.1 + 0.6 * h01(seed + 1) });
+                let y = rect.min.y + rect.height() * (if far { 0.2 + 0.45 * h01(seed + 1) } else { 0.12 + 0.62 * h01(seed + 1) });
                 let w = (90.0 + 120.0 * h01(seed + 2)) * scale;
                 let puffs = 7 + (h01(seed + 3) * 6.0) as usize;
                 let alpha = if far { 0.75 } else { 1.0 };
@@ -150,16 +150,16 @@ impl CloudSky {
                         let r = w * (0.22 + 0.2 * hump + 0.08 * h01(ps)) * (1.0 + morph);
                         let c = pos2(x + fx * w * 0.6, y - hump * w * 0.12 + (h01(ps + 1) - 0.5) * w * 0.1);
                         let (col, off, rr) = match pass {
-                            0 => (shade, vec2(0.0, r * 0.28), r * 1.02),
+                            0 => (shade, vec2(0.0, r * 0.32), r * 1.1),
                             1 => (body, vec2(0.0, 0.0), r),
                             _ => (light, vec2(-r * 0.15, -r * 0.2), r * 0.6),
                         };
-                        let a = alpha * if pass == 2 { 0.7 } else { 0.95 };
+                        let a = alpha * match pass { 0 => 0.45, 1 => 0.95, _ => 0.7 };
                         puff(&mut m, c + off, vec2(rr * 1.15, rr * 0.9), with_alpha(col, a), with_alpha(col, 0.0));
                     }
                 }
                 // flat base
-                puff(&mut m, pos2(x, y + w * 0.1), vec2(w * 0.75, w * 0.12), with_alpha(shade, 0.5 * alpha), with_alpha(shade, 0.0));
+                puff(&mut m, pos2(x, y + w * 0.08), vec2(w * 0.8, w * 0.14), with_alpha(shade, 0.22 * alpha), with_alpha(shade, 0.0));
             }
             painter.add(Shape::mesh(m));
         }
@@ -208,7 +208,7 @@ impl Default for VoxelMeadow {
 impl VoxelMeadow {
     /// A meadow with default settings.
     pub fn new() -> Self {
-        Self { size: None, flowers: 0.35, breeze: 1.0, blocks: 1400 }
+        Self { size: None, flowers: 0.3, breeze: 1.0, blocks: 2200 }
     }
     /// Widget size (default: available width x 380).
     pub fn size(mut self, s: Vec2) -> Self {
@@ -274,8 +274,8 @@ impl Widget for VoxelMeadow {
             let span = rect.width() + 200.0;
             let x = rect.min.x - 100.0 + (h01(seed) * span + time * (6.0 + 6.0 * h01(seed + 1)) * (1.0 + wind)).rem_euclid(span);
             let y = rect.min.y + rect.height() * (0.08 + 0.25 * h01(seed + 2));
-            let s = 10.0 + 8.0 * h01(seed + 3);
-            let w = 2 + (h01(seed + 4) * 3.0) as i32;
+            let s = 16.0 + 10.0 * h01(seed + 3);
+            let w = 3 + (h01(seed + 4) * 4.0) as i32;
             for bx in 0..w {
                 for by in 0..2 {
                     if by == 0 && (bx == 0 || bx == w - 1) && h01(seed + bx as u64) > 0.4 {
@@ -289,11 +289,11 @@ impl Widget for VoxelMeadow {
         painter.add(Shape::mesh(m));
         // treeline / distant blocks
         let mut far = Mesh::default();
-        let bw = 14.0;
+        let bw = 18.0;
         let cols = (rect.width() / bw) as i32 + 2;
         for i in 0..cols {
             let n = noise3(i as f32 * 0.18, 3.0, 0.0) * 0.5 + 0.5;
-            let hgt = ((n * 4.0) as i32).max(1);
+            let hgt = ((n * 5.0) as i32).max(1);
             for k in 0..hgt {
                 let c = pos2(rect.min.x + i as f32 * bw, horizon - k as f32 * bw * 0.6);
                 let col = lerp_rgb(hex("#C9A06E"), hex("#E3B98B"), k as f32 / 4.0);
@@ -303,42 +303,49 @@ impl Widget for VoxelMeadow {
         painter.add(Shape::mesh(far));
         // ground
         paint::shader_grid(&painter, Rect::from_min_max(pos2(rect.min.x, horizon), rect.max), 1, 8, |uv| ramp(&[hex("#B8B45A"), hex("#7FA03A"), hex("#4E7A2A")], uv.y));
-        // meadow blocks back to front
+        // meadow blocks back to front, placed in a perspective ground plane
         let flowers = [hex("#E5484D"), hex("#F5C542"), hex("#FFFFFF"), hex("#4E7BEA"), hex("#F28AB2"), hex("#C25BD6")];
-        let mut items: Vec<(f32, u64)> = (0..self.blocks as u64).map(|i| (h01(i * 3 + 1), i)).collect();
-        items.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
+        let focal = rect.height() * 0.95;
+        let cam_h = 0.42;
+        let (zmin, zmax) = (0.6, 16.0);
+        let aspect = rect.width() / rect.height();
+        let mut items: Vec<(f32, u64)> = (0..self.blocks as u64)
+            .map(|i| {
+                let u = h01(i * 3 + 1);
+                (zmin + (zmax - zmin) * u.powf(1.6), i)
+            })
+            .collect();
+        items.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
         let mut mesh = Mesh::default();
         let mut blur = Mesh::default();
-        for (d, i) in items {
-            // d: 0 = horizon, 1 = foreground
-            let z = 1.0 / (0.06 + d * 0.94);
-            let y = horizon + (rect.max.y - horizon + 40.0) * (1.0 - 1.0 / (1.0 + d * 3.5)) * 1.25;
-            let x = rect.min.x + (h01(i * 3 + 2) * 1.4 - 0.2) * rect.width();
-            let s = (2.0 + 26.0 * d * d).max(2.0) * (0.8 + 0.4 * h01(i * 3 + 3));
-            let _ = z;
+        for (z, i) in items {
+            let xw = (h01(i * 3 + 2) - 0.5) * 2.2 * z * aspect * 0.55;
+            let x = rect.center().x + xw / z * focal;
+            let y = horizon + cam_h / z * focal;
+            let s = (0.11 / z * focal).max(1.6) * (0.85 + 0.3 * h01(i * 3 + 3));
             let is_flower = h01(i * 7 + 5) < self.flowers;
-            let sway = (time * 1.6 + x * 0.01).sin() * (0.4 + wind) * self.breeze;
-            let near = d > 0.82;
-            let target = if near { &mut blur } else { &mut mesh };
+            let sway = (time * 1.6 + xw * 2.0).sin() * (0.4 + wind) * self.breeze;
+            let haze = ((z - 4.0) / 12.0).clamp(0.0, 0.55);
+            let hz = |c: Color32| lerp_rgb(c, hex("#E9C99A"), haze);
+            let target = if z < 1.25 { &mut blur } else { &mut mesh };
             if is_flower {
                 let col = flowers[(i as usize * 7) % flowers.len()];
-                let stem_h = (1 + (h01(i * 5) * 3.0) as i32) as f32;
-                for k in 0..stem_h as i32 {
-                    let c = pos2(x + sway * k as f32 * s * 0.12, y - k as f32 * s * 0.55);
-                    cube(target, c, s * 0.35, s * 0.1, hex("#4E8A2E"), hex("#6FB043"), hex("#3B6E22"));
+                let stem = 1 + (h01(i * 5) * 3.0) as i32;
+                for k in 0..stem {
+                    let c = pos2(x + sway * k as f32 * s * 0.1, y - k as f32 * s * 0.42);
+                    cube(target, c, s * 0.3, s * 0.08, hz(hex("#4E8A2E")), hz(hex("#6FB043")), hz(hex("#3B6E22")));
                 }
-                let head = pos2(x + sway * stem_h * s * 0.12, y - stem_h * s * 0.55 - s * 0.2);
-                let fc = lerp_rgb(col, Color32::BLACK, 0.08);
-                cube(target, head, s * 0.75, s * 0.22, fc, lerp_rgb(col, Color32::WHITE, 0.35), lerp_rgb(col, Color32::BLACK, 0.25));
-                if s > 10.0 {
-                    cube(target, head + vec2(0.0, -s * 0.05), s * 0.25, s * 0.08, hex("#F2B33D"), hex("#FFD772"), hex("#C98C22"));
+                let head = pos2(x + sway * stem as f32 * s * 0.1, y - stem as f32 * s * 0.42 - s * 0.15);
+                cube(target, head, s * 0.7, s * 0.2, hz(col), hz(lerp_rgb(col, Color32::WHITE, 0.35)), hz(lerp_rgb(col, Color32::BLACK, 0.25)));
+                if s > 9.0 {
+                    cube(target, head + vec2(0.0, -s * 0.06), s * 0.24, s * 0.07, hex("#F2B33D"), hex("#FFD772"), hex("#C98C22"));
                 }
             } else {
-                let tall = 1 + (h01(i * 11) * 3.0) as i32;
-                let g = lerp_rgb(hex("#5E9A2E"), hex("#B8C84A"), h01(i * 13));
+                let tall = 1 + (h01(i * 11) * 3.2) as i32;
+                let g = hz(lerp_rgb(hex("#4F8A2A"), hex("#B5C84A"), h01(i * 13)));
                 for k in 0..tall {
-                    let c = pos2(x + sway * k as f32 * s * 0.15, y - k as f32 * s * 0.7);
-                    cube(target, c, s * 0.5, s * 0.14, g, lerp_rgb(g, hex("#F7E7A0"), 0.35), lerp_rgb(g, Color32::BLACK, 0.2));
+                    let c = pos2(x + sway * k as f32 * s * 0.14, y - k as f32 * s * 0.55);
+                    cube(target, c, s * 0.48, s * 0.13, g, lerp_rgb(g, hex("#F7E7A0"), 0.35), lerp_rgb(g, Color32::BLACK, 0.2));
                 }
             }
         }
@@ -392,7 +399,7 @@ impl Default for GlimmerVale {
 impl GlimmerVale {
     /// A vale with default settings.
     pub fn new() -> Self {
-        Self { size: None, glitter: 2600, daisies: 26, speed: 1.0 }
+        Self { size: None, glitter: 3600, daisies: 22, speed: 1.0 }
     }
     /// Widget size (default: available width x 380).
     pub fn size(mut self, s: Vec2) -> Self {
@@ -429,7 +436,7 @@ impl Widget for GlimmerVale {
         let sky = [hex("#6E74C8"), hex("#8E95DC"), hex("#B7B4E6"), hex("#3B2E58")];
         paint::shader_grid(&painter, rect, 1, 12, |uv| ramp(&sky, uv.y));
         // hills: crest(x) per layer, far to near
-        let layers = [(0.42, 0.10, 0.9, 0.0), (0.55, 0.12, 1.3, 2.0), (0.7, 0.1, 1.7, 5.0)];
+        let layers = [(0.46, 0.15, 0.8, 0.0), (0.6, 0.12, 1.25, 2.0), (0.76, 0.08, 1.7, 5.0)];
         let crest = |l: usize, x: f32| -> f32 {
             let (base, amp, freq, ph) = layers[l];
             let u = x / rect.width();
@@ -445,14 +452,18 @@ impl Widget for GlimmerVale {
             for k in 0..=cols {
                 let x = rect.min.x + k as f32 / cols as f32 * rect.width();
                 let y = crest(l, x);
-                let c = lerp_rgb(deep, hex("#3A2B5C"), 0.6 - l as f32 * 0.2);
-                body.vertices.push(Vertex { pos: pos2(x, y), uv: WHITE_UV, color: c });
+                let crest_c = lerp_rgb(lerp_rgb(violet, warm, 0.45), deep, 0.25 + l as f32 * 0.12);
+                let mid_c = lerp_rgb(hex("#4A3878"), deep, 0.3 + l as f32 * 0.1);
+                body.vertices.push(Vertex { pos: pos2(x, y), uv: WHITE_UV, color: crest_c });
+                body.vertices.push(Vertex { pos: pos2(x, y + rect.height() * 0.08), uv: WHITE_UV, color: mid_c });
                 body.vertices.push(Vertex { pos: pos2(x, rect.max.y), uv: WHITE_UV, color: deep });
             }
             for k in 0..cols as u32 {
-                let i = k * 2;
-                body.add_triangle(i, i + 1, i + 3);
-                body.add_triangle(i, i + 3, i + 2);
+                let i = k * 3;
+                for r in 0..2 {
+                    body.add_triangle(i + r, i + r + 1, i + r + 4);
+                    body.add_triangle(i + r, i + r + 4, i + r + 3);
+                }
             }
             painter.add(Shape::mesh(body));
             // glitter: dense along the crest, thinning downward
@@ -461,7 +472,7 @@ impl Widget for GlimmerVale {
             for i in 0..n {
                 let seed = (l * 100_000 + i) as u64 * 2_654_435_761 % 1_000_003;
                 let x = rect.min.x + h01(seed) * rect.width();
-                let depth = h01(seed + 1).powf(2.4) * rect.height() * 0.35;
+                let depth = h01(seed + 1).powf(2.0) * rect.height() * 0.4;
                 let y = crest(l, x) + depth + 1.0;
                 if y > rect.max.y {
                     continue;
@@ -469,8 +480,8 @@ impl Widget for GlimmerVale {
                 let near_crest = (1.0 - depth / 40.0).max(0.0);
                 let tw = 0.5 + 0.5 * (time * (2.0 + 4.0 * h01(seed + 2)) + h01(seed + 3) * TAU).sin();
                 let c = lerp_rgb(violet, warm, (h01(seed + 4) * 0.6 + near_crest * 0.6).min(1.0));
-                let a = (0.25 + 0.75 * tw) * (0.35 + 0.65 * near_crest) * (0.6 + 0.4 * l as f32 / 2.0);
-                let size = (0.6 + 1.1 * h01(seed + 5)) * (0.8 + 0.3 * l as f32);
+                let a = (0.3 + 0.7 * tw) * (0.45 + 0.55 * near_crest) * (0.75 + 0.25 * l as f32 / 2.0);
+                let size = (0.7 + 1.4 * h01(seed + 5).powi(2)) * (0.8 + 0.3 * l as f32);
                 dots.add(pos2(x, y), size, lum(c, a, true));
             }
             dots.paint(&painter);
@@ -480,8 +491,8 @@ impl Widget for GlimmerVale {
                 let x = rect.min.x + k as f32 / cols as f32 * rect.width();
                 pos2(x, crest(l, x))
             }).collect();
-            super::common::strip(&mut bloom, &pts, |_| 5.0, |_| lum(warm, 0.18, true), |_| Color32::TRANSPARENT);
-            super::common::strip(&mut bloom, &pts, |_| 1.2, |_| lum(Color32::WHITE, 0.35, true), |_| Color32::TRANSPARENT);
+            super::common::strip(&mut bloom, &pts, |_| 14.0, |_| lum(warm, 0.10, true), |_| Color32::TRANSPARENT);
+            super::common::strip(&mut bloom, &pts, |_| 4.0, |_| lum(warm, 0.16, true), |_| Color32::TRANSPARENT);
             painter.add(Shape::mesh(bloom));
         }
         // stars
@@ -500,8 +511,8 @@ impl Widget for GlimmerVale {
             let span = rect.width() + 120.0;
             let x = rect.min.x - 60.0 + (h01(seed + 1) * span + time * (4.0 + 10.0 * d) * (1.0 + wind * 2.0)).rem_euclid(span);
             let y = rect.min.y + rect.height() * (0.62 + 0.36 * h01(seed + 2)) + (time * 0.8 + i as f32).sin() * 3.0;
-            let r = 6.0 + 16.0 * d * d;
-            let a = 0.55 + 0.35 * d;
+            let r = 7.0 + 22.0 * d * d;
+            let a = 0.45 + 0.35 * d;
             puff(&mut m, pos2(x, y), vec2(r * 1.25, r * 1.05), with_alpha(hex("#F5F0FF"), a * 0.9), with_alpha(hex("#F5F0FF"), 0.0));
             puff(&mut m, pos2(x, y), vec2(r * 0.42, r * 0.36), with_alpha(hex("#FF7A5C"), a), with_alpha(hex("#FF7A5C"), 0.0));
         }

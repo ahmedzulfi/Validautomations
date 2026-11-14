@@ -17,8 +17,10 @@ mod preview_menu;
 mod reorder;
 mod search;
 mod select;
+mod sheets;
 mod swipe;
 mod tip;
+mod trail;
 mod undo;
 mod viewer;
 
@@ -30,8 +32,10 @@ pub use preview_menu::PreviewMenu;
 pub use reorder::{ReorderList, TouchRow};
 pub use search::SearchReveal;
 pub use select::SelectionList;
+pub use sheets::{ActionBarSheet, ConfirmSheet, ConfirmStyle};
 pub use swipe::SwipeActions;
 pub use tip::CoachTip;
+pub use trail::TrailNav;
 pub use undo::UndoBar;
 pub use viewer::SwipeImageViewer;
 

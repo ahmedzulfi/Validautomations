@@ -163,7 +163,7 @@ impl egui::Widget for ProjectFolder {
         }
         // frosted front panel
         let front = Rect::from_min_max(pos2(body.min.x, body.min.y + body_h * 0.18 - hv * 3.0), body.max);
-        paint::soft_shadow(&painter, front, 18.0, 20.0, vec2(0.0, -2.0), shadow_color(&t, 0.5));
+        paint::soft_shadow(&painter, front, 18.0, 14.0, vec2(0.0, 2.0), shadow_color(&t, 0.3));
         let glass = if t.dark { with_alpha(shade(t.muted, 0.08), 0.94) } else { with_alpha(Color32::WHITE, 0.9) };
         painter.rect(front, cr(18.0), glass, Stroke::new(1.0, if t.dark { with_alpha(Color32::WHITE, 0.1) } else { t.border }), egui::StrokeKind::Inside);
         // top sheen

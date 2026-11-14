@@ -431,9 +431,9 @@ impl Widget for HoloCard {
         surface_grid(&painter, None, Rect::ZERO, 18, 24, self.size, radius, |u, v| map(vec2(u * w, v * h)), |u, v| {
             let n = noise3(u * 2.2, v * 2.6, time * 0.15);
             let hue = 360.0 * (0.55 * u + 0.75 * v + 1.9 * ry - 1.6 * rx + 0.35 * n) + time * 8.0;
-            let film = hsv(hue, 0.62, 1.0);
+            let film = hsv(hue, 0.5, 1.0);
             let band = 0.5 + 0.5 * ((u * 0.8 + v * 1.4 + ry * 2.0 - rx * 1.5) * TAU * 0.9 + n * 2.0).sin();
-            let k = (0.10 + 0.24 * band * band) * foil;
+            let k = (0.07 + 0.2 * band * band) * foil;
             let mut c = lerp_c(base, film, k.min(0.9));
             let d = (vec2(u, v) - glare).length();
             let g = (-(d * d) / 0.07).exp();

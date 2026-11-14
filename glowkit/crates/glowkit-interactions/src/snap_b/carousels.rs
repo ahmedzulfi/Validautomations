@@ -68,7 +68,7 @@ impl Default for DnaCarousel {
 impl DnaCarousel {
     /// A helix of the built-in painted photographs.
     pub fn new() -> Self {
-        Self { textures: Vec::new(), height: 380.0, card: vec2(170.0, 230.0), twist: 1.0, speed: 0.25, fringe: 1.0 }
+        Self { textures: Vec::new(), height: 380.0, card: vec2(178.0, 240.0), twist: 1.0, speed: 0.25, fringe: 1.0 }
     }
     /// Your own pictures (cropped to fill each card).
     pub fn textures(mut self, t: impl Into<Vec<TextureId>>) -> Self {
@@ -109,7 +109,7 @@ impl Widget for DnaCarousel {
         if response.hovered() {
             ui.ctx().set_cursor_icon(CursorIcon::Grab);
         }
-        let spacing = self.card.x * 0.62;
+        let spacing = self.card.x * 0.86;
         let off = drive_loop(ui, response.id, &response, true, self.speed, 1.0 / spacing);
         if !ui.is_rect_visible(rect) {
             return response;
@@ -769,7 +769,7 @@ impl Default for SpiralSlider {
 impl SpiralSlider {
     /// A spiral of the painted scenes.
     pub fn new() -> Self {
-        Self { textures: Vec::new(), height: 380.0, radius: 150.0, per_turn: 6, pitch: 1.0, speed: 0.22, frost: 1.0 }
+        Self { textures: Vec::new(), height: 380.0, radius: 130.0, per_turn: 7, pitch: 1.0, speed: 0.22, frost: 1.0 }
     }
     /// Your own pictures (cycled).
     pub fn textures(mut self, t: impl Into<Vec<TextureId>>) -> Self {
@@ -825,9 +825,9 @@ impl Widget for SpiralSlider {
         let dth = TAU / n;
         let r = self.radius;
         let panel_w = r * dth * 0.92 * 1.25; // along the track
-        let advance = panel_w * 0.55 * self.pitch; // track advance per panel
+        let advance = panel_w * 0.3 * self.pitch; // track advance per panel
         let arc = dth * 0.88; // angular size of a panel
-        let tilt = -0.32;
+        let tilt = -0.16;
         let bg = t.muted;
         let frost_c = if t.dark { hex("#C8CCDA") } else { hex("#FFFFFF") };
         let base = off.floor() as i32;
@@ -860,8 +860,8 @@ impl Widget for SpiralSlider {
             surface_grid(&painter, Some(tex), uv, 6, 8, vec2(panel_w, r * arc), 8.0, |u, v| cam.pt(pt3(u, v)), |u, v| {
                 let b = back(v);
                 let k = b * self.frost;
-                let c = lerp_c(Color32::WHITE, lerp_c(frost_c, bg, 0.35), k * 0.82);
-                c.gamma_multiply((1.0 - 0.45 * k) * edge_alpha(rect, cam.pt(pt3(u, v)).x, 80.0))
+                let c = lerp_c(Color32::WHITE, lerp_c(frost_c, bg, 0.3), k * 0.7);
+                c.gamma_multiply((1.0 - 0.3 * k) * edge_alpha(rect, cam.pt(pt3(u, v)).x, 80.0))
             });
         }
         response

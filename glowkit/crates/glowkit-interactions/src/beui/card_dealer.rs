@@ -147,19 +147,21 @@ impl egui::Widget for CardDealer {
         let st = glowkit_core::with_state(
             ui,
             id,
-            || DealerState { cards: Vec::new(), queue: 0, next_deal: 0.0, seed: 11, last_auto: now, auto_step: 0, hop: -10.0 },
+            || DealerState { cards: Vec::new(), queue: if auto { 5 } else { 0 }, next_deal: 0.0, seed: 11, last_auto: now, auto_step: 0, hop: -10.0 },
             |s| {
-                if auto && now - s.last_auto > 1.25 {
+                if auto && now - s.last_auto > 1.5 {
                     s.last_auto = now;
                     let script = [
-                        DealAction::Deal(3),
-                        DealAction::Deal(1),
+                        DealAction::Sort,
+                        DealAction::Shuffle,
                         DealAction::Deal(1),
                         DealAction::Sort,
                         DealAction::Shuffle,
                         DealAction::Deal(1),
                         DealAction::Sort,
                         DealAction::Collect,
+                        DealAction::Deal(3),
+                        DealAction::Deal(2),
                     ];
                     action = Some(script[s.auto_step as usize % script.len()]);
                     s.auto_step += 1;

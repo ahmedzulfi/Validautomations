@@ -68,8 +68,8 @@ fn on_phone(ui: &mut Ui, w: f32, h: f32, screen: Option<Color32>, widget: impl W
     let fill = screen.unwrap_or(if t.dark { t.background } else { Color32::WHITE });
     let scr = phone(ui.painter(), &t, rect, fill);
     let dark_screen = glowkit_core::color::luminance(fill) < 0.4;
-    status_bar(ui.painter(), scr, if dark_screen { Color32::WHITE } else { t.foreground });
     ui.put(scr, widget);
+    status_bar(ui.painter(), scr, if dark_screen { Color32::WHITE } else { t.foreground });
     phone_bezel(ui.painter(), &t, rect);
 }
 
@@ -560,6 +560,95 @@ ui.add(UndoBar::new(&mut notes).timeout(5.0).bounce(35.0));"##,
                 },
                 |ui, p| {
                     ui.add(ControlSlider::new("Timeout", &mut p[0], 1.0..=10.0).decimals(1).suffix("s"));
+                    ui.add(ControlSlider::new("Bounce", &mut p[1], 0.0..=100.0));
+                },
+            );
+            set_mem(ui, "p", p);
+        },
+    }, Demo {
+        id: "confirm-sheet",
+        name: "Confirm Sheet",
+        category: Category::Overlays,
+        description: "A confirmation that rises as an action sheet on phones (drag it down to dismiss, push it up against rubber) and pops as an alert on wide screens.",
+        covers: &["suiss/ui: Confirm"],
+        code: r##"ui.add(ConfirmSheet::new("Delete order", "Delete this order?")
+    .description("The order and its receipt will be removed. This can't be undone.")
+    .style(ConfirmStyle::Auto));"##,
+        show: |ui| {
+            let mut p = params(ui, "p", [25.0]);
+            bench(
+                ui,
+                PHONE_BENCH,
+                &mut p,
+                |ui, p| {
+                    on_phone(
+                        ui,
+                        PH_W,
+                        PH_H,
+                        None,
+                        ConfirmSheet::new("Delete order", "Delete this order?")
+                            .description("The order and its receipt will be removed. This can't be undone.")
+                            .bounce(p[0])
+                            .autoplay(true),
+                    );
+                },
+                |ui, p| {
+                    ui.add(ControlSlider::new("Bounce", &mut p[0], 0.0..=100.0));
+                },
+            );
+            set_mem(ui, "p", p);
+        },
+    }, Demo {
+        id: "action-bar-sheet",
+        name: "Action Bar Sheet",
+        category: Category::Navigation,
+        description: "Command menus that collapse into a ⋯ drawer on phones: rows slide sideways into each menu's items, and the drawer drags and flicks away.",
+        covers: &["suiss/ui: Action Bar"],
+        code: r##"ui.add(ActionBarSheet::new()
+    .menu("File", &["New", "Open…", "Duplicate"])
+    .menu("Edit", &["Undo", "Copy", "Paste"])
+    .menu("View", &["Zoom In", "Zoom Out"]));"##,
+        show: |ui| {
+            let mut p = params(ui, "p", [25.0]);
+            bench(
+                ui,
+                PHONE_BENCH,
+                &mut p,
+                |ui, p| {
+                    on_phone(ui, PH_W, PH_H, None, ActionBarSheet::new().bounce(p[0]).mobile(true).autoplay(true));
+                },
+                |ui, p| {
+                    ui.add(ControlSlider::new("Bounce", &mut p[0], 0.0..=100.0));
+                    let w = ui.available_width();
+                    let (r, _) = ui.allocate_exact_size(vec2(w, 200.0), Sense::hover());
+                    ui.put(r, ActionBarSheet::new().bounce(p[0]).mobile(false).title("Wide"));
+                },
+            );
+            set_mem(ui, "p", p);
+        },
+    }, Demo {
+        id: "trail-nav",
+        name: "Trail Nav",
+        category: Category::Navigation,
+        description: "A navigation stack with breadcrumbs and a back link: pages slide with parallax, swipe from the edge to pop interactively, hold Back for the history.",
+        covers: &["suiss/ui: Trail"],
+        code: r##"let mut path = vec!["Settings".to_string()];
+ui.add(TrailNav::new(&mut path)
+    .page("Settings", &["Privacy & Security", "Display"])
+    .page("Privacy & Security", &["Location Services", "Camera"]));"##,
+        show: |ui| {
+            let mut p = params(ui, "p", [30.0, 15.0]);
+            bench(
+                ui,
+                PHONE_BENCH,
+                &mut p,
+                |ui, p| {
+                    let mut path: Vec<String> = mem(ui, "path", Vec::new);
+                    on_phone(ui, PH_W, PH_H, Some(stage_color(ui)), TrailNav::new(&mut path).parallax(p[0]).bounce(p[1]).autoplay(true));
+                    set_mem(ui, "path", path);
+                },
+                |ui, p| {
+                    ui.add(ControlSlider::new("Parallax", &mut p[0], 0.0..=100.0).suffix("%"));
                     ui.add(ControlSlider::new("Bounce", &mut p[1], 0.0..=100.0));
                 },
             );

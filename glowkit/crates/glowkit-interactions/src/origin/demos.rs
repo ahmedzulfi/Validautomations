@@ -268,7 +268,7 @@ pub(super) fn all() -> Vec<Demo> {
                 ui.add_space(4.0);
                 centered_row(ui, 300.0, |ui| {
                     ui.add(PlushTile::new().size(210.0).length(v[0]).breeze(v[1]));
-                    ui.add(PlushTile::new().size(150.0).mark(PlushMark::Petals).length(v[0]).breeze(v[1]));
+                    ui.add(PlushTile::new().size(150.0).mark(PlushMark::Ring).base(hex("#F7F3EC")).colors([hex("#E2232E"); 4]).length(v[0]).breeze(v[1]));
                     ui.add(PlushTile::new().size(150.0).mark(PlushMark::Heart).base(hex("#2A2A31")).colors([hex("#FF5C8A"); 4]).length(v[0]).breeze(v[1]));
                 });
             },
@@ -307,7 +307,7 @@ pub(super) fn all() -> Vec<Demo> {
             covers: &["Originkit: Spiral Images"],
             code: r##"ui.add(SpiralGallery::new().cards(36).turns(2.6));"##,
             show: |ui| {
-                let v = controls(ui, "spiral", [36.0, 2.6, 1.0], [("Cards", 10.0, 70.0, 0), ("Turns", 1.0, 4.5, 1), ("Speed", 0.0, 3.0, 1)]);
+                let v = controls(ui, "spiral", [56.0, 2.6, 1.0], [("Cards", 10.0, 70.0, 0), ("Turns", 1.0, 4.5, 1), ("Speed", 0.0, 3.0, 1)]);
                 ui.add_space(8.0);
                 ui.add(SpiralGallery::new().cards(v[0] as usize).turns(v[1]).speed(v[2]).size(vec2(ui.available_width(), 380.0)));
             },

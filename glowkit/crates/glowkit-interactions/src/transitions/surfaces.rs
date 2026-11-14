@@ -195,7 +195,7 @@ impl SidePager {
         let mut heights = measured.clone();
         let mut run = |ui: &mut Ui, p: usize, xf: TSTransform, a: f32, blur: f32, interactive: bool| {
             let used = ui_layer(ui, xf, a, blur, |ui| {
-                let mut child = ui.new_child(UiBuilder::new().max_rect(content).id_salt(("page", p)));
+                let mut child = ui.new_child(UiBuilder::new().max_rect(content).id_salt(("page", p)).layout(egui::Layout::top_down(egui::Align::Min)));
                 child.set_clip_rect(clip);
                 if !interactive {
                     child.disable();

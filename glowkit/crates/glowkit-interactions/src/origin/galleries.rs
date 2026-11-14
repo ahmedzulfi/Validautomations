@@ -168,7 +168,7 @@ impl Widget for GalleryTunnel {
         for s in (0..segs).rev() {
             let z0 = s as f32 + 1.0 - frac;
             let z1 = z0 + 1.0;
-            if z0 < 0.15 {
+            if z0 < 0.04 {
                 continue;
             }
             let seg_id = (base_seg + s as i64) as u64;
@@ -195,7 +195,7 @@ impl Widget for GalleryTunnel {
                     let alpha = |v: f32| f1 + (f0 - f1) * v;
                     if r < self.fill * 0.55 {
                         let tex = textures[(seed as usize) % textures.len()];
-                        textured_quad(&painter, tex, q, 4, |_, v| lerp_rgb(bg, Color32::WHITE, alpha(v)));
+                        textured_quad(&painter, tex, q, 4, |_, v| with_alpha(Color32::WHITE, alpha(v)));
                     } else {
                         let c = colors[(seed as usize / 3) % colors.len()];
                         paint::quad(&painter, q, [lerp_rgb(bg, c, f1), lerp_rgb(bg, c, f1), lerp_rgb(bg, c, f0), lerp_rgb(bg, c, f0)]);
@@ -265,7 +265,7 @@ impl Default for SpiralGallery {
 impl SpiralGallery {
     /// A spiral of the built-in painted scenes.
     pub fn new() -> Self {
-        Self { size: None, images: Vec::new(), aspect: PaintedScene::ASPECT, cards: 36, turns: 2.6, speed: 1.0 }
+        Self { size: None, images: Vec::new(), aspect: PaintedScene::ASPECT, cards: 56, turns: 2.6, speed: 1.0 }
     }
     /// Use your own images (textures of aspect `aspect` = width / height).
     pub fn images(mut self, images: Vec<TextureId>, aspect: f32) -> Self {
@@ -327,7 +327,7 @@ impl Widget for SpiralGallery {
             let r = rmax * s.powf(1.15);
             let ang = s * self.turns * TAU + 0.3;
             let p = c + vec2(ang.cos(), ang.sin()) * r;
-            let w = (12.0 + 110.0 * s.powf(1.3)).min(rect.height() * 0.42);
+            let w = (10.0 + 150.0 * s.powf(1.25)).min(rect.height() * 0.5);
             let sz = vec2(w, w * 1.08);
             let fade = (s * 6.0).min(1.0);
             let tint = lerp_rgb(bg, Color32::WHITE, fade);
@@ -433,7 +433,7 @@ impl Widget for CoverflowGallery<'_> {
         let aspect = if self.images.is_empty() { PaintedScene::ASPECT } else { self.aspect };
         let now = ui.input(|i| i.time);
         let dt = glowkit_core::dt(ui);
-        let card_h = rect.height() * 0.62;
+        let card_h = rect.height() * 0.6;
         let card_w = (card_h * 0.78).min(rect.width() * 0.3);
         let spacing = card_w * 0.42;
         let idle = idle_secs(ui, id, response.hovered() || response.dragged());
@@ -491,7 +491,7 @@ impl Widget for CoverflowGallery<'_> {
         }
         let pos = st.pos.value - st.drag;
         let painter = ui.painter_at(rect);
-        let center = pos2(rect.center().x, rect.min.y + rect.height() * 0.42);
+        let center = pos2(rect.center().x, rect.min.y + rect.height() * 0.4);
         let focal = 900.0;
         let place = |off: f32| -> ([Pos2; 4], f32) {
             // off: signed slot offset from the active slide (fractional while moving)
@@ -530,10 +530,10 @@ impl Widget for CoverflowGallery<'_> {
             let bb = Rect::from_points(&q);
             paint::soft_shadow(&painter, bb.shrink(6.0).translate(vec2(0.0, 10.0)), 14.0, 22.0, Vec2::ZERO, with_alpha(Color32::BLACK, if t.dark { 0.55 } else { 0.18 } * fade));
             if self.reflection {
-                let refl = [q[3], q[2], q[2] + (q[2] - q[1]) * 0.35, q[3] + (q[3] - q[0]) * 0.35];
-                let rc = |v: f32| with_alpha(tint, 0.22 * (1.0 - v) * fade);
+                let refl = [q[3], q[2], q[2] + (q[2] - q[1]) * 0.2, q[3] + (q[3] - q[0]) * 0.2];
+                let rc = |v: f32| with_alpha(tint, 0.16 * (1.0 - v) * fade);
                 let mut m = Mesh::with_texture(textures[i % textures.len()]);
-                let uvs = [pos2(uv.min.x, uv.max.y), pos2(uv.max.x, uv.max.y), pos2(uv.max.x, uv.max.y - uv.height() * 0.35), pos2(uv.min.x, uv.max.y - uv.height() * 0.35)];
+                let uvs = [pos2(uv.min.x, uv.max.y), pos2(uv.max.x, uv.max.y), pos2(uv.max.x, uv.max.y - uv.height() * 0.2), pos2(uv.min.x, uv.max.y - uv.height() * 0.2)];
                 for k in 0..4 {
                     m.vertices.push(Vertex { pos: refl[k] + vec2(0.0, 4.0), uv: uvs[k], color: rc(if k < 2 { 0.0 } else { 1.0 }) });
                 }
@@ -566,7 +566,7 @@ impl Widget for CoverflowGallery<'_> {
         // title
         let active = pos.round().clamp(0.0, (n - 1) as f32) as usize;
         let near = 1.0 - ((pos - active as f32).abs() * 2.0).min(1.0);
-        let ty = center.y + card_h * 0.5 + 34.0;
+        let ty = center.y + card_h * 0.5 + card_h * 0.2 + 12.0;
         painter.text(pos2(center.x, ty + (1.0 - near) * 6.0), Align2::CENTER_CENTER, &titles[active % titles.len()], FontId::proportional(18.0), with_alpha(t.foreground, near));
         painter.text(pos2(center.x, ty + 22.0), Align2::CENTER_CENTER, format!("{:02} / {:02}", active + 1, n), FontId::monospace(11.0), with_alpha(t.muted_foreground, 0.8));
         response.on_hover_cursor(CursorIcon::Grab)
@@ -597,7 +597,7 @@ pub struct HoverImageReveal {
 impl HoverImageReveal {
     /// A reveal list of `items` (images default to the built-in painted scenes).
     pub fn new(items: Vec<String>) -> Self {
-        Self { items, images: Vec::new(), aspect: PaintedScene::ASPECT, font_size: 34.0, window: vec2(220.0, 150.0), autoplay: true }
+        Self { items, images: Vec::new(), aspect: PaintedScene::ASPECT, font_size: 34.0, window: vec2(200.0, 136.0), autoplay: true }
     }
     /// One image per row (textures of aspect `aspect`).
     pub fn images(mut self, images: Vec<TextureId>, aspect: f32) -> Self {

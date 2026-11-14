@@ -690,13 +690,13 @@ impl Widget for GlassKeycap {
             let phase = time * 0.4 + k as f32 * 1.7 + lean.x * 1.5;
             let f = move |p: Pos2| -> Color32 {
                 let u = (p.to_vec2() - center).dot((quad[1] - quad[0]).normalized()) / span + 0.5;
-                let band = |off: f32| (-((u - off - 0.5 * (phase).sin() * 0.3).powi(2)) / 0.006).exp();
+                let band = |off: f32| (-((u - off - 0.5 * (phase).sin() * 0.3).powi(2)) / 0.004).exp();
                 let mut c = glass_tint;
-                let a = if front { 0.75 } else { 0.4 };
+                let a = if front { 0.55 } else { 0.3 };
                 c = lerp_rgb(c, c1, band(0.2) * a);
                 c = lerp_rgb(c, c2, band(0.5) * a);
                 c = lerp_rgb(c, c3, band(0.8) * a);
-                with_alpha(c, if t.dark { 0.78 } else { 0.62 })
+                with_alpha(c, if t.dark { 0.7 } else { 0.55 })
             };
             paint::fill_convex_fn(&painter, quad, 4, f);
         };

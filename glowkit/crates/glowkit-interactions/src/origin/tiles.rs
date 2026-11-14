@@ -11,12 +11,12 @@ use std::f32::consts::{PI, TAU};
 /// The mark combed into a [`PlushTile`]'s fur.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum PlushMark {
-    /// A bold ring with a dot (default).
-    #[default]
+    /// A bold ring.
     Ring,
     /// A heart.
     Heart,
-    /// Four rounded petals in four colors.
+    /// Four rounded petals in four colors (default).
+    #[default]
     Petals,
     /// A lightning bolt.
     Bolt,
@@ -30,7 +30,7 @@ impl PlushMark {
         match self {
             PlushMark::Ring => {
                 let d = p.length();
-                if (0.36..0.62).contains(&d) || d < 0.16 {
+                if (0.34..0.64).contains(&d) {
                     Some(0)
                 } else {
                     None
@@ -101,7 +101,7 @@ impl Default for PlushTile {
 impl PlushTile {
     /// A plush tile with default settings.
     pub fn new() -> Self {
-        Self { size: 220.0, mark: PlushMark::Ring, base: None, colors: None, density: 1.0, length: 1.0, breeze: 1.0 }
+        Self { size: 220.0, mark: PlushMark::Petals, base: None, colors: None, density: 1.0, length: 1.0, breeze: 1.0 }
     }
     /// Tile edge length in points.
     pub fn size(mut self, s: f32) -> Self {
@@ -327,13 +327,13 @@ impl Widget for CorollaGleam {
         painter.rect_filled(rect, 0.0, bg);
         let film = self.film.clone().unwrap_or_else(|| vec![hex("#FF8AD8"), hex("#8B5CF6"), hex("#4F46E5"), hex("#14B8A6"), hex("#F59E0B"), hex("#F472B6")]);
         let unit = rect.height().min(rect.width() * 0.55);
-        let cam = Cam { center: pos2(rect.center().x, rect.max.y - unit * 0.08), focal: unit * 3.4, dist: 7.0 };
+        let cam = Cam { center: pos2(rect.center().x, rect.max.y - unit * 0.12), focal: unit * 2.7, dist: 7.0 };
         let yaw = time * 0.18 * self.speed + lean.x * 0.4;
         let pitch = 0.18 + lean.y * 0.2;
         let breathe = 1.0 + (time * 0.9).sin() * 0.04;
         let n = self.slabs;
-        let (r0, r1, hgt) = (0.55, 1.85, 1.55);
-        let thick = 0.09;
+        let (r0, r1, hgt) = (1.05, 1.62, 1.45);
+        let thick = 0.06;
         // local slab outline (u radial, v up): a tongue with a round top
         let mut outline: Vec<(f32, f32)> = Vec::new();
         let rw = (r1 - r0) * 0.5;
@@ -382,7 +382,7 @@ impl Widget for CorollaGleam {
                 lerp_rgb(c, Color32::WHITE, sheen + (y - 0.8).max(0.0) * 0.25)
             };
             // edge band (thickness) between the two faces
-            let edge_c = lerp_rgb(glowkit_core::color::gradient_cyclic(&film, hue + 0.3), Color32::WHITE, 0.45);
+            let edge_c = with_alpha(lerp_rgb(glowkit_core::color::gradient_cyclic(&film, hue + 0.3), Color32::WHITE, 0.3), 0.85);
             let mut band = Mesh::default();
             let m = s.front.len();
             for i in 0..m {
@@ -396,7 +396,7 @@ impl Widget for CorollaGleam {
             }
             painter.add(Shape::mesh(band));
             let face = if s.facing > 0.0 { &s.front } else { &s.back };
-            paint::fill_convex_fn(&painter, face, 5, |p| with_alpha(tint(p, 0.0), 0.94));
+            paint::fill_convex_fn(&painter, face, 5, |p| with_alpha(tint(p, 0.0), 0.86));
             // inner glassy highlight along the rounded rim
             let rim: Vec<Pos2> = face[2..].to_vec();
             painter.add(Shape::line(rim, Stroke::new(1.4, with_alpha(Color32::WHITE, 0.35 + 0.4 * (1.0 - f)))));

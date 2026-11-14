@@ -209,12 +209,12 @@ pub(crate) fn text_mask(ctx: &Context, text: &str, font: &FontId, grain: bool) -
         }
     }
     // embolden: blur the coverage and re-threshold below the midpoint (dilates and rounds)
-    let br = ((font.size * ppp * 0.04).round() as usize).clamp(1, 16);
+    let br = ((font.size * ppp * 0.028).round() as usize).clamp(1, 12);
     let blurred = box_blur(&box_blur(&alpha, w, h, br), w, h, br);
     let alpha: Vec<f32> = blurred
         .iter()
         .map(|v| {
-            let x = ((v - 0.17) / 0.16).clamp(0.0, 1.0);
+            let x = ((v - 0.24) / 0.2).clamp(0.0, 1.0);
             x * x * (3.0 - 2.0 * x)
         })
         .collect();
@@ -435,10 +435,26 @@ pub(crate) fn surface_grid(
         return;
     }
     let r = radius.min(size.x / 2.0).min(size.y / 2.0);
-    if r <= 0.5 {
+    if r <= 0.5 || (nx >= 12 && ny >= 12) {
+        // plain grid; with a radius, boundary vertices are pulled onto the rounded outline
+        let round = |u: f32, v: f32| -> (f32, f32) {
+            if r <= 0.5 {
+                return (u, v);
+            }
+            let (x, y) = (u * size.x, v * size.y);
+            let q = vec2(x.clamp(r, size.x - r), y.clamp(r, size.y - r));
+            let d = vec2(x, y) - q;
+            let l = d.length();
+            if l > r {
+                let p = q + d / l * r;
+                (p.x / size.x, p.y / size.y)
+            } else {
+                (u, v)
+            }
+        };
         for j in 0..=ny {
             for i in 0..=nx {
-                let (u, v) = (i as f32 / nx as f32, j as f32 / ny as f32);
+                let (u, v) = round(i as f32 / nx as f32, j as f32 / ny as f32);
                 m.vertices.push(Vertex { pos: map(u, v), uv: tuv(u, v), color: tint(u, v) });
             }
         }

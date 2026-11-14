@@ -299,7 +299,7 @@ impl Widget for SubtleNumber {
         let og = char_glyphs(ui, &old_text, &font);
         let place = |g: &Glyphs| pos2(rect.center().x - g.size.x / 2.0, rect.center().y - g.size.y / 2.0);
         if k >= 1.0 || old_text == text {
-            ui.painter().galley(place(&g), g.galley.clone(), color);
+            ui.painter().galley_with_override_text_color(place(&g), g.galley.clone(), color);
             return response;
         }
         if self.per_digit && og.glyphs.len() == g.glyphs.len() {
@@ -319,10 +319,10 @@ impl Widget for SubtleNumber {
             return response;
         }
         layer(ui, TSTransform::from_translation(vec2(0.0, -d * k)), 1.0 - k, blur * k, |p| {
-            p.galley(place(&og), og.galley.clone(), color);
+            p.galley_with_override_text_color(place(&og), og.galley.clone(), color);
         });
         layer(ui, TSTransform::from_translation(vec2(0.0, d * (1.0 - k))), k, blur * (1.0 - k), |p| {
-            p.galley(place(&g), g.galley.clone(), color);
+            p.galley_with_override_text_color(place(&g), g.galley.clone(), color);
         });
         response
     }

@@ -700,11 +700,8 @@ ui.add(ExpandingArrowButton::new("Get started").accent(egui::Color32::from_rgb(1
                     ui.vertical_centered(|ui| {
                         ui.spacing_mut().item_spacing.y = 22.0;
                         ui.add(ExpandingArrowButton::new("Book a demo"));
-                        ui.horizontal(|ui| {
-                            ui.spacing_mut().item_spacing.x = 18.0;
-                            ui.add(ExpandingArrowButton::new("Get started").accent(hex("#7DD3FC")).height(48.0));
-                            ui.add(ExpandingArrowButton::new("Join the beta").accent(hex("#F9A8D4")).height(48.0));
-                        });
+                        ui.add(ExpandingArrowButton::new("Get started").accent(hex("#7DD3FC")).height(48.0));
+                        ui.add(ExpandingArrowButton::new("Join the beta").accent(hex("#F9A8D4")).height(48.0));
                     });
                 });
             },

@@ -182,7 +182,7 @@ impl egui::Widget for CylinderCarousel {
             // discs turn away from the eye and narrow
             let squash = match self.mode {
                 CylinderMode::Convex => cs.sqrt().max(0.12),
-                CylinderMode::Concave => (0.55 + 0.45 * cs).max(0.12),
+                CylinderMode::Concave => (0.82 + 0.18 * cs).max(0.12),
             };
             let p = pos2(x, c.y);
             let edge = ((rect.width() * 0.5 - (x - c.x).abs()) / 60.0).clamp(0.0, 1.0);

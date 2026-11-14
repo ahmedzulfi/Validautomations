@@ -108,7 +108,16 @@ impl WarpGrid {
                 (lerp_c(t.background, accent, 0.18), lerp_c(t.background, accent, 0.45))
             };
             paint::glow(&painter, c, b * 2.2, with_alpha(accent, if t.dark { 0.18 } else { 0.12 }));
-            paint::gradient_circle(&painter, c, b * 0.98, &[core, rim]);
+            let mut disc = Mesh::default();
+            disc.colored_vertex(c + vec2(-b * 0.2, -b * 0.25), core);
+            for k in 0..=72 {
+                let a = k as f32 / 72.0 * std::f32::consts::TAU;
+                disc.colored_vertex(c + vec2(a.cos(), a.sin()) * b * 0.98, rim);
+            }
+            for k in 0..72u32 {
+                disc.add_triangle(0, 1 + k, 2 + k);
+            }
+            painter.add(Shape::mesh(disc));
             paint::glow(&painter, c + vec2(-b * 0.15, -b * 0.25), b * 0.5, with_alpha(Color32::WHITE, if t.dark { 0.10 } else { 0.35 }));
         }
         let warp = |p: Pos2| -> (Pos2, f32) {

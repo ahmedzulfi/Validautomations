@@ -85,19 +85,19 @@ impl Widget for StateText {
         }
         let at = |g: &Arc<Galley>| rect.center() - g.size() / 2.0;
         if ch.age >= self.dur * 2.0 || ch.prev == self.text {
-            ui.painter().galley(at(&g), g, color);
+            ui.painter().galley_with_override_text_color(at(&g), g, color);
             return response;
         }
         if ch.age < self.dur {
             let k = self.curve.at(ch.age / self.dur);
             let og = ui.painter().layout_no_wrap(ch.prev.clone(), font, color);
             layer(ui, TSTransform::from_translation(vec2(0.0, -self.distance * k)), 1.0 - k, self.blur * k, |p| {
-                p.galley(at(&og), og.clone(), color);
+                p.galley_with_override_text_color(at(&og), og.clone(), color);
             });
         } else {
             let k = self.curve.at((ch.age - self.dur) / self.dur);
             layer(ui, TSTransform::from_translation(vec2(0.0, self.distance * (1.0 - k))), k, self.blur * (1.0 - k), |p| {
-                p.galley(at(&g), g.clone(), color);
+                p.galley_with_override_text_color(at(&g), g.clone(), color);
             });
         }
         response
@@ -270,7 +270,7 @@ impl Widget for StaggerReveal {
                 let k = progress(unit);
                 unit += 1;
                 layer(ui, TSTransform::from_translation(vec2(0.0, self.distance * (1.0 - k))), k * hide, self.blur * (1.0 - k), |p| {
-                    p.galley(origin, g.galley.clone(), *col);
+                    p.galley_with_override_text_color(origin, g.galley.clone(), *col);
                 });
             }
             y += g.size.y + gap;
@@ -390,7 +390,7 @@ impl Widget for ThinkingText {
             let g = p.layout_no_wrap(s.to_owned(), font.clone(), Color32::WHITE);
             let pos = pos2(rect.center().x - g.size().x / 2.0, rect.center().y - g.size().y / 2.0);
             if !shimmer {
-                p.galley(pos, g, base);
+                p.galley_with_override_text_color(pos, g, base);
                 return;
             }
             let w = g.size().x.max(1.0);
@@ -546,7 +546,7 @@ impl Widget for ReasoningScroll {
             if y > rect.max.y || y + galley.size().y < rect.min.y {
                 continue;
             }
-            clip.galley(pos2(view.min.x, y), galley.clone(), t.foreground);
+            clip.galley_with_override_text_color(pos2(view.min.x, y), galley.clone(), t.foreground);
         }
         // fades only span the text column so they never square off the rounded corners
         let inner = Rect::from_x_y_ranges(view.min.x - 2.0..=view.max.x + 2.0, rect.min.y + 1.0..=rect.max.y - 1.0);

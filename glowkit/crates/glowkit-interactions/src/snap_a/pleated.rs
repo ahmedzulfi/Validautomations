@@ -199,7 +199,7 @@ impl Widget for PleatedStrip {
             let i = k.rem_euclid(n as i32) as usize;
             let a0 = (k as f32 - st.offset) * pitch - poster.y * 0.5;
             // skip what is round the back
-            if (a0 + poster.y) / r < -1.75 || a0 / r > 1.75 {
+            if (a0 + poster.y) / r < -1.6 || a0 / r > 1.6 {
                 continue;
             }
             let design = i % POSTERS;

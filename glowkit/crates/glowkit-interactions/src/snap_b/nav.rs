@@ -259,8 +259,20 @@ impl Widget for GlassTabs<'_> {
         paint::gradient_polyline(&painter, &ring, true, 2.0, |s| {
             let d1 = ((s - head + 0.5).rem_euclid(1.0) - 0.5).abs();
             let d2 = ((s - head).rem_euclid(1.0) - 0.5).abs();
-            let k = (1.0 - d1 / 0.11).max(0.0).powi(2).max((1.0 - d2 / 0.07).max(0.0).powi(2) * 0.7);
-            with_alpha(hsv(s * 900.0 + time * 60.0, 0.55, 1.0), k * 0.85)
+            let k = (1.0 - d1 / 0.16).max(0.0).powi(2).max((1.0 - d2 / 0.1).max(0.0).powi(2) * 0.75);
+            with_alpha(hsv(s * 900.0 + time * 60.0, 0.6, 1.0), (0.18 + k * 0.9).min(1.0))
+        });
+        // thick-glass edge: a darker inner ring low on the lens, a bright one up top
+        let ring_in = paint::rounded_rect_points(lens.shrink(5.0), lh / 2.0 - 5.0, 12);
+        let ni = ring_in.len();
+        paint::gradient_polyline(&painter, &ring_in, true, 4.0, |s| {
+            let p = ring_in[((s * ni as f32) as usize).min(ni - 1)];
+            let k = ((p.y - lens.center().y) / (lh / 2.0)).clamp(-1.0, 1.0);
+            if k > 0.0 {
+                with_alpha(if t.dark { Color32::BLACK } else { hex("#8A8A96") }, 0.16 * k)
+            } else {
+                with_alpha(Color32::WHITE, 0.35 * -k)
+            }
         });
         response
     }
@@ -474,7 +486,7 @@ impl Widget for LiquidGlassButton {
                         let (d, _) = pill_sd(body, p);
                         let edge = 1.0 - (d / bevel).clamp(0.0, 1.0);
                         let rr = if frosted { 2.2 } else { 1.1 + edge * 1.3 };
-                        let c = dot.gamma_multiply(if frosted { 0.25 } else { 0.35 + 0.4 * edge } * alpha);
+                        let c = dot.gamma_multiply(if frosted { 0.22 } else { 0.08 + 0.6 * edge * edge } * alpha);
                         super::common::mesh_circle(&mut mesh, p, rr, 8, c);
                     }
                 }
@@ -494,7 +506,8 @@ impl Widget for LiquidGlassButton {
         };
         glass_body(&painter, body, tint.gamma_multiply(alpha), light, alpha * (0.85 + 0.35 * hov), true);
         // label
-        let text_c = with_alpha(Color32::WHITE, 0.94 * alpha);
+        let light_text = matches!(self.variant, GlassVariant::Frosted) && !t.dark;
+        let text_c = with_alpha(if light_text { hex("#1D1D23") } else { Color32::WHITE }, 0.94 * alpha);
         let total = galley.size().x + icon_w;
         let mut x = body.center().x - total / 2.0;
         if self.icon == GlassGlyph::Plus {
@@ -502,7 +515,9 @@ impl Widget for LiquidGlassButton {
             x += icon_w;
         }
         let gp = pos2(x, body.center().y - galley.size().y / 2.0);
-        painter.galley(gp + vec2(0.0, 1.0), galley.clone(), with_alpha(Color32::BLACK, 0.35 * alpha));
+        if !light_text {
+            painter.galley(gp + vec2(0.0, 1.0), galley.clone(), with_alpha(Color32::BLACK, 0.35 * alpha));
+        }
         painter.galley(gp, galley.clone(), text_c);
         let ix = gp.x + galley.size().x + icon_w * 0.62 + 2.0 * hov;
         match self.icon {

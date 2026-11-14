@@ -123,7 +123,7 @@ fn globe_points(ctx: &egui::Context, count: usize) -> Arc<Vec<[f32; 5]>> {
         let lat = (-y).asin().to_degrees();
         let lon = z.atan2(x).to_degrees();
         let land = is_land(lon, lat);
-        if land || i % 9 == 0 {
+        if land || super::common::hash3(i as i32, 7, 2) < 0.07 {
             out.push([x, y, z, if land { 1.0 } else { 0.0 }, super::common::hash3(i as i32, 3, 1)]);
         }
     }

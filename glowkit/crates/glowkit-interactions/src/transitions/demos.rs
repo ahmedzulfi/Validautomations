@@ -912,8 +912,8 @@ ui.add(SwapIcon::new(&mut playing, SwapIconPair::PlayPause).duration(0.25));"##,
             covers: &["Transitions.dev: Toast Open Close"],
             code: r##"ui.add(SlideToast::new(open).title("Mara shared a file").message("Q3 roadmap.pdf"));"##,
             show: |ui| {
-                let sc = script(ui, 2.8);
-                let open = sc.within(0.3, 1.9);
+                let sc = script(ui, 3.4);
+                let open = sc.within(0.3, 2.6);
                 let od = mem(ui, "od", || 350.0f32);
                 let dist = mem(ui, "dist", || 16.0f32);
                 stage(ui, "toasts", 300.0, &sc, |ui| {
@@ -921,7 +921,7 @@ ui.add(SwapIcon::new(&mut playing, SwapIconPair::PlayPause).duration(0.25));"##,
                         ui.spacing_mut().item_spacing.y = 6.0;
                         ui.add(SlideToast::new(open).title("Mara shared a file").message("Q3 roadmap.pdf · 2.4 MB").tone(1).durations(od / 1000.0, 0.25).distance(dist));
                         ui.add(
-                            SlideToast::new(sc.within(0.45, 2.05))
+                            SlideToast::new(sc.within(0.45, 2.75))
                                 .title("Deploy finished")
                                 .message("main → production in 42s")
                                 .tone(3)
@@ -1114,7 +1114,7 @@ ui.add(DotMatrixLoader::new(DotPattern::Orbit).dot(6.0).cycle(1.2));"##,
                                 ui.add(DotMatrixLoader::new(p).dot(dot).gap(dot * 0.45).cycle(cycle / 1000.0));
                             }
                         });
-                        ui.horizontal(|ui| {
+                        ui.allocate_ui_with_layout(vec2(86.0, 20.0), Layout::left_to_right(Align::Center), |ui| {
                             ui.spacing_mut().item_spacing.x = 10.0;
                             let t = Theme::of(ui);
                             ui.add(DotMatrixLoader::new(DotPattern::Orbit).dot(3.0).gap(1.5).cycle(cycle / 1000.0));
@@ -1145,7 +1145,7 @@ ui.add(ThinkingText::cycle(&["Planning", "Searching", "Writing"], 2.0));"##,
                     ui.vertical_centered(|ui| {
                         ui.spacing_mut().item_spacing.y = 18.0;
                         ui.add(ThinkingText::new(states[i]).size(22.0).sweep(sweep));
-                        ui.horizontal(|ui| {
+                        ui.allocate_ui_with_layout(vec2(120.0, 24.0), Layout::left_to_right(Align::Center), |ui| {
                             ui.spacing_mut().item_spacing.x = 8.0;
                             ui.add(DotMatrixLoader::new(DotPattern::Orbit).dot(3.0).gap(1.5));
                             ui.add(ThinkingText::new(format!("Step {} of 4", i + 1)).size(13.0).sweep(sweep));

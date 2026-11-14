@@ -300,7 +300,7 @@ pub enum BeIcon {
 }
 
 impl BeIcon {
-    /// Paint the icon centered on `center`, `size` points tall, with a 1.5 pt stroke.
+    /// Paint the icon centered on `center`, `size` points tall, with a stroke scaled to the size.
     pub fn paint(self, painter: &Painter, center: Pos2, size: f32, color: Color32) {
         icon(painter, self, center, size, color, (size / 11.0).clamp(1.1, 2.2));
     }
