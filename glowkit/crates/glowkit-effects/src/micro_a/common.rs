@@ -19,6 +19,15 @@ pub(crate) fn surface(t: &Theme) -> Color32 {
     }
 }
 
+/// A raised knob / selection color that stands out from [`track`] in light and dark themes.
+pub(crate) fn raised(t: &Theme) -> Color32 {
+    if t.dark {
+        shade(t.muted, 0.17)
+    } else {
+        t.card
+    }
+}
+
 /// A recessed track color (slightly darker / lighter than the stage).
 pub(crate) fn track(t: &Theme) -> Color32 {
     mix(t.muted, t.foreground, if t.dark { 0.09 } else { 0.065 })

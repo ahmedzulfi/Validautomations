@@ -325,7 +325,7 @@ impl egui::Widget for PhotoFan {
                 .map(|p| pose.map(p.to_vec2()))
                 .collect();
             let lift = (st.cards[i].scale.value - 1.0).max(0.0) * 4.0 + 0.6;
-            polygon_shadow(&painter, &outline, pose.center, vec2(0.0, 8.0 * lift), 12.0 * lift, shadow_col.gamma_multiply(0.8));
+            polygon_shadow(&painter, &outline, pose.center, vec2(0.0, 7.0 * lift), 7.0 * lift, shadow_col.gamma_multiply(0.55));
             let front = (pose.flip * TAU).cos() >= 0.0;
             let shade = 0.82 + 0.18 * (pose.flip * TAU).cos().abs();
             let tint = Color32::from_gray((255.0 * shade) as u8);

@@ -58,7 +58,7 @@ impl Default for Slingshot {
 impl Slingshot {
     /// A slingshot stage.
     pub fn new() -> Self {
-        Self { height: 340.0, ball: 18.0, max_pull: 110.0, power: 1.0, bounce: 0.3, dark: true, autoplay: true }
+        Self { height: 340.0, ball: 24.0, max_pull: 110.0, power: 1.0, bounce: 0.3, dark: true, autoplay: true }
     }
     /// Stage height (width is all available).
     pub fn height(mut self, h: f32) -> Self {
@@ -231,7 +231,7 @@ impl Widget for Slingshot {
         let (ball_c, ball_fg) = if self.dark { (ink_bg, ink_fg) } else { (super::common::surface(&t), t.foreground) };
         let well = with_alpha(t.muted_foreground, if t.dark { 0.22 } else { 0.16 });
         // socket
-        painter.circle_filled(home, r + 3.0, well);
+        painter.circle_filled(home, r + 5.0, well);
         let stretch = st.pos.length() / self.max_pull;
         let mut ball = home + st.pos;
         if st.mode == Mode::Pull && stretch > 0.97 {
@@ -240,7 +240,7 @@ impl Widget for Slingshot {
         }
         // band
         if st.mode == Mode::Pull && stretch > 0.01 {
-            let w = (r + 3.0) * 2.0 * (1.0 - 0.45 * stretch);
+            let w = (r + 5.0) * 2.0 * (1.0 - 0.45 * stretch);
             painter.line_segment([home, ball], Stroke::new(w, well));
             painter.circle_filled(ball, w / 2.0, well);
         }

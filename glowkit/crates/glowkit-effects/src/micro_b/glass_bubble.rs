@@ -191,7 +191,7 @@ impl Widget for GlassBubble {
         };
         // contact shadow ring just outside the glass
         let ring_pts: Vec<Pos2> = (0..=64).map(|i| c + warp(Vec2::angled(i as f32 / 64.0 * TAU) * (rad + 1.5))).collect();
-        paint::gradient_polyline(painter, &ring_pts, true, 5.0, |_| with_alpha(Color32::BLACK, 0.12));
+        paint::gradient_polyline(painter, &ring_pts, true, 3.0, |_| with_alpha(Color32::BLACK, 0.07));
         // three additive channels with slightly different refraction = colour fringes
         let f = self.fringe * 0.12;
         let black = {

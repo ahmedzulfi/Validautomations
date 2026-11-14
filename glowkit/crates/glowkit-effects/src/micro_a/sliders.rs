@@ -350,7 +350,7 @@ impl egui::Widget for SloshSlider<'_> {
         // liquid: surface leans with velocity and bulges forward
         let lean = (vel * 0.02 * self.tilt / 45.0).clamp(-40.0, 40.0);
         let bulge = (edge - hand).clamp(-60.0, 60.0) * 0.35;
-        let fill = self.fill.unwrap_or_else(|| surface(&t));
+        let fill = self.fill.unwrap_or_else(|| if t.dark { glowkit_core::color::shade(t.muted, 0.2) } else { surface(&t) });
         let rows = 28;
         let mut m = Mesh::default();
         for k in 0..=rows {

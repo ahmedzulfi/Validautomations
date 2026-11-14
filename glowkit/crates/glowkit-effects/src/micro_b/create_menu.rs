@@ -8,7 +8,6 @@ use glowkit_core::{paint, Theme};
 struct MenuState {
     open: bool,
     since: f64,
-    hover: f32,
 }
 
 /// A "+ Create" pill that spreads into the menu it was all along. Press it and the pill swells
@@ -87,7 +86,7 @@ impl CreateMenu {
         let id = resp.id;
         let center = outer.center();
         let now = ui.input(|i| i.time);
-        let st0: MenuState = glowkit_core::state(ui, id, || MenuState { open: false, since: now, hover: -1.0 });
+        let st0: MenuState = glowkit_core::state(ui, id, || MenuState { open: false, since: now });
         let card_now = Rect::from_center_size(center, if st0.open { open_size } else { pill_size });
         let hovering = ui.rect_contains_pointer(card_now);
         let idle = idle_for(ui, id, ui.rect_contains_pointer(outer));
@@ -137,6 +136,9 @@ impl CreateMenu {
         let r = spring(ui, id.with("r"), if open { self.corner } else { pill_size.y / 2.0 }, 260.0, 24.0);
         let k = ((h - pill_size.y) / (open_size.y - pill_size.y).max(1.0)).clamp(0.0, 1.2);
         let rect = Rect::from_center_size(center, vec2(w.max(10.0), h.max(10.0)));
+        if !ui.is_rect_visible(outer) {
+            return picked;
+        }
         let (ink_bg, ink_fg) = ink(&t);
         let (bg, fg, sub) =
             if self.dark { (ink_bg, ink_fg, with_alpha(ink_fg, 0.6)) } else { (surface(&t), t.foreground, t.muted_foreground) };

@@ -1,7 +1,7 @@
 //! Shared plumbing for the `micro_b` components: soft surfaces, painted line icons, avatars,
 //! idle timers for autoplay and a ghost cursor.
 
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Painter, Pos2, Rect, Shape, Stroke, Ui, Vec2};
+use egui::{pos2, vec2, Color32, CornerRadius, FontId, Painter, Pos2, Rect, Shape, Stroke, Ui, Vec2};
 use glowkit_core::color::{mix, shade, with_alpha};
 use glowkit_core::{paint, Theme};
 use std::f32::consts::{PI, TAU};
@@ -45,21 +45,6 @@ pub(crate) fn shadow_color(t: &Theme, k: f32) -> Color32 {
     }
 }
 
-/// A soft raised card: blurred shadow, fill and hairline.
-pub(crate) fn soft_card(painter: &Painter, t: &Theme, rect: Rect, radius: f32, elevation: f32, fill: Color32) {
-    if elevation > 0.0 {
-        paint::soft_shadow(
-            painter,
-            rect,
-            radius,
-            10.0 + 14.0 * elevation,
-            vec2(0.0, 2.0 + 4.0 * elevation),
-            shadow_color(t, elevation),
-        );
-    }
-    painter.rect(rect, cr(radius), fill, hairline(t), egui::StrokeKind::Inside);
-}
-
 /// Ink fill for "dark" variants (the primary color) and the text on it.
 pub(crate) fn ink(t: &Theme) -> (Color32, Color32) {
     (t.primary, t.primary_foreground)
@@ -79,11 +64,6 @@ pub(crate) fn idle_for(ui: &Ui, id: egui::Id, active: bool) -> f32 {
             (now - *last) as f32
         },
     )
-}
-
-/// Paint text anchored at `pos`.
-pub(crate) fn text(painter: &Painter, pos: Pos2, align: Align2, s: &str, size: f32, color: Color32) -> Rect {
-    painter.text(pos, align, s, FontId::proportional(size), color)
 }
 
 /// Width of a single line of text.
@@ -269,16 +249,7 @@ pub(crate) fn icon(painter: &Painter, ic: MicroIcon, c: Pos2, size: f32, color: 
                 p(-0.85, -0.6),
             ]);
         }
-        MicroIcon::Refresh => {
-            paint::arc(painter, c, s * 0.72, -PI * 0.15, PI * 0.95, width, color);
-            paint::arc(painter, c, s * 0.72, PI * 0.85, PI * 1.95, width, color);
-            for (a, dir) in [(PI * 0.95, 1.0f32), (PI * 1.95, 1.0)] {
-                let tip = c + vec2(a.cos(), a.sin()) * s * 0.72;
-                let tan = vec2(-a.sin(), a.cos()) * dir;
-                let n = vec2(a.cos(), a.sin());
-                line(vec![tip - tan * s * 0.32 + n * s * 0.28, tip, tip - tan * s * 0.32 - n * s * 0.28]);
-            }
-        }
+        MicroIcon::Refresh => refresh_icon(painter, c, size, color, width, 0.0),
         MicroIcon::Close => {
             line(vec![p(-0.6, -0.6), p(0.6, 0.6)]);
             line(vec![p(0.6, -0.6), p(-0.6, 0.6)]);
@@ -345,4 +316,20 @@ pub(crate) fn lissajous(rect: Rect, time: f32, seed: f32) -> Pos2 {
         c.x + (time * 0.7 + seed).sin() * rect.width() * 0.38,
         c.y + (time * 1.13 + seed * 1.7).sin() * rect.height() * 0.34,
     )
+}
+
+/// Two circling arrows, rotated by `rot` radians.
+pub(crate) fn refresh_icon(painter: &Painter, c: Pos2, size: f32, color: Color32, width: f32, rot: f32) {
+    let s = size / 2.0;
+    let st = Stroke::new(width, color);
+    let r = s * 0.72;
+    for half in [0.0, PI] {
+        let a0 = rot + half - PI * 0.15;
+        let a1 = rot + half + PI * 0.7;
+        paint::arc(painter, c, r, a0, a1, width, color);
+        let tip = c + Vec2::angled(a1) * r;
+        let tan = Vec2::angled(a1).rot90();
+        let n = Vec2::angled(a1);
+        painter.add(Shape::line(vec![tip - tan * s * 0.34 + n * s * 0.3, tip, tip - tan * s * 0.34 - n * s * 0.3], st));
+    }
 }
