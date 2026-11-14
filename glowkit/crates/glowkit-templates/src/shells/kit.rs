@@ -492,3 +492,8 @@ pub(crate) fn legend_list(painter: &Painter, rect: Rect, items: &[(String, f64, 
     }
     items.len() as f32 * rh
 }
+
+/// Place a widget at `rect` without moving the parent's layout cursor (unlike `Ui::put`).
+pub(crate) fn put(ui: &mut Ui, rect: Rect, widget: impl egui::Widget) -> Response {
+    child(ui, rect.expand(6.0), |ui| ui.put(rect, widget))
+}

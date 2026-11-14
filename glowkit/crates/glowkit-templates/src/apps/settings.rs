@@ -191,7 +191,7 @@ impl SettingsApp {
         let r = kit::alloc_row(ui, 34.0);
         let br = Rect::from_min_size(r.min, vec2(140.0, 32.0));
         let _ = w;
-        if ui.put(br, Button::new(format!("Update {what}")).size(ControlSize::Sm).width(140.0)).clicked() {
+        if kit::put(ui, br, Button::new(format!("Update {what}")).size(ControlSize::Sm).width(140.0)).clicked() {
             self.dirty = false;
             toast(ui.ctx(), Toast::success(format!("{} updated", what[..1].to_uppercase() + &what[1..])).description("Your changes were saved."));
         }
@@ -203,7 +203,7 @@ impl SettingsApp {
         let r = kit::alloc_row(ui, 64.0);
         kit::avatar(ui, Rect::from_min_size(r.min, vec2(64.0, 64.0)), &self.name);
         let br = Rect::from_min_size(pos2(r.min.x + 80.0, r.min.y + 6.0), vec2(130.0, 32.0));
-        if ui.put(br, Button::new("Change photo").icon(UiIcon::Upload).variant(ButtonVariant::Outline).size(ControlSize::Sm).width(130.0)).clicked() {
+        if kit::put(ui, br, Button::new("Change photo").icon(UiIcon::Upload).variant(ButtonVariant::Outline).size(ControlSize::Sm).width(130.0)).clicked() {
             toast(ui.ctx(), Toast::new("Choose a photo").description("PNG or JPG, up to 2 MB."));
         }
         kit::text_at(ui.painter(), pos2(r.min.x + 80.0, r.min.y + 52.0), Align2::LEFT_CENTER, "JPG, GIF or PNG. 2 MB max.", 12.0, t.muted_foreground, 260.0);
@@ -234,7 +234,7 @@ impl SettingsApp {
         let g = kit::wrapped(&p, "Permanently remove your account and all of its data. This cannot be undone.", 12.5, t.muted_foreground, w - 200.0, 2);
         p.galley(r.min + vec2(18.0, 44.0), g, t.muted_foreground);
         let br = Rect::from_min_size(pos2(r.max.x - 158.0, r.center().y - 16.0), vec2(140.0, 32.0));
-        if ui.put(br, Button::new("Delete account").variant(ButtonVariant::Destructive).size(ControlSize::Sm).width(140.0)).clicked() {
+        if kit::put(ui, br, Button::new("Delete account").variant(ButtonVariant::Destructive).size(ControlSize::Sm).width(140.0)).clicked() {
             self.delete_open = true;
         }
         let res = AlertDialog::new(&mut self.delete_open, "Delete your account?").description("All projects, dashboards and API keys will be permanently deleted. This action cannot be undone.").confirm("Delete account").destructive(true).within(bounds).show(ui);
@@ -265,7 +265,7 @@ impl SettingsApp {
             kit::text_at(&p, r.min + vec2(16.0, 46.0), Align2::LEFT_CENTER, desc, 12.5, t.muted_foreground, w - 100.0);
             let sr = Rect::from_min_size(pos2(r.max.x - 60.0, r.center().y - 12.0), vec2(44.0, 24.0));
             let locked = i == 3;
-            if ui.put(sr, Switch::new(&mut self.switches[i]).disabled(locked)).changed() {
+            if kit::put(ui, sr, Switch::new(&mut self.switches[i]).disabled(locked)).changed() {
                 toast(ui.ctx(), Toast::new(format!("{title} {}", if self.switches[i] { "on" } else { "off" })));
             }
         }
@@ -314,7 +314,7 @@ impl SettingsApp {
         kit::text_at(ui.painter(), pos2(r.min.x + w, r.center().y), Align2::RIGHT_CENTER, &format!("{:.0} pt", self.radius), 12.5, t.muted_foreground, 100.0);
         let before = self.radius;
         let sr = kit::alloc_row(ui, 24.0);
-        ui.put(Rect::from_min_size(sr.min, vec2(w, 24.0)), Slider::new(&mut self.radius, 0.0..=20.0).step(1.0).width(w));
+        kit::put(ui, Rect::from_min_size(sr.min, vec2(w, 24.0)), Slider::new(&mut self.radius, 0.0..=20.0).step(1.0).width(w));
         if (before - self.radius).abs() > 0.01 {
             let mut nt = t.clone();
             nt.radius = self.radius;
@@ -323,7 +323,7 @@ impl SettingsApp {
         let r = kit::alloc_row(ui, 18.0);
         kit::text_at(ui.painter(), r.left_center(), Align2::LEFT_CENTER, "Density", 14.0, t.foreground, 200.0);
         let dr = kit::alloc_row(ui, 32.0);
-        ui.put(Rect::from_min_size(dr.min, vec2(300.0, 32.0)), SegmentedControl::new(&mut self.density, ["Compact", "Default", "Comfortable"]).size(ControlSize::Sm).width(300.0));
+        kit::put(ui, Rect::from_min_size(dr.min, vec2(300.0, 32.0)), SegmentedControl::new(&mut self.density, ["Compact", "Default", "Comfortable"]).size(ControlSize::Sm).width(300.0));
         let r = kit::alloc_row(ui, 40.0);
         let p = ui.painter().clone();
         let g = kit::wrapped(&p, "Themes are installed with Theme::install, so every glowkit component and stock egui widget restyles at once.", 12.5, t.muted_foreground, w, 2);
@@ -336,7 +336,7 @@ impl SettingsApp {
         let r = kit::alloc_row(ui, 28.0);
         kit::text_at(ui.painter(), r.left_center(), Align2::LEFT_CENTER, "Plans", 14.0, t.foreground, 200.0);
         let sr = Rect::from_min_size(pos2(r.min.x + w - 190.0, r.min.y + 2.0), vec2(190.0, 24.0));
-        ui.put(sr, Switch::new(&mut self.yearly).label("Yearly (save 20%)").size(ControlSize::Sm));
+        kit::put(ui, sr, Switch::new(&mut self.yearly).label("Yearly (save 20%)").size(ControlSize::Sm));
         let plans = [("Free", 0.0, "For individuals getting started", &["3 projects", "1 GB storage", "Community support"][..]), ("Pro", 24.0, "For growing teams", &["Unlimited projects", "100 GB storage", "Priority support", "SSO"][..]), ("Enterprise", 79.0, "Advanced security and control", &["Everything in Pro", "Audit logs", "Dedicated manager", "99.99% SLA"][..])];
         let row = kit::alloc_row(ui, 270.0);
         let row = Rect::from_min_size(row.min, vec2(w, 270.0));
@@ -356,9 +356,9 @@ impl SettingsApp {
             }
             kit::text_at(&p, cr.min + vec2(18.0, 26.0), Align2::LEFT_CENTER, name, 15.0, t.foreground, cr.width() - 120.0);
             if cur {
-                ui.put(Rect::from_min_size(pos2(cr.max.x - 110.0, cr.min.y + 14.0), vec2(92.0, 24.0)), Badge::new("Current").variant(BadgeVariant::Accent));
+                kit::put(ui, Rect::from_min_size(pos2(cr.max.x - 110.0, cr.min.y + 14.0), vec2(92.0, 24.0)), Badge::new("Current").variant(BadgeVariant::Accent));
             } else if i == 1 {
-                ui.put(Rect::from_min_size(pos2(cr.max.x - 110.0, cr.min.y + 14.0), vec2(92.0, 24.0)), Badge::new("Popular").variant(BadgeVariant::Secondary));
+                kit::put(ui, Rect::from_min_size(pos2(cr.max.x - 110.0, cr.min.y + 14.0), vec2(92.0, 24.0)), Badge::new("Popular").variant(BadgeVariant::Secondary));
             }
             kit::text_at(&p, cr.min + vec2(18.0, 46.0), Align2::LEFT_CENTER, desc, 12.0, t.muted_foreground, cr.width() - 36.0);
             let shown = if self.yearly { price * 0.8 } else { price };
@@ -371,7 +371,7 @@ impl SettingsApp {
             }
             let br = Rect::from_min_size(pos2(cr.min.x + 16.0, cr.max.y - 48.0), vec2(cr.width() - 32.0, 32.0));
             let label = if cur { "Current plan" } else if i > self.plan { "Upgrade" } else { "Downgrade" };
-            if ui.put(br, Button::new(label).variant(if cur { ButtonVariant::Outline } else if i == 1 { ButtonVariant::Default } else { ButtonVariant::Secondary }).size(ControlSize::Sm).width(br.width()).disabled(cur)).clicked() {
+            if kit::put(ui, br, Button::new(label).variant(if cur { ButtonVariant::Outline } else if i == 1 { ButtonVariant::Default } else { ButtonVariant::Secondary }).size(ControlSize::Sm).width(br.width()).disabled(cur)).clicked() {
                 self.plan = i;
                 toast(ui.ctx(), Toast::success(format!("You're on {name}")).description(format!("Billed {}.", if self.yearly { "yearly" } else { "monthly" })));
             }
@@ -386,7 +386,7 @@ impl SettingsApp {
         kit::text_at(&p, cr.center(), Align2::CENTER_CENTER, "VISA", 11.0, t.background, 50.0);
         kit::text_at(&p, pos2(cr.max.x + 14.0, r.center().y - 8.0), Align2::LEFT_CENTER, "Visa ending in 4021", 14.0, t.foreground, 260.0);
         kit::text_at(&p, pos2(cr.max.x + 14.0, r.center().y + 10.0), Align2::LEFT_CENTER, "Expires 08/2028 · billing@acme.dev", 12.0, t.muted_foreground, 300.0);
-        if ui.put(Rect::from_min_size(pos2(r.max.x - 96.0, r.center().y - 16.0), vec2(80.0, 32.0)), Button::new("Edit").variant(ButtonVariant::Outline).size(ControlSize::Sm).width(80.0)).clicked() {
+        if kit::put(ui, Rect::from_min_size(pos2(r.max.x - 96.0, r.center().y - 16.0), vec2(80.0, 32.0)), Button::new("Edit").variant(ButtonVariant::Outline).size(ControlSize::Sm).width(80.0)).clicked() {
             toast(ui.ctx(), Toast::new("Update payment method").description("A secure card form would open here."));
         }
         // invoices
@@ -413,9 +413,9 @@ impl SettingsApp {
         let t = Theme::of(ui);
         let w = ui.available_width().min(760.0);
         let r = kit::alloc_row(ui, 34.0);
-        ui.put(Rect::from_min_size(r.min, vec2(w - 130.0, 32.0)), Input::new(&mut self.invite).placeholder("Invite by email…").icon(UiIcon::Mail).size(ControlSize::Sm).width(w - 130.0).id_salt("team_invite"));
+        kit::put(ui, Rect::from_min_size(r.min, vec2(w - 130.0, 32.0)), Input::new(&mut self.invite).placeholder("Invite by email…").icon(UiIcon::Mail).size(ControlSize::Sm).width(w - 130.0).id_salt("team_invite"));
         let valid = self.invite.contains('@') && self.invite.contains('.');
-        if ui.put(Rect::from_min_size(pos2(r.min.x + w - 120.0, r.min.y), vec2(120.0, 32.0)), Button::new("Send invite").icon(UiIcon::Plus).size(ControlSize::Sm).width(120.0).disabled(!valid)).clicked() {
+        if kit::put(ui, Rect::from_min_size(pos2(r.min.x + w - 120.0, r.min.y), vec2(120.0, 32.0)), Button::new("Send invite").icon(UiIcon::Plus).size(ControlSize::Sm).width(120.0).disabled(!valid)).clicked() {
             let email = self.invite.trim().to_string();
             let name = email.split('@').next().unwrap_or("new").to_string();
             self.members.push(TeamMember { name: name[..1].to_uppercase() + &name[1..], email: email.clone(), role: Some(2), pending: true });
@@ -444,7 +444,7 @@ impl SettingsApp {
                 kit::text_at(&p, pos2(sel_r.min.x + 12.0, rr.center().y), Align2::LEFT_CENTER, "Owner", 13.0, t.muted_foreground, 120.0);
             } else {
                 let before = m.role;
-                ui.put(sel_r, Select::new(&mut m.role, ROLES).size(ControlSize::Sm).width(140.0).id_salt(("role", i)));
+                kit::put(ui, sel_r, Select::new(&mut m.role, ROLES).size(ControlSize::Sm).width(140.0).id_salt(("role", i)));
                 if before != m.role {
                     toast(ui.ctx(), Toast::new(format!("{} is now {}", m.name, ROLES[m.role.unwrap_or(2)])));
                 }

@@ -276,31 +276,31 @@ impl CrmApp {
                 ui.memory_mut(|m| m.request_focus(sid));
             }
             let before = self.query.clone();
-            ui.put(Rect::from_min_size(pos2(x, cy - 16.0), vec2(260.0, 32.0)), Input::new(&mut self.query).placeholder("Search customers…").icon(UiIcon::Search).shortcut("/").clearable(true).width(260.0).size(ControlSize::Sm).id_salt("crm_search"));
+            kit::put(ui, Rect::from_min_size(pos2(x, cy - 16.0), vec2(260.0, 32.0)), Input::new(&mut self.query).placeholder("Search customers…").icon(UiIcon::Search).shortcut("/").clearable(true).width(260.0).size(ControlSize::Sm).id_salt("crm_search"));
             if before != self.query {
                 self.page = 1;
             }
             x += 272.0;
             let sf = self.status_filter;
-            ui.put(Rect::from_min_size(pos2(x, cy - 16.0), vec2(300.0, 32.0)), SegmentedControl::new(&mut self.status_filter, ["All", "Active", "Trial", "Churned"]).size(ControlSize::Sm).width(300.0));
+            kit::put(ui, Rect::from_min_size(pos2(x, cy - 16.0), vec2(300.0, 32.0)), SegmentedControl::new(&mut self.status_filter, ["All", "Active", "Trial", "Churned"]).size(ControlSize::Sm).width(300.0));
             if sf != self.status_filter {
                 self.page = 1;
             }
             x += 312.0;
             if bar.max.x - x > 360.0 {
                 let pf = self.plan_filter;
-                ui.put(Rect::from_min_size(pos2(x, cy - 16.0), vec2(150.0, 32.0)), Select::new(&mut self.plan_filter, PLANS).placeholder("All plans").size(ControlSize::Sm).width(150.0).id_salt("crm_plan"));
+                kit::put(ui, Rect::from_min_size(pos2(x, cy - 16.0), vec2(150.0, 32.0)), Select::new(&mut self.plan_filter, PLANS).placeholder("All plans").size(ControlSize::Sm).width(150.0).id_salt("crm_plan"));
                 if pf != self.plan_filter {
                     self.page = 1;
                 }
                 x += 160.0;
-                if self.plan_filter.is_some() && ui.put(Rect::from_min_size(pos2(x, cy - 16.0), vec2(84.0, 32.0)), Button::new("Reset").variant(ButtonVariant::Ghost).size(ControlSize::Sm).trailing_icon(UiIcon::X)).clicked() {
+                if self.plan_filter.is_some() && kit::put(ui, Rect::from_min_size(pos2(x, cy - 16.0), vec2(84.0, 32.0)), Button::new("Reset").variant(ButtonVariant::Ghost).size(ControlSize::Sm).trailing_icon(UiIcon::X)).clicked() {
                     self.plan_filter = None;
                 }
             }
             if sel_count > 0 {
                 let br = Rect::from_min_size(pos2(bar.max.x - 110.0, cy - 16.0), vec2(110.0, 32.0));
-                if ui.put(br, Button::new(format!("Delete {sel_count}")).icon(UiIcon::Trash).variant(ButtonVariant::Destructive).size(ControlSize::Sm).width(110.0)).clicked() {
+                if kit::put(ui, br, Button::new(format!("Delete {sel_count}")).icon(UiIcon::Trash).variant(ButtonVariant::Destructive).size(ControlSize::Sm).width(110.0)).clicked() {
                     self.confirm_delete = true;
                 }
                 kit::text_at(ui.painter(), pos2(br.min.x - 10.0, cy), Align2::RIGHT_CENTER, &format!("{sel_count} selected"), 12.5, t.muted_foreground, 100.0);
@@ -329,7 +329,7 @@ impl CrmApp {
         let some_on = page_rows.iter().any(|&i| self.selected[i]);
         let mut all = all_on;
         let cr = Rect::from_center_size(cells[0].center(), vec2(18.0, 18.0));
-        if ui.put(cr, Checkbox::new(&mut all).indeterminate(some_on && !all_on).size(16.0)).changed() {
+        if kit::put(ui, cr, Checkbox::new(&mut all).indeterminate(some_on && !all_on).size(16.0)).changed() {
             for &i in &page_rows {
                 self.selected[i] = all;
             }
@@ -394,7 +394,7 @@ impl CrmApp {
             let c = &self.customers[ci];
             let mut s = sel;
             let cbr = Rect::from_center_size(cc[0].center(), vec2(18.0, 18.0));
-            let cb_changed = ui.put(cbr, Checkbox::new(&mut s).size(16.0)).changed();
+            let cb_changed = kit::put(ui, cbr, Checkbox::new(&mut s).size(16.0)).changed();
             if cb_changed {
                 self.selected[ci] = s;
             }

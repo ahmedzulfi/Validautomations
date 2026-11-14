@@ -8,7 +8,7 @@ use glowkit_core::{paint, Theme};
 
 /// One person in a [`TeamSection`].
 #[derive(Clone, Debug)]
-pub struct TeamMember {
+pub struct SectionTeamMember {
     /// Full name.
     pub name: String,
     /// Role / title.
@@ -19,7 +19,7 @@ pub struct TeamMember {
     pub socials: Vec<SectionSocial>,
 }
 
-impl TeamMember {
+impl SectionTeamMember {
     /// A team member.
     pub fn new(name: impl Into<String>, role: impl Into<String>) -> Self {
         Self { name: name.into(), role: role.into(), bio: String::new(), socials: vec![SectionSocial::X, SectionSocial::LinkedIn] }
@@ -36,16 +36,16 @@ impl TeamMember {
     }
 
     /// Eight placeholder people.
-    pub fn defaults() -> Vec<TeamMember> {
+    pub fn defaults() -> Vec<SectionTeamMember> {
         vec![
-            TeamMember::new("Ava Chen", "Co-founder & CEO").bio("Previously led design systems at a large fintech."),
-            TeamMember::new("Liam Ortiz", "Co-founder & CTO").bio("Rust since 0.x. Loves GPUs and type systems.").socials(&[SectionSocial::GitHub, SectionSocial::X]),
-            TeamMember::new("Mia Park", "Head of Design").bio("Obsessed with motion, type and tiny details."),
-            TeamMember::new("Noah Smith", "Staff Engineer").bio("Makes things fast. Then makes them faster.").socials(&[SectionSocial::GitHub]),
-            TeamMember::new("Zoe King", "Developer Advocate").bio("Writes the docs you actually enjoy reading.").socials(&[SectionSocial::YouTube, SectionSocial::X]),
-            TeamMember::new("Ethan Wu", "Product Engineer").bio("Ships features end to end, pixel to database."),
-            TeamMember::new("Isla Brown", "Customer Success").bio("Turns support tickets into happy customers."),
-            TeamMember::new("Leo Rossi", "Designer").bio("Icons, illustrations and everything in between.").socials(&[SectionSocial::Instagram]),
+            SectionTeamMember::new("Ava Chen", "Co-founder & CEO").bio("Previously led design systems at a large fintech."),
+            SectionTeamMember::new("Liam Ortiz", "Co-founder & CTO").bio("Rust since 0.x. Loves GPUs and type systems.").socials(&[SectionSocial::GitHub, SectionSocial::X]),
+            SectionTeamMember::new("Mia Park", "Head of Design").bio("Obsessed with motion, type and tiny details."),
+            SectionTeamMember::new("Noah Smith", "Staff Engineer").bio("Makes things fast. Then makes them faster.").socials(&[SectionSocial::GitHub]),
+            SectionTeamMember::new("Zoe King", "Developer Advocate").bio("Writes the docs you actually enjoy reading.").socials(&[SectionSocial::YouTube, SectionSocial::X]),
+            SectionTeamMember::new("Ethan Wu", "Product Engineer").bio("Ships features end to end, pixel to database."),
+            SectionTeamMember::new("Isla Brown", "Customer Success").bio("Turns support tickets into happy customers."),
+            SectionTeamMember::new("Leo Rossi", "Designer").bio("Icons, illustrations and everything in between.").socials(&[SectionSocial::Instagram]),
         ]
     }
 }
@@ -66,15 +66,15 @@ pub enum TeamLayout {
 ///
 /// ```no_run
 /// # let ui: &mut egui::Ui = todo!();
-/// use glowkit_templates::{TeamSection, TeamMember};
-/// TeamSection::new("Meet the team").members(TeamMember::defaults()).show(ui);
+/// use glowkit_templates::{TeamSection, SectionTeamMember};
+/// TeamSection::new("Meet the team").members(SectionTeamMember::defaults()).show(ui);
 /// ```
 #[must_use = "call `.show(ui)`"]
 pub struct TeamSection {
     title: String,
     eyebrow: Option<String>,
     subtitle: Option<String>,
-    members: Vec<TeamMember>,
+    members: Vec<SectionTeamMember>,
     layout: TeamLayout,
     background: SectionBackground,
     salt: Option<String>,
@@ -83,7 +83,7 @@ pub struct TeamSection {
 impl TeamSection {
     /// A team section with placeholder people.
     pub fn new(title: impl Into<String>) -> Self {
-        Self { title: title.into(), eyebrow: None, subtitle: None, members: TeamMember::defaults(), layout: TeamLayout::Cards, background: SectionBackground::Plain, salt: None }
+        Self { title: title.into(), eyebrow: None, subtitle: None, members: SectionTeamMember::defaults(), layout: TeamLayout::Cards, background: SectionBackground::Plain, salt: None }
     }
     /// Small label above the title.
     pub fn eyebrow(mut self, e: impl Into<String>) -> Self {
@@ -96,7 +96,7 @@ impl TeamSection {
         self
     }
     /// The people.
-    pub fn members(mut self, m: Vec<TeamMember>) -> Self {
+    pub fn members(mut self, m: Vec<SectionTeamMember>) -> Self {
         self.members = m;
         self
     }

@@ -176,7 +176,7 @@ impl FinanceApp {
                         kit::text_at(&p, pos2(ic.max.x + 10.0, ic.center().y + 9.0), Align2::LEFT_CENTER, &a.number, 12.0, t.muted_foreground, r.width() - 80.0);
                         kit::text_at(&p, r.min + vec2(16.0, 82.0), Align2::LEFT_CENTER, &kit::money(a.balance), 22.0, t.foreground, r.width() - 32.0);
                         let sr = Rect::from_min_max(pos2(r.min.x + 16.0, r.max.y - 56.0), r.max - vec2(16.0, 14.0));
-                        ui.put(sr, Sparkline::new(&sparks[i]).size(sr.size()).color(t.chart[i]));
+                        kit::put(ui, sr, Sparkline::new(&sparks[i]).size(sr.size()).color(t.chart[i]));
                     }
                 }
                 // cash flow + spending

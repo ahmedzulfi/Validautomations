@@ -227,7 +227,7 @@ if r.clicked("Pro") { /* checkout */ }"##,
             category: Category::Blocks,
             description: "The people behind the product: avatar cards with bios and socials, portrait tiles, or compact rows.",
             covers: &["MVP Blocks: Team", "Tailark: Team", "shadcnblocks: Team"],
-            code: r##"TeamSection::new("Meet the team").members(TeamMember::defaults()).layout(TeamLayout::Cards).show(ui);"##,
+            code: r##"TeamSection::new("Meet the team").members(SectionTeamMember::defaults()).layout(TeamLayout::Cards).show(ui);"##,
             show: |ui| {
                 let v = picker(ui, &["Cards", "Portraits", "Compact"]);
                 TeamSection::new("Meet the team")

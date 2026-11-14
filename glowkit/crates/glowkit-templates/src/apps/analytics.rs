@@ -133,7 +133,7 @@ fn dashboard(ui: &mut Ui, rect: Rect, range: &mut usize) {
                     2 => StatTile::new("Conversion", 3.42).suffix("%").decimals(2).delta(-0.8).caption("vs prev.").spark(&conv),
                     _ => StatTile::new("Avg. order", 92.18).prefix("$").decimals(2).delta(4.6).caption("vs prev.").spark(&aov),
                 };
-                ui.put(*r, tile.size(r.size()).animate(true));
+                kit::put(ui, *r, tile.size(r.size()).animate(true));
             }
             // revenue + donut
             let row = kit::alloc_row(ui, 380.0);
@@ -158,7 +158,7 @@ fn dashboard(ui: &mut Ui, rect: Rect, range: &mut usize) {
                         let lh = 5.0 * 26.0;
                         let dh = (b.height() - lh - 12.0).max(120.0);
                         let dr = Rect::from_min_size(b.min, vec2(b.width(), dh));
-                        ui.put(dr, DonutChart::new(&d).center_title(glowkit_charts::format_compact(total)).center_caption("Sessions").legend(false).height(dh).width(b.width()).id_salt("an_donut"));
+                        kit::put(ui, dr, DonutChart::new(&d).center_title(glowkit_charts::format_compact(total)).center_caption("Sessions").legend(false).height(dh).width(b.width()).id_salt("an_donut"));
                         let items: Vec<(String, f64, egui::Color32)> = d.iter().enumerate().map(|(i, x)| (x.label.clone(), x.value, t.chart[i % 6])).collect();
                         kit::legend_list(ui.painter(), Rect::from_min_max(pos2(b.min.x, b.max.y - lh), b.max), &items, glowkit_charts::format_compact, &t);
                     });

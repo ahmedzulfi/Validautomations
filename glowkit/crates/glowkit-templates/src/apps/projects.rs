@@ -247,7 +247,7 @@ impl ProjectsApp {
                             let tk = self.tasks[ti].clone();
                             let mut checked = tk.status == 3;
                             let cr = Rect::from_center_size(pos2(rr.min.x + 24.0, rr.center().y), vec2(18.0, 18.0));
-                            if e > 0.9 && ui.put(cr, Checkbox::new(&mut checked).size(16.0)).changed() {
+                            if e > 0.9 && kit::put(ui, cr, Checkbox::new(&mut checked).size(16.0)).changed() {
                                 self.tasks[ti].status = if checked { 3 } else { 0 };
                                 if checked {
                                     toast(ui.ctx(), Toast::success("Task completed").description(tk.title.clone()).action("Undo"));

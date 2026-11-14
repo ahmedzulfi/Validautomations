@@ -200,9 +200,9 @@ impl AssistantApp {
         };
         let col_w = (rect.width() - 48.0).min(760.0);
         let col = Rect::from_center_size(pos2(rect.center().x, rect.center().y), vec2(col_w, rect.height()));
-        let prompt_h = 132.0;
         let generating = self.generation.as_ref().is_some_and(|g| g.chat == route);
         let empty = self.chats[ci].messages.is_empty() && !generating;
+        let prompt_h = 128.0 + if self.attachments.is_empty() { 0.0 } else { 58.0 } + if empty && self.input.is_empty() { 44.0 } else { 0.0 };
         let conv_rect = Rect::from_min_max(pos2(col.min.x, col.min.y + 8.0), pos2(col.max.x, col.max.y - prompt_h - if empty { 0.0 } else { 0.0 }));
         let mut regenerate = false;
         kit::child(ui, conv_rect, |ui| {

@@ -18,7 +18,7 @@ pub use content::{
 };
 pub use features::{FeatureItem, FeatureVisual, FeaturesLayout, FeaturesSection};
 pub use logos_stats::{LogoCloudLayout, LogoCloudSection, StatItem, StatsLayout, StatsSection};
-pub use people::{ContactLayout, ContactSection, NewsletterLayout, NewsletterSection, TeamLayout, TeamMember, TeamSection};
+pub use people::{ContactLayout, ContactSection, NewsletterLayout, NewsletterSection, TeamLayout, SectionTeamMember, TeamSection};
 pub use pricing::{PricingLayout, PricingSection, PricingTier};
 pub use social::{CtaLayout, CtaSection, FaqLayout, FaqSection, Testimonial, TestimonialsLayout, TestimonialsSection};
 pub use hero::{HeroLayout, HeroSection, HeroVisual};
@@ -26,6 +26,14 @@ pub use hero::{HeroLayout, HeroSection, HeroVisual};
 pub use kit::{SectionAlign, SectionBackground, SectionCtaStyle, SectionResponse, SectionSocial, SECTION_MAX_WIDTH, SECTION_STACK_BELOW};
 #[allow(unused_imports)]
 pub(crate) use kit::*;
+#[allow(unused_imports)]
+pub(crate) use content::app_tile;
+#[allow(unused_imports)]
+pub(crate) use features::paint_mini;
+#[allow(unused_imports)]
+pub(crate) use hero::{announcement_pill, logo_rows};
+#[allow(unused_imports)]
+pub(crate) use people::{centered_column, email_form, valid_email};
 
 /// Gallery demos for this module.
 #[cfg(feature = "demos")]

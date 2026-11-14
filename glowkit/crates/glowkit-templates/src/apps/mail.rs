@@ -213,7 +213,7 @@ impl MailApp {
             self.compose = (String::new(), String::new(), String::new());
         }
         kit::hline(&p, lr.min.x, lr.max.x, lr.min.y + 56.0, &t);
-        ui.put(Rect::from_min_size(pos2(lr.min.x + 14.0, lr.min.y + 68.0), vec2(lr.width() - 28.0, 32.0)), Input::new(&mut self.query).placeholder("Search mail…").icon(UiIcon::Search).clearable(true).size(ControlSize::Sm).width(lr.width() - 28.0).id_salt("mail_q"));
+        kit::put(ui, Rect::from_min_size(pos2(lr.min.x + 14.0, lr.min.y + 68.0), vec2(lr.width() - 28.0, 32.0)), Input::new(&mut self.query).placeholder("Search mail…").icon(UiIcon::Search).clearable(true).size(ControlSize::Sm).width(lr.width() - 28.0).id_salt("mail_q"));
         let list = Rect::from_min_max(pos2(lr.min.x, lr.min.y + 112.0), lr.max);
         let mut clicked = None;
         kit::child(ui, list, |ui| {

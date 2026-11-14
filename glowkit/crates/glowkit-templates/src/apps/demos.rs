@@ -148,5 +148,67 @@ app.route = "settings/billing".into();
 app.show(ui);"##,
         show: |ui| run_demo(ui, || embedded::<SettingsApp>(|a| { a.scoped_theme = true; a.route = "settings/billing".into(); }), SettingsApp::show),
     },
+    Demo {
+        id: "app-files",
+        name: "File Manager",
+        category: Category::Templates,
+        description: "Folder tree with storage meter, breadcrumbs, search, grid / list toggle, double-click to open folders, and a details panel with preview, metadata and sharing.",
+        covers: &["Google Drive: My Drive", "Dropbox: Files", "Tailwind UI: File grid"],
+        code: r##"let mut app = FileManagerApp::default();
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<FileManagerApp>(|a| a.scoped_theme = true), FileManagerApp::show),
+    },
+    Demo {
+        id: "app-music",
+        name: "Music Player",
+        category: Category::Templates,
+        description: "Library sidebar, playlist hero, track list with live equalizer bars and likes, an up-next queue and a now-playing bar with seek, volume, shuffle and repeat (Space, ← →).",
+        covers: &["Spotify: Desktop player", "shadcn/ui: Music example", "Apple Music: Playlist view"],
+        code: r##"let mut app = MusicApp::default();
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<MusicApp>(|a| a.scoped_theme = true), MusicApp::show),
+    },
+    Demo {
+        id: "app-calendar",
+        name: "Calendar",
+        category: Category::Templates,
+        description: "Mini month picker and calendar toggles, Month / Week views (M / W, ← →, T), event chips with +n more, positioned week blocks with a now line, and click-to-create.",
+        covers: &["Google Calendar: Week view", "Notion Calendar", "Tailwind UI: Calendars"],
+        code: r##"let mut app = CalendarApp::default();
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<CalendarApp>(|a| a.scoped_theme = true), CalendarApp::show),
+    },
+    Demo {
+        id: "app-docs",
+        name: "Docs / Knowledge Base",
+        category: Category::Templates,
+        description: "Grouped page tree, an article with breadcrumbs, callouts and code, a scroll-synced table of contents, prev / next cards and a helpful-or-not prompt.",
+        covers: &["Nextra: Docs theme", "Mintlify: Docs layout", "shadcn/ui: Docs site"],
+        code: r##"let mut app = DocsApp::default();
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<DocsApp>(|a| a.scoped_theme = true), DocsApp::show),
+    },
+    Demo {
+        id: "app-devconsole",
+        name: "Developer Console",
+        category: Category::Templates,
+        description: "Usage page with KPI tiles, request and error charts and a 90-day uptime tracker; API keys with a reveal-once create dialog and revoke confirmation; a live log stream.",
+        covers: &["Stripe: Developers dashboard", "Vercel: Usage", "Supabase: API settings"],
+        code: r##"let mut app = DevConsoleApp::default();
+app.route = "keys".into(); // "usage" | "keys" | "logs"
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<DevConsoleApp>(|a| a.scoped_theme = true), DevConsoleApp::show),
+    },
+    Demo {
+        id: "app-devconsole-logs",
+        name: "Live Log Stream",
+        category: Category::Templates,
+        description: "The developer console's log viewer: a pulsing live badge, level toggles, filter, pause / resume (P), auto-follow scrolling and highlighted errors.",
+        covers: &["Vercel: Runtime logs", "Datadog: Live tail", "Supabase: Logs explorer"],
+        code: r##"let mut app = DevConsoleApp::default();
+app.route = "logs".into();
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<DevConsoleApp>(|a| { a.scoped_theme = true; a.route = "logs".into(); }), DevConsoleApp::show),
+    },
     ]
 }

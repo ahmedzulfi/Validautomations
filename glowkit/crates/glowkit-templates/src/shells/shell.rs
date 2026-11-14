@@ -455,7 +455,7 @@ impl<'a> AppShell<'a> {
                 let hp = p.with_clip_rect(s);
                 kit::text_at(&hp, pos2(hr.min.x + 16.0, hr.center().y - 7.0), Align2::LEFT_CENTER, &sec.title, 15.0, t.foreground, 200.0);
                 let n = sec.items.len();
-                kit::text_at(&hp, pos2(hr.min.x + 16.0, hr.center().y + 11.0), Align2::LEFT_CENTER, &format!("{n} pages"), 12.0, t.muted_foreground, 200.0);
+                kit::text_at(&hp, pos2(hr.min.x + 16.0, hr.center().y + 11.0), Align2::LEFT_CENTER, &format!("{n} items"), 12.0, t.muted_foreground, 200.0);
                 hp.line_segment([pos2(s.min.x, hr.max.y), pos2(s.max.x, hr.max.y)], Stroke::new(1.0, t.border));
                 cfg_c = 0.0;
                 let list = Rect::from_min_max(pos2(s.min.x, hr.max.y), pos2(s.min.x + 232.0, s.max.y));

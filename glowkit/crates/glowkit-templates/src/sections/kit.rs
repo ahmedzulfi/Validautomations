@@ -216,10 +216,6 @@ impl Tx {
         self.mono = true;
         self
     }
-    pub fn sense(mut self) -> Self {
-        self.sense = true;
-        self
-    }
 
     pub fn galley(&self, ui: &Ui, wrap: f32) -> Arc<Galley> {
         let font = if self.mono { FontId::monospace(self.size) } else { FontId::proportional(self.size) };
@@ -347,15 +343,6 @@ impl Sec {
         self.clicked = Some(label.into());
     }
 
-    /// A call-to-action button; records the click under its label.
-    pub fn cta(&mut self, ui: &mut Ui, label: &str, style: SectionCtaStyle, large: bool) -> Response {
-        let r = cta_button(ui, label, style, large);
-        if r.clicked() {
-            self.click(label);
-        }
-        r
-    }
-
     /// The column count for a grid of items at least `min_w` wide.
     pub fn cols(&self, min_w: f32, max: usize) -> usize {
         cols_for(self.w, min_w, 24.0, max)
@@ -459,6 +446,8 @@ pub(crate) fn section(ui: &mut Ui, f: Frame, add: impl FnOnce(&mut Ui, &mut Sec)
     let content_rect = Rect::from_min_size(pos2(cx - cw / 2.0, origin.y + pad_y), vec2(cw, f32::INFINITY));
     let mut sec = Sec { t: t.clone(), id: f.id, w: cw, narrow: cw < SECTION_STACK_BELOW, clicked: None, submitted: None, elapsed, seen, full_x: bg_rect.x_range() };
     let mut child = ui.new_child(UiBuilder::new().max_rect(content_rect).layout(Layout::top_down(Align::Min)).id_salt(f.id));
+    // pages stack sections with zero spacing; content always gets the 8pt scale back
+    child.spacing_mut().item_spacing = vec2(8.0, 8.0);
     add(&mut child, &mut sec);
     let used = child.min_rect();
     let mut h = (used.max.y - origin.y + pad_y).max(f.min_h).max(1.0);
@@ -754,10 +743,6 @@ impl CardLook {
     }
     pub fn clickable(mut self, c: bool) -> Self {
         self.clickable = c;
-        self
-    }
-    pub fn radius(mut self, r: f32) -> Self {
-        self.radius = r;
         self
     }
     pub fn shadow(mut self, s: bool) -> Self {

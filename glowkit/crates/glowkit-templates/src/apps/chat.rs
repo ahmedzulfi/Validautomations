@@ -156,7 +156,7 @@ impl ChatApp {
         }
         if !is_dm {
             let gr = Rect::from_min_size(pos2(rx - 104.0, hr.center().y - 14.0), vec2(100.0, 28.0));
-            ui.put(gr, AvatarGroup::new(&["Mia Chen", "Liam Johnson", "Sofia Davis", "Noah Brown", "Ada Lovelace"]).max(3).size(26.0).extra(9));
+            kit::put(ui, gr, AvatarGroup::new(&["Mia Chen", "Liam Johnson", "Sofia Davis", "Noah Brown", "Ada Lovelace"]).max(3).size(26.0).extra(9));
         }
         kit::hline(&p, rect.min.x, rect.max.x, hr.max.y, &t);
         // composer

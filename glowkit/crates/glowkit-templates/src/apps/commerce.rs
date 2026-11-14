@@ -181,7 +181,7 @@ impl CommerceApp {
                 ui.add(Alert::new(format!("{} products are running low", low.len())).description(format!("{} — reorder before the weekend rush.", low.join(", "))).variant(AlertVariant::Warning).width(ar.width()))
             });
             let br = Rect::from_min_size(pos2(ar.max.x - 130.0, ar.center().y - 15.0), vec2(116.0, 30.0));
-            if ui.put(br, Button::new("Review stock").variant(ButtonVariant::Outline).size(ControlSize::Sm).trailing_icon(UiIcon::ArrowRight)).clicked() {
+            if kit::put(ui, br, Button::new("Review stock").variant(ButtonVariant::Outline).size(ControlSize::Sm).trailing_icon(UiIcon::ArrowRight)).clicked() {
                 *route = "inventory".into();
             }
             y += resp.rect.height().max(56.0) + 14.0;
@@ -265,7 +265,7 @@ impl CommerceApp {
             kit::text_at(&p, cells[6].right_center(), Align2::RIGHT_CENTER, &kit::money(o.total), 13.0, t.foreground, cells[6].width());
             if !o.fulfilled {
                 let br = Rect::from_min_size(pos2(cells[7].max.x - 84.0, rr.center().y - 14.0), vec2(84.0, 28.0));
-                if ui.put(br, Button::new("Fulfil").variant(ButtonVariant::Outline).size(ControlSize::Sm).width(84.0)).clicked() {
+                if kit::put(ui, br, Button::new("Fulfil").variant(ButtonVariant::Outline).size(ControlSize::Sm).width(84.0)).clicked() {
                     self.orders[oi].fulfilled = true;
                     toast(ui.ctx(), Toast::success(format!("Order #{} fulfilled", o.number)).description(format!("Shipping label created for {}.", o.customer)).action("Undo"));
                 }
@@ -295,7 +295,7 @@ impl CommerceApp {
         let bar = Rect::from_min_size(pos2(rect.min.x, top - 4.0), vec2(rect.width(), 44.0));
         {
             let cy = bar.center().y;
-            ui.put(Rect::from_min_size(pos2(bar.min.x, cy - 16.0), vec2(220.0, 32.0)), Input::new(&mut self.query).placeholder("Search products…").icon(UiIcon::Search).clearable(true).width(220.0).size(ControlSize::Sm).id_salt("shop_q"));
+            kit::put(ui, Rect::from_min_size(pos2(bar.min.x, cy - 16.0), vec2(220.0, 32.0)), Input::new(&mut self.query).placeholder("Search products…").icon(UiIcon::Search).clearable(true).width(220.0).size(ControlSize::Sm).id_salt("shop_q"));
             let right_w = 84.0 + 8.0 + 180.0;
             let chips = Rect::from_min_max(pos2(bar.min.x + 232.0, cy - 16.0), pos2(bar.max.x - right_w - 8.0, cy + 16.0));
             kit::child(ui, chips, |ui| {
@@ -308,8 +308,8 @@ impl CommerceApp {
                     }
                 });
             });
-            ui.put(Rect::from_min_size(pos2(bar.max.x - 72.0, cy - 16.0), vec2(72.0, 32.0)), ToggleGroup::single(&mut self.view, [UiIcon::Grid, UiIcon::List]).size(ControlSize::Sm));
-            ui.put(Rect::from_min_size(pos2(bar.max.x - right_w, cy - 16.0), vec2(180.0, 32.0)), Select::new(&mut self.sort, ["Featured", "Price: low to high", "Price: high to low", "Best rated"]).size(ControlSize::Sm).width(180.0).id_salt("shop_sort"));
+            kit::put(ui, Rect::from_min_size(pos2(bar.max.x - 72.0, cy - 16.0), vec2(72.0, 32.0)), ToggleGroup::single(&mut self.view, [UiIcon::Grid, UiIcon::List]).size(ControlSize::Sm));
+            kit::put(ui, Rect::from_min_size(pos2(bar.max.x - right_w, cy - 16.0), vec2(180.0, 32.0)), Select::new(&mut self.sort, ["Featured", "Price: low to high", "Price: high to low", "Best rated"]).size(ControlSize::Sm).width(180.0).id_salt("shop_sort"));
         }
         let q = self.query.to_lowercase();
         let mut idx: Vec<usize> = (0..self.products.len()).filter(|&i| (self.category == 0 || self.products[i].category == CATS[self.category]) && (q.is_empty() || self.products[i].name.to_lowercase().contains(&q))).collect();
@@ -478,7 +478,7 @@ impl CommerceApp {
             p.line_segment([pos2(mark, track.min.y - 3.0), pos2(mark, track.max.y + 3.0)], Stroke::new(1.0, t.muted_foreground));
             kit::text_at(&p, cells[3].left_center(), Align2::LEFT_CENTER, &pr.stock.to_string(), 13.5, if low { col } else { t.foreground }, cells[3].width());
             let br = Rect::from_min_size(pos2(cells[4].max.x - 100.0, rr.center().y - 14.0), vec2(100.0, 28.0));
-            if ui.put(br, Button::new("Reorder").variant(if low { ButtonVariant::Default } else { ButtonVariant::Outline }).size(ControlSize::Sm).width(100.0)).clicked() {
+            if kit::put(ui, br, Button::new("Reorder").variant(if low { ButtonVariant::Default } else { ButtonVariant::Outline }).size(ControlSize::Sm).width(100.0)).clicked() {
                 self.products[pi].stock += pr.threshold * 2;
                 toast(ui.ctx(), Toast::success(format!("Reordered {}", pr.name)).description(format!("+{} units on the way", pr.threshold * 2)));
             }
