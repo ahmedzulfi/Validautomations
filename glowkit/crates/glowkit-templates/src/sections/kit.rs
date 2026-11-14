@@ -656,6 +656,7 @@ pub(crate) fn grid(ui: &mut Ui, id: Id, n: usize, cols: usize, gap: f32, mut add
 
 /// Two columns side by side (`ratio` = left share), stacked when `stack` is set. When `vcenter`,
 /// the shorter column is vertically centered against the taller one (measured last frame).
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn two_col(
     ui: &mut Ui,
     id: Id,

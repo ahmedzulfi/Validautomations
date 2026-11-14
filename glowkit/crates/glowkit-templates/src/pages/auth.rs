@@ -101,10 +101,11 @@ fn brand_panel(ui: &Ui, r: Rect, t: &Theme) {
         y += step;
     }
     // glass quote card
-    let q = Rect::from_min_max(pos2(r.min.x + 40.0, r.max.y - 220.0), pos2(r.max.x - 40.0, r.max.y - 40.0));
-    clip.rect(q, CornerRadius::same(16), with_alpha(Color32::WHITE, 0.1), Stroke::new(1.0, with_alpha(Color32::WHITE, 0.2)), StrokeKind::Inside);
     let quote = "\u{201C}We rebuilt our whole desktop app in six weeks. Our users keep asking which framework we switched to.\u{201D}";
-    let g = clip.layout(quote.to_owned(), FontId::proportional(18.0), Color32::WHITE, q.width() - 48.0);
+    let g = clip.layout(quote.to_owned(), FontId::proportional(18.0), Color32::WHITE, r.width() - 80.0 - 48.0);
+    let qh = 24.0 + g.size().y + 20.0 + 36.0 + 24.0;
+    let q = Rect::from_min_max(pos2(r.min.x + 40.0, r.max.y - 40.0 - qh), pos2(r.max.x - 40.0, r.max.y - 40.0));
+    clip.rect(q, CornerRadius::same(16), with_alpha(Color32::WHITE, 0.1), Stroke::new(1.0, with_alpha(Color32::WHITE, 0.2)), StrokeKind::Inside);
     clip.galley(q.min + vec2(24.0, 24.0), g.clone(), Color32::WHITE);
     let ay = q.min.y + 24.0 + g.size().y + 20.0;
     Avatar::new("Ava Chen").size(36.0).style(AvatarStyle::Solid).color(with_alpha(Color32::WHITE, 0.25)).paint(ui, Rect::from_min_size(pos2(q.min.x + 24.0, ay), Vec2::splat(36.0)));

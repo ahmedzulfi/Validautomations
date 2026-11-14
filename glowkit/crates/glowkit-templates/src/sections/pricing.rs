@@ -278,10 +278,10 @@ impl PricingSection {
             let v = if yearly { tier.yearly } else { tier.monthly };
             let dec = if v.fract().abs() > 1e-6 { 2 } else { 0 };
             row_ui.add(glowkit_text::CountUp::new(v).from(v).duration(0.6).decimals(dec).prefix(&self.currency).size(size).bold(true).color(t.foreground));
-            row_ui.vertical(|ui| {
-                Tx::new(&self.period).size(14.0).color(t.muted_foreground).show_inline(ui);
-                ui.add_space(size * 0.12);
-            });
+            let g = Tx::new(&self.period).size(14.0).color(t.muted_foreground);
+            let (pr, _) = row_ui.allocate_exact_size(vec2(row_ui.painter().layout_no_wrap(self.period.clone(), egui::FontId::proportional(14.0), Color32::WHITE).size().x, size * 0.62), Sense::hover());
+            let gal = g.galley(&row_ui, f32::INFINITY);
+            g.paint(&row_ui, &gal, pos2(pr.min.x, pr.max.y - gal.size().y), pr.width(), t.muted_foreground);
         }
         let note = if tier.price_label.is_some() {
             "Tailored to your team"
