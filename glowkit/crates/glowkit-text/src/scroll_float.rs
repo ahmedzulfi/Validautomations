@@ -45,7 +45,7 @@ impl ScrollFloat {
             stretch: 2.3,
             rise: 1.2,
             duration: 1.4,
-            trigger: Trigger::Loop { pause_ms: 1400 },
+            trigger: Trigger::Loop { pause_ms: 2400 },
             source: Source::Time,
         }
     }
@@ -137,7 +137,6 @@ impl Widget for ScrollFloat {
         // letters rise from behind the line's edge, like text revealed from a mask
         let clip = ui.clip_rect().intersect(rect.expand2(vec2(self.size, 0.0)));
         let painter = ui.painter().with_clip_rect(clip);
-        ui.ctx().debug_painter().rect_stroke(clip, 0.0, egui::Stroke::new(1.0, egui::Color32::GREEN), egui::StrokeKind::Middle); // DEBUGX
         for (i, g) in glyphs.glyphs.iter().enumerate() {
             if g.ch.is_whitespace() {
                 continue;
