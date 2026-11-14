@@ -190,7 +190,17 @@ impl Default for RibbonTrail {
 impl RibbonTrail {
     /// Three ribbons in the theme gradient.
     pub fn new() -> Self {
-        Self { colors: None, thickness: 16.0, length: 40, friction: 0.5, spring: 0.9, offset: 10.0, autoplay: false, area: None, salt: 0 }
+        Self {
+            colors: None,
+            thickness: 16.0,
+            length: 40,
+            friction: 0.5,
+            spring: 0.9,
+            offset: 10.0,
+            autoplay: false,
+            area: None,
+            salt: 0,
+        }
     }
     /// One ribbon per color. Defaults to the theme gradient (3 ribbons).
     pub fn colors(mut self, colors: &[Color32]) -> Self {
@@ -321,7 +331,17 @@ impl Default for PixelTrail {
 impl PixelTrail {
     /// 24 pt accent-colored pixels that fade in half a second.
     pub fn new() -> Self {
-        Self { color: None, rainbow: false, cell: 24.0, fade: 0.55, rounding: 0.0, brush: 0, autoplay: false, area: None, salt: 0 }
+        Self {
+            color: None,
+            rainbow: false,
+            cell: 24.0,
+            fade: 0.55,
+            rounding: 0.0,
+            brush: 0,
+            autoplay: false,
+            area: None,
+            salt: 0,
+        }
     }
     /// Pixel color. Defaults to the theme accent.
     pub fn color(mut self, c: Color32) -> Self {
@@ -405,7 +425,8 @@ impl PixelTrail {
         for (i, j, t0) in cells {
             let age = ((now - t0) / self.fade).clamp(0.0, 1.0);
             let a = 1.0 - ease(Easing::InQuad, age);
-            let col = if self.rainbow { hsv((t0 * 120.0 + (i + j) as f32 * 6.0).rem_euclid(360.0), 0.75, 1.0) } else { base };
+            let col =
+                if self.rainbow { hsv((t0 * 120.0 + (i + j) as f32 * 6.0).rem_euclid(360.0), 0.75, 1.0) } else { base };
             let r = Rect::from_min_size(rect.min + vec2(i as f32 * cell, j as f32 * cell), Vec2::splat(cell));
             let shrink = cell * 0.5 * ease(Easing::InCubic, age) * 0.6;
             let r = r.shrink(shrink);
@@ -455,7 +476,15 @@ impl Default for CardTrail {
 impl CardTrail {
     /// Cards from a built-in colorful set.
     pub fn new() -> Self {
-        Self { faces: sample_faces(), card_size: vec2(96.0, 124.0), spacing: 64.0, lifetime: 1.1, autoplay: false, area: None, salt: 0 }
+        Self {
+            faces: sample_faces(),
+            card_size: vec2(96.0, 124.0),
+            spacing: 64.0,
+            lifetime: 1.1,
+            autoplay: false,
+            area: None,
+            salt: 0,
+        }
     }
     /// The faces to cycle through.
     pub fn faces(mut self, faces: Vec<CardFace>) -> Self {

@@ -79,7 +79,11 @@ impl GrainNoise {
                         }
                     })
                     .collect();
-                let t = ui.ctx().load_texture("glowkit_grain", ColorImage::new([TEX, TEX], pixels), TextureOptions::NEAREST_REPEAT);
+                let t = ui.ctx().load_texture(
+                    "glowkit_grain",
+                    ColorImage::new([TEX, TEX], pixels),
+                    TextureOptions::NEAREST_REPEAT,
+                );
                 glowkit_core::set_state(ui, f.id, GrainTex { tex: Some(t.clone()) });
                 t
             }

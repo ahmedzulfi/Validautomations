@@ -1,5 +1,9 @@
 use egui::{pos2, vec2, Color32, Id, LayerId, Order, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2, Widget};
-use glowkit_core::{anim::{ease, smoothstep}, color::with_alpha, hex, mix, paint, Easing, Theme};
+use glowkit_core::{
+    anim::{ease, smoothstep},
+    color::with_alpha,
+    hex, mix, paint, Easing, Theme,
+};
 use std::f32::consts::TAU;
 
 /// Paint a sun (k = 0) that morphs into a crescent moon (k = 1).
@@ -59,7 +63,14 @@ pub struct ThemeToggler<'a> {
 impl<'a> ThemeToggler<'a> {
     /// Toggle for `dark` (true = dark mode).
     pub fn new(dark: &'a mut bool) -> Self {
-        Self { dark, size: 40.0, reveal: None, colors: [Theme::light().background, Theme::dark().background], duration: 0.7, rounding: 0.0 }
+        Self {
+            dark,
+            size: 40.0,
+            reveal: None,
+            colors: [Theme::light().background, Theme::dark().background],
+            duration: 0.7,
+            rounding: 0.0,
+        }
     }
     /// Button diameter in points.
     pub fn size(mut self, s: f32) -> Self {
@@ -98,14 +109,19 @@ impl Widget for ThemeToggler<'_> {
         }
         let dark = *self.dark;
         let now = ui.input(|i| i.time);
-        let st = glowkit_core::with_state(ui, resp.id.with("reveal"), || RevealState { last: dark, start: -100.0, to_dark: dark }, |s| {
-            if s.last != dark {
-                s.last = dark;
-                s.start = now;
-                s.to_dark = dark;
-            }
-            *s
-        });
+        let st = glowkit_core::with_state(
+            ui,
+            resp.id.with("reveal"),
+            || RevealState { last: dark, start: -100.0, to_dark: dark },
+            |s| {
+                if s.last != dark {
+                    s.last = dark;
+                    s.start = now;
+                    s.to_dark = dark;
+                }
+                *s
+            },
+        );
         let k = glowkit_core::anim::spring(ui, resp.id.with("k"), if dark { 1.0 } else { 0.0 }, 180.0, 18.0);
         if ui.is_rect_visible(rect) {
             let hover = glowkit_core::anim::follow(ui, resp.id.with("h"), if resp.hovered() { 1.0 } else { 0.0 }, 14.0);
@@ -136,7 +152,10 @@ impl Widget for ThemeToggler<'_> {
                 let grow = ease(Easing::InOutCubic, e / self.duration);
                 let fade = 1.0 - ((e - self.duration) / 0.3).clamp(0.0, 1.0);
                 let old = if st.to_dark { self.colors[0] } else { self.colors[1] };
-                let lp = ui.ctx().layer_painter(LayerId::new(Order::Middle, Id::unique("glowkit_theme_reveal").with(resp.id))).with_clip_rect(area);
+                let lp = ui
+                    .ctx()
+                    .layer_painter(LayerId::new(Order::Middle, Id::unique("glowkit_theme_reveal").with(resp.id)))
+                    .with_clip_rect(area);
                 let rr = (far * grow).max(self.size * 0.5 + 3.0);
                 super::util::rounded_grid(&lp, area, self.rounding, 4.0, |q| {
                     let d = q.distance(c);
@@ -205,7 +224,10 @@ impl Widget for DayNightSwitch<'_> {
         for i in 0..9 {
             let r = glowkit_core::rng::hash01(i * 7 + 1);
             let r2 = glowkit_core::rng::hash01(i * 13 + 5);
-            let sp = pos2(rect.min.x + h * 0.3 + r * (self.width - h * 1.15), rect.min.y + h * (0.2 + r2 * 0.6) - (1.0 - kc) * h * 0.5);
+            let sp = pos2(
+                rect.min.x + h * 0.3 + r * (self.width - h * 1.15),
+                rect.min.y + h * (0.2 + r2 * 0.6) - (1.0 - kc) * h * 0.5,
+            );
             let tw = 0.55 + 0.45 * (time * 2.0 + i as f32).sin();
             if i % 3 == 0 {
                 paint::sparkle(&clip, sp, h * (0.06 + r2 * 0.05), 0.0, with_alpha(Color32::WHITE, kc * tw));
@@ -216,11 +238,14 @@ impl Widget for DayNightSwitch<'_> {
         // clouds
         let cloud_off = kc * h * 0.9;
         let cc = Color32::from_white_alpha(((1.0 - kc) * 235.0) as u8);
-        for (dx, dy, rr) in [(0.78, 0.78, 0.26), (0.62, 0.86, 0.22), (0.92, 0.7, 0.24), (0.86, 0.95, 0.2), (0.5, 0.98, 0.16)] {
-            let pts: Vec<Pos2> = paint::circle_points(pos2(rect.min.x + self.width * dx, rect.min.y + h * dy + cloud_off), h * rr, 32)
-                .into_iter()
-                .map(|q| clamp_to_stadium(q, rect))
-                .collect();
+        for (dx, dy, rr) in
+            [(0.78, 0.78, 0.26), (0.62, 0.86, 0.22), (0.92, 0.7, 0.24), (0.86, 0.95, 0.2), (0.5, 0.98, 0.16)]
+        {
+            let pts: Vec<Pos2> =
+                paint::circle_points(pos2(rect.min.x + self.width * dx, rect.min.y + h * dy + cloud_off), h * rr, 32)
+                    .into_iter()
+                    .map(|q| clamp_to_stadium(q, rect))
+                    .collect();
             clip.add(egui::Shape::convex_polygon(pts, cc, Stroke::NONE));
         }
         // knob
@@ -230,10 +255,24 @@ impl Widget for DayNightSwitch<'_> {
         let kcen = pos2(x, rect.center().y);
         // halo rings
         for i in 1..=3 {
-            let pts: Vec<Pos2> = paint::circle_points(kcen, kr + h * 0.16 * i as f32, 48).into_iter().map(|q| clamp_to_stadium(q, rect)).collect();
-            clip.add(egui::Shape::convex_polygon(pts, Color32::from_white_alpha((14.0 - i as f32 * 3.0) as u8), Stroke::NONE));
+            let pts: Vec<Pos2> = paint::circle_points(kcen, kr + h * 0.16 * i as f32, 48)
+                .into_iter()
+                .map(|q| clamp_to_stadium(q, rect))
+                .collect();
+            clip.add(egui::Shape::convex_polygon(
+                pts,
+                Color32::from_white_alpha((14.0 - i as f32 * 3.0) as u8),
+                Stroke::NONE,
+            ));
         }
-        paint::soft_shadow(&p, Rect::from_center_size(kcen, Vec2::splat(kr * 2.0)), kr, 6.0, vec2(0.0, 2.0), Color32::from_black_alpha(70));
+        paint::soft_shadow(
+            &p,
+            Rect::from_center_size(kcen, Vec2::splat(kr * 2.0)),
+            kr,
+            6.0,
+            vec2(0.0, 2.0),
+            Color32::from_black_alpha(70),
+        );
         let sun_c = hex("#FCD34D");
         let moon_c = hex("#E5E7EB");
         let kcol = sun_c.lerp_to_gamma(moon_c, kc);

@@ -1,6 +1,9 @@
 use crate::inputs::kit::{self, UiIcon};
 use crate::inputs::{Button, ButtonVariant};
-use egui::{pos2, vec2, Align, Color32, CornerRadius, FontId, InnerResponse, Layout, Pos2, Rect, Response, RichText, Sense, Shape, Stroke, StrokeKind, Ui, Widget};
+use egui::{
+    pos2, vec2, Align, Color32, CornerRadius, FontId, InnerResponse, Layout, Pos2, Rect, Response, RichText, Sense,
+    Shape, Stroke, StrokeKind, Ui, Widget,
+};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
 
@@ -38,7 +41,17 @@ impl Default for Card<'_> {
 impl<'a> Card<'a> {
     /// An empty card.
     pub fn new() -> Self {
-        Self { title: None, description: None, width: None, padding: 22.0, hoverable: false, action: None, footer: None, fill: None, footer_border: false }
+        Self {
+            title: None,
+            description: None,
+            width: None,
+            padding: 22.0,
+            hoverable: false,
+            action: None,
+            footer: None,
+            fill: None,
+            footer_border: false,
+        }
     }
     /// Header title.
     pub fn title(mut self, t: impl Into<String>) -> Self {
@@ -107,15 +120,22 @@ impl<'a> Card<'a> {
                         if self.title.is_some() || self.description.is_some() || self.action.is_some() {
                             ui.horizontal_top(|ui| {
                                 let action_w = if self.action.is_some() { 120.0 } else { 0.0 };
-                                ui.allocate_ui_with_layout(vec2(inner_w - action_w, 0.0), Layout::top_down(Align::Min), |ui| {
-                                    ui.spacing_mut().item_spacing.y = 4.0;
-                                    if let Some(tt) = &self.title {
-                                        ui.label(RichText::new(tt).size(16.0).strong().color(t.card_foreground));
-                                    }
-                                    if let Some(d) = &self.description {
-                                        ui.add(egui::Label::new(RichText::new(d).size(13.5).color(t.muted_foreground)).wrap());
-                                    }
-                                });
+                                ui.allocate_ui_with_layout(
+                                    vec2(inner_w - action_w, 0.0),
+                                    Layout::top_down(Align::Min),
+                                    |ui| {
+                                        ui.spacing_mut().item_spacing.y = 4.0;
+                                        if let Some(tt) = &self.title {
+                                            ui.label(RichText::new(tt).size(16.0).strong().color(t.card_foreground));
+                                        }
+                                        if let Some(d) = &self.description {
+                                            ui.add(
+                                                egui::Label::new(RichText::new(d).size(13.5).color(t.muted_foreground))
+                                                    .wrap(),
+                                            );
+                                        }
+                                    },
+                                );
                                 if let Some(a) = self.action {
                                     ui.with_layout(Layout::right_to_left(Align::Min), a);
                                 }
@@ -145,13 +165,32 @@ impl<'a> Card<'a> {
         });
         let rect = Rect::from_min_size(inner.response.rect.min, vec2(w, inner.response.rect.height()));
         let resp = ui.interact(rect, ui.next_auto_id().with("card"), Sense::hover());
-        let hov = if self.hoverable { kit::anim(ui, resp.id.with("h"), ui.rect_contains_pointer(rect), 0.2) } else { 0.0 };
+        let hov =
+            if self.hoverable { kit::anim(ui, resp.id.with("h"), ui.rect_contains_pointer(rect), 0.2) } else { 0.0 };
         let cr = t.corner_scaled(1.2);
         let mut shapes = Vec::new();
         let shadow_a = if t.dark { 40.0 + 60.0 * hov } else { 10.0 + 22.0 * hov };
-        shapes.push(egui::epaint::Shadow { offset: [0, (2.0 + 6.0 * hov) as i8], blur: (6.0 + 18.0 * hov) as u8, spread: 0, color: Color32::from_black_alpha(shadow_a as u8) }.as_shape(rect, cr).into());
+        shapes.push(
+            egui::epaint::Shadow {
+                offset: [0, (2.0 + 6.0 * hov) as i8],
+                blur: (6.0 + 18.0 * hov) as u8,
+                spread: 0,
+                color: Color32::from_black_alpha(shadow_a as u8),
+            }
+            .as_shape(rect, cr)
+            .into(),
+        );
         let border = t.border.lerp_to_gamma(t.muted_foreground, 0.35 * hov);
-        shapes.push(egui::epaint::RectShape::new(rect, cr, self.fill.unwrap_or(t.card), Stroke::new(1.0, border), StrokeKind::Inside).into());
+        shapes.push(
+            egui::epaint::RectShape::new(
+                rect,
+                cr,
+                self.fill.unwrap_or(t.card),
+                Stroke::new(1.0, border),
+                StrokeKind::Inside,
+            )
+            .into(),
+        );
         ui.painter().set(bg, Shape::Vec(shapes));
         if let (Some(y), true) = (footer_top, self.footer_border) {
             let fr = Rect::from_min_max(pos2(rect.min.x + 1.0, y), pos2(rect.max.x - 1.0, rect.max.y - 1.0));
@@ -204,7 +243,14 @@ pub struct Alert {
 impl Alert {
     /// An alert with a title.
     pub fn new(title: impl Into<String>) -> Self {
-        Self { title: title.into(), description: None, variant: AlertVariant::Default, icon: None, width: None, accent_bar: false }
+        Self {
+            title: title.into(),
+            description: None,
+            variant: AlertVariant::Default,
+            icon: None,
+            width: None,
+            accent_bar: false,
+        }
     }
     /// Body text under the title.
     pub fn description(mut self, d: impl Into<String>) -> Self {
@@ -263,13 +309,16 @@ impl Widget for Alert {
             Some(c) => mix(t.muted_foreground, title_col, 0.35).lerp_to_gamma(c, 0.0),
             None => t.muted_foreground,
         };
-        let dg = self.description.as_ref().map(|d| ui.painter().layout(d.clone(), FontId::proportional(13.5), desc_col, tw));
+        let dg =
+            self.description.as_ref().map(|d| ui.painter().layout(d.clone(), FontId::proportional(13.5), desc_col, tw));
         let h = pad * 2.0 + tg.size().y + dg.as_ref().map(|g| g.size().y + 4.0).unwrap_or(0.0);
         let (rect, resp) = ui.allocate_exact_size(vec2(w, h), Sense::hover());
         let p = ui.painter();
         let cr = t.corner();
         let (fill, border) = match tint {
-            Some(c) => (mix(t.card, c, if t.dark { 0.08 } else { 0.05 }), with_alpha(c, if t.dark { 0.35 } else { 0.3 })),
+            Some(c) => {
+                (mix(t.card, c, if t.dark { 0.08 } else { 0.05 }), with_alpha(c, if t.dark { 0.35 } else { 0.3 }))
+            }
             None => (t.card, t.border),
         };
         p.rect(rect, cr, fill, Stroke::new(1.0, border), StrokeKind::Inside);
@@ -277,7 +326,11 @@ impl Widget for Alert {
             let bar = Rect::from_min_size(rect.min, vec2(3.0, h));
             p.rect_filled(bar, CornerRadius { nw: cr.nw, sw: cr.sw, ne: 0, se: 0 }, tint.unwrap_or(t.foreground));
         }
-        icon.paint(p, Rect::from_min_size(rect.min + vec2(pad, pad + 0.5), vec2(17.0, 17.0)), tint.map(|_| title_col).unwrap_or(t.foreground));
+        icon.paint(
+            p,
+            Rect::from_min_size(rect.min + vec2(pad, pad + 0.5), vec2(17.0, 17.0)),
+            tint.map(|_| title_col).unwrap_or(t.foreground),
+        );
         let tgh = tg.size().y;
         p.galley(rect.min + vec2(text_x, pad), tg, title_col);
         if let Some(g) = dg {
@@ -309,7 +362,15 @@ pub struct EmptyState {
 impl EmptyState {
     /// An empty state with a main icon and title.
     pub fn new(icon: UiIcon, title: impl Into<String>) -> Self {
-        Self { icons: [UiIcon::File, icon, UiIcon::Image], title: title.into(), description: None, action: None, secondary: None, width: None, dashed: true }
+        Self {
+            icons: [UiIcon::File, icon, UiIcon::Image],
+            title: title.into(),
+            description: None,
+            action: None,
+            secondary: None,
+            width: None,
+            dashed: true,
+        }
     }
     /// The two side icons of the fanned stack.
     pub fn side_icons(mut self, left: UiIcon, right: UiIcon) -> Self {
@@ -361,7 +422,12 @@ impl Widget for EmptyState {
             ui.add_space(30.0);
             let (ir, _) = ui.allocate_exact_size(vec2(140.0, 64.0), Sense::hover());
             let time = glowkit_core::time(ui);
-            let hov = kit::anim(ui, ui.next_auto_id().with("es"), ui.rect_contains_pointer(Rect::from_min_size(start, vec2(w, 260.0))), 0.3);
+            let hov = kit::anim(
+                ui,
+                ui.next_auto_id().with("es"),
+                ui.rect_contains_pointer(Rect::from_min_size(start, vec2(w, 260.0))),
+                0.3,
+            );
             let p = ui.painter();
             for (i, (dx, ang)) in [(-38.0f32, -0.24f32), (38.0, 0.24)].iter().enumerate() {
                 let spread = 1.0 + 0.25 * hov;
@@ -373,7 +439,14 @@ impl Widget for EmptyState {
             }
             let bob = (time * 1.6).sin() * 1.5 * hov;
             let main = Rect::from_center_size(ir.center() - vec2(0.0, 4.0 + bob), vec2(52.0, 52.0));
-            glowkit_core::paint::soft_shadow(p, main, 12.0, 10.0, vec2(0.0, 3.0), Color32::from_black_alpha(if t.dark { 70 } else { 22 }));
+            glowkit_core::paint::soft_shadow(
+                p,
+                main,
+                12.0,
+                10.0,
+                vec2(0.0, 3.0),
+                Color32::from_black_alpha(if t.dark { 70 } else { 22 }),
+            );
             p.rect(main, CornerRadius::same(12), t.card, Stroke::new(1.0, t.border), StrokeKind::Inside);
             self.icons[1].paint(p, Rect::from_center_size(main.center(), vec2(24.0, 24.0)), t.foreground);
             if hov > 0.01 && hov < 0.99 {
@@ -386,12 +459,17 @@ impl Widget for EmptyState {
             if let Some(d) = &self.description {
                 ui.add_space(-2.0);
                 ui.allocate_ui_with_layout(vec2(w.min(360.0), 0.0), Layout::top_down(Align::Center), |ui| {
-                    ui.add(egui::Label::new(RichText::new(d).size(13.5).color(t.muted_foreground)).wrap().halign(Align::Center));
+                    ui.add(
+                        egui::Label::new(RichText::new(d).size(13.5).color(t.muted_foreground))
+                            .wrap()
+                            .halign(Align::Center),
+                    );
                 });
             }
             if self.action.is_some() || self.secondary.is_some() {
                 ui.add_space(10.0);
-                let bw = self.action.as_ref().map(|a| kit::text_width(ui, a, 14.0) + 32.0 + 24.0).unwrap_or(0.0) + self.secondary.as_ref().map(|a| kit::text_width(ui, a, 14.0) + 32.0 + 8.0).unwrap_or(0.0);
+                let bw = self.action.as_ref().map(|a| kit::text_width(ui, a, 14.0) + 32.0 + 24.0).unwrap_or(0.0)
+                    + self.secondary.as_ref().map(|a| kit::text_width(ui, a, 14.0) + 32.0 + 8.0).unwrap_or(0.0);
                 ui.allocate_ui_with_layout(vec2(bw, 36.0), Layout::left_to_right(Align::Center), |ui| {
                     if let Some(s) = &self.secondary {
                         ui.add(Button::new(s.clone()).variant(ButtonVariant::Outline));
@@ -410,7 +488,14 @@ impl Widget for EmptyState {
         if self.dashed {
             let pts = glowkit_core::paint::rounded_rect_points(rect.shrink(0.75), t.radius + 2.0, 8);
             let painter = ui.painter().clone();
-            crate::inputs::dashed_closed(&painter, &pts, 5.0, 4.0, 0.0, Stroke::new(1.0, t.input.lerp_to_gamma(t.muted_foreground, 0.3)));
+            crate::inputs::dashed_closed(
+                &painter,
+                &pts,
+                5.0,
+                4.0,
+                0.0,
+                Stroke::new(1.0, t.input.lerp_to_gamma(t.muted_foreground, 0.3)),
+            );
         }
         clicked.unwrap_or(inner.response)
     }
@@ -444,7 +529,20 @@ pub struct StatCard {
 impl StatCard {
     /// A stat card for a numeric value.
     pub fn new(label: impl Into<String>, value: f64) -> Self {
-        Self { label: label.into(), value, prefix: String::new(), suffix: String::new(), decimals: 0, delta: None, delta_note: "from last month".into(), icon: None, spark: Vec::new(), width: 260.0, color: None, invert: false }
+        Self {
+            label: label.into(),
+            value,
+            prefix: String::new(),
+            suffix: String::new(),
+            decimals: 0,
+            delta: None,
+            delta_note: "from last month".into(),
+            icon: None,
+            spark: Vec::new(),
+            width: 260.0,
+            color: None,
+            invert: false,
+        }
     }
     /// Text before the number (e.g. `"$"`).
     pub fn prefix(mut self, p: impl Into<String>) -> Self {
@@ -534,12 +632,35 @@ impl Widget for StatCard {
         let hov = kit::anim(ui, id.with("h"), resp.hovered(), 0.2);
         let p = ui.painter();
         let cr = t.corner_scaled(1.2);
-        glowkit_core::paint::soft_shadow(p, rect, cr.nw as f32, 6.0 + 10.0 * hov, vec2(0.0, 2.0 + 3.0 * hov), Color32::from_black_alpha(if t.dark { (40.0 + 40.0 * hov) as u8 } else { (10.0 + 14.0 * hov) as u8 }));
-        p.rect(rect, cr, t.card, Stroke::new(1.0, t.border.lerp_to_gamma(t.muted_foreground, 0.3 * hov)), StrokeKind::Inside);
+        glowkit_core::paint::soft_shadow(
+            p,
+            rect,
+            cr.nw as f32,
+            6.0 + 10.0 * hov,
+            vec2(0.0, 2.0 + 3.0 * hov),
+            Color32::from_black_alpha(if t.dark { (40.0 + 40.0 * hov) as u8 } else { (10.0 + 14.0 * hov) as u8 }),
+        );
+        p.rect(
+            rect,
+            cr,
+            t.card,
+            Stroke::new(1.0, t.border.lerp_to_gamma(t.muted_foreground, 0.3 * hov)),
+            StrokeKind::Inside,
+        );
         let pad = 20.0;
-        p.text(rect.min + vec2(pad, pad + 8.0), egui::Align2::LEFT_CENTER, &self.label, FontId::proportional(13.5), t.muted_foreground);
+        p.text(
+            rect.min + vec2(pad, pad + 8.0),
+            egui::Align2::LEFT_CENTER,
+            &self.label,
+            FontId::proportional(13.5),
+            t.muted_foreground,
+        );
         if let Some(i) = self.icon {
-            i.paint(p, Rect::from_center_size(pos2(rect.max.x - pad - 8.0, rect.min.y + pad + 8.0), vec2(16.0, 16.0)), t.muted_foreground);
+            i.paint(
+                p,
+                Rect::from_center_size(pos2(rect.max.x - pad - 8.0, rect.min.y + pad + 8.0), vec2(16.0, 16.0)),
+                t.muted_foreground,
+            );
         }
         let el = glowkit_core::Clock::elapsed(ui, id.with("clock"));
         let k = glowkit_core::ease(glowkit_core::Easing::OutExpo, el / 1.4);
@@ -548,7 +669,13 @@ impl Widget for StatCard {
         }
         let shown = self.value * k as f64;
         let txt = format!("{}{}{}", self.prefix, group_thousands(shown, self.decimals), self.suffix);
-        p.text(rect.min + vec2(pad, pad + 40.0), egui::Align2::LEFT_CENTER, txt, FontId::proportional(28.0), t.foreground);
+        p.text(
+            rect.min + vec2(pad, pad + 40.0),
+            egui::Align2::LEFT_CENTER,
+            txt,
+            FontId::proportional(28.0),
+            t.foreground,
+        );
         let good_col = |d: f32| if (d >= 0.0) != self.invert { t.success } else { t.destructive };
         if let Some(d) = self.delta {
             let col = good_col(d);
@@ -556,26 +683,51 @@ impl Widget for StatCard {
             let g = p.layout_no_wrap(s, FontId::proportional(12.0), col);
             let pill = Rect::from_min_size(rect.min + vec2(pad, pad + 64.0), vec2(g.size().x + 26.0, 22.0));
             p.rect_filled(pill, CornerRadius::same(11), with_alpha(col, if t.dark { 0.15 } else { 0.1 }));
-            (if d >= 0.0 { UiIcon::ArrowUp } else { UiIcon::ArrowDown }).paint(p, Rect::from_center_size(pos2(pill.min.x + 11.0, pill.center().y), vec2(12.0, 12.0)), col);
+            (if d >= 0.0 { UiIcon::ArrowUp } else { UiIcon::ArrowDown }).paint(
+                p,
+                Rect::from_center_size(pos2(pill.min.x + 11.0, pill.center().y), vec2(12.0, 12.0)),
+                col,
+            );
             p.galley(pos2(pill.min.x + 19.0, pill.center().y - g.size().y / 2.0), g, col);
-            p.text(pos2(pill.max.x + 8.0, pill.center().y), egui::Align2::LEFT_CENTER, &self.delta_note, FontId::proportional(12.5), t.muted_foreground);
+            p.text(
+                pos2(pill.max.x + 8.0, pill.center().y),
+                egui::Align2::LEFT_CENTER,
+                &self.delta_note,
+                FontId::proportional(12.5),
+                t.muted_foreground,
+            );
         }
         if self.spark.len() >= 2 {
             let col = self.color.unwrap_or_else(|| self.delta.map(good_col).unwrap_or(t.chart[0]));
-            let area = Rect::from_min_max(pos2(rect.min.x + pad, rect.max.y - 58.0), pos2(rect.max.x - pad - 4.0, rect.max.y - 18.0));
+            let area = Rect::from_min_max(
+                pos2(rect.min.x + pad, rect.max.y - 58.0),
+                pos2(rect.max.x - pad - 4.0, rect.max.y - 18.0),
+            );
             let (lo, hi) = self.spark.iter().fold((f32::MAX, f32::MIN), |(a, b), &v| (a.min(v), b.max(v)));
             let n = self.spark.len();
             let pts: Vec<Pos2> = self
                 .spark
                 .iter()
                 .enumerate()
-                .map(|(i, &v)| pos2(area.min.x + area.width() * i as f32 / (n - 1) as f32, area.max.y - area.height() * glowkit_core::anim::unlerp(lo, hi, v)))
+                .map(|(i, &v)| {
+                    pos2(
+                        area.min.x + area.width() * i as f32 / (n - 1) as f32,
+                        area.max.y - area.height() * glowkit_core::anim::unlerp(lo, hi, v),
+                    )
+                })
                 .collect();
             let smooth = glowkit_core::paint::monotone(&pts, 8);
             let draw = glowkit_core::ease(glowkit_core::Easing::InOutCubic, el / 1.2);
-            let clip = Rect::from_min_max(area.min - vec2(2.0, 6.0), pos2(area.min.x + area.width() * draw + 2.0, rect.max.y));
+            let clip =
+                Rect::from_min_max(area.min - vec2(2.0, 6.0), pos2(area.min.x + area.width() * draw + 2.0, rect.max.y));
             let cp = p.with_clip_rect(clip.intersect(p.clip_rect()));
-            glowkit_core::paint::area_fill(&cp, &smooth, rect.max.y - 10.0, with_alpha(col, if t.dark { 0.28 } else { 0.18 }), with_alpha(col, 0.0));
+            glowkit_core::paint::area_fill(
+                &cp,
+                &smooth,
+                rect.max.y - 10.0,
+                with_alpha(col, if t.dark { 0.28 } else { 0.18 }),
+                with_alpha(col, 0.0),
+            );
             glowkit_core::paint::gradient_polyline(&cp, &smooth, false, 2.0, |_| col);
             if draw >= 1.0 {
                 let last = *pts.last().unwrap();
@@ -608,7 +760,12 @@ pub type KeyValue = DescriptionList;
 impl DescriptionList {
     /// Rows of `(label, value)`.
     pub fn new(rows: &[(&str, &str)]) -> Self {
-        Self { rows: rows.iter().map(|(a, b)| (a.to_string(), b.to_string())).collect(), key_width: 150.0, width: None, stacked: false }
+        Self {
+            rows: rows.iter().map(|(a, b)| (a.to_string(), b.to_string())).collect(),
+            key_width: 150.0,
+            width: None,
+            stacked: false,
+        }
     }
     /// Width of the label column (default 150).
     pub fn key_width(mut self, w: f32) -> Self {
@@ -632,8 +789,32 @@ impl Widget for DescriptionList {
         let t = Theme::of(ui);
         let w = self.width.unwrap_or_else(|| ui.available_width().min(560.0));
         let vw = if self.stacked { w } else { w - self.key_width };
-        let galleys: Vec<_> = self.rows.iter().map(|(k, v)| (ui.painter().layout(k.clone(), FontId::proportional(13.5), t.muted_foreground, self.key_width - 12.0), ui.painter().layout(v.clone(), FontId::proportional(13.5), t.foreground, vw))).collect();
-        let row_h: Vec<f32> = galleys.iter().map(|(k, v)| if self.stacked { k.size().y + v.size().y + 4.0 + 22.0 } else { k.size().y.max(v.size().y) + 24.0 }).collect();
+        let galleys: Vec<_> = self
+            .rows
+            .iter()
+            .map(|(k, v)| {
+                (
+                    ui.painter().layout(
+                        k.clone(),
+                        FontId::proportional(13.5),
+                        t.muted_foreground,
+                        self.key_width - 12.0,
+                    ),
+                    ui.painter().layout(v.clone(), FontId::proportional(13.5), t.foreground, vw),
+                )
+            })
+            .collect();
+        let row_h: Vec<f32> =
+            galleys
+                .iter()
+                .map(|(k, v)| {
+                    if self.stacked {
+                        k.size().y + v.size().y + 4.0 + 22.0
+                    } else {
+                        k.size().y.max(v.size().y) + 24.0
+                    }
+                })
+                .collect();
         let total: f32 = row_h.iter().sum();
         let (rect, resp) = ui.allocate_exact_size(vec2(w, total), Sense::hover());
         let p = ui.painter();

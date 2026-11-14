@@ -34,8 +34,20 @@ fn landing_content(ui: &mut Ui, width: f32) {
     ui.add_space(110.0);
     let (r, _) = ui.allocate_exact_size(vec2(width, 1400.0), egui::Sense::hover());
     let p = ui.painter();
-    p.text(pos2(r.center().x, r.min.y + 10.0), Align2::CENTER_CENTER, "Build beautiful apps in Rust", FontId::proportional(30.0), t.foreground);
-    p.text(pos2(r.center().x, r.min.y + 50.0), Align2::CENTER_CENTER, "Scroll this area to see the navbar react.", FontId::proportional(15.0), t.muted_foreground);
+    p.text(
+        pos2(r.center().x, r.min.y + 10.0),
+        Align2::CENTER_CENTER,
+        "Build beautiful apps in Rust",
+        FontId::proportional(30.0),
+        t.foreground,
+    );
+    p.text(
+        pos2(r.center().x, r.min.y + 50.0),
+        Align2::CENTER_CENTER,
+        "Scroll this area to see the navbar react.",
+        FontId::proportional(15.0),
+        t.muted_foreground,
+    );
     for i in 0..12 {
         let y = r.min.y + 100.0 + i as f32 * 108.0;
         let w = r.width() - 80.0;

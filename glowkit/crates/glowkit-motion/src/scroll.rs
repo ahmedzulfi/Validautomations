@@ -15,7 +15,10 @@ use egui::{Id, Rect, Ui, Vec2};
 pub fn scroll_progress<R>(out: &ScrollAreaOutput<R>) -> Vec2 {
     let max = (out.content_size - out.inner_rect.size()).max(Vec2::ZERO);
     let o = out.state.clamped_offset();
-    Vec2::new(if max.x > 0.0 { (o.x / max.x).clamp(0.0, 1.0) } else { 0.0 }, if max.y > 0.0 { (o.y / max.y).clamp(0.0, 1.0) } else { 0.0 })
+    Vec2::new(
+        if max.x > 0.0 { (o.x / max.x).clamp(0.0, 1.0) } else { 0.0 },
+        if max.y > 0.0 { (o.y / max.y).clamp(0.0, 1.0) } else { 0.0 },
+    )
 }
 
 /// Scroll progress of the [`egui::ScrollArea`] with id `scroll_id` as of the last frame, usable
@@ -24,7 +27,10 @@ pub fn scroll_progress<R>(out: &ScrollAreaOutput<R>) -> Vec2 {
 pub fn scroll_progress_of(ui: &Ui, scroll_id: Id, viewport: Vec2, content: Vec2) -> Vec2 {
     let o = egui::scroll_area::State::load(ui.ctx(), scroll_id).map_or(Vec2::ZERO, |s| s.clamped_offset());
     let max = (content - viewport).max(Vec2::ZERO);
-    Vec2::new(if max.x > 0.0 { (o.x / max.x).clamp(0.0, 1.0) } else { 0.0 }, if max.y > 0.0 { (o.y / max.y).clamp(0.0, 1.0) } else { 0.0 })
+    Vec2::new(
+        if max.x > 0.0 { (o.x / max.x).clamp(0.0, 1.0) } else { 0.0 },
+        if max.y > 0.0 { (o.y / max.y).clamp(0.0, 1.0) } else { 0.0 },
+    )
 }
 
 /// How far the content of the enclosing scroll area is scrolled, in points. Call it at the top of

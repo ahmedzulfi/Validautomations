@@ -38,7 +38,16 @@ pub struct ShimmerButton {
 impl ShimmerButton {
     /// A shimmer button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, background: None, shimmer_color: None, text_color: None, radius: None, duration: 3.0, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            background: None,
+            shimmer_color: None,
+            text_color: None,
+            radius: None,
+            duration: 3.0,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points (the button scales with it).
         size: f32);
@@ -76,7 +85,14 @@ impl Widget for ShimmerButton {
         let head = (time / self.duration.max(0.2)).fract();
 
         let hp = util::perimeter_point(rect, radius, head);
-        paint::soft_shadow(p, rect, radius, 18.0, vec2(0.0, 6.0), with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.25 }));
+        paint::soft_shadow(
+            p,
+            rect,
+            radius,
+            18.0,
+            vec2(0.0, 6.0),
+            with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.25 }),
+        );
         p.rect_filled(rect, cr(radius), bg);
         // light spilling inward from the spark (clipped to the button)
         util::inner_glow(p, rect, radius, hp, rect.height() * 0.9, with_alpha(spark, 0.10 + 0.06 * hover));
@@ -120,7 +136,16 @@ pub struct ShinyButton {
 impl ShinyButton {
     /// A shiny button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, background: None, text_color: None, shine_color: None, radius: None, period: 2.6, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            background: None,
+            text_color: None,
+            shine_color: None,
+            radius: None,
+            period: 2.6,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -165,7 +190,14 @@ impl Widget for ShinyButton {
             let k = (1.0 - d).clamp(0.0, 1.0);
             k * k * (3.0 - 2.0 * k)
         };
-        paint::soft_shadow(p, rect, radius, 10.0 + 10.0 * hover, vec2(0.0, 2.0 + 3.0 * hover), with_alpha(Color32::BLACK, if t.dark { 0.35 } else { 0.08 + 0.06 * hover }));
+        paint::soft_shadow(
+            p,
+            rect,
+            radius,
+            10.0 + 10.0 * hover,
+            vec2(0.0, 2.0 + 3.0 * hover),
+            with_alpha(Color32::BLACK, if t.dark { 0.35 } else { 0.08 + 0.06 * hover }),
+        );
         p.rect_filled(rect, cr(radius), bg);
         // a faint radial accent wash from the top
         paint::fill_convex_fn(p, &paint::rounded_rect_points(rect.shrink(1.0), radius - 1.0, 8), 5, |q: Pos2| {
@@ -202,7 +234,16 @@ pub struct RainbowButton {
 impl RainbowButton {
     /// A rainbow button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, colors: palettes::RAINBOW.to_vec(), background: None, text_color: None, radius: None, speed: 2.0, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            colors: palettes::RAINBOW.to_vec(),
+            background: None,
+            text_color: None,
+            radius: None,
+            speed: 2.0,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -249,7 +290,12 @@ impl Widget for RainbowButton {
             let x = rect.min.x + rect.width() * (0.1 + 0.8 * u);
             let c = gradient_cyclic(colors, u * 0.8 - shift);
             let a = (if t.dark { 0.55 } else { 0.40 } + 0.2 * hover) * 0.55;
-            paint::glow_ellipse(p, egui::pos2(x, rect.max.y + rect.height() * 0.05), vec2((rect.width() * 0.2).max(rect.height() * 1.2), rect.height() * (0.55 + 0.15 * hover)), with_alpha(c, a));
+            paint::glow_ellipse(
+                p,
+                egui::pos2(x, rect.max.y + rect.height() * 0.05),
+                vec2((rect.width() * 0.2).max(rect.height() * 1.2), rect.height() * (0.55 + 0.15 * hover)),
+                with_alpha(c, a),
+            );
         }
         p.rect_filled(rect, cr(radius), bg);
         util::border_fn(p, rect, radius, 2.0, |q, _| {
@@ -284,7 +330,16 @@ pub struct GradientOutlineButton {
 impl GradientOutlineButton {
     /// A gradient-outline button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, colors: Vec::new(), radius: None, border_width: 2.0, speed: 4.0, force_hover: false, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            colors: Vec::new(),
+            radius: None,
+            border_width: 2.0,
+            speed: 4.0,
+            force_hover: false,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -330,9 +385,16 @@ impl Widget for GradientOutlineButton {
         if hover > 0.01 {
             for (i, col) in colors.iter().enumerate() {
                 let x = rect.min.x + rect.width() * (i as f32 + 0.5) / colors.len() as f32;
-                paint::glow_ellipse(p, egui::pos2(x, c.y + 4.0), vec2(rect.width() * 0.35, rect.height() * 0.9), with_alpha(*col, 0.22 * hover));
+                paint::glow_ellipse(
+                    p,
+                    egui::pos2(x, c.y + 4.0),
+                    vec2(rect.width() * 0.35, rect.height() * 0.9),
+                    with_alpha(*col, 0.22 * hover),
+                );
             }
-            paint::fill_convex_fn(p, &paint::rounded_rect_points(rect, radius, 10), 4, |q| grad(q).gamma_multiply(hover));
+            paint::fill_convex_fn(p, &paint::rounded_rect_points(rect, radius, 10), 4, |q| {
+                grad(q).gamma_multiply(hover)
+            });
         }
         util::border_fn(p, rect, radius, self.border_width, |q, _| grad(q));
         let g = util::text_galley(ui, &self.label, self.size, t.foreground);

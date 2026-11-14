@@ -39,7 +39,13 @@ pub struct Breadcrumb {
 impl Breadcrumb {
     /// A trail of items, first to last (the last is the current page).
     pub fn new(items: &[&str]) -> Self {
-        Self { items: items.iter().map(|s| s.to_string()).collect(), separator: BreadcrumbSeparator::Chevron, max_items: usize::MAX, home_icon: false, size: 14.0 }
+        Self {
+            items: items.iter().map(|s| s.to_string()).collect(),
+            separator: BreadcrumbSeparator::Chevron,
+            max_items: usize::MAX,
+            home_icon: false,
+            size: 14.0,
+        }
     }
     /// Separator style.
     pub fn separator(mut self, s: BreadcrumbSeparator) -> Self {
@@ -90,9 +96,12 @@ impl Breadcrumb {
                     let c = r.center();
                     let col = with_alpha(t.muted_foreground, 0.7);
                     match self.separator {
-                        BreadcrumbSeparator::Chevron => LineIcon::ChevronRight.paint(ui.painter(), Rect::from_center_size(c, vec2(13.0, 13.0)), col),
+                        BreadcrumbSeparator::Chevron => {
+                            LineIcon::ChevronRight.paint(ui.painter(), Rect::from_center_size(c, vec2(13.0, 13.0)), col)
+                        }
                         BreadcrumbSeparator::Slash => {
-                            ui.painter().line_segment([c + vec2(2.5, -6.0), c + vec2(-2.5, 6.0)], Stroke::new(1.2, col));
+                            ui.painter()
+                                .line_segment([c + vec2(2.5, -6.0), c + vec2(-2.5, 6.0)], Stroke::new(1.2, col));
                         }
                         BreadcrumbSeparator::Dot => {
                             ui.painter().circle_filled(c, 2.0, col);
@@ -106,8 +115,13 @@ impl Breadcrumb {
                         let h = kit::hover_anim(ui, id.with("dots"), resp.hovered());
                         let br = Rect::from_center_size(r.center(), vec2(28.0, 24.0));
                         ui.painter().rect_filled(br, 6.0, with_alpha(t.foreground, 0.08 * h));
-                        LineIcon::Dots.paint(ui.painter(), Rect::from_center_size(r.center(), vec2(16.0, 16.0)), t.muted_foreground.lerp_to_gamma(t.foreground, h));
-                        let entries: Vec<MenuEntry> = hidden.iter().map(|&i| MenuEntry::item(self.items[i].clone())).collect();
+                        LineIcon::Dots.paint(
+                            ui.painter(),
+                            Rect::from_center_size(r.center(), vec2(16.0, 16.0)),
+                            t.muted_foreground.lerp_to_gamma(t.foreground, h),
+                        );
+                        let entries: Vec<MenuEntry> =
+                            hidden.iter().map(|&i| MenuEntry::item(self.items[i].clone())).collect();
                         if let Some(label) = DropdownMenu::new(entries).width(160.0).show(&resp) {
                             clicked = hidden.iter().copied().find(|&i| self.items[i] == label);
                         }
@@ -117,13 +131,21 @@ impl Breadcrumb {
                         let current = i + 1 == n;
                         let icon_w = if i == 0 && self.home_icon { 20.0 } else { 0.0 };
                         let g = ui.painter().layout_no_wrap(self.items[i].clone(), font.clone(), Color32::WHITE);
-                        let (r, resp) = ui.allocate_exact_size(vec2(g.size().x + icon_w + 4.0, height), if current { Sense::hover() } else { Sense::click() });
+                        let (r, resp) = ui.allocate_exact_size(
+                            vec2(g.size().x + icon_w + 4.0, height),
+                            if current { Sense::hover() } else { Sense::click() },
+                        );
                         let resp = if current { resp } else { resp.on_hover_cursor(CursorIcon::PointingHand) };
                         let h = if current { 0.0 } else { kit::hover_anim(ui, id.with(("i", i)), resp.hovered()) };
-                        let col = if current { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, h) };
+                        let col =
+                            if current { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, h) };
                         let x = r.min.x + 2.0;
                         if icon_w > 0.0 {
-                            LineIcon::Home.paint(ui.painter(), Rect::from_center_size(pos2(x + 7.0, r.center().y), vec2(15.0, 15.0)), col);
+                            LineIcon::Home.paint(
+                                ui.painter(),
+                                Rect::from_center_size(pos2(x + 7.0, r.center().y), vec2(15.0, 15.0)),
+                                col,
+                            );
                         }
                         let tp = pos2(x + icon_w, r.center().y - g.size().y / 2.0);
                         ui.painter().text(tp, Align2::LEFT_TOP, &self.items[i], font.clone(), col);
@@ -220,7 +242,13 @@ impl Widget for Pagination<'_> {
         let cell = 36.0;
         let gap = 4.0;
         let font = FontId::proportional(13.5);
-        let nav_w = |label: &str| if self.labels { ui.painter().layout_no_wrap(label.to_owned(), font.clone(), Color32::WHITE).size().x + 40.0 } else { cell };
+        let nav_w = |label: &str| {
+            if self.labels {
+                ui.painter().layout_no_wrap(label.to_owned(), font.clone(), Color32::WHITE).size().x + 40.0
+            } else {
+                cell
+            }
+        };
         let prev_w = nav_w("Previous");
         let next_w = nav_w("Next");
         let total_w = prev_w + next_w + slots.len() as f32 * (cell + gap) + gap;
@@ -241,8 +269,18 @@ impl Widget for Pagination<'_> {
         let (presp, _) = btn(ui, pr, 0, can_prev);
         let pcol = if can_prev { t.foreground } else { with_alpha(t.muted_foreground, 0.5) };
         if self.labels {
-            LineIcon::ChevronLeft.paint(ui.painter(), Rect::from_center_size(pos2(pr.min.x + 16.0, pr.center().y), vec2(14.0, 14.0)), pcol);
-            ui.painter().text(pos2(pr.min.x + 28.0, pr.center().y), Align2::LEFT_CENTER, "Previous", font.clone(), pcol);
+            LineIcon::ChevronLeft.paint(
+                ui.painter(),
+                Rect::from_center_size(pos2(pr.min.x + 16.0, pr.center().y), vec2(14.0, 14.0)),
+                pcol,
+            );
+            ui.painter().text(
+                pos2(pr.min.x + 28.0, pr.center().y),
+                Align2::LEFT_CENTER,
+                "Previous",
+                font.clone(),
+                pcol,
+            );
         } else {
             LineIcon::ChevronLeft.paint(ui.painter(), Rect::from_center_size(pr.center(), vec2(14.0, 14.0)), pcol);
         }
@@ -287,7 +325,11 @@ impl Widget for Pagination<'_> {
                     let col = if active && self.filled { t.primary_foreground } else { t.foreground };
                     ui.painter().text(r.center(), Align2::CENTER_CENTER, pg.to_string(), font.clone(), col);
                 }
-                None => LineIcon::Dots.paint(ui.painter(), Rect::from_center_size(r.center(), vec2(16.0, 16.0)), t.muted_foreground),
+                None => LineIcon::Dots.paint(
+                    ui.painter(),
+                    Rect::from_center_size(r.center(), vec2(16.0, 16.0)),
+                    t.muted_foreground,
+                ),
             }
         }
         // next
@@ -297,7 +339,11 @@ impl Widget for Pagination<'_> {
         let ncol = if can_next { t.foreground } else { with_alpha(t.muted_foreground, 0.5) };
         if self.labels {
             ui.painter().text(pos2(nr.max.x - 28.0, nr.center().y), Align2::RIGHT_CENTER, "Next", font.clone(), ncol);
-            LineIcon::ChevronRight.paint(ui.painter(), Rect::from_center_size(pos2(nr.max.x - 16.0, nr.center().y), vec2(14.0, 14.0)), ncol);
+            LineIcon::ChevronRight.paint(
+                ui.painter(),
+                Rect::from_center_size(pos2(nr.max.x - 16.0, nr.center().y), vec2(14.0, 14.0)),
+                ncol,
+            );
         } else {
             LineIcon::ChevronRight.paint(ui.painter(), Rect::from_center_size(nr.center(), vec2(14.0, 14.0)), ncol);
         }

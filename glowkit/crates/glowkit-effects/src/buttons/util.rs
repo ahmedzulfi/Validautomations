@@ -1,7 +1,10 @@
 //! Shared painting and layout helpers for buttons and cards (crate-internal).
 
 use egui::epaint::Mesh;
-use egui::{pos2, vec2, Color32, CornerRadius, FontId, Galley, Painter, Pos2, Rect, Response, Role, Sense, Shape, Ui, Vec2, WidgetInfo};
+use egui::{
+    pos2, vec2, Color32, CornerRadius, FontId, Galley, Painter, Pos2, Rect, Response, Role, Sense, Shape, Ui, Vec2,
+    WidgetInfo,
+};
 use glowkit_core::paint::{rounded_rect_points, subdivide_closed};
 use std::f32::consts::TAU;
 use std::sync::Arc;
@@ -175,7 +178,14 @@ pub(crate) fn fill_poly(painter: &Painter, poly: &[Pos2], color: Color32) {
 
 /// Fill the part of a rounded rect below `top(x)`, column by column (liquid fills, waves).
 /// `color(y_fraction)` gives the fill color by height.
-pub(crate) fn fill_below(painter: &Painter, rect: Rect, radius: f32, cols: usize, top: impl Fn(f32) -> f32, color: impl Fn(f32) -> Color32) {
+pub(crate) fn fill_below(
+    painter: &Painter,
+    rect: Rect,
+    radius: f32,
+    cols: usize,
+    top: impl Fn(f32) -> f32,
+    color: impl Fn(f32) -> Color32,
+) {
     let r = radius.min(rect.width() / 2.0).min(rect.height() / 2.0);
     let cols = cols.max(2);
     let mut mesh = Mesh::default();
@@ -281,11 +291,19 @@ pub(crate) fn check_mark(painter: &Painter, center: Pos2, size: f32, width: f32,
 pub(crate) fn spinner(painter: &Painter, center: Pos2, radius: f32, width: f32, color: Color32, time: f32) {
     let a0 = time * TAU * 1.1;
     let sweep = TAU * (0.55 + 0.2 * (time * 2.3).sin());
-    glowkit_core::paint::arc_gradient(painter, center, radius, a0, a0 + sweep, width, |t| color.gamma_multiply(t.powf(0.8)));
+    glowkit_core::paint::arc_gradient(painter, center, radius, a0, a0 + sweep, width, |t| {
+        color.gamma_multiply(t.powf(0.8))
+    });
 }
 
 /// Stroke a border ring that stays strictly inside `rect` (anti-aliasing feather included).
-pub(crate) fn inner_border_fn(painter: &Painter, rect: Rect, radius: f32, width: f32, f: impl Fn(Pos2, f32) -> Color32) {
+pub(crate) fn inner_border_fn(
+    painter: &Painter,
+    rect: Rect,
+    radius: f32,
+    width: f32,
+    f: impl Fn(Pos2, f32) -> Color32,
+) {
     border_fn(painter, rect.shrink(0.8), (radius - 0.8).max(0.0), width, f);
 }
 

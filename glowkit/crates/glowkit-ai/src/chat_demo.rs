@@ -42,9 +42,13 @@ const MODELS: [ModelInfo<'static>; 4] = [
 ];
 
 pub(crate) const SOURCES: [Source<'static>; 5] = [
-    Source::new("The Rust Programming Language: Understanding Ownership", "https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html")
-        .snippet("Ownership is a set of rules that govern how a Rust program manages memory."),
-    Source::new("egui: an easy-to-use immediate mode GUI in Rust", "https://github.com/emilk/egui").snippet("egui runs on the web, natively, and in your favorite game engine."),
+    Source::new(
+        "The Rust Programming Language: Understanding Ownership",
+        "https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html",
+    )
+    .snippet("Ownership is a set of rules that govern how a Rust program manages memory."),
+    Source::new("egui: an easy-to-use immediate mode GUI in Rust", "https://github.com/emilk/egui")
+        .snippet("egui runs on the web, natively, and in your favorite game engine."),
     Source::new("Rust Reference: Lifetimes", "https://doc.rust-lang.org/reference/lifetime-elision.html"),
     Source::new("Rust Blog: Announcing Rust 1.85", "https://blog.rust-lang.org/2025/02/20/Rust-1.85.0.html"),
     Source::new("Stack Overflow: When to use Rc vs Arc", "https://stackoverflow.com/questions/rc-vs-arc"),
@@ -101,7 +105,16 @@ fn initial() -> ChatState {
 
 fn start(st: &mut ChatState, prompt: String, now: f64) {
     let (answer, reasoning, tool) = answer_for(&prompt);
-    st.msgs.push(Msg { role: Role::User, text: prompt, reasoning: String::new(), reasoning_secs: 0.0, tool: None, sources: false, branch: 0, branches: 1 });
+    st.msgs.push(Msg {
+        role: Role::User,
+        text: prompt,
+        reasoning: String::new(),
+        reasoning_secs: 0.0,
+        tool: None,
+        sources: false,
+        branch: 0,
+        branches: 1,
+    });
     st.gen = Some(Gen { started: now, answer, reasoning, tool });
 }
 
@@ -166,7 +179,14 @@ pub(crate) fn show(ui: &mut Ui) {
                     st = fresh;
                 }
                 let used = 18_400 + st.msgs.iter().map(|m| m.text.len() as u64 * 3).sum::<u64>();
-                ui.add(ContextMeter::new(used, 200_000).segment("Input", used * 6 / 10).segment("Output", used * 3 / 10).segment("Reasoning", used / 10).model(MODELS[st.model].name).cost(used as f64 * 0.000_003));
+                ui.add(
+                    ContextMeter::new(used, 200_000)
+                        .segment("Input", used * 6 / 10)
+                        .segment("Output", used * 3 / 10)
+                        .segment("Reasoning", used / 10)
+                        .model(MODELS[st.model].name)
+                        .cost(used as f64 * 0.000_003),
+                );
             });
         });
         ui.add_space(6.0);
@@ -192,7 +212,10 @@ pub(crate) fn show(ui: &mut Ui) {
                     }
                     _ => {
                         let last = i + 1 == n && st.gen.is_none();
-                        let mut msg = ChatMessage::new(Role::Assistant, &m.text).actions(true).actions_always_visible(last).id_salt(("a", i));
+                        let mut msg = ChatMessage::new(Role::Assistant, &m.text)
+                            .actions(true)
+                            .actions_always_visible(last)
+                            .id_salt(("a", i));
                         if m.branches > 1 {
                             msg = msg.branch(&mut m.branch, m.branches);
                         }
@@ -202,7 +225,13 @@ pub(crate) fn show(ui: &mut Ui) {
                                 ui.add(Reasoning::new(reasoning).duration(secs).id_salt(("r", i)));
                             }
                             if let Some((name, input, output)) = tool {
-                                ui.add(ToolCall::new(name).status(ToolStatus::Completed).input(input).output(output).id_salt(("t", i)));
+                                ui.add(
+                                    ToolCall::new(name)
+                                        .status(ToolStatus::Completed)
+                                        .input(input)
+                                        .output(output)
+                                        .id_salt(("t", i)),
+                                );
                             }
                             if sources {
                                 ui.add(Sources::new(&SOURCES[..4]).id_salt(("s", i)));
@@ -226,26 +255,29 @@ pub(crate) fn show(ui: &mut Ui) {
                 if done {
                     finish(&mut st, &g, g.answer.clone(), reason_secs + T_THINK);
                 } else {
-                    ChatMessage::new(Role::Assistant, &answer).streaming(e > t_answer).id_salt(("a", n)).show(ui, |ui| {
-                        if e < T_THINK {
-                            ui.add(Loader::new(LoaderKind::TextShimmer).text("Thinking").size(20.0));
-                        } else {
-                            let r_chars = ((e - T_THINK) * REASON_CPS) as usize;
-                            let r = prefix_tokens(&g.reasoning, r_chars);
-                            ui.add(Reasoning::new(&r).streaming(e < t_tool).id_salt(("r", n)));
-                        }
-                        if e >= t_tool {
-                            let status = if e < t_answer { ToolStatus::Running } else { ToolStatus::Completed };
-                            let mut tc = ToolCall::new(&g.tool.0).status(status).input(&g.tool.1).id_salt(("t", n));
-                            if status == ToolStatus::Completed {
-                                tc = tc.output(&g.tool.2);
+                    ChatMessage::new(Role::Assistant, &answer).streaming(e > t_answer).id_salt(("a", n)).show(
+                        ui,
+                        |ui| {
+                            if e < T_THINK {
+                                ui.add(Loader::new(LoaderKind::TextShimmer).text("Thinking").size(20.0));
+                            } else {
+                                let r_chars = ((e - T_THINK) * REASON_CPS) as usize;
+                                let r = prefix_tokens(&g.reasoning, r_chars);
+                                ui.add(Reasoning::new(&r).streaming(e < t_tool).id_salt(("r", n)));
                             }
-                            ui.add(tc);
-                        }
-                        if e >= t_answer {
-                            ui.add(Sources::new(&SOURCES[..4]).id_salt(("s", n)));
-                        }
-                    });
+                            if e >= t_tool {
+                                let status = if e < t_answer { ToolStatus::Running } else { ToolStatus::Completed };
+                                let mut tc = ToolCall::new(&g.tool.0).status(status).input(&g.tool.1).id_salt(("t", n));
+                                if status == ToolStatus::Completed {
+                                    tc = tc.output(&g.tool.2);
+                                }
+                                ui.add(tc);
+                            }
+                            if e >= t_answer {
+                                ui.add(Sources::new(&SOURCES[..4]).id_salt(("s", n)));
+                            }
+                        },
+                    );
                     ui.ctx().request_repaint();
                 }
             }
@@ -260,7 +292,11 @@ pub(crate) fn show(ui: &mut Ui) {
         }
         ui.add_space(6.0);
         if show_suggestions {
-            let items = ["Write a Rust function that counts words", "Compare Rust GUI libraries in a table", "Explain lifetimes simply"];
+            let items = [
+                "Write a Rust function that counts words",
+                "Compare Rust GUI libraries in a table",
+                "Explain lifetimes simply",
+            ];
             if let Some(i) = Suggestions::new(&items).icon(Icon::Sparkle).size(12.5).show(ui) {
                 st.input = items[i].to_owned();
             }
@@ -292,7 +328,12 @@ pub(crate) fn show(ui: &mut Ui) {
                 let e = (now - g.started) as f32;
                 let t_answer = T_THINK + g.reasoning.chars().count() as f32 / REASON_CPS + TOOL_SECS;
                 let partial = prefix_tokens(&g.answer, ((e - t_answer).max(0.0) * ANSWER_CPS) as usize);
-                finish(&mut st, &g, if partial.is_empty() { "*Generation stopped.*".into() } else { partial }, e.min(t_answer));
+                finish(
+                    &mut st,
+                    &g,
+                    if partial.is_empty() { "*Generation stopped.*".into() } else { partial },
+                    e.min(t_answer),
+                );
             }
         }
         if let Some(p) = out.submitted {
@@ -301,4 +342,3 @@ pub(crate) fn show(ui: &mut Ui) {
     });
     glowkit_core::set_state(ui, id, st);
 }
-

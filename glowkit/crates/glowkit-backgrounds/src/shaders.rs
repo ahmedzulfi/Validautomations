@@ -174,10 +174,16 @@ impl Iridescence {
             for i in 0..5 {
                 let fi = i as f32;
                 let k = 0.8 + fi * 0.25;
-                p += vec2((p.y * k + time + fi * 1.1).sin(), (p.x * k * 0.9 - time * 0.8 + fi * 1.7).cos()) * (0.3 / k) * amp;
+                p += vec2((p.y * k + time + fi * 1.1).sin(), (p.x * k * 0.9 - time * 0.8 + fi * 1.7).cos())
+                    * (0.3 / k)
+                    * amp;
             }
             let v = p.x * 0.18 + p.y * 0.26 + time * 0.1;
-            let film = Rgb(0.5 + 0.5 * (TAU * v).cos(), 0.5 + 0.5 * (TAU * (v + 0.3)).cos(), 0.5 + 0.5 * (TAU * (v + 0.62)).cos());
+            let film = Rgb(
+                0.5 + 0.5 * (TAU * v).cos(),
+                0.5 + 0.5 * (TAU * (v + 0.3)).cos(),
+                0.5 + 0.5 * (TAU * (v + 0.62)).cos(),
+            );
             // soft sheen: brighter where the film folds
             let sheen = 0.5 + 0.5 * (p.x * 1.3 - p.y * 0.9).sin();
             let c = film.lerp(Rgb(1.0, 1.0, 1.0), 0.38 + 0.2 * sheen).scale(0.86 + 0.14 * sheen);
@@ -465,7 +471,9 @@ impl Plasma {
             let c = lut.sample(v * 0.2 + time * 0.05);
             let glow = (0.5 + 0.5 * (v * 1.4).sin()).powf(0.8) * intensity;
             if dark {
-                bg.add(c.scale((0.12 + glow * 0.9).min(1.0))).add(Rgb(1.0, 1.0, 1.0).scale((glow - 0.9).max(0.0) * 0.5)).to_color()
+                bg.add(c.scale((0.12 + glow * 0.9).min(1.0)))
+                    .add(Rgb(1.0, 1.0, 1.0).scale((glow - 0.9).max(0.0) * 0.5))
+                    .to_color()
             } else {
                 bg.lerp(c, (0.15 + glow * 0.8).min(1.0)).to_color()
             }

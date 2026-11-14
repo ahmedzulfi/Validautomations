@@ -3,8 +3,8 @@
 
 use egui::emath::TSTransform;
 use egui::{
-    vec2, Align2, Color32, Context, CursorIcon, FontId, Id, InnerResponse, LayerId, Order, Pos2, Rect,
-    Response, Sense, Stroke, StrokeKind, Ui, UiBuilder,
+    vec2, Align2, Color32, Context, CursorIcon, FontId, Id, InnerResponse, LayerId, Order, Pos2, Rect, Response, Sense,
+    Stroke, StrokeKind, Ui, UiBuilder,
 };
 use glowkit_core::color::{mix, shade, with_alpha};
 use glowkit_core::{paint, Theme};
@@ -30,7 +30,14 @@ pub(crate) fn backdrop_color(t: &Theme) -> Color32 {
 /// Paint a floating surface: soft shadow, popover fill, 1px border.
 pub(crate) fn panel(painter: &egui::Painter, rect: Rect, t: &Theme, radius: f32) {
     paint::soft_shadow(painter, rect, radius, 28.0, vec2(0.0, 10.0), shadow_color(t));
-    paint::soft_shadow(painter, rect, radius, 6.0, vec2(0.0, 2.0), with_alpha(Color32::BLACK, if t.dark { 0.25 } else { 0.05 }));
+    paint::soft_shadow(
+        painter,
+        rect,
+        radius,
+        6.0,
+        vec2(0.0, 2.0),
+        with_alpha(Color32::BLACK, if t.dark { 0.25 } else { 0.05 }),
+    );
     painter.rect_filled(rect, radius, t.popover);
     painter.rect_stroke(rect, radius, Stroke::new(1.0, t.border), StrokeKind::Inside);
 }
@@ -210,7 +217,13 @@ pub(crate) fn kbd(painter: &egui::Painter, right_center: Pos2, text: &str, t: &T
 
 /// Plain shortcut text (no chip), right-aligned.
 pub(crate) fn shortcut_text(painter: &egui::Painter, right_center: Pos2, text: &str, t: &Theme) {
-    painter.text(right_center, Align2::RIGHT_CENTER, text, FontId::proportional(11.5), with_alpha(t.muted_foreground, 0.85));
+    painter.text(
+        right_center,
+        Align2::RIGHT_CENTER,
+        text,
+        FontId::proportional(11.5),
+        with_alpha(t.muted_foreground, 0.85),
+    );
 }
 
 /// Paint a small arrow (triangle) pointing from a floating panel edge toward `tip`.
@@ -234,7 +247,10 @@ pub(crate) fn spinner(painter: &egui::Painter, center: Pos2, radius: f32, color:
         let phase = ((time * 1.2 - i as f32 / 8.0).rem_euclid(1.0) * 1.0).powf(1.0);
         let alpha = 0.18 + 0.82 * (1.0 - phase);
         let d = vec2(a.cos(), a.sin());
-        painter.line_segment([center + d * radius * 0.5, center + d * radius], Stroke::new(radius * 0.22, with_alpha(color, alpha)));
+        painter.line_segment(
+            [center + d * radius * 0.5, center + d * radius],
+            Stroke::new(radius * 0.22, with_alpha(color, alpha)),
+        );
     }
 }
 
@@ -276,21 +292,35 @@ pub(crate) fn demo_canvas(ui: &mut Ui, height: f32) -> Rect {
     p.line_segment([bar.left_bottom(), bar.right_bottom()], Stroke::new(1.0, t.border));
     p.circle_filled(bar.left_center() + vec2(22.0, 0.0), 8.0, with_alpha(t.accent, 0.8));
     for i in 0..3 {
-        p.rect_filled(Rect::from_min_size(bar.left_center() + vec2(44.0 + i as f32 * 62.0, -4.0), vec2(48.0, 8.0)), 4.0, sk);
+        p.rect_filled(
+            Rect::from_min_size(bar.left_center() + vec2(44.0 + i as f32 * 62.0, -4.0), vec2(48.0, 8.0)),
+            4.0,
+            sk,
+        );
     }
     p.circle_filled(bar.right_center() - vec2(22.0, 0.0), 11.0, sk);
     // sidebar + content blocks
     let body = Rect::from_min_max(bar.left_bottom() + vec2(18.0, 18.0), rect.max - vec2(18.0, 18.0));
     let side_w = (body.width() * 0.2).min(170.0);
     for i in 0..6 {
-        p.rect_filled(Rect::from_min_size(body.min + vec2(0.0, i as f32 * 26.0), vec2(side_w * (0.6 + 0.07 * (i % 3) as f32), 10.0)), 5.0, sk);
+        p.rect_filled(
+            Rect::from_min_size(
+                body.min + vec2(0.0, i as f32 * 26.0),
+                vec2(side_w * (0.6 + 0.07 * (i % 3) as f32), 10.0),
+            ),
+            5.0,
+            sk,
+        );
     }
     let main = Rect::from_min_max(body.min + vec2(side_w + 24.0, 0.0), body.max);
     p.rect_filled(Rect::from_min_size(main.min, vec2(main.width() * 0.4, 16.0)), 6.0, sk);
     p.rect_filled(Rect::from_min_size(main.min + vec2(0.0, 28.0), vec2(main.width() * 0.65, 9.0)), 4.0, sk);
     let cw = (main.width() - 24.0) / 3.0;
     for i in 0..3 {
-        let r = Rect::from_min_size(main.min + vec2(i as f32 * (cw + 12.0), 56.0), vec2(cw, (main.height() - 56.0).max(40.0)));
+        let r = Rect::from_min_size(
+            main.min + vec2(i as f32 * (cw + 12.0), 56.0),
+            vec2(cw, (main.height() - 56.0).max(40.0)),
+        );
         p.rect_stroke(r, t.radius * 0.8, Stroke::new(1.0, t.border), StrokeKind::Inside);
         p.rect_filled(Rect::from_min_size(r.min + vec2(14.0, 16.0), vec2(cw * 0.5, 9.0)), 4.0, sk);
         p.rect_filled(Rect::from_min_size(r.min + vec2(14.0, 34.0), vec2(cw * 0.3, 18.0)), 5.0, sk);

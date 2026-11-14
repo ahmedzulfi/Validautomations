@@ -135,9 +135,20 @@ impl Widget for PieChart<'_> {
         let legend_on = self.base.legend && n > 0;
         let mut focus = None;
         if legend_on {
-            let entries: Vec<LegendEntry> = self.data.iter().enumerate().map(|(i, d)| LegendEntry { label: d.label.clone(), color: color_of(i) }).collect();
+            let entries: Vec<LegendEntry> = self
+                .data
+                .iter()
+                .enumerate()
+                .map(|(i, d)| LegendEntry { label: d.label.clone(), color: color_of(i) })
+                .collect();
             let before = hidden.clone();
-            focus = legend(ui, id, Rect::from_min_max(pos2(rect.left(), rect.bottom() - LEGEND_H), rect.max), &entries, &mut hidden);
+            focus = legend(
+                ui,
+                id,
+                Rect::from_min_max(pos2(rect.left(), rect.bottom() - LEGEND_H), rect.max),
+                &entries,
+                &mut hidden,
+            );
             if before != hidden {
                 set_hidden_state(ui, id, hidden.clone());
             }
@@ -145,16 +156,24 @@ impl Widget for PieChart<'_> {
         if n == 0 || !ui.is_rect_visible(rect) {
             return resp;
         }
-        let targets: Vec<f32> = self.data.iter().enumerate().map(|(i, d)| if hidden[i] { 0.0 } else { d.value.max(0.0) as f32 }).collect();
+        let targets: Vec<f32> =
+            self.data.iter().enumerate().map(|(i, d)| if hidden[i] { 0.0 } else { d.value.max(0.0) as f32 }).collect();
         let cur = tween(ui, id, &targets);
         let total: f32 = cur.iter().sum::<f32>().max(1e-9);
-        let total_raw: f64 = self.data.iter().enumerate().filter(|(i, _)| !hidden[*i]).map(|(_, d)| d.value.max(0.0)).sum();
-        let area = Rect::from_min_max(rect.min, pos2(rect.right(), rect.bottom() - if legend_on { LEGEND_H + 4.0 } else { 0.0 }));
+        let total_raw: f64 =
+            self.data.iter().enumerate().filter(|(i, _)| !hidden[*i]).map(|(_, d)| d.value.max(0.0)).sum();
+        let area = Rect::from_min_max(
+            rect.min,
+            pos2(rect.right(), rect.bottom() - if legend_on { LEGEND_H + 4.0 } else { 0.0 }),
+        );
         let outside = self.labels == PieLabels::Outside;
         let label_w = if outside {
             let f = FontId::proportional(11.5);
             let tot: f64 = self.data.iter().map(|d| d.value.max(0.0)).sum::<f64>().max(1e-9);
-            self.data.iter().map(|d| text_width(&painter, &format!("{} {}", d.label, format_percent(d.value.max(0.0) / tot)), &f)).fold(0.0, f32::max)
+            self.data
+                .iter()
+                .map(|d| text_width(&painter, &format!("{} {}", d.label, format_percent(d.value.max(0.0) / tot)), &f))
+                .fold(0.0, f32::max)
         } else {
             0.0
         };
@@ -203,7 +222,8 @@ impl Widget for PieChart<'_> {
             if a1 - a0 < 1e-4 {
                 continue;
             }
-            let pop = glowkit_core::anim::follow(ui, id.with(("pop", i)), if active == Some(i) { 1.0 } else { 0.0 }, 14.0);
+            let pop =
+                glowkit_core::anim::follow(ui, id.with(("pop", i)), if active == Some(i) { 1.0 } else { 0.0 }, 14.0);
             let mid = (a0 + a1) / 2.0;
             let dir = vec2(mid.cos(), mid.sin());
             let off = if r_in > 0.0 { egui::Vec2::ZERO } else { dir * self.pop_out * pop };
@@ -220,7 +240,11 @@ impl Widget for PieChart<'_> {
                 if b1 > b0 {
                     glowkit_core::paint::arc(&painter, c + off, rm, b0, b1, w, col);
                 } else {
-                    painter.circle_filled(c + off + vec2(mid.cos(), mid.sin()) * rm, w / 2.0 * ((a1 - a0) / (2.0 * cap)).min(1.0), col);
+                    painter.circle_filled(
+                        c + off + vec2(mid.cos(), mid.sin()) * rm,
+                        w / 2.0 * ((a1 - a0) / (2.0 * cap)).min(1.0),
+                        col,
+                    );
                 }
             } else {
                 sector(&painter, c + off, ri, ro, a0 + p / 2.0, a1 - p / 2.0, col);
@@ -248,18 +272,37 @@ impl Widget for PieChart<'_> {
                 match self.labels {
                     PieLabels::None => {}
                     PieLabels::Percent | PieLabels::Value => {
-                        let txt = if self.labels == PieLabels::Percent { format_percent(frac as f64) } else { (self.base.format)(self.data[i].value) };
+                        let txt = if self.labels == PieLabels::Percent {
+                            format_percent(frac as f64)
+                        } else {
+                            (self.base.format)(self.data[i].value)
+                        };
                         let rr = if r_in > 0.0 { (r_in + r_out) / 2.0 } else { r_out * 0.64 };
-                        painter.text(c + dir * rr, Align2::CENTER_CENTER, txt, FontId::proportional(12.0), contrast_text(color_of(i)));
+                        painter.text(
+                            c + dir * rr,
+                            Align2::CENTER_CENTER,
+                            txt,
+                            FontId::proportional(12.0),
+                            contrast_text(color_of(i)),
+                        );
                     }
                     PieLabels::Outside => {
                         let p0 = c + dir * (r_out + 3.0);
                         let p1 = c + dir * (r_out + 10.0);
                         let right = dir.x >= 0.0;
                         let p2 = p1 + vec2(if right { 8.0 } else { -8.0 }, 0.0);
-                        painter.add(egui::Shape::line(vec![p0, p1, p2], Stroke::new(1.0, t.muted_foreground.gamma_multiply(0.6))));
+                        painter.add(egui::Shape::line(
+                            vec![p0, p1, p2],
+                            Stroke::new(1.0, t.muted_foreground.gamma_multiply(0.6)),
+                        ));
                         let txt = format!("{} {}", self.data[i].label, format_percent(frac as f64));
-                        painter.text(p2 + vec2(if right { 4.0 } else { -4.0 }, 0.0), if right { Align2::LEFT_CENTER } else { Align2::RIGHT_CENTER }, txt, font.clone(), t.foreground.gamma_multiply(0.85));
+                        painter.text(
+                            p2 + vec2(if right { 4.0 } else { -4.0 }, 0.0),
+                            if right { Align2::LEFT_CENTER } else { Align2::RIGHT_CENTER },
+                            txt,
+                            font.clone(),
+                            t.foreground.gamma_multiply(0.85),
+                        );
                     }
                 }
             }
@@ -269,14 +312,35 @@ impl Widget for PieChart<'_> {
         if r_in > 26.0 {
             let (title, caption) = match active {
                 Some(i) => ((self.base.format)(self.data[i].value), self.data[i].label.clone()),
-                None => (self.center_title.clone().unwrap_or_else(|| (self.base.format)(total_raw * ease(Easing::OutCubic, e / 1.1) as f64)), self.center_caption.clone().unwrap_or_else(|| "Total".into())),
+                None => (
+                    self.center_title
+                        .clone()
+                        .unwrap_or_else(|| (self.base.format)(total_raw * ease(Easing::OutCubic, e / 1.1) as f64)),
+                    self.center_caption.clone().unwrap_or_else(|| "Total".into()),
+                ),
             };
             let size = (r_in * 0.42).clamp(14.0, 34.0);
-            painter.text(c - vec2(0.0, size * 0.18), Align2::CENTER_CENTER, title, FontId::proportional(size), t.foreground);
-            painter.text(c + vec2(0.0, size * 0.62), Align2::CENTER_CENTER, caption, FontId::proportional((size * 0.42).clamp(11.0, 13.0)), t.muted_foreground);
+            painter.text(
+                c - vec2(0.0, size * 0.18),
+                Align2::CENTER_CENTER,
+                title,
+                FontId::proportional(size),
+                t.foreground,
+            );
+            painter.text(
+                c + vec2(0.0, size * 0.62),
+                Align2::CENTER_CENTER,
+                caption,
+                FontId::proportional((size * 0.42).clamp(11.0, 13.0)),
+                t.muted_foreground,
+            );
         } else if let (Some(i), true) = (hover, self.base.tooltip) {
             let a = glowkit_core::anim::follow(ui, id.with("tip_a"), 1.0, 16.0);
-            let row = TipRow::new(Some(color_of(i)), self.data[i].label.clone(), format!("{}  ·  {}", (self.base.format)(self.data[i].value), format_percent((cur[i] / total) as f64)));
+            let row = TipRow::new(
+                Some(color_of(i)),
+                self.data[i].label.clone(),
+                format!("{}  ·  {}", (self.base.format)(self.data[i].value), format_percent((cur[i] / total) as f64)),
+            );
             tooltip(ui, id, resp.hover_pos().unwrap_or(c), "", &[row], a);
         }
         if hover.is_none() {

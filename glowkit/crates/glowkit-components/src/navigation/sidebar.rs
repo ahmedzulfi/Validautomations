@@ -59,7 +59,16 @@ pub struct Sidebar<'a> {
 impl<'a> Sidebar<'a> {
     /// `selected` is the flat index of the active item across all sections.
     pub fn new(selected: &'a mut usize, collapsed: &'a mut bool) -> Self {
-        Self { selected, collapsed, brand: None, sections: Vec::new(), user: None, width: 248.0, rail_width: 60.0, height: None }
+        Self {
+            selected,
+            collapsed,
+            brand: None,
+            sections: Vec::new(),
+            user: None,
+            width: 248.0,
+            rail_width: 60.0,
+            height: None,
+        }
     }
     /// Brand name and a sub-line (e.g. plan) in the header.
     pub fn brand(mut self, name: impl Into<String>, sub: impl Into<String>) -> Self {
@@ -96,7 +105,9 @@ impl<'a> Sidebar<'a> {
     pub fn show(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
         let id = ui.next_auto_id().with("glowkit_sidebar");
-        let c = glowkit_core::anim::spring(ui, id.with("collapse"), if *self.collapsed { 1.0 } else { 0.0 }, 260.0, 28.0).clamp(0.0, 1.0);
+        let c =
+            glowkit_core::anim::spring(ui, id.with("collapse"), if *self.collapsed { 1.0 } else { 0.0 }, 260.0, 28.0)
+                .clamp(0.0, 1.0);
         let w = self.width + (self.rail_width - self.width) * c;
         let h = self.height.unwrap_or_else(|| ui.available_height());
         let (rect, resp) = ui.allocate_exact_size(vec2(w, h), Sense::hover());
@@ -120,8 +131,20 @@ impl<'a> Sidebar<'a> {
             let logo = Rect::from_min_size(pos2(x0 + (self.rail_width - 24.0 - 34.0) / 2.0 * c, y), vec2(34.0, 34.0));
             paint::gradient_rect(&p, logo, 9.0, 45.0, &t.gradient);
             LineIcon::Zap.paint(&p, Rect::from_center_size(logo.center(), vec2(17.0, 17.0)), Color32::WHITE);
-            label_p.text(pos2(logo.max.x + 10.0, logo.min.y + 9.0), Align2::LEFT_CENTER, name, FontId::proportional(14.0), t.foreground);
-            label_p.text(pos2(logo.max.x + 10.0, logo.min.y + 26.0), Align2::LEFT_CENTER, sub, FontId::proportional(12.0), t.muted_foreground);
+            label_p.text(
+                pos2(logo.max.x + 10.0, logo.min.y + 9.0),
+                Align2::LEFT_CENTER,
+                name,
+                FontId::proportional(14.0),
+                t.foreground,
+            );
+            label_p.text(
+                pos2(logo.max.x + 10.0, logo.min.y + 26.0),
+                Align2::LEFT_CENTER,
+                sub,
+                FontId::proportional(12.0),
+                t.muted_foreground,
+            );
             y += 34.0 + 14.0;
         }
         // collapse toggle
@@ -139,7 +162,10 @@ impl<'a> Sidebar<'a> {
                 *self.collapsed = !*self.collapsed;
             }
         }
-        p.line_segment([pos2(rect.min.x + 12.0, y - 6.0), pos2(rect.max.x - 12.0, y - 6.0)], Stroke::new(1.0, with_alpha(t.border, 0.8)));
+        p.line_segment(
+            [pos2(rect.min.x + 12.0, y - 6.0), pos2(rect.max.x - 12.0, y - 6.0)],
+            Stroke::new(1.0, with_alpha(t.border, 0.8)),
+        );
 
         // items
         let mut flat = 0usize;
@@ -148,7 +174,13 @@ impl<'a> Sidebar<'a> {
         for (title, items) in &self.sections {
             let th = 28.0 * (1.0 - c) + 8.0 * c;
             if label_a > 0.0 {
-                label_p.text(pos2(x0 + 8.0, y + th / 2.0 + 2.0), Align2::LEFT_CENTER, title, FontId::proportional(11.5), t.muted_foreground);
+                label_p.text(
+                    pos2(x0 + 8.0, y + th / 2.0 + 2.0),
+                    Align2::LEFT_CENTER,
+                    title,
+                    FontId::proportional(11.5),
+                    t.muted_foreground,
+                );
             }
             y += th;
             for item in items {
@@ -165,7 +197,11 @@ impl<'a> Sidebar<'a> {
         if let Some(ar) = active_rect {
             let ay = glowkit_core::anim::spring(ui, id.with("ay"), ar.min.y, 380.0, 30.0);
             let r = Rect::from_min_size(pos2(ar.min.x, ay), ar.size());
-            p.rect_filled(r, t.radius * 0.7, if t.dark { mix(bg, t.foreground, 0.08) } else { mix(bg, t.foreground, 0.06) });
+            p.rect_filled(
+                r,
+                t.radius * 0.7,
+                if t.dark { mix(bg, t.foreground, 0.08) } else { mix(bg, t.foreground, 0.06) },
+            );
             let bar = Rect::from_min_size(pos2(rect.min.x + 1.0, ay + 8.0), vec2(3.0, 18.0));
             p.rect_filled(bar, 2.0, t.accent);
         }
@@ -179,11 +215,24 @@ impl<'a> Sidebar<'a> {
             }
             let col = if active { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, hv) };
             let icon_x = r.min.x + 10.0 + ((self.rail_width - 24.0) / 2.0 - 18.0) * c;
-            item.icon.paint(&p, Rect::from_center_size(pos2(icon_x + 8.0, r.center().y), vec2(17.0, 17.0)), if active { t.accent } else { col });
-            label_p.text(pos2(r.min.x + 38.0, r.center().y), Align2::LEFT_CENTER, &item.label, FontId::proportional(13.5), col);
+            item.icon.paint(
+                &p,
+                Rect::from_center_size(pos2(icon_x + 8.0, r.center().y), vec2(17.0, 17.0)),
+                if active { t.accent } else { col },
+            );
+            label_p.text(
+                pos2(r.min.x + 38.0, r.center().y),
+                Align2::LEFT_CENTER,
+                &item.label,
+                FontId::proportional(13.5),
+                col,
+            );
             if let Some(b) = &item.badge {
                 let g = label_p.layout_no_wrap(b.clone(), FontId::proportional(11.0), t.foreground);
-                let br = Rect::from_min_size(pos2(r.max.x - 10.0 - g.size().x - 12.0, r.center().y - 10.0), vec2(g.size().x + 12.0, 20.0));
+                let br = Rect::from_min_size(
+                    pos2(r.max.x - 10.0 - g.size().x - 12.0, r.center().y - 10.0),
+                    vec2(g.size().x + 12.0, 20.0),
+                );
                 label_p.rect_filled(br, 10.0, if active { with_alpha(t.accent, 0.2) } else { t.muted });
                 label_p.galley(br.center() - g.size() / 2.0, g, if active { t.accent } else { t.muted_foreground });
                 // collapsed: a dot on the icon instead
@@ -208,13 +257,38 @@ impl<'a> Sidebar<'a> {
             let resp = ui.interact(fr, id.with("user"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
             let hv = kit::hover_anim(ui, id.with("user"), resp.hovered());
             p.rect_filled(fr, t.radius * 0.7, with_alpha(t.foreground, 0.05 * hv));
-            p.line_segment([pos2(rect.min.x + 12.0, fr.min.y - 8.0), pos2(rect.max.x - 12.0, fr.min.y - 8.0)], Stroke::new(1.0, with_alpha(t.border, 0.8)));
+            p.line_segment(
+                [pos2(rect.min.x + 12.0, fr.min.y - 8.0), pos2(rect.max.x - 12.0, fr.min.y - 8.0)],
+                Stroke::new(1.0, with_alpha(t.border, 0.8)),
+            );
             let av_c = pos2(fr.min.x + 8.0 + 16.0 + ((self.rail_width - 24.0) / 2.0 - 24.0) * c, fr.center().y);
             paint::gradient_circle(&p, av_c, 16.0, &[t.chart[1], t.chart[0]]);
-            p.text(av_c, Align2::CENTER_CENTER, name.chars().next().unwrap_or('?').to_uppercase().to_string(), FontId::proportional(14.0), Color32::WHITE);
-            label_p.text(pos2(av_c.x + 26.0, fr.center().y - 8.0), Align2::LEFT_CENTER, name, FontId::proportional(13.5), t.foreground);
-            label_p.text(pos2(av_c.x + 26.0, fr.center().y + 9.0), Align2::LEFT_CENTER, email, FontId::proportional(12.0), t.muted_foreground);
-            LineIcon::ChevronUp.paint(&label_p, Rect::from_center_size(pos2(fr.max.x - 14.0, fr.center().y), vec2(14.0, 14.0)), t.muted_foreground);
+            p.text(
+                av_c,
+                Align2::CENTER_CENTER,
+                name.chars().next().unwrap_or('?').to_uppercase().to_string(),
+                FontId::proportional(14.0),
+                Color32::WHITE,
+            );
+            label_p.text(
+                pos2(av_c.x + 26.0, fr.center().y - 8.0),
+                Align2::LEFT_CENTER,
+                name,
+                FontId::proportional(13.5),
+                t.foreground,
+            );
+            label_p.text(
+                pos2(av_c.x + 26.0, fr.center().y + 9.0),
+                Align2::LEFT_CENTER,
+                email,
+                FontId::proportional(12.0),
+                t.muted_foreground,
+            );
+            LineIcon::ChevronUp.paint(
+                &label_p,
+                Rect::from_center_size(pos2(fr.max.x - 14.0, fr.center().y), vec2(14.0, 14.0)),
+                t.muted_foreground,
+            );
         }
         resp
     }

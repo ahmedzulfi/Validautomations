@@ -8,7 +8,10 @@ use crate::code::CodeBlock;
 use crate::common::{self, Fx};
 use crate::icons::{paint_icon, Icon};
 use egui::text::LayoutJob;
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Galley, Pos2, Rect, Response, Sense, Stroke, StrokeKind, TextFormat, Ui, UiBuilder, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Galley, Pos2, Rect, Response, Sense, Stroke, StrokeKind,
+    TextFormat, Ui, UiBuilder, Widget,
+};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
 use std::ops::Range;
@@ -75,7 +78,8 @@ fn block_chars(b: &Block) -> usize {
         Block::Quote(inner) => inner.iter().map(block_chars).sum(),
         Block::Code { code, .. } => code.chars().count(),
         Block::Table { header, rows, .. } => {
-            header.iter().map(|c| spans_chars(c)).sum::<usize>() + rows.iter().flatten().map(|c| spans_chars(c)).sum::<usize>()
+            header.iter().map(|c| spans_chars(c)).sum::<usize>()
+                + rows.iter().flatten().map(|c| spans_chars(c)).sum::<usize>()
         }
         Block::Rule => 0,
     }
@@ -115,7 +119,13 @@ impl Renderer {
         for s in spans {
             let n = s.text.chars().count();
             let r = idx..idx + n;
-            let mut fmt = TextFormat { font_id: FontId::proportional(size), color, line_height: lh, italics: s.style.italic, ..Default::default() };
+            let mut fmt = TextFormat {
+                font_id: FontId::proportional(size),
+                color,
+                line_height: lh,
+                italics: s.style.italic,
+                ..Default::default()
+            };
             if s.style.bold || all_bold {
                 bold.push(r.clone());
                 if !all_bold {
@@ -153,20 +163,34 @@ impl Renderer {
         // inline code chips
         for r in &laid.code {
             for cr in common::char_rects(g, r.clone()) {
-                let rr = Rect::from_min_max(pos2(cr.min.x - 3.5, cr.center().y - self.size * 0.68), pos2(cr.max.x + 3.5, cr.center().y + self.size * 0.68)).translate(pos.to_vec2());
+                let rr = Rect::from_min_max(
+                    pos2(cr.min.x - 3.5, cr.center().y - self.size * 0.68),
+                    pos2(cr.max.x + 3.5, cr.center().y + self.size * 0.68),
+                )
+                .translate(pos.to_vec2());
                 let fill = if t.dark { with_alpha(t.foreground, 0.075) } else { with_alpha(t.foreground, 0.055) };
                 painter.rect_filled(rr, CornerRadius::same(5), fill);
-                painter.rect_stroke(rr, CornerRadius::same(5), Stroke::new(1.0, with_alpha(t.border, 0.7)), StrokeKind::Inside);
+                painter.rect_stroke(
+                    rr,
+                    CornerRadius::same(5),
+                    Stroke::new(1.0, with_alpha(t.border, 0.7)),
+                    StrokeKind::Inside,
+                );
             }
         }
         // links: underline + hover + click
         let pointer = ui.input(|i| i.pointer.hover_pos());
         for (k, (r, url)) in laid.links.iter().enumerate() {
-            let rects: Vec<Rect> = common::char_rects(g, r.clone()).into_iter().map(|x| x.translate(pos.to_vec2())).collect();
-            let hovered = pointer.is_some_and(|p| rects.iter().any(|x| x.contains(p))) && ui.rect_contains_pointer(ui.clip_rect());
+            let rects: Vec<Rect> =
+                common::char_rects(g, r.clone()).into_iter().map(|x| x.translate(pos.to_vec2())).collect();
+            let hovered = pointer.is_some_and(|p| rects.iter().any(|x| x.contains(p)))
+                && ui.rect_contains_pointer(ui.clip_rect());
             for x in &rects {
                 let y = x.center().y + self.size * 0.62;
-                painter.line_segment([pos2(x.min.x, y), pos2(x.max.x, y)], Stroke::new(1.0, with_alpha(t.accent, if hovered { 0.9 } else { 0.35 })));
+                painter.line_segment(
+                    [pos2(x.min.x, y), pos2(x.max.x, y)],
+                    Stroke::new(1.0, with_alpha(t.accent, if hovered { 0.9 } else { 0.35 })),
+                );
             }
             if let Some(first) = rects.first() {
                 let id = ui.unique_id().with(("md_link", self.counter, k));
@@ -184,8 +208,13 @@ impl Renderer {
         let tail = self.tail;
         let bold = &laid.bold;
         common::paint_galley_fx(&painter, pos, g, |i| {
-            let alpha = if tail == 0 { 1.0 } else { (total.saturating_sub(start + i) as f32 / tail as f32).clamp(0.0, 1.0) };
-            Fx { alpha: alpha * alpha * (3.0 - 2.0 * alpha), bold: bold.iter().any(|r| r.contains(&i)), ..Default::default() }
+            let alpha =
+                if tail == 0 { 1.0 } else { (total.saturating_sub(start + i) as f32 / tail as f32).clamp(0.0, 1.0) };
+            Fx {
+                alpha: alpha * alpha * (3.0 - 2.0 * alpha),
+                bold: bold.iter().any(|r| r.contains(&i)),
+                ..Default::default()
+            }
         });
         self.counter += laid.chars;
         if laid.chars > 0 {
@@ -237,7 +266,10 @@ impl Renderer {
             }
             Block::Rule => {
                 let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), 9.0), Sense::hover());
-                ui.painter().line_segment([pos2(r.min.x, r.center().y), pos2(r.max.x, r.center().y)], Stroke::new(1.0, t.border));
+                ui.painter().line_segment(
+                    [pos2(r.min.x, r.center().y), pos2(r.max.x, r.center().y)],
+                    Stroke::new(1.0, t.border),
+                );
             }
             Block::Code { lang, code, .. } => {
                 let local_total = self.total.saturating_sub(self.counter);
@@ -254,7 +286,11 @@ impl Renderer {
                     self.blocks(ui, inner, quote_color);
                 });
                 let rr = r.response.rect;
-                ui.painter().rect_filled(Rect::from_min_max(pos2(avail.min.x, rr.min.y + 2.0), pos2(avail.min.x + 3.0, rr.max.y - 2.0)), CornerRadius::same(2), with_alpha(t.accent, 0.55));
+                ui.painter().rect_filled(
+                    Rect::from_min_max(pos2(avail.min.x, rr.min.y + 2.0), pos2(avail.min.x + 3.0, rr.max.y - 2.0)),
+                    CornerRadius::same(2),
+                    with_alpha(t.accent, 0.55),
+                );
             }
             Block::List(items) => self.list(ui, items, color),
             Block::Table { header, align, rows } => self.table(ui, header, align, rows),
@@ -302,11 +338,22 @@ impl Renderer {
                         painter.rect_filled(br, CornerRadius::same(4), t.accent);
                         paint_icon(painter, Icon::Check, br.shrink(2.5), t.accent_foreground);
                     } else {
-                        painter.rect_stroke(br, CornerRadius::same(4), Stroke::new(1.3, common::border_strong(&t)), StrokeKind::Inside);
+                        painter.rect_stroke(
+                            br,
+                            CornerRadius::same(4),
+                            Stroke::new(1.3, common::border_strong(&t)),
+                            StrokeKind::Inside,
+                        );
                     }
                 }
                 (None, Some(n)) => {
-                    painter.text(pos2(mx + marker_w - 7.0, cy), Align2::RIGHT_CENTER, format!("{n}."), FontId::proportional(self.size), marker_col);
+                    painter.text(
+                        pos2(mx + marker_w - 7.0, cy),
+                        Align2::RIGHT_CENTER,
+                        format!("{n}."),
+                        FontId::proportional(self.size),
+                        marker_col,
+                    );
                 }
                 (None, None) => {
                     let c = pos2(mx + 7.0, cy);
@@ -318,7 +365,11 @@ impl Renderer {
                             painter.circle_stroke(c, 2.6, Stroke::new(1.2, marker_col));
                         }
                         _ => {
-                            painter.rect_filled(Rect::from_center_size(c, vec2(4.5, 4.5)), CornerRadius::same(1), marker_col);
+                            painter.rect_filled(
+                                Rect::from_center_size(c, vec2(4.5, 4.5)),
+                                CornerRadius::same(1),
+                                marker_col,
+                            );
                         }
                     }
                 }
@@ -363,7 +414,11 @@ impl Renderer {
             for (c, w) in widths.iter().enumerate() {
                 let empty = Vec::new();
                 let cell = cells.get(c).unwrap_or(&empty);
-                let laid = if head { r.layout(ui, cell, size, r.strong, true, w - pad.x * 2.0) } else { r.layout(ui, cell, size, r.body, false, w - pad.x * 2.0) };
+                let laid = if head {
+                    r.layout(ui, cell, size, r.strong, true, w - pad.x * 2.0)
+                } else {
+                    r.layout(ui, cell, size, r.body, false, w - pad.x * 2.0)
+                };
                 h = h.max(laid.galley.size().y.max(size * 1.62));
                 out.push(laid);
             }
@@ -385,7 +440,10 @@ impl Renderer {
         let all = std::iter::once(&head).chain(body.iter());
         for (ri, (cells, h)) in all.enumerate() {
             if ri > 0 {
-                ui.painter().line_segment([pos2(rect.min.x + 1.0, y), pos2(rect.max.x - 1.0, y)], Stroke::new(1.0, if ri == 1 { t.border } else { with_alpha(t.border, 0.7) }));
+                ui.painter().line_segment(
+                    [pos2(rect.min.x + 1.0, y), pos2(rect.max.x - 1.0, y)],
+                    Stroke::new(1.0, if ri == 1 { t.border } else { with_alpha(t.border, 0.7) }),
+                );
             }
             let mut x = rect.min.x;
             for (c, laid) in cells.iter().enumerate() {
@@ -412,8 +470,23 @@ impl Widget for Markdown<'_> {
         let t = Theme::of(ui);
         let blocks = parse(self.text);
         let total: usize = blocks.iter().map(block_chars).sum();
-        let body = self.color.unwrap_or_else(|| if t.dark { mix(t.foreground, t.muted_foreground, 0.12) } else { mix(t.foreground, t.muted_foreground, 0.1) });
-        let mut r = Renderer { strong: t.foreground, t: t.clone(), size: self.size, body, total, tail: self.fade_tail, counter: 0, last_end: None };
+        let body = self.color.unwrap_or_else(|| {
+            if t.dark {
+                mix(t.foreground, t.muted_foreground, 0.12)
+            } else {
+                mix(t.foreground, t.muted_foreground, 0.1)
+            }
+        });
+        let mut r = Renderer {
+            strong: t.foreground,
+            t: t.clone(),
+            size: self.size,
+            body,
+            total,
+            tail: self.fade_tail,
+            counter: 0,
+            last_end: None,
+        };
         let resp = ui
             .scope(|ui| {
                 ui.spacing_mut().item_spacing.y = 0.0;
@@ -424,10 +497,17 @@ impl Widget for Markdown<'_> {
             })
             .response;
         if self.caret {
-            let end = r.last_end.unwrap_or_else(|| Rect::from_min_size(resp.rect.left_bottom() - vec2(0.0, self.size * 1.62), vec2(0.0, self.size * 1.62)));
+            let end = r.last_end.unwrap_or_else(|| {
+                Rect::from_min_size(resp.rect.left_bottom() - vec2(0.0, self.size * 1.62), vec2(0.0, self.size * 1.62))
+            });
             let time = glowkit_core::time(ui);
             let phase = (time * 1.6).fract();
-            let a = if phase < 0.5 { 1.0 } else { 1.0 - glowkit_core::anim::smoothstep(0.5, 0.65, phase) + glowkit_core::anim::smoothstep(0.85, 1.0, phase) };
+            let a = if phase < 0.5 {
+                1.0
+            } else {
+                1.0 - glowkit_core::anim::smoothstep(0.5, 0.65, phase)
+                    + glowkit_core::anim::smoothstep(0.85, 1.0, phase)
+            };
             let h = self.size * 1.1;
             let cr = Rect::from_center_size(pos2(end.max.x + 3.5, end.center().y), vec2(2.0, h));
             ui.painter().rect_filled(cr, CornerRadius::same(1), with_alpha(t.foreground, a.clamp(0.0, 1.0) * 0.9));

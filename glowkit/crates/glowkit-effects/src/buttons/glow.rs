@@ -26,7 +26,17 @@ pub struct PulsatingButton {
 impl PulsatingButton {
     /// A pulsating button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, background: None, pulse_color: None, text_color: None, radius: None, duration: 1.6, spread: 12.0, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            background: None,
+            pulse_color: None,
+            text_color: None,
+            radius: None,
+            duration: 1.6,
+            spread: 12.0,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -68,7 +78,14 @@ impl Widget for PulsatingButton {
             let e = 1.0 - (1.0 - ph).powi(3);
             let grow = e * self.spread;
             let a = (1.0 - ph).powf(1.8) * 0.5;
-            paint::soft_shadow(p, rect.expand(grow * 0.7), radius + grow * 0.7, 2.0 + grow * 0.8, egui::Vec2::ZERO, with_alpha(pulse, a));
+            paint::soft_shadow(
+                p,
+                rect.expand(grow * 0.7),
+                radius + grow * 0.7,
+                2.0 + grow * 0.8,
+                egui::Vec2::ZERO,
+                with_alpha(pulse, a),
+            );
         }
         let fill = shade(bg, 0.04 * hover);
         p.rect_filled(rect, cr(radius), fill);
@@ -105,7 +122,15 @@ pub struct GlowButton {
 impl GlowButton {
     /// A glowing gradient button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, colors: Vec::new(), text_color: None, radius: None, intensity: 1.0, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            colors: Vec::new(),
+            text_color: None,
+            radius: None,
+            intensity: 1.0,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -134,7 +159,13 @@ impl Widget for GlowButton {
         }
         let hover = util::hover_t(ui, resp.id, resp.hovered(), 9.0);
         let press = util::press_t(ui, resp.id, resp.is_pointer_button_down_on());
-        let lift = glowkit_core::anim::spring(ui, resp.id.with("lift"), if resp.hovered() { -2.0 } else { 0.0 } + press * 2.0, 300.0, 18.0);
+        let lift = glowkit_core::anim::spring(
+            ui,
+            resp.id.with("lift"),
+            if resp.hovered() { -2.0 } else { 0.0 } + press * 2.0,
+            300.0,
+            18.0,
+        );
         let rect = pressed_rect(rect, press).translate(vec2(0.0, lift));
         let colors = if self.colors.is_empty() { t.gradient[..2].to_vec() } else { self.colors.clone() };
         let radius = self.radius.unwrap_or(rect.height() / 2.0);
@@ -148,7 +179,12 @@ impl Widget for GlowButton {
             let u = (i as f32 + 0.5) / n as f32;
             let c = gradient(&colors, u);
             let center = pos2(rect.min.x + rect.width() * u, rect.center().y + rect.height() * 0.3);
-            paint::glow_ellipse(p, center, vec2(rect.width() * (0.3 + 0.06 * hover), rect.height() * (0.9 + 0.3 * hover)), with_alpha(c, a * 0.55));
+            paint::glow_ellipse(
+                p,
+                center,
+                vec2(rect.width() * (0.3 + 0.06 * hover), rect.height() * (0.9 + 0.3 * hover)),
+                with_alpha(c, a * 0.55),
+            );
         }
         paint::gradient_rect(p, rect, radius, 0.0, &colors);
         // glossy top highlight and hairline
@@ -189,7 +225,15 @@ pub struct NeonButton {
 impl NeonButton {
     /// A neon button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, color: None, radius: None, flicker: true, force_hover: false, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            color: None,
+            radius: None,
+            flicker: true,
+            force_hover: false,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -230,7 +274,14 @@ impl Widget for NeonButton {
         }
         let p = ui.painter();
         let glow_a = (if t.dark { 0.55 } else { 0.4 }) * on;
-        paint::soft_shadow(p, rect, radius, 26.0 + 12.0 * hover, egui::Vec2::ZERO, with_alpha(color, glow_a * (0.6 + 0.6 * hover)));
+        paint::soft_shadow(
+            p,
+            rect,
+            radius,
+            26.0 + 12.0 * hover,
+            egui::Vec2::ZERO,
+            with_alpha(color, glow_a * (0.6 + 0.6 * hover)),
+        );
         // inner glow (inset)
         p.rect_filled(rect, cr(radius), if t.dark { t.background } else { t.card });
         paint::fill_convex_fn(p, &paint::rounded_rect_points(rect.shrink(1.0), radius, 8), 5, |q| {
@@ -240,8 +291,18 @@ impl Widget for NeonButton {
         if hover > 0.01 {
             p.rect_filled(rect, cr(radius), with_alpha(color, hover));
         }
-        p.rect_stroke(rect.shrink(1.0), cr(radius), Stroke::new(2.0, color.gamma_multiply(0.5 + 0.5 * on)), StrokeKind::Middle);
-        p.rect_stroke(rect.shrink(1.0), cr(radius), Stroke::new(0.8, with_alpha(Color32::WHITE, 0.5 * on * (1.0 - hover))), StrokeKind::Middle);
+        p.rect_stroke(
+            rect.shrink(1.0),
+            cr(radius),
+            Stroke::new(2.0, color.gamma_multiply(0.5 + 0.5 * on)),
+            StrokeKind::Middle,
+        );
+        p.rect_stroke(
+            rect.shrink(1.0),
+            cr(radius),
+            Stroke::new(0.8, with_alpha(Color32::WHITE, 0.5 * on * (1.0 - hover))),
+            StrokeKind::Middle,
+        );
         let ink = if t.dark { color } else { shade(color, -0.12) };
         let text_col = ink.lerp_to_gamma(contrast_text(color), hover);
         let g = util::text_galley(ui, &self.label, self.size, text_col);

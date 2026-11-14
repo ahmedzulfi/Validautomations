@@ -2,7 +2,9 @@
 
 use crate::common::{self, avatar, qfont};
 use crate::view::{Background, CanvasView, ControlAction, Controls, InfiniteCanvas, MiniMap};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, Pos2, Rect, Sense, Shape, Stroke, StrokeKind, Ui, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, Pos2, Rect, Sense, Shape, Stroke, StrokeKind, Ui, Vec2,
+};
 use glowkit_core::{anim::approach, color::with_alpha, paint, Theme};
 use std::collections::HashMap;
 
@@ -79,7 +81,8 @@ pub fn tree_layout(chart: &OrgChart, size: Vec2, gap: Vec2, compact: bool) -> Ha
         if stacked(chart, id, compact) {
             return size.x + 28.0;
         }
-        let w: f32 = kids.iter().map(|k| width(chart, *k, size, gap, compact)).sum::<f32>() + gap.x * (kids.len() - 1) as f32;
+        let w: f32 =
+            kids.iter().map(|k| width(chart, *k, size, gap, compact)).sum::<f32>() + gap.x * (kids.len() - 1) as f32;
         w.max(size.x)
     }
     fn hide(chart: &OrgChart, id: u64, at: Pos2, out: &mut HashMap<u64, Pos2>) {
@@ -89,7 +92,16 @@ pub fn tree_layout(chart: &OrgChart, size: Vec2, gap: Vec2, compact: bool) -> Ha
         }
     }
     #[allow(clippy::too_many_arguments)]
-    fn place(chart: &OrgChart, id: u64, left: f32, y: f32, size: Vec2, gap: Vec2, compact: bool, out: &mut HashMap<u64, Pos2>) {
+    fn place(
+        chart: &OrgChart,
+        id: u64,
+        left: f32,
+        y: f32,
+        size: Vec2,
+        gap: Vec2,
+        compact: bool,
+        out: &mut HashMap<u64, Pos2>,
+    ) {
         let w = width(chart, id, size, gap, compact);
         let me = pos2(left + (w - size.x) / 2.0, y);
         let collapsed = chart.get(id).is_some_and(|p| p.collapsed);
@@ -227,7 +239,9 @@ impl<'a> OrgChartView<'a> {
                 let w = if hl { 2.0 } else { 1.3 };
                 let stacked_parent = st.compact && {
                     let kids = chart.children(par);
-                    kids.len() > 1 && kids.iter().all(|k| chart.children(*k).is_empty()) && !chart.get(par).is_some_and(|x| x.collapsed)
+                    kids.len() > 1
+                        && kids.iter().all(|k| chart.children(*k).is_empty())
+                        && !chart.get(par).is_some_and(|x| x.collapsed)
                 };
                 let pts = if stacked_parent {
                     let a = pp + vec2(14.0, CARD.y);
@@ -270,19 +284,55 @@ impl<'a> OrgChartView<'a> {
                 cp.set_opacity(a);
                 let col = p.color.unwrap_or(t.accent);
                 let rr = r.translate(vec2(0.0, -2.0 * hov * zoom));
-                paint::soft_shadow(&cp, rr, 10.0 * zoom, (12.0 + 8.0 * hov) * zoom, vec2(0.0, (3.0 + 3.0 * hov) * zoom), Color32::from_black_alpha(if t.dark { 110 } else { 26 }));
-                let border = t.border.lerp_to_gamma(col, 0.5 * hov).lerp_to_gamma(t.accent, sel.max(if in_chain { 0.6 } else { 0.0 }));
-                cp.rect(rr, CornerRadius::same((10.0 * zoom) as u8), t.card, Stroke::new(1.0 + sel, border), StrokeKind::Inside);
+                paint::soft_shadow(
+                    &cp,
+                    rr,
+                    10.0 * zoom,
+                    (12.0 + 8.0 * hov) * zoom,
+                    vec2(0.0, (3.0 + 3.0 * hov) * zoom),
+                    Color32::from_black_alpha(if t.dark { 110 } else { 26 }),
+                );
+                let border = t
+                    .border
+                    .lerp_to_gamma(col, 0.5 * hov)
+                    .lerp_to_gamma(t.accent, sel.max(if in_chain { 0.6 } else { 0.0 }));
+                cp.rect(
+                    rr,
+                    CornerRadius::same((10.0 * zoom) as u8),
+                    t.card,
+                    Stroke::new(1.0 + sel, border),
+                    StrokeKind::Inside,
+                );
                 // top color bar
-                let bar = Rect::from_min_size(rr.min + vec2(14.0 * zoom, 0.0), vec2(rr.width() - 28.0 * zoom, 3.0 * zoom));
+                let bar =
+                    Rect::from_min_size(rr.min + vec2(14.0 * zoom, 0.0), vec2(rr.width() - 28.0 * zoom, 3.0 * zoom));
                 cp.rect_filled(bar, CornerRadius::same(2), col);
                 if zoom * 13.0 > 5.0 {
                     let initials: String = p.name.split_whitespace().filter_map(|w| w.chars().next()).take(2).collect();
-                    avatar(&cp, pos2(rr.left() + 32.0 * zoom, rr.center().y), 18.0 * zoom, &initials, col, with_alpha(col, 0.4));
+                    avatar(
+                        &cp,
+                        pos2(rr.left() + 32.0 * zoom, rr.center().y),
+                        18.0 * zoom,
+                        &initials,
+                        col,
+                        with_alpha(col, 0.4),
+                    );
                     let tx = rr.left() + 60.0 * zoom;
                     let mw = rr.right() - tx - 10.0 * zoom;
-                    cp.text(pos2(tx, rr.center().y - 8.0 * zoom), Align2::LEFT_CENTER, common::elide(&cp, &p.name, qfont(13.5 * zoom), mw), qfont(13.5 * zoom), t.foreground);
-                    cp.text(pos2(tx, rr.center().y + 10.0 * zoom), Align2::LEFT_CENTER, common::elide(&cp, &p.title, qfont(11.0 * zoom), mw), qfont(11.0 * zoom), t.muted_foreground);
+                    cp.text(
+                        pos2(tx, rr.center().y - 8.0 * zoom),
+                        Align2::LEFT_CENTER,
+                        common::elide(&cp, &p.name, qfont(13.5 * zoom), mw),
+                        qfont(13.5 * zoom),
+                        t.foreground,
+                    );
+                    cp.text(
+                        pos2(tx, rr.center().y + 10.0 * zoom),
+                        Align2::LEFT_CENTER,
+                        common::elide(&cp, &p.title, qfont(11.0 * zoom), mw),
+                        qfont(11.0 * zoom),
+                        t.muted_foreground,
+                    );
                 }
                 // collapse toggle
                 let n = chart.reports(p.id);
@@ -294,10 +344,24 @@ impl<'a> OrgChartView<'a> {
                     let bresp = ui.interact(br, id.with(("t", p.id)), Sense::click());
                     let bh = ui.ctx().animate_bool_with_time(id.with(("th", p.id)), bresp.hovered(), 0.1);
                     let fill = if p.collapsed { col } else { t.card.lerp_to_gamma(col, 0.15 * bh) };
-                    let fg = if p.collapsed { glowkit_core::color::contrast_text(col) } else { t.muted_foreground.lerp_to_gamma(t.foreground, bh) };
-                    cp.rect(br, CornerRadius::same((br.height() / 2.0) as u8), fill, Stroke::new(1.0, if p.collapsed { col } else { t.border }), StrokeKind::Inside);
+                    let fg = if p.collapsed {
+                        glowkit_core::color::contrast_text(col)
+                    } else {
+                        t.muted_foreground.lerp_to_gamma(t.foreground, bh)
+                    };
+                    cp.rect(
+                        br,
+                        CornerRadius::same((br.height() / 2.0) as u8),
+                        fill,
+                        Stroke::new(1.0, if p.collapsed { col } else { t.border }),
+                        StrokeKind::Inside,
+                    );
                     cp.text(br.center(), Align2::CENTER_CENTER, label, qfont(10.5 * zoom.max(0.6)), fg);
-                    if bresp.on_hover_cursor(CursorIcon::PointingHand).on_hover_text(if p.collapsed { "Expand team" } else { "Collapse team" }).clicked() {
+                    if bresp
+                        .on_hover_cursor(CursorIcon::PointingHand)
+                        .on_hover_text(if p.collapsed { "Expand team" } else { "Collapse team" })
+                        .clicked()
+                    {
                         toggle = Some(p.id);
                     }
                 }
@@ -314,21 +378,47 @@ impl<'a> OrgChartView<'a> {
                 st.selected = None;
             }
             // chrome
-            let items: Vec<(Rect, Color32)> = chart.people.iter().filter(|p| !hidden(chart, p.id)).map(|p| (Rect::from_min_size(target.get(&p.id).copied().unwrap_or_default(), CARD), p.color.unwrap_or(t.accent))).collect();
+            let items: Vec<(Rect, Color32)> = chart
+                .people
+                .iter()
+                .filter(|p| !hidden(chart, p.id))
+                .map(|p| {
+                    (
+                        Rect::from_min_size(target.get(&p.id).copied().unwrap_or_default(), CARD),
+                        p.color.unwrap_or(t.accent),
+                    )
+                })
+                .collect();
             MiniMap::new(&mut *cv.view, rect).items(&items).show(ui);
             let compact = st.compact;
             match Controls::new(&mut *cv.view, rect).extra(crate::Icon::Layout, "Compact teams", compact).show(ui) {
                 Some(ControlAction::Fit) => cv.view.fit(rect, bounds, 40.0),
                 Some(ControlAction::Extra(0)) => {
                     st.compact = !st.compact;
-                    let nb = tree_layout(chart, CARD, vec2(28.0, 64.0), st.compact).values().fold(Rect::NOTHING, |r, p| r.union(Rect::from_min_size(*p, CARD)));
+                    let nb = tree_layout(chart, CARD, vec2(28.0, 64.0), st.compact)
+                        .values()
+                        .fold(Rect::NOTHING, |r, p| r.union(Rect::from_min_size(*p, CARD)));
                     cv.view.fit(rect, nb, 40.0);
                 }
                 _ => {}
             }
             if let Some(s) = st.selected.and_then(|s| chart.get(s)) {
-                let txt = format!("{}  ·  {}  ·  {} report{}", s.name, s.title, chart.reports(s.id), if chart.reports(s.id) == 1 { "" } else { "s" });
-                common::pill(&painter, pos2(rect.center().x, rect.top() + 24.0), &txt, qfont(12.0), t.foreground, t.popover, Stroke::new(1.0, t.border));
+                let txt = format!(
+                    "{}  ·  {}  ·  {} report{}",
+                    s.name,
+                    s.title,
+                    chart.reports(s.id),
+                    if chart.reports(s.id) == 1 { "" } else { "s" }
+                );
+                common::pill(
+                    &painter,
+                    pos2(rect.center().x, rect.top() + 24.0),
+                    &txt,
+                    qfont(12.0),
+                    t.foreground,
+                    t.popover,
+                    Stroke::new(1.0, t.border),
+                );
             }
         });
         st.view = view;

@@ -1,9 +1,24 @@
 use super::kit::{self, control_radius, UiIcon};
-use egui::{pos2, vec2, Color32, CornerRadius, CursorIcon, FontId, Id, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget};
+use egui::{
+    pos2, vec2, Color32, CornerRadius, CursorIcon, FontId, Id, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
-const MONTHS: [&str; 12] = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MONTHS: [&str; 12] = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+];
 
 /// A plain calendar date (proleptic Gregorian), ordered chronologically.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -172,7 +187,13 @@ fn nav_button(ui: &mut Ui, rect: Rect, id: Id, icon: UiIcon) -> Response {
     let t = Theme::of(ui);
     let r = ui.interact(rect, id, Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
     let h = kit::anim(ui, id.with("h"), r.hovered(), 0.1);
-    ui.painter().rect(rect, CornerRadius::same(6), if h > 0.0 { with_alpha(t.secondary, h) } else { Color32::TRANSPARENT }, Stroke::new(1.0, t.input), StrokeKind::Inside);
+    ui.painter().rect(
+        rect,
+        CornerRadius::same(6),
+        if h > 0.0 { with_alpha(t.secondary, h) } else { Color32::TRANSPARENT },
+        Stroke::new(1.0, t.input),
+        StrokeKind::Inside,
+    );
     icon.paint(ui.painter(), Rect::from_center_size(rect.center(), vec2(15.0, 15.0)), t.foreground);
     r
 }
@@ -194,7 +215,12 @@ impl Widget for Calendar<'_> {
         }
         .or(self.today)
         .unwrap_or(CalendarDate::new(2026, 1, 1));
-        let mut st: CalState = glowkit_core::state(ui, id, || CalState { year: anchor.year, month: anchor.month, dir: 0.0, changed_at: -10.0 });
+        let mut st: CalState = glowkit_core::state(ui, id, || CalState {
+            year: anchor.year,
+            month: anchor.month,
+            dir: 0.0,
+            changed_at: -10.0,
+        });
         let pad = 12.0;
         let gap = 24.0;
         let month_w = CELL * 7.0;
@@ -241,12 +267,26 @@ impl Widget for Calendar<'_> {
         for mi in 0..self.months {
             let (y, m) = add_month(st.year, st.month, mi as i32);
             let ox = rect.min.x + pad + mi as f32 * (month_w + gap);
-            let painter = ui.painter().with_clip_rect(Rect::from_min_size(pos2(ox - 4.0, rect.min.y), vec2(month_w + 8.0, h)).intersect(ui.clip_rect()));
+            let painter = ui.painter().with_clip_rect(
+                Rect::from_min_size(pos2(ox - 4.0, rect.min.y), vec2(month_w + 8.0, h)).intersect(ui.clip_rect()),
+            );
             let title = format!("{} {}", MONTHS[(m - 1) as usize], y);
-            painter.text(pos2(ox + month_w / 2.0 + slide, rect.min.y + pad + 16.0), egui::Align2::CENTER_CENTER, title, FontId::proportional(14.5), with_alpha(t.foreground, alpha));
+            painter.text(
+                pos2(ox + month_w / 2.0 + slide, rect.min.y + pad + 16.0),
+                egui::Align2::CENTER_CENTER,
+                title,
+                FontId::proportional(14.5),
+                with_alpha(t.foreground, alpha),
+            );
             let wy = rect.min.y + pad + 32.0 + 8.0;
             for (i, d) in ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].iter().enumerate() {
-                painter.text(pos2(ox + CELL * (i as f32 + 0.5), wy + 12.0), egui::Align2::CENTER_CENTER, *d, FontId::proportional(12.5), t.muted_foreground);
+                painter.text(
+                    pos2(ox + CELL * (i as f32 + 0.5), wy + 12.0),
+                    egui::Align2::CENTER_CENTER,
+                    *d,
+                    FontId::proportional(12.5),
+                    t.muted_foreground,
+                );
             }
             let first = CalendarDate::new(y, m, 1);
             let start = first.add_days(-(first.weekday() as i64));
@@ -260,7 +300,8 @@ impl Widget for Calendar<'_> {
                     continue;
                 }
                 let cr = r.shrink(1.0);
-                let resp_c = ui.interact(cr, id.with(("d", mi, cell)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
+                let resp_c =
+                    ui.interact(cr, id.with(("d", mi, cell)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
                 if resp_c.hovered() {
                     new_hover = Some(d);
                 }
@@ -275,20 +316,37 @@ impl Widget for Calendar<'_> {
                     let band = Rect::from_min_max(pos2(r.min.x, cr.min.y), pos2(r.max.x, cr.max.y));
                     let left = cx == 0.0 || d.day == 1;
                     let right = cx == 6.0 || d.day == days_in_month(d.year, d.month);
-                    let c = CornerRadius { nw: if left { rad.nw } else { 0 }, sw: if left { rad.nw } else { 0 }, ne: if right { rad.nw } else { 0 }, se: if right { rad.nw } else { 0 } };
+                    let c = CornerRadius {
+                        nw: if left { rad.nw } else { 0 },
+                        sw: if left { rad.nw } else { 0 },
+                        ne: if right { rad.nw } else { 0 },
+                        se: if right { rad.nw } else { 0 },
+                    };
                     painter.rect_filled(band, c, with_alpha(if t.dark { t.secondary } else { t.muted }, alpha));
                 }
                 if is_range && selected_end && ra.is_some() && rb.is_some() && ra != rb {
                     // half band connecting the end cap to the range
                     let to_right = Some(d) == ra;
-                    let half = if to_right { Rect::from_min_max(pos2(r.center().x, cr.min.y), pos2(r.max.x, cr.max.y)) } else { Rect::from_min_max(pos2(r.min.x, cr.min.y), pos2(r.center().x, cr.max.y)) };
-                    painter.rect_filled(half, CornerRadius::ZERO, with_alpha(if t.dark { t.secondary } else { t.muted }, alpha));
+                    let half = if to_right {
+                        Rect::from_min_max(pos2(r.center().x, cr.min.y), pos2(r.max.x, cr.max.y))
+                    } else {
+                        Rect::from_min_max(pos2(r.min.x, cr.min.y), pos2(r.center().x, cr.max.y))
+                    };
+                    painter.rect_filled(
+                        half,
+                        CornerRadius::ZERO,
+                        with_alpha(if t.dark { t.secondary } else { t.muted }, alpha),
+                    );
                 }
                 let today = Some(d) == self.today;
                 let hov = kit::anim(ui, id.with(("dh", mi, cell)), resp_c.hovered() && !selected_end, 0.1);
                 if selected_end {
                     let pop = glowkit_core::anim::spring(ui, id.with(("pop", d.to_days())), 1.0, 500.0, 18.0);
-                    painter.rect_filled(Rect::from_center_size(cr.center(), cr.size() * pop.clamp(0.0, 1.2)), rad, with_alpha(t.primary, alpha));
+                    painter.rect_filled(
+                        Rect::from_center_size(cr.center(), cr.size() * pop.clamp(0.0, 1.2)),
+                        rad,
+                        with_alpha(t.primary, alpha),
+                    );
                 } else if hov > 0.0 {
                     painter.rect_filled(cr, rad, with_alpha(if t.dark { t.secondary } else { t.muted }, hov * alpha));
                 } else if today {
@@ -301,7 +359,13 @@ impl Widget for Calendar<'_> {
                 } else {
                     t.foreground
                 };
-                painter.text(cr.center(), egui::Align2::CENTER_CENTER, d.day.to_string(), FontId::proportional(13.5), with_alpha(col, alpha * col.a() as f32 / 255.0));
+                painter.text(
+                    cr.center(),
+                    egui::Align2::CENTER_CENTER,
+                    d.day.to_string(),
+                    FontId::proportional(13.5),
+                    with_alpha(col, alpha * col.a() as f32 / 255.0),
+                );
                 if today && !selected_end {
                     painter.circle_filled(pos2(cr.center().x, cr.max.y - 6.0), 1.6, t.accent);
                 }
@@ -362,11 +426,23 @@ pub struct DatePicker<'a> {
 impl<'a> DatePicker<'a> {
     /// Single date picker.
     pub fn new(selected: &'a mut Option<CalendarDate>) -> Self {
-        Self { sel: Sel::Single(selected), placeholder: "Pick a date".into(), width: 240.0, today: CalendarDate::today(), months: 1 }
+        Self {
+            sel: Sel::Single(selected),
+            placeholder: "Pick a date".into(),
+            width: 240.0,
+            today: CalendarDate::today(),
+            months: 1,
+        }
     }
     /// Date range picker (shows two months).
     pub fn range(start: &'a mut Option<CalendarDate>, end: &'a mut Option<CalendarDate>) -> Self {
-        Self { sel: Sel::Range(start, end), placeholder: "Pick a date range".into(), width: 280.0, today: CalendarDate::today(), months: 2 }
+        Self {
+            sel: Sel::Range(start, end),
+            placeholder: "Pick a date range".into(),
+            width: 280.0,
+            today: CalendarDate::today(),
+            months: 2,
+        }
     }
     /// Text shown while empty.
     pub fn placeholder(mut self, p: impl Into<String>) -> Self {
@@ -400,7 +476,11 @@ impl Widget for DatePicker<'_> {
         let hover = kit::anim(ui, resp.id.with("h"), resp.hovered(), 0.12);
         let focus = kit::anim(ui, resp.id.with("f"), open, 0.16);
         kit::field_chrome(ui.painter(), rect, &t, hover, focus, false, false);
-        UiIcon::Calendar.paint(ui.painter(), Rect::from_center_size(pos2(rect.min.x + 20.0, rect.center().y), vec2(16.0, 16.0)), t.muted_foreground);
+        UiIcon::Calendar.paint(
+            ui.painter(),
+            Rect::from_center_size(pos2(rect.min.x + 20.0, rect.center().y), vec2(16.0, 16.0)),
+            t.muted_foreground,
+        );
         let text = match &self.sel {
             Sel::Single(s) => s.map(|d| d.format_short()),
             Sel::Range(a, b) => match (**a, **b) {
@@ -413,7 +493,13 @@ impl Widget for DatePicker<'_> {
             Some(s) => (s, t.foreground),
             None => (self.placeholder.clone(), t.muted_foreground),
         };
-        ui.painter().with_clip_rect(rect.shrink(1.0)).text(pos2(rect.min.x + 38.0, rect.center().y), egui::Align2::LEFT_CENTER, s, FontId::proportional(14.0), col);
+        ui.painter().with_clip_rect(rect.shrink(1.0)).text(
+            pos2(rect.min.x + 38.0, rect.center().y),
+            egui::Align2::LEFT_CENTER,
+            s,
+            FontId::proportional(14.0),
+            col,
+        );
         if resp.clicked() {
             egui::Popup::toggle_id(ui.ctx(), popup_id);
         }
@@ -432,7 +518,12 @@ impl Widget for DatePicker<'_> {
                     .stroke(t.border_stroke())
                     .corner_radius(t.corner())
                     .inner_margin(egui::Margin::same(0))
-                    .shadow(egui::epaint::Shadow { offset: [0, 8], blur: 24, spread: 0, color: Color32::from_black_alpha(if t.dark { 100 } else { 30 }) }),
+                    .shadow(egui::epaint::Shadow {
+                        offset: [0, 8],
+                        blur: 24,
+                        spread: 0,
+                        color: Color32::from_black_alpha(if t.dark { 100 } else { 30 }),
+                    }),
             )
             .show(|ui| {
                 let mut cal = match sel {

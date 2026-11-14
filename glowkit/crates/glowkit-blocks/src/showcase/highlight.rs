@@ -1,5 +1,7 @@
 use super::util::{bold_text, idle_time};
-use egui::{pos2, vec2, Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, Vec2, Widget,
+};
 use glowkit_core::{
     anim::{ease, smoothstep},
     color::with_alpha,
@@ -95,8 +97,21 @@ impl Widget for GeminiEffect {
             }
         };
         let p = ui.painter_at(rect);
-        bold_text(&p, pos2(rect.center().x, rect.min.y + 36.0), Align2::CENTER_CENTER, &self.title, FontId::proportional(32.0), t.foreground);
-        p.text(pos2(rect.center().x, rect.min.y + 72.0), Align2::CENTER_CENTER, &self.subtitle, FontId::proportional(14.0), t.muted_foreground);
+        bold_text(
+            &p,
+            pos2(rect.center().x, rect.min.y + 36.0),
+            Align2::CENTER_CENTER,
+            &self.title,
+            FontId::proportional(32.0),
+            t.foreground,
+        );
+        p.text(
+            pos2(rect.center().x, rect.min.y + 72.0),
+            Align2::CENTER_CENTER,
+            &self.subtitle,
+            FontId::proportional(14.0),
+            t.muted_foreground,
+        );
         let hub = pos2(rect.center().x, rect.min.y + rect.height() * 0.68);
         let time = glowkit_core::time(ui);
         for (i, col) in self.colors.iter().enumerate() {
@@ -109,7 +124,13 @@ impl Widget for GeminiEffect {
             let mut pts = paint::cubic_bezier(a, c1, c2, hub + vec2(-30.0, (fi - 2.0) * 3.0), 70);
             let d1 = pos2(rect.max.x - rect.width() * (0.32 - 0.02 * fi), hub.y + (fi - 2.0) * 18.0);
             let d2 = pos2(rect.max.x - rect.width() * (0.18 + 0.03 * fi), y1 - 30.0);
-            pts.extend(paint::cubic_bezier(hub + vec2(30.0, (fi - 2.0) * 3.0), d1, d2, pos2(rect.max.x + 10.0, y1 - 60.0 - fi * 10.0), 70));
+            pts.extend(paint::cubic_bezier(
+                hub + vec2(30.0, (fi - 2.0) * 3.0),
+                d1,
+                d2,
+                pos2(rect.max.x + 10.0, y1 - 60.0 - fi * 10.0),
+                70,
+            ));
             // gentle living wave
             for (k, q) in pts.iter_mut().enumerate() {
                 let u = k as f32 / 140.0;
@@ -159,7 +180,14 @@ pub struct PointerHighlight {
 impl PointerHighlight {
     /// `before`, the highlighted `phrase`, and `after` (laid out on one line).
     pub fn new(before: impl Into<String>, phrase: impl Into<String>, after: impl Into<String>) -> Self {
-        Self { before: before.into(), phrase: phrase.into(), after: after.into(), size: 34.0, color: None, looping: true }
+        Self {
+            before: before.into(),
+            phrase: phrase.into(),
+            after: after.into(),
+            size: 34.0,
+            color: None,
+            looping: true,
+        }
     }
     /// Font size.
     pub fn size(mut self, s: f32) -> Self {
@@ -179,7 +207,10 @@ impl PointerHighlight {
 }
 
 fn cursor_shape(tip: Pos2, s: f32) -> Vec<Pos2> {
-    [(0.0, 0.0), (0.0, 1.0), (0.27, 0.76), (0.45, 1.12), (0.58, 1.06), (0.41, 0.70), (0.75, 0.70)].iter().map(|(x, y)| tip + vec2(*x, *y) * s).collect()
+    [(0.0, 0.0), (0.0, 1.0), (0.27, 0.76), (0.45, 1.12), (0.58, 1.06), (0.41, 0.70), (0.75, 0.70)]
+        .iter()
+        .map(|(x, y)| tip + vec2(*x, *y) * s)
+        .collect()
 }
 
 /// Paint a mouse-pointer arrow with its tip at `tip`.
@@ -204,7 +235,8 @@ impl Widget for PointerHighlight {
         if !ui.is_rect_visible(rect) {
             return resp;
         }
-        let trig = if self.looping { glowkit_core::Trigger::Loop { pause_ms: 600 } } else { glowkit_core::Trigger::OnAppear };
+        let trig =
+            if self.looping { glowkit_core::Trigger::Loop { pause_ms: 600 } } else { glowkit_core::Trigger::OnAppear };
         let e = glowkit_core::Clock::triggered(ui, resp.id, trig, 4.4, resp.hovered(), false);
         let o = pos2(rect.min.x + 15.0, rect.min.y + 15.0);
         let col = self.color.unwrap_or(t.accent);
@@ -288,7 +320,8 @@ impl Widget for Cover {
         }
         let idle = idle_time(ui, resp.id, resp.hovered());
         let time = glowkit_core::time(ui);
-        let target = if resp.hovered() || (self.autoplay && idle > 1.0 && (time / 3.5).fract() < 0.6) { 1.0 } else { 0.0 };
+        let target =
+            if resp.hovered() || (self.autoplay && idle > 1.0 && (time / 3.5).fract() < 0.6) { 1.0 } else { 0.0 };
         let k = glowkit_core::anim::follow(ui, resp.id.with("k"), target, 6.0);
         glowkit_core::animate(ui);
         let beam = self.beam.unwrap_or(hex("#38BDF8"));
@@ -297,7 +330,12 @@ impl Widget for Cover {
         let hover_bg = hex("#0A0A0F");
         let bg = box_bg.lerp_to_gamma(hover_bg, k);
         p.rect_filled(rect, 4.0, bg);
-        p.rect_stroke(rect, 4.0, Stroke::new(1.0, t.border.lerp_to_gamma(with_alpha(beam, 0.5), k)), StrokeKind::Inside);
+        p.rect_stroke(
+            rect,
+            4.0,
+            Stroke::new(1.0, t.border.lerp_to_gamma(with_alpha(beam, 0.5), k)),
+            StrokeKind::Inside,
+        );
         let clip = p.with_clip_rect(rect.intersect(p.clip_rect()));
         // beams
         let beams = 14;
@@ -315,7 +353,10 @@ impl Widget for Cover {
         // sparkles
         if k > 0.01 {
             for i in 0..18u64 {
-                let sp = pos2(rect.min.x + rect.width() * hash01(i * 17 + 2), rect.min.y + rect.height() * hash01(i * 19 + 4));
+                let sp = pos2(
+                    rect.min.x + rect.width() * hash01(i * 17 + 2),
+                    rect.min.y + rect.height() * hash01(i * 19 + 4),
+                );
                 let tw = ((time * (1.5 + hash01(i)) + hash01(i * 23) * 6.0).sin() * 0.5 + 0.5).powf(3.0);
                 paint::sparkle(&clip, sp, 2.0 + 3.0 * tw, 0.0, with_alpha(Color32::WHITE, k * tw));
             }

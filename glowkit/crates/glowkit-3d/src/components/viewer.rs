@@ -1,5 +1,5 @@
-use crate::{Background, Material, Mesh, OrbitControls, Shading, Transform, Viewport3D, Wire};
 use crate::{models, vec3};
+use crate::{Background, Material, Mesh, OrbitControls, Shading, Transform, Viewport3D, Wire};
 use egui::{Color32, Response, Ui, Widget};
 use glowkit_core::{color, Theme};
 use std::sync::Arc;
@@ -64,7 +64,10 @@ impl Model {
 
     /// Faceted models look best with flat shading.
     pub fn faceted(&self) -> bool {
-        matches!(self, Model::Gem | Model::Icosahedron | Model::Dodecahedron | Model::Octahedron | Model::Tree | Model::Cube)
+        matches!(
+            self,
+            Model::Gem | Model::Icosahedron | Model::Dodecahedron | Model::Octahedron | Model::Tree | Model::Cube
+        )
     }
 
     /// Build the mesh, fitted to a bounding sphere of radius `r`.
@@ -148,7 +151,18 @@ pub struct ModelViewer {
 impl ModelViewer {
     /// A viewer for `model`.
     pub fn new(model: Model) -> Self {
-        Self { model, look: Look::Studio, color: None, wireframe: false, height: 360.0, auto_rotate: 0.5, shadow: true, grid: false, float: true, id_salt: None }
+        Self {
+            model,
+            look: Look::Studio,
+            color: None,
+            wireframe: false,
+            height: 360.0,
+            auto_rotate: 0.5,
+            shadow: true,
+            grid: false,
+            float: true,
+            id_salt: None,
+        }
     }
     /// Shading look.
     pub fn look(mut self, look: Look) -> Self {
@@ -211,7 +225,14 @@ impl Widget for ModelViewer {
             .height(self.height)
             .background(bg)
             .fov(38.0)
-            .controls(OrbitControls::new().distance(4.5).pitch(0.24).yaw(0.5).auto_rotate(self.auto_rotate).distance_range(2.5, 12.0))
+            .controls(
+                OrbitControls::new()
+                    .distance(4.5)
+                    .pitch(0.24)
+                    .yaw(0.5)
+                    .auto_rotate(self.auto_rotate)
+                    .distance_range(2.5, 12.0),
+            )
             .show(ui, |scene, ctx| {
                 let model = self.model.clone();
                 let key = model.name();
@@ -220,23 +241,48 @@ impl Widget for ModelViewer {
                     _ => ctx.mesh(("model", key), || model.mesh(1.35)),
                 };
                 let bob = if self.float { (ctx.time * 1.3).sin() * 0.08 } else { 0.0 };
-                let tf = Transform::from_translation(vec3(0.0, 0.1 + bob, 0.0)).with_euler(0.12 * (ctx.time * 0.7).sin(), 0.0, 0.0);
+                let tf = Transform::from_translation(vec3(0.0, 0.1 + bob, 0.0)).with_euler(
+                    0.12 * (ctx.time * 0.7).sin(),
+                    0.0,
+                    0.0,
+                );
                 let faceted = model.faceted();
                 // models with their own vertex colors keep them unless a color was set explicitly
-                let accent = if !mesh.colors.is_empty() && self.color.is_none() && matches!(self.look, Look::Studio | Look::Flat | Look::Toon) { Color32::WHITE } else { accent };
+                let accent = if !mesh.colors.is_empty()
+                    && self.color.is_none()
+                    && matches!(self.look, Look::Studio | Look::Flat | Look::Toon)
+                {
+                    Color32::WHITE
+                } else {
+                    accent
+                };
                 let mut mat = match self.look {
-                    Look::Studio => Material::smooth(accent).specular(0.55).shininess(40.0).rim(0.35).rim_color(color::mix(accent, Color32::WHITE, 0.6)),
-                    Look::Gradient => Material::matcap([color::shade(t.gradient[0], -0.25), t.gradient[1], color::mix(t.gradient[2], Color32::WHITE, 0.35)]).shininess(24.0),
+                    Look::Studio => Material::smooth(accent)
+                        .specular(0.55)
+                        .shininess(40.0)
+                        .rim(0.35)
+                        .rim_color(color::mix(accent, Color32::WHITE, 0.6)),
+                    Look::Gradient => Material::matcap([
+                        color::shade(t.gradient[0], -0.25),
+                        t.gradient[1],
+                        color::mix(t.gradient[2], Color32::WHITE, 0.35),
+                    ])
+                    .shininess(24.0),
                     Look::Toon => Material::toon(accent, 3).rim(0.0),
                     Look::Flat => Material::flat(accent).specular(0.2),
                     Look::Normals => Material::normal(),
-                    Look::Wireframe => Material::wireframe(accent).wire(Wire::new(accent).width(1.2).depth_fade(0.8).glow(if t.dark { 1.0 } else { 0.0 })),
+                    Look::Wireframe => Material::wireframe(accent)
+                        .wire(Wire::new(accent).width(1.2).depth_fade(0.8).glow(if t.dark { 1.0 } else { 0.0 })),
                 };
                 if faceted && self.look == Look::Studio {
                     mat.shading = Shading::Flat;
                 }
                 if self.wireframe && self.look != Look::Wireframe {
-                    let wc = if t.dark { color::with_alpha(Color32::WHITE, 0.55) } else { color::with_alpha(t.foreground, 0.45) };
+                    let wc = if t.dark {
+                        color::with_alpha(Color32::WHITE, 0.55)
+                    } else {
+                        color::with_alpha(t.foreground, 0.45)
+                    };
                     mat = mat.wire(Wire::new(wc).width(1.0).depth_fade(0.3));
                 }
                 if self.grid {

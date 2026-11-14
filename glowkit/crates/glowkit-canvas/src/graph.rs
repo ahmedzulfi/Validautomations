@@ -189,7 +189,17 @@ impl Node {
             NodeShape::Terminator => (150.0, 52.0),
             _ => (170.0, 64.0),
         };
-        Self { title: title.into(), pos, shape, width: w, height: h, layout: PortLayout::Vertical, inputs: vec![Port::new("").multi()], outputs: vec![Port::new("")], ..Default::default() }
+        Self {
+            title: title.into(),
+            pos,
+            shape,
+            width: w,
+            height: h,
+            layout: PortLayout::Vertical,
+            inputs: vec![Port::new("").multi()],
+            outputs: vec![Port::new("")],
+            ..Default::default()
+        }
     }
     /// Builder: subtitle.
     pub fn subtitle(mut self, s: impl Into<String>) -> Self {
@@ -453,14 +463,19 @@ impl Graph {
             (PortSide::Input, PortSide::Output) => (b, a),
             _ => return Err(ConnectError::MissingPort),
         };
-        let (po, pi) = (self.port(out).ok_or(ConnectError::MissingPort)?, self.port(inp).ok_or(ConnectError::MissingPort)?);
+        let (po, pi) =
+            (self.port(out).ok_or(ConnectError::MissingPort)?, self.port(inp).ok_or(ConnectError::MissingPort)?);
         if out.node == inp.node {
             return Err(ConnectError::SameNode);
         }
         if !po.ty.compatible(&pi.ty) {
             return Err(ConnectError::TypeMismatch);
         }
-        if self.edges.iter().any(|e| e.from == out.node && e.from_port == out.index && e.to == inp.node && e.to_port == inp.index) {
+        if self
+            .edges
+            .iter()
+            .any(|e| e.from == out.node && e.from_port == out.index && e.to == inp.node && e.to_port == inp.index)
+        {
             return Err(ConnectError::Duplicate);
         }
         Ok((out, inp))
@@ -473,7 +488,17 @@ impl Graph {
             self.edges.retain(|e| !(e.to == inp.node && e.to_port == inp.index));
         }
         let id = EdgeId(self.fresh());
-        self.edges.push(Edge { id, from: out.node, from_port: out.index, to: inp.node, to_port: inp.index, kind: None, anim: EdgeAnim::None, label: String::new(), color: None });
+        self.edges.push(Edge {
+            id,
+            from: out.node,
+            from_port: out.index,
+            to: inp.node,
+            to_port: inp.index,
+            kind: None,
+            anim: EdgeAnim::None,
+            label: String::new(),
+            color: None,
+        });
         Ok(id)
     }
 
@@ -481,7 +506,10 @@ impl Graph {
     /// for further styling. Panics on invalid connections (meant for building demo graphs).
     pub fn link(&mut self, from: (NodeId, usize), to: (NodeId, usize)) -> &mut Edge {
         let id = self
-            .connect(PortRef { node: from.0, side: PortSide::Output, index: from.1 }, PortRef { node: to.0, side: PortSide::Input, index: to.1 })
+            .connect(
+                PortRef { node: from.0, side: PortSide::Output, index: from.1 },
+                PortRef { node: to.0, side: PortSide::Input, index: to.1 },
+            )
             .expect("invalid link");
         self.edges.iter_mut().find(|e| e.id == id).expect("edge")
     }
@@ -535,7 +563,12 @@ impl Graph {
     pub fn edge_ends(&self, e: &Edge) -> Option<(Pos2, Vec2, Pos2, Vec2)> {
         let a = self.node(e.from)?;
         let b = self.node(e.to)?;
-        Some((a.port_at(a.pos, PortSide::Output, e.from_port), a.port_dir(PortSide::Output), b.port_at(b.pos, PortSide::Input, e.to_port), b.port_dir(PortSide::Input)))
+        Some((
+            a.port_at(a.pos, PortSide::Output, e.from_port),
+            a.port_dir(PortSide::Output),
+            b.port_at(b.pos, PortSide::Input, e.to_port),
+            b.port_dir(PortSide::Input),
+        ))
     }
 
     /// Closest edge whose path passes within `radius` of `p` (world), using `kind` routing.
@@ -556,7 +589,8 @@ impl Graph {
     /// Copy `ids` (and the edges between them) shifted by `offset`; returns the new ids.
     pub fn duplicate(&mut self, ids: &[NodeId], offset: Vec2) -> Vec<NodeId> {
         let src: Vec<Node> = self.nodes.iter().filter(|n| ids.contains(&n.id)).cloned().collect();
-        let edges: Vec<Edge> = self.edges.iter().filter(|e| ids.contains(&e.from) && ids.contains(&e.to)).cloned().collect();
+        let edges: Vec<Edge> =
+            self.edges.iter().filter(|e| ids.contains(&e.from) && ids.contains(&e.to)).cloned().collect();
         self.paste(&src, &edges, offset)
     }
 
@@ -618,8 +652,10 @@ impl Graph {
             state[u] = 2;
         }
         let mut order: Vec<usize> = (0..n).collect();
-        let main_pos = |i: usize| if dir == LayoutDirection::LeftToRight { self.nodes[i].pos.x } else { self.nodes[i].pos.y };
-        let cross_pos = |i: usize| if dir == LayoutDirection::LeftToRight { self.nodes[i].pos.y } else { self.nodes[i].pos.x };
+        let main_pos =
+            |i: usize| if dir == LayoutDirection::LeftToRight { self.nodes[i].pos.x } else { self.nodes[i].pos.y };
+        let cross_pos =
+            |i: usize| if dir == LayoutDirection::LeftToRight { self.nodes[i].pos.y } else { self.nodes[i].pos.x };
         order.sort_by(|a, b| main_pos(*a).total_cmp(&main_pos(*b)));
         for &u in &order {
             if state[u] == 0 {
@@ -672,14 +708,19 @@ impl Graph {
         renumber(&layers, &mut slot);
         for sweep in 0..6 {
             let down = sweep % 2 == 0;
-            let range: Vec<usize> = if down { (1..layers_n).collect() } else { (0..layers_n.saturating_sub(1)).rev().collect() };
+            let range: Vec<usize> =
+                if down { (1..layers_n).collect() } else { (0..layers_n.saturating_sub(1)).rev().collect() };
             for l in range {
                 let neigh = if down { &pred } else { &dag };
                 let mut keyed: Vec<(f32, usize)> = layers[l]
                     .iter()
                     .map(|&u| {
                         let ns = &neigh[u];
-                        let k = if ns.is_empty() { slot[u] } else { ns.iter().map(|&v| slot[v]).sum::<f32>() / ns.len() as f32 };
+                        let k = if ns.is_empty() {
+                            slot[u]
+                        } else {
+                            ns.iter().map(|&v| slot[v]).sum::<f32>() / ns.len() as f32
+                        };
                         (k, u)
                     })
                     .collect();
@@ -691,7 +732,11 @@ impl Graph {
         // coordinates
         let size = |u: usize| {
             let s = self.nodes[u].size();
-            if dir == LayoutDirection::LeftToRight { s } else { vec2(s.y, s.x) }
+            if dir == LayoutDirection::LeftToRight {
+                s
+            } else {
+                vec2(s.y, s.x)
+            }
         };
         let mut main = 0.0;
         let mut cross = vec![0.0f32; n]; // center along the cross axis
@@ -706,7 +751,11 @@ impl Graph {
                 let h = size(u).y;
                 let base = y + h / 2.0;
                 y += h + gap.y;
-                let w = if li > 0 && !pred[u].is_empty() { pred[u].iter().map(|&v| cross[v]).sum::<f32>() / pred[u].len() as f32 } else { base };
+                let w = if li > 0 && !pred[u].is_empty() {
+                    pred[u].iter().map(|&v| cross[v]).sum::<f32>() / pred[u].len() as f32
+                } else {
+                    base
+                };
                 want.push(w);
             }
             // resolve overlaps keeping order: forward then backward pass, then re-center
@@ -770,7 +819,15 @@ mod tests {
 
     fn chain() -> (Graph, Vec<NodeId>) {
         let mut g = Graph::new();
-        let ids: Vec<NodeId> = (0..4).map(|i| g.add(Node::new(format!("n{i}"), pos2(i as f32 * 7.0, 0.0)).input(Port::new("in")).output(Port::new("out")))).collect();
+        let ids: Vec<NodeId> = (0..4)
+            .map(|i| {
+                g.add(
+                    Node::new(format!("n{i}"), pos2(i as f32 * 7.0, 0.0))
+                        .input(Port::new("in"))
+                        .output(Port::new("out")),
+                )
+            })
+            .collect();
         g.link((ids[0], 0), (ids[1], 0));
         g.link((ids[1], 0), (ids[2], 0));
         g.link((ids[0], 0), (ids[3], 0));
@@ -790,14 +847,18 @@ mod tests {
     fn validation() {
         let mut g = Graph::new();
         let a = g.add(Node::new("a", Pos2::ZERO).output(Port::typed("f", "float", Color32::RED)));
-        let b = g.add(Node::new("b", Pos2::ZERO).input(Port::typed("c", "color", Color32::BLUE)).input(Port::new("any")));
+        let b =
+            g.add(Node::new("b", Pos2::ZERO).input(Port::typed("c", "color", Color32::BLUE)).input(Port::new("any")));
         let out = PortRef { node: a, side: PortSide::Output, index: 0 };
         let typed_in = PortRef { node: b, side: PortSide::Input, index: 0 };
         let any_in = PortRef { node: b, side: PortSide::Input, index: 1 };
         assert_eq!(g.can_connect(out, typed_in), Err(ConnectError::TypeMismatch));
         assert!(g.connect(any_in, out).is_ok()); // reversed order is fine
         assert_eq!(g.connect(out, any_in), Err(ConnectError::Duplicate));
-        assert_eq!(g.can_connect(out, PortRef { node: a, side: PortSide::Output, index: 0 }), Err(ConnectError::MissingPort));
+        assert_eq!(
+            g.can_connect(out, PortRef { node: a, side: PortSide::Output, index: 0 }),
+            Err(ConnectError::MissingPort)
+        );
     }
 
     #[test]

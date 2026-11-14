@@ -1,5 +1,7 @@
 use super::kit::{self, control_radius, ControlSize, UiIcon};
-use egui::{vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget};
+use egui::{
+    vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget,
+};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
 
@@ -137,25 +139,40 @@ struct Palette {
 }
 
 fn palette(t: &Theme, v: ButtonVariant, fill: Option<Color32>) -> Palette {
-    let hover_neutral = if t.dark { mix(t.secondary, t.foreground, 0.06) } else { mix(t.secondary, t.foreground, 0.03) };
+    let hover_neutral =
+        if t.dark { mix(t.secondary, t.foreground, 0.06) } else { mix(t.secondary, t.foreground, 0.03) };
     match v {
         ButtonVariant::Default => {
             let f = fill.unwrap_or(t.primary);
-            Palette { fill: f, hover_fill: mix(f, t.background, 0.12), text: if fill.is_some() { glowkit_core::color::contrast_text(f) } else { t.primary_foreground }, border: None }
+            Palette {
+                fill: f,
+                hover_fill: mix(f, t.background, 0.12),
+                text: if fill.is_some() { glowkit_core::color::contrast_text(f) } else { t.primary_foreground },
+                border: None,
+            }
         }
-        ButtonVariant::Secondary => Palette { fill: t.secondary, hover_fill: hover_neutral, text: t.secondary_foreground, border: None },
+        ButtonVariant::Secondary => {
+            Palette { fill: t.secondary, hover_fill: hover_neutral, text: t.secondary_foreground, border: None }
+        }
         ButtonVariant::Outline => Palette {
             fill: if t.dark { with_alpha(t.input, 0.3) } else { t.background },
             hover_fill: if t.dark { with_alpha(t.input, 0.6) } else { t.secondary },
             text: t.foreground,
             border: Some(t.input),
         },
-        ButtonVariant::Ghost => Palette { fill: Color32::TRANSPARENT, hover_fill: if t.dark { with_alpha(t.secondary, 0.8) } else { t.secondary }, text: t.foreground, border: None },
+        ButtonVariant::Ghost => Palette {
+            fill: Color32::TRANSPARENT,
+            hover_fill: if t.dark { with_alpha(t.secondary, 0.8) } else { t.secondary },
+            text: t.foreground,
+            border: None,
+        },
         ButtonVariant::Destructive => {
             let f = fill.unwrap_or(t.destructive);
             Palette { fill: f, hover_fill: mix(f, t.background, 0.12), text: Color32::WHITE, border: None }
         }
-        ButtonVariant::Link => Palette { fill: Color32::TRANSPARENT, hover_fill: Color32::TRANSPARENT, text: t.foreground, border: None },
+        ButtonVariant::Link => {
+            Palette { fill: Color32::TRANSPARENT, hover_fill: Color32::TRANSPARENT, text: t.foreground, border: None }
+        }
     }
 }
 
@@ -199,16 +216,37 @@ impl Widget for Button {
         let scale = glowkit_core::anim::spring(ui, id.with("press"), if pressed { 0.965 } else { 1.0 }, 500.0, 22.0);
         let focus = kit::anim(ui, id.with("f"), resp.has_focus(), 0.15);
         let p = palette(&t, self.variant, self.fill);
-        let alpha = if self.disabled { 0.5 } else if self.loading { 0.9 } else { 1.0 };
+        let alpha = if self.disabled {
+            0.5
+        } else if self.loading {
+            0.9
+        } else {
+            1.0
+        };
         let fade = |c: Color32| c.gamma_multiply(alpha);
         let r = self.corners.unwrap_or_else(|| control_radius(&t));
         let painter = ui.painter();
         let body = Rect::from_center_size(rect.center(), rect.size() * scale);
         let fill = p.fill.lerp_to_gamma(p.hover_fill, hover);
-        if matches!(self.variant, ButtonVariant::Default | ButtonVariant::Destructive | ButtonVariant::Outline) && !self.disabled {
-            glowkit_core::paint::soft_shadow(painter, body, r.nw as f32, 3.0, vec2(0.0, 1.0), Color32::from_black_alpha(if t.dark { 30 } else { 14 }));
+        if matches!(self.variant, ButtonVariant::Default | ButtonVariant::Destructive | ButtonVariant::Outline)
+            && !self.disabled
+        {
+            glowkit_core::paint::soft_shadow(
+                painter,
+                body,
+                r.nw as f32,
+                3.0,
+                vec2(0.0, 1.0),
+                Color32::from_black_alpha(if t.dark { 30 } else { 14 }),
+            );
         }
-        painter.rect(body, r, fade(fill), p.border.map(|b| Stroke::new(1.0, fade(b))).unwrap_or(Stroke::NONE), StrokeKind::Inside);
+        painter.rect(
+            body,
+            r,
+            fade(fill),
+            p.border.map(|b| Stroke::new(1.0, fade(b))).unwrap_or(Stroke::NONE),
+            StrokeKind::Inside,
+        );
         kit::focus_halo(painter, body, r, t.ring, focus);
 
         // content
@@ -230,12 +268,20 @@ impl Widget for Button {
             painter.galley(gpos, galley.clone(), text_col);
             if self.variant == ButtonVariant::Link && hover > 0.0 {
                 let y = gpos.y + galley.size().y - 1.0;
-                painter.line_segment([egui::pos2(x, y), egui::pos2(x + galley.size().x * hover, y)], Stroke::new(1.0, text_col));
+                painter.line_segment(
+                    [egui::pos2(x, y), egui::pos2(x + galley.size().x * hover, y)],
+                    Stroke::new(1.0, text_col),
+                );
             }
             x += galley.size().x + gap;
         }
         if let Some(icon) = self.trailing {
-            let nudge = if self.variant != ButtonVariant::Link && matches!(icon, UiIcon::ArrowRight | UiIcon::ChevronRight) { 2.0 * hover } else { 0.0 };
+            let nudge =
+                if self.variant != ButtonVariant::Link && matches!(icon, UiIcon::ArrowRight | UiIcon::ChevronRight) {
+                    2.0 * hover
+                } else {
+                    0.0
+                };
             icon.paint(painter, Rect::from_center_size(egui::pos2(x + is / 2.0 + nudge, cy), vec2(is, is)), text_col);
         }
         let _ = Align2::CENTER_CENTER;

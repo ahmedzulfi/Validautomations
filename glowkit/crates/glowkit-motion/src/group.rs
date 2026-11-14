@@ -34,7 +34,9 @@ impl Variants {
     }
     /// `"hidden"` (transparent, offset by `offset`, slightly smaller) and `"visible"` (identity).
     pub fn fade(offset: egui::Vec2) -> Self {
-        Self::new().with("hidden", Props::new().opacity(0.0).offset(offset).scale(0.96)).with("visible", Props::IDENTITY)
+        Self::new()
+            .with("hidden", Props::new().opacity(0.0).offset(offset).scale(0.96))
+            .with("visible", Props::IDENTITY)
     }
     /// Props of a variant (identity if unknown).
     pub fn get(&self, name: &str) -> Props {
@@ -194,7 +196,10 @@ impl GroupScope {
         let g = &self.group;
         let target = g.variants.get(&g.animate);
         let initial = g.initial.as_deref().map_or(target, |n| g.variants.get(n));
-        MotionBox::new(g.id.with(("child", i))).initial(initial).animate(target).transition(g.transition.add_delay(self.delay_of(i)))
+        MotionBox::new(g.id.with(("child", i)))
+            .initial(initial)
+            .animate(target)
+            .transition(g.transition.add_delay(self.delay_of(i)))
     }
 
     /// Add the next child.

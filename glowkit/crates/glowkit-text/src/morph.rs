@@ -23,7 +23,15 @@ pub struct MorphingText {
 impl MorphingText {
     /// Cycle through `texts`.
     pub fn new<S: Into<String>>(texts: impl IntoIterator<Item = S>) -> Self {
-        Self { texts: texts.into_iter().map(Into::into).collect(), size: 64.0, color: None, bold: true, morph: 1.1, hold: 1.5, blur: None }
+        Self {
+            texts: texts.into_iter().map(Into::into).collect(),
+            size: 64.0,
+            color: None,
+            bold: true,
+            morph: 1.1,
+            hold: 1.5,
+            blur: None,
+        }
     }
     /// Font size in points.
     pub fn size(mut self, size: f32) -> Self {

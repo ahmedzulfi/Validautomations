@@ -118,7 +118,13 @@ impl Crosshair {
                 pos.y = p.y - 12.0 - galley.size().y - 8.0;
             }
             let bg = Rect::from_min_size(pos, galley.size() + vec2(12.0, 8.0));
-            painter.rect(bg, egui::CornerRadius::same(5), with_alpha(t.popover, 0.92 * vis), Stroke::new(1.0, with_alpha(t.border, vis)), egui::StrokeKind::Inside);
+            painter.rect(
+                bg,
+                egui::CornerRadius::same(5),
+                with_alpha(t.popover, 0.92 * vis),
+                Stroke::new(1.0, with_alpha(t.border, vis)),
+                egui::StrokeKind::Inside,
+            );
             painter.galley(bg.min + vec2(6.0, 4.0), galley, with_alpha(t.foreground, vis));
         }
     }
@@ -166,7 +172,16 @@ impl Default for TargetCursor {
 impl TargetCursor {
     /// A spinning bracket cursor with no targets yet.
     pub fn new() -> Self {
-        Self { targets: Vec::new(), color: None, size: 16.0, spin: 1.6, padding: 6.0, autoplay: false, area: None, salt: 0 }
+        Self {
+            targets: Vec::new(),
+            color: None,
+            size: 16.0,
+            spin: 1.6,
+            padding: 6.0,
+            autoplay: false,
+            area: None,
+            salt: 0,
+        }
     }
     /// Rects the cursor snaps to when hovered (e.g. the `Response::rect` of buttons).
     pub fn targets(mut self, rects: impl IntoIterator<Item = Rect>) -> Self {

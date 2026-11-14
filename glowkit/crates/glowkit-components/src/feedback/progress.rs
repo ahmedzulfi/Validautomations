@@ -28,7 +28,16 @@ pub struct Progress {
 impl Progress {
     /// Determinate progress, `value` in `0..=1`.
     pub fn new(value: f32) -> Self {
-        Self { value: Some(value.clamp(0.0, 1.0)), height: 8.0, width: None, color: None, gradient: false, striped: false, label: None, percent: false }
+        Self {
+            value: Some(value.clamp(0.0, 1.0)),
+            height: 8.0,
+            width: None,
+            color: None,
+            gradient: false,
+            striped: false,
+            label: None,
+            percent: false,
+        }
     }
     /// Unknown duration: a bar slides back and forth.
     pub fn indeterminate() -> Self {
@@ -99,10 +108,19 @@ impl Widget for Progress {
                 let p = painter.with_clip_rect(fr.intersect(painter.clip_rect()));
                 let off = (glowkit_core::time(ui) * 18.0) % 16.0;
                 let mut x = fr.min.x - 16.0 - self.height + off;
-                let stripe = if t.dark && !self.gradient && self.color.is_none() { Color32::from_black_alpha(40) } else { Color32::from_white_alpha(45) };
+                let stripe = if t.dark && !self.gradient && self.color.is_none() {
+                    Color32::from_black_alpha(40)
+                } else {
+                    Color32::from_white_alpha(45)
+                };
                 while x < fr.max.x + self.height {
                     p.add(egui::Shape::convex_polygon(
-                        vec![pos2(x, fr.max.y), pos2(x + 8.0, fr.max.y), pos2(x + 8.0 + self.height, fr.min.y), pos2(x + self.height, fr.min.y)],
+                        vec![
+                            pos2(x, fr.max.y),
+                            pos2(x + 8.0, fr.max.y),
+                            pos2(x + 8.0 + self.height, fr.min.y),
+                            pos2(x + self.height, fr.min.y),
+                        ],
                         stripe,
                         Stroke::NONE,
                     ));
@@ -114,10 +132,19 @@ impl Widget for Progress {
         match self.value {
             Some(v) => {
                 let shown = glowkit_core::anim::follow(ui, resp.id.with("v"), v, 6.0);
-                let fr = Rect::from_min_size(track.min, vec2((w * shown).max(if shown > 0.0 { self.height } else { 0.0 }), self.height));
+                let fr = Rect::from_min_size(
+                    track.min,
+                    vec2((w * shown).max(if shown > 0.0 { self.height } else { 0.0 }), self.height),
+                );
                 fill_painter(painter, fr);
                 if self.percent {
-                    painter.text(pos2(rect.max.x, rect.min.y + 8.0), egui::Align2::RIGHT_CENTER, format!("{:.0}%", shown * 100.0), FontId::proportional(13.0), t.muted_foreground);
+                    painter.text(
+                        pos2(rect.max.x, rect.min.y + 8.0),
+                        egui::Align2::RIGHT_CENTER,
+                        format!("{:.0}%", shown * 100.0),
+                        FontId::proportional(13.0),
+                        t.muted_foreground,
+                    );
                 }
             }
             None => {
@@ -127,7 +154,8 @@ impl Widget for Progress {
                 let len = 0.3 + 0.12 * (ph * std::f32::consts::PI).sin();
                 let x0 = track.min.x + (e * (1.0 + len) - len) * w;
                 let x1 = x0 + len * w;
-                let fr = Rect::from_min_max(pos2(x0.max(track.min.x), track.min.y), pos2(x1.min(track.max.x), track.max.y));
+                let fr =
+                    Rect::from_min_max(pos2(x0.max(track.min.x), track.min.y), pos2(x1.min(track.max.x), track.max.y));
                 if fr.width() > 0.0 {
                     fill_painter(&painter.with_clip_rect(track), fr);
                 }
@@ -135,7 +163,13 @@ impl Widget for Progress {
             }
         }
         if let Some(l) = &self.label {
-            painter.text(pos2(rect.min.x, rect.min.y + 8.0), egui::Align2::LEFT_CENTER, l, FontId::proportional(13.5), t.foreground);
+            painter.text(
+                pos2(rect.min.x, rect.min.y + 8.0),
+                egui::Align2::LEFT_CENTER,
+                l,
+                FontId::proportional(13.5),
+                t.foreground,
+            );
         }
         resp
     }
@@ -166,7 +200,16 @@ pub type CircularProgress = ProgressRing;
 impl ProgressRing {
     /// Determinate ring, `value` in `0..=1`.
     pub fn new(value: f32) -> Self {
-        Self { value: Some(value.clamp(0.0, 1.0)), size: 72.0, thickness: 7.0, color: None, gradient: false, label: None, sublabel: None, show_label: true }
+        Self {
+            value: Some(value.clamp(0.0, 1.0)),
+            size: 72.0,
+            thickness: 7.0,
+            color: None,
+            gradient: false,
+            label: None,
+            sublabel: None,
+            show_label: true,
+        }
     }
     /// Spinning ring for unknown durations.
     pub fn indeterminate() -> Self {
@@ -231,7 +274,9 @@ impl Widget for ProgressRing {
                     let a1 = start + TAU * shown;
                     if self.gradient {
                         let g = t.gradient;
-                        paint::arc_gradient(painter, c, r, start, a1, w, |u| glowkit_core::color::gradient(&g, u * shown));
+                        paint::arc_gradient(painter, c, r, start, a1, w, |u| {
+                            glowkit_core::color::gradient(&g, u * shown)
+                        });
                         painter.circle_filled(paint_pt(c, r, start), w / 2.0, g[0]);
                         painter.circle_filled(paint_pt(c, r, a1), w / 2.0, glowkit_core::color::gradient(&g, shown));
                     } else {
@@ -242,9 +287,21 @@ impl Widget for ProgressRing {
                     let main = self.label.clone().unwrap_or_else(|| format!("{:.0}%", shown * 100.0));
                     let fs = (self.size * 0.22).clamp(11.0, 30.0);
                     let dy = if self.sublabel.is_some() { -fs * 0.3 } else { 0.0 };
-                    painter.text(c + vec2(0.0, dy), egui::Align2::CENTER_CENTER, main, FontId::proportional(fs), t.foreground);
+                    painter.text(
+                        c + vec2(0.0, dy),
+                        egui::Align2::CENTER_CENTER,
+                        main,
+                        FontId::proportional(fs),
+                        t.foreground,
+                    );
                     if let Some(s) = &self.sublabel {
-                        painter.text(c + vec2(0.0, fs * 0.65), egui::Align2::CENTER_CENTER, s, FontId::proportional((fs * 0.48).max(10.0)), t.muted_foreground);
+                        painter.text(
+                            c + vec2(0.0, fs * 0.65),
+                            egui::Align2::CENTER_CENTER,
+                            s,
+                            FontId::proportional((fs * 0.48).max(10.0)),
+                            t.muted_foreground,
+                        );
                     }
                 }
             }
@@ -254,7 +311,9 @@ impl Widget for ProgressRing {
                 let len = 0.15 + 0.2 * (0.5 - 0.5 * (time * 2.5).cos());
                 if self.gradient {
                     let g = t.gradient;
-                    paint::arc_gradient(painter, c, r, a0, a0 + TAU * len, w, |u| with_alpha(glowkit_core::color::gradient(&g, u), u.max(0.2)));
+                    paint::arc_gradient(painter, c, r, a0, a0 + TAU * len, w, |u| {
+                        with_alpha(glowkit_core::color::gradient(&g, u), u.max(0.2))
+                    });
                 } else {
                     paint::arc(painter, c, r, a0, a0 + TAU * len, w, col);
                 }
@@ -337,18 +396,48 @@ impl Widget for StepProgress {
             if i < self.current {
                 painter.circle_filled(c, 15.0, t.primary);
                 let k = (prog - i as f32 - 0.0).clamp(0.0, 1.0);
-                crate::inputs::kit::check_path(painter, Rect::from_center_size(c, vec2(16.0, 16.0)), t.primary_foreground, 2.0, k);
+                crate::inputs::kit::check_path(
+                    painter,
+                    Rect::from_center_size(c, vec2(16.0, 16.0)),
+                    t.primary_foreground,
+                    2.0,
+                    k,
+                );
             } else if is_current {
                 painter.circle(c, 15.0, t.background, Stroke::new(2.0, t.primary));
-                painter.text(c, egui::Align2::CENTER_CENTER, (i + 1).to_string(), FontId::proportional(13.0), t.foreground);
+                painter.text(
+                    c,
+                    egui::Align2::CENTER_CENTER,
+                    (i + 1).to_string(),
+                    FontId::proportional(13.0),
+                    t.foreground,
+                );
             } else {
                 painter.circle(c, 15.0, t.background, Stroke::new(1.5, track));
-                painter.text(c, egui::Align2::CENTER_CENTER, (i + 1).to_string(), FontId::proportional(13.0), t.muted_foreground);
+                painter.text(
+                    c,
+                    egui::Align2::CENTER_CENTER,
+                    (i + 1).to_string(),
+                    FontId::proportional(13.0),
+                    t.muted_foreground,
+                );
             }
             let lc = if i <= self.current { t.foreground } else { t.muted_foreground };
-            painter.text(pos2(c.x, cy + 30.0), egui::Align2::CENTER_CENTER, &self.steps[i], FontId::proportional(13.5), lc);
+            painter.text(
+                pos2(c.x, cy + 30.0),
+                egui::Align2::CENTER_CENTER,
+                &self.steps[i],
+                FontId::proportional(13.5),
+                lc,
+            );
             if let Some(d) = self.descriptions.get(i) {
-                painter.text(pos2(c.x, cy + 47.0), egui::Align2::CENTER_CENTER, d, FontId::proportional(12.0), t.muted_foreground);
+                painter.text(
+                    pos2(c.x, cy + 47.0),
+                    egui::Align2::CENTER_CENTER,
+                    d,
+                    FontId::proportional(12.0),
+                    t.muted_foreground,
+                );
             }
         }
         if pulse {

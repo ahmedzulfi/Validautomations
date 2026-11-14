@@ -151,7 +151,19 @@ pub fn toast(ctx: &Context, toast: Toast) -> ToastId {
         let id = ToastId(s.next);
         s.entries.insert(
             0,
-            Entry { id, toast, elapsed: 0.0, appear: 0.0, leaving: None, y: Spring::new(0.0), scale: Spring::new(1.0), drag_x: 0.0, height: 56.0, rev: 0, born: None },
+            Entry {
+                id,
+                toast,
+                elapsed: 0.0,
+                appear: 0.0,
+                leaving: None,
+                y: Spring::new(0.0),
+                scale: Spring::new(1.0),
+                drag_x: 0.0,
+                height: 56.0,
+                rev: 0,
+                born: None,
+            },
         );
         id
     });
@@ -212,7 +224,15 @@ impl Default for Toaster {
 impl Toaster {
     /// A bottom-right toaster.
     pub fn new() -> Self {
-        Self { position: ToastPosition::BottomRight, within: None, width: 356.0, visible: 3, expand: false, rich_colors: false, close_button: true }
+        Self {
+            position: ToastPosition::BottomRight,
+            within: None,
+            width: 356.0,
+            visible: 3,
+            expand: false,
+            rich_colors: false,
+            close_button: true,
+        }
     }
     /// Stack position.
     pub fn position(mut self, position: ToastPosition) -> Self {
@@ -275,9 +295,11 @@ impl Toaster {
 
     /// Dismiss every toast.
     pub fn dismiss_all(ctx: &Context) {
-        with_store(ctx, |s| s.entries.iter_mut().for_each(|e| {
-            e.leaving.get_or_insert(0.0);
-        }));
+        with_store(ctx, |s| {
+            s.entries.iter_mut().for_each(|e| {
+                e.leaving.get_or_insert(0.0);
+            })
+        });
         ctx.request_repaint();
     }
 
@@ -300,7 +322,10 @@ impl Toaster {
             return Vec::new();
         }
         let id = Id::unique("glowkit_toaster_layer");
-        let bottom = matches!(self.position, ToastPosition::BottomLeft | ToastPosition::BottomCenter | ToastPosition::BottomRight);
+        let bottom = matches!(
+            self.position,
+            ToastPosition::BottomLeft | ToastPosition::BottomCenter | ToastPosition::BottomRight
+        );
         let w = self.width.min(area.width() - 32.0);
         let margin = 18.0;
         let x0 = match self.position {
@@ -414,8 +439,19 @@ impl Toaster {
                 } else {
                     t.popover
                 };
-                let border = if rich && e.toast.kind != ToastKind::Default && e.toast.kind != ToastKind::Loading { mix(t.border, col, 0.35) } else { t.border };
-                paint::soft_shadow(&p, rect, t.radius, 18.0, vec2(0.0, 6.0), with_alpha(Color32::BLACK, if t.dark { 0.35 } else { 0.08 }));
+                let border = if rich && e.toast.kind != ToastKind::Default && e.toast.kind != ToastKind::Loading {
+                    mix(t.border, col, 0.35)
+                } else {
+                    t.border
+                };
+                paint::soft_shadow(
+                    &p,
+                    rect,
+                    t.radius,
+                    18.0,
+                    vec2(0.0, 6.0),
+                    with_alpha(Color32::BLACK, if t.dark { 0.35 } else { 0.08 }),
+                );
                 p.rect_filled(rect, t.radius, fill);
                 p.rect_stroke(rect, t.radius, Stroke::new(1.0, border), StrokeKind::Inside);
                 // content is only shown on the front toast while collapsed
@@ -464,11 +500,26 @@ impl Toaster {
                         cp.galley(pos2(x, ty + th + 3.0), dg, t.muted_foreground);
                     }
                     if let Some(a) = &e.toast.action {
-                        let br = Rect::from_min_size(pos2(rect.max.x - pad - act_w, rect.center().y - 13.0), vec2(act_w, 26.0));
-                        let bresp = ui.interact(br, id.with(("action", e.id.0)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
+                        let br = Rect::from_min_size(
+                            pos2(rect.max.x - pad - act_w, rect.center().y - 13.0),
+                            vec2(act_w, 26.0),
+                        );
+                        let bresp = ui
+                            .interact(br, id.with(("action", e.id.0)), Sense::click())
+                            .on_hover_cursor(CursorIcon::PointingHand);
                         let hv = kit::hover_anim(ui, id.with(("action", e.id.0)), bresp.hovered());
-                        cp.rect_filled(br, 6.0, glowkit_core::color::shade(t.primary, if t.dark { -0.1 } else { 0.15 } * hv));
-                        cp.text(br.center(), Align2::CENTER_CENTER, a, FontId::proportional(12.5), t.primary_foreground);
+                        cp.rect_filled(
+                            br,
+                            6.0,
+                            glowkit_core::color::shade(t.primary, if t.dark { -0.1 } else { 0.15 } * hv),
+                        );
+                        cp.text(
+                            br.center(),
+                            Align2::CENTER_CENTER,
+                            a,
+                            FontId::proportional(12.5),
+                            t.primary_foreground,
+                        );
                         if bresp.clicked() && e.leaving.is_none() {
                             clicked.push(e.id);
                             e.leaving = Some(0.0);
@@ -477,8 +528,15 @@ impl Toaster {
                     // progress line
                     if let Some(d) = e.toast.duration {
                         let frac = (1.0 - e.elapsed / d).clamp(0.0, 1.0);
-                        let line = Rect::from_min_size(pos2(rect.min.x + t.radius, rect.max.y - 2.5), vec2((rect.width() - t.radius * 2.0) * frac, 1.5));
-                        cp.rect_filled(line, 1.0, with_alpha(if e.toast.kind == ToastKind::Default { t.muted_foreground } else { col }, 0.35));
+                        let line = Rect::from_min_size(
+                            pos2(rect.min.x + t.radius, rect.max.y - 2.5),
+                            vec2((rect.width() - t.radius * 2.0) * frac, 1.5),
+                        );
+                        cp.rect_filled(
+                            line,
+                            1.0,
+                            with_alpha(if e.toast.kind == ToastKind::Default { t.muted_foreground } else { col }, 0.35),
+                        );
                     }
                     // close button
                     let show_close = close_button && (resp.hovered() || pointer_in && expanded);
@@ -489,7 +547,9 @@ impl Toaster {
                         let mut xp = cp.clone();
                         xp.multiply_opacity(ca);
                         xp.set_clip_rect(clip);
-                        let cresp = ui.interact(cr, id.with(("close", e.id.0)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
+                        let cresp = ui
+                            .interact(cr, id.with(("close", e.id.0)), Sense::click())
+                            .on_hover_cursor(CursorIcon::PointingHand);
                         xp.circle_filled(c, 10.0, if cresp.hovered() { t.muted } else { t.popover });
                         xp.circle_stroke(c, 10.0, Stroke::new(1.0, t.border));
                         LineIcon::X.paint_with(&xp, Rect::from_center_size(c, vec2(11.0, 11.0)), t.foreground, 1.4);

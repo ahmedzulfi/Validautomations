@@ -61,8 +61,10 @@ impl GradientText {
 impl Widget for GradientText {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
-        let colors = if self.colors.is_empty() { vec![t.gradient[0], t.gradient[1], t.gradient[2]] } else { self.colors };
-        let glyphs = Glyphs::layout(ui.painter(), &self.text, FontId::proportional(self.size), Some(ui.available_width()));
+        let colors =
+            if self.colors.is_empty() { vec![t.gradient[0], t.gradient[1], t.gradient[2]] } else { self.colors };
+        let glyphs =
+            Glyphs::layout(ui.painter(), &self.text, FontId::proportional(self.size), Some(ui.available_width()));
         let pad = if self.border { egui::vec2(self.size * 0.6, self.size * 0.25) } else { egui::Vec2::ZERO };
         let (rect, resp) = ui.allocate_exact_size(glyphs.size + pad * 2.0, Sense::hover());
         if !ui.is_rect_visible(rect) {
@@ -84,7 +86,11 @@ impl Widget for GradientText {
                 // map perimeter param back to an x position for a consistent flow
                 gradient_cyclic(&colors, s - shift)
             });
-            painter.rect_filled(rect.shrink(1.5), egui::CornerRadius::same((r - 1.5).max(0.0) as u8), t.background.gamma_multiply(0.6));
+            painter.rect_filled(
+                rect.shrink(1.5),
+                egui::CornerRadius::same((r - 1.5).max(0.0) as u8),
+                t.background.gamma_multiply(0.6),
+            );
         }
         let pos = rect.min + pad;
         if self.bold {

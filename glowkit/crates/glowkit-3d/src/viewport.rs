@@ -47,15 +47,28 @@ pub struct Frame3D<'a> {
 impl Frame3D<'_> {
     /// A value cached for the lifetime of the widget (built once with `init`). Wrap heavy things
     /// such as meshes in an [`Arc`].
-    pub fn memo<T: Clone + Send + Sync + 'static>(&self, key: impl std::hash::Hash + std::fmt::Debug, init: impl FnOnce() -> T) -> T {
+    pub fn memo<T: Clone + Send + Sync + 'static>(
+        &self,
+        key: impl std::hash::Hash + std::fmt::Debug,
+        init: impl FnOnce() -> T,
+    ) -> T {
         glowkit_core::state(self.ui, self.id.with(("memo", key)), init)
     }
     /// A cached mesh (built once).
-    pub fn mesh(&self, key: impl std::hash::Hash + std::fmt::Debug, init: impl FnOnce() -> crate::Mesh) -> Arc<crate::Mesh> {
+    pub fn mesh(
+        &self,
+        key: impl std::hash::Hash + std::fmt::Debug,
+        init: impl FnOnce() -> crate::Mesh,
+    ) -> Arc<crate::Mesh> {
         self.memo(key, || Arc::new(init()))
     }
     /// Mutable per-widget state.
-    pub fn state<T: Clone + Send + Sync + 'static, R>(&self, key: impl std::hash::Hash + std::fmt::Debug, init: impl FnOnce() -> T, f: impl FnOnce(&mut T) -> R) -> R {
+    pub fn state<T: Clone + Send + Sync + 'static, R>(
+        &self,
+        key: impl std::hash::Hash + std::fmt::Debug,
+        init: impl FnOnce() -> T,
+        f: impl FnOnce(&mut T) -> R,
+    ) -> R {
         glowkit_core::with_state(self.ui, self.id.with(("state", key)), init, f)
     }
     /// Whether the pointer is over the viewport.
@@ -196,13 +209,28 @@ impl Viewport3D {
         let mut controls = self.controls.unwrap_or_default();
         if let Some(init) = self.controls {
             let cid = id.with("orbit");
-            controls = glowkit_core::with_state(ui, cid, || init, |c| {
-                // settings come from the builder every frame; motion state persists
-                let (yaw, pitch, dist, target_dist, yv, pv, idle) = (c.yaw, c.pitch, c.distance, c.target_distance, c.yaw_velocity, c.pitch_velocity, c.idle);
-                *c = OrbitControls { yaw, pitch, distance: dist, target_distance: target_dist, yaw_velocity: yv, pitch_velocity: pv, idle, ..init };
-                c.update(ui, &response, dt);
-                *c
-            });
+            controls = glowkit_core::with_state(
+                ui,
+                cid,
+                || init,
+                |c| {
+                    // settings come from the builder every frame; motion state persists
+                    let (yaw, pitch, dist, target_dist, yv, pv, idle) =
+                        (c.yaw, c.pitch, c.distance, c.target_distance, c.yaw_velocity, c.pitch_velocity, c.idle);
+                    *c = OrbitControls {
+                        yaw,
+                        pitch,
+                        distance: dist,
+                        target_distance: target_dist,
+                        yaw_velocity: yv,
+                        pitch_velocity: pv,
+                        idle,
+                        ..init
+                    };
+                    c.update(ui, &response, dt);
+                    *c
+                },
+            );
             if controls.is_moving() {
                 ui.ctx().request_repaint();
             }
@@ -224,17 +252,35 @@ impl Viewport3D {
             Background::Radial(a, b) => {
                 let pts = paint::rounded_rect_points(rect, r, 8);
                 let stops = [a, b];
-                paint::fill_convex_fn(&painter, &pts, 10, paint::radial_fn(rect.center(), rect.size().length() * 0.55, &stops));
+                paint::fill_convex_fn(
+                    &painter,
+                    &pts,
+                    10,
+                    paint::radial_fn(rect.center(), rect.size().length() * 0.55, &stops),
+                );
             }
         }
         let pointer = response.hover_pos().filter(|p| rect.contains(*p));
-        let pointer_ndc = pointer.map(|p| egui::vec2((p.x - rect.center().x) / (rect.width() / 2.0), -(p.y - rect.center().y) / (rect.height() / 2.0)));
+        let pointer_ndc = pointer.map(|p| {
+            egui::vec2((p.x - rect.center().x) / (rect.width() / 2.0), -(p.y - rect.center().y) / (rect.height() / 2.0))
+        });
         let mut scene = Scene::new(painter, rect, camera);
         if let Some(l) = self.lights {
             scene.lights = l;
         }
         scene.fog = self.fog;
-        let frame = Frame3D { ui, id, rect, time: glowkit_core::time(ui), dt, pointer, pointer_ndc, response: &response, theme, controls };
+        let frame = Frame3D {
+            ui,
+            id,
+            rect,
+            time: glowkit_core::time(ui),
+            dt,
+            pointer,
+            pointer_ndc,
+            response: &response,
+            theme,
+            controls,
+        };
         let visible = ui.is_rect_visible(rect);
         let inner = add(&mut scene, &frame);
         let stats = if visible { scene.paint() } else { Stats::default() };

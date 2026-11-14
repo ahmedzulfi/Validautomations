@@ -35,7 +35,17 @@ pub struct RippleButton {
 impl RippleButton {
     /// A ripple button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, background: None, ripple_color: None, text_color: None, radius: None, duration: 0.75, auto_ripple: None, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            background: None,
+            ripple_color: None,
+            text_color: None,
+            radius: None,
+            duration: 0.75,
+            auto_ripple: None,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -93,7 +103,14 @@ impl Widget for RippleButton {
         let rc = self.ripple_color.unwrap_or(if custom { contrast_text(bg) } else { t.accent });
         let text = self.text_color.unwrap_or(if custom { contrast_text(bg) } else { t.foreground });
         let p = ui.painter();
-        paint::soft_shadow(p, rect, radius, 10.0, vec2(0.0, 2.0), with_alpha(Color32::BLACK, if t.dark { 0.3 } else { 0.07 }));
+        paint::soft_shadow(
+            p,
+            rect,
+            radius,
+            10.0,
+            vec2(0.0, 2.0),
+            with_alpha(Color32::BLACK, if t.dark { 0.3 } else { 0.07 }),
+        );
         p.rect_filled(rect, cr(radius), mix(bg, rc, 0.05 * hover));
         let max_r = [rect.left_top(), rect.right_top(), rect.left_bottom(), rect.right_bottom()]
             .iter()
@@ -107,7 +124,12 @@ impl Widget for RippleButton {
             util::circle_in_rounded(p, rect, radius, rect.min + r.at, max_r * grow, with_alpha(rc, alpha));
         }
         if !custom {
-            p.rect_stroke(rect, cr(radius), Stroke::new(1.0, t.border.lerp_to_gamma(rc, 0.4 * hover)), StrokeKind::Inside);
+            p.rect_stroke(
+                rect,
+                cr(radius),
+                Stroke::new(1.0, t.border.lerp_to_gamma(rc, 0.4 * hover)),
+                StrokeKind::Inside,
+            );
         }
         let g = util::text_galley(ui, &self.label, self.size, text);
         util::galley_centered(p, &g, rect.center(), text);
@@ -139,7 +161,15 @@ pub struct InteractiveHoverButton {
 impl InteractiveHoverButton {
     /// An interactive-hover button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), hover_label: None, size: 15.0, color: None, background: None, force_hover: false, min_width: None }
+        Self {
+            label: label.into(),
+            hover_label: None,
+            size: 15.0,
+            color: None,
+            background: None,
+            force_hover: false,
+            min_width: None,
+        }
     }
     /// Label shown while hovered. Defaults to the same label.
     pub fn hover_label(mut self, label: impl Into<String>) -> Self {
@@ -169,7 +199,8 @@ impl Widget for InteractiveHoverButton {
             return resp;
         }
         let hovered = resp.hovered() || self.force_hover;
-        let h = glowkit_core::anim::spring(ui, resp.id.with("h"), if hovered { 1.0 } else { 0.0 }, 160.0, 24.0).clamp(0.0, 1.05);
+        let h = glowkit_core::anim::spring(ui, resp.id.with("h"), if hovered { 1.0 } else { 0.0 }, 160.0, 24.0)
+            .clamp(0.0, 1.05);
         let press = util::press_t(ui, resp.id, resp.is_pointer_button_down_on());
         let rect = pressed_rect(rect, press);
         let radius = rect.height() / 2.0;
@@ -188,17 +219,30 @@ impl Widget for InteractiveHoverButton {
         let far = rect.right_bottom().distance(dot_c).max(rect.right_top().distance(dot_c)) + 2.0;
         let r = egui::lerp(dot_r..=far, h.clamp(0.0, 1.0).powf(1.4));
         util::circle_in_rounded(p, rect, radius, dot_c, r, color);
-        p.rect_stroke(rect, cr(radius), Stroke::new(1.0, t.border.lerp_to_gamma(color, h.clamp(0.0, 1.0))), StrokeKind::Inside);
+        p.rect_stroke(
+            rect,
+            cr(radius),
+            Stroke::new(1.0, t.border.lerp_to_gamma(color, h.clamp(0.0, 1.0))),
+            StrokeKind::Inside,
+        );
         let clip = p.with_clip_rect(rect.shrink(1.0));
         let shift = rect.width() * 0.6 * h;
         // resting label slides right & fades
         let l1 = pos2(dot0.x + dot_r + 10.0, rect.center().y - g1.size().y / 2.0) + vec2(shift, 0.0);
-        clip.galley_with_override_text_color(l1, g1.clone(), t.foreground.gamma_multiply((1.0 - h * 1.6).clamp(0.0, 1.0)));
+        clip.galley_with_override_text_color(
+            l1,
+            g1.clone(),
+            t.foreground.gamma_multiply((1.0 - h * 1.6).clamp(0.0, 1.0)),
+        );
         // hover label + arrow slide in from the right
         let total2 = g2.size().x + 22.0;
         let x2 = rect.center().x - total2 / 2.0 + (1.0 - h) * rect.width() * 0.5;
         let a2 = h.clamp(0.0, 1.0);
-        clip.galley_with_override_text_color(pos2(x2, rect.center().y - g2.size().y / 2.0), g2.clone(), fg.gamma_multiply(a2));
+        clip.galley_with_override_text_color(
+            pos2(x2, rect.center().y - g2.size().y / 2.0),
+            g2.clone(),
+            fg.gamma_multiply(a2),
+        );
         util::arrow_right(&clip, pos2(x2 + g2.size().x + 14.0, rect.center().y), 12.0, 1.6, fg.gamma_multiply(a2), 1.0);
         resp
     }
@@ -230,7 +274,17 @@ pub struct MagneticButton {
 impl MagneticButton {
     /// A magnetic button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, strength: 0.35, range: 60.0, background: None, text_color: None, radius: None, ambient: false, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            strength: 0.35,
+            range: 60.0,
+            background: None,
+            text_color: None,
+            radius: None,
+            ambient: false,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -262,7 +316,8 @@ impl Widget for MagneticButton {
             target = (p - rect.center()) * self.strength;
         } else if self.ambient {
             let tm = glowkit_core::time(ui);
-            let v = vec2((tm * 1.3).sin() * 0.9 + (tm * 0.7).cos() * 0.4, (tm * 1.9).cos() * 0.7) * vec2(rect.width() * 0.5, rect.height() * 0.8);
+            let v = vec2((tm * 1.3).sin() * 0.9 + (tm * 0.7).cos() * 0.4, (tm * 1.9).cos() * 0.7)
+                * vec2(rect.width() * 0.5, rect.height() * 0.8);
             target = v * self.strength;
             glowkit_core::animate(ui);
         }
@@ -277,7 +332,14 @@ impl Widget for MagneticButton {
         let bg = self.background.unwrap_or(t.primary);
         let text = self.text_color.unwrap_or(contrast_text(bg));
         let p = ui.painter();
-        paint::soft_shadow(p, body, radius, 16.0 + 8.0 * hover, off * 0.25 + vec2(0.0, 6.0), with_alpha(Color32::BLACK, if t.dark { 0.45 } else { 0.18 }));
+        paint::soft_shadow(
+            p,
+            body,
+            radius,
+            16.0 + 8.0 * hover,
+            off * 0.25 + vec2(0.0, 6.0),
+            with_alpha(Color32::BLACK, if t.dark { 0.45 } else { 0.18 }),
+        );
         p.rect_filled(body, cr(radius), shade(bg, if t.dark { -0.04 } else { 0.06 } * hover));
         let g = util::text_galley(ui, &self.label, self.size, text);
         util::galley_centered(p, &g, body.center() + off * 0.35, text);
@@ -309,7 +371,15 @@ pub struct FillHoverButton {
 impl FillHoverButton {
     /// A liquid-fill button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, color: None, radius: None, wave: 1.0, force_hover: false, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            color: None,
+            radius: None,
+            wave: 1.0,
+            force_hover: false,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -391,7 +461,15 @@ pub struct ArrowSlideButton {
 impl ArrowSlideButton {
     /// An arrow-slide button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, background: None, text_color: None, chip_color: None, force_hover: false, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            background: None,
+            text_color: None,
+            chip_color: None,
+            force_hover: false,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -480,7 +558,16 @@ pub struct PushButton3D {
 impl PushButton3D {
     /// A 3D push button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, color: None, text_color: None, style: PushStyle::Soft, depth: 6.0, radius: None, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            color: None,
+            text_color: None,
+            style: PushStyle::Soft,
+            depth: 6.0,
+            radius: None,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -508,7 +595,13 @@ impl Widget for PushButton3D {
         }
         let d = self.depth;
         let down = resp.is_pointer_button_down_on();
-        let target = if down { d * 0.25 } else if resp.hovered() { -2.0 } else { 0.0 };
+        let target = if down {
+            d * 0.25
+        } else if resp.hovered() {
+            -2.0
+        } else {
+            0.0
+        };
         let (k, damp) = if down { (900.0, 30.0) } else { (420.0, 14.0) };
         let lift = glowkit_core::anim::spring(ui, resp.id.with("push"), target, k, damp);
         let p = ui.painter();
@@ -520,10 +613,23 @@ impl Widget for PushButton3D {
                 let base = Rect::from_min_max(pos2(rect.min.x, rect.min.y + d), rect.max);
                 let face = base.translate(vec2(0.0, -d + lift + 2.0));
                 let face = Rect::from_min_size(face.min, vec2(base.width(), base.height() - 2.0));
-                paint::soft_shadow(p, base, radius, 10.0 + 6.0 * (1.0 - lift / d).clamp(0.0, 2.0), vec2(0.0, 3.0 + (2.0 - lift).max(0.0)), with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.22 }));
+                paint::soft_shadow(
+                    p,
+                    base,
+                    radius,
+                    10.0 + 6.0 * (1.0 - lift / d).clamp(0.0, 2.0),
+                    vec2(0.0, 3.0 + (2.0 - lift).max(0.0)),
+                    with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.22 }),
+                );
                 // edge: gradient from dark to darker for a curved side
                 let edge = Rect::from_min_max(pos2(base.min.x, face.center().y), base.max);
-                paint::gradient_rect(p, edge, radius, 0.0, &[shade(color, -0.22), shade(color, -0.12), shade(color, -0.12), shade(color, -0.22)]);
+                paint::gradient_rect(
+                    p,
+                    edge,
+                    radius,
+                    0.0,
+                    &[shade(color, -0.22), shade(color, -0.12), shade(color, -0.12), shade(color, -0.22)],
+                );
                 paint::gradient_rect(p, face, radius, 90.0, &[shade(color, 0.05), color]);
                 p.rect_stroke(face, cr(radius), Stroke::new(1.0, with_alpha(Color32::WHITE, 0.18)), StrokeKind::Inside);
                 let g = util::text_galley(ui, &self.label, self.size, text);
@@ -576,7 +682,16 @@ pub struct PixelButton {
 impl PixelButton {
     /// A pixel-art button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 14.0, color: None, text_color: None, border_color: None, pixel: 3.0, blink: false, min_width: None }
+        Self {
+            label: label.into(),
+            size: 14.0,
+            color: None,
+            text_color: None,
+            border_color: None,
+            pixel: 3.0,
+            blink: false,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -641,7 +756,11 @@ impl Widget for PixelButton {
         p.rect_filled(Rect::from_min_size(inner.min, vec2(inner.width() - u, u)), 0.0, hi);
         p.rect_filled(Rect::from_min_size(inner.min, vec2(u, inner.height() - u)), 0.0, hi);
         p.rect_filled(Rect::from_min_size(pos2(inner.min.x + u, inner.max.y - u), vec2(inner.width() - u, u)), 0.0, lo);
-        p.rect_filled(Rect::from_min_size(pos2(inner.max.x - u, inner.min.y + u), vec2(u, inner.height() - u)), 0.0, lo);
+        p.rect_filled(
+            Rect::from_min_size(pos2(inner.max.x - u, inner.min.y + u), vec2(u, inner.height() - u)),
+            0.0,
+            lo,
+        );
         let g = ui.painter().layout_no_wrap(self.label.clone(), font, text);
         let c = inner.center() + vec2(extra / 2.0, 0.0);
         util::galley_centered(p, &g, c, text);
@@ -653,7 +772,11 @@ impl Widget for PixelButton {
                 let cx = (c.x - g.size().x / 2.0 - self.size).round();
                 for i in 0..3 {
                     let hh = (5 - 2 * i) as f32 * px;
-                    p.rect_filled(Rect::from_min_size(pos2(cx + i as f32 * px, (c.y - hh / 2.0).round()), vec2(px, hh)), 0.0, text);
+                    p.rect_filled(
+                        Rect::from_min_size(pos2(cx + i as f32 * px, (c.y - hh / 2.0).round()), vec2(px, hh)),
+                        0.0,
+                        text,
+                    );
                 }
             }
             glowkit_core::animate(ui);

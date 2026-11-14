@@ -25,7 +25,16 @@ pub struct MovingBorderButton {
 impl MovingBorderButton {
     /// A moving-border button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, color: None, background: None, text_color: None, radius: None, duration: 3.0, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            color: None,
+            background: None,
+            text_color: None,
+            radius: None,
+            duration: 3.0,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -61,7 +70,14 @@ impl Widget for MovingBorderButton {
         let p = ui.painter();
         let head = (glowkit_core::time(ui) / self.duration.max(0.3)).fract();
         let hp = util::perimeter_point(rect, radius, head);
-        paint::soft_shadow(p, rect, radius, 16.0, vec2(0.0, 4.0), with_alpha(Color32::BLACK, if t.dark { 0.4 } else { 0.08 }));
+        paint::soft_shadow(
+            p,
+            rect,
+            radius,
+            16.0,
+            vec2(0.0, 4.0),
+            with_alpha(Color32::BLACK, if t.dark { 0.4 } else { 0.08 }),
+        );
         p.rect_filled(rect, cr(radius), bg);
         // the blob is only seen through the border ring, plus a soft spill inside
         util::inner_glow(p, rect, radius, hp, 40.0, with_alpha(color, 0.12 + 0.08 * hover));
@@ -153,7 +169,8 @@ impl Widget for HoverBorderGradient {
         let text = self.text_color.unwrap_or(t.foreground);
         let p = ui.painter();
         let dir = if self.clockwise { 1.0 } else { -1.0 };
-        let a = glowkit_core::time(ui) / self.duration.max(0.3) * std::f32::consts::TAU * dir - std::f32::consts::FRAC_PI_2;
+        let a =
+            glowkit_core::time(ui) / self.duration.max(0.3) * std::f32::consts::TAU * dir - std::f32::consts::FRAC_PI_2;
         let c = rect.center();
         let half = rect.size() / 2.0;
         let spot = c + vec2(a.cos() * half.x, a.sin() * half.y);
@@ -164,7 +181,12 @@ impl Widget for HoverBorderGradient {
             (-d * d).exp()
         };
         // halo around the spot / whole pill when hovered
-        paint::glow_ellipse(p, spot, vec2(rect.height() * 1.4, rect.height() * 0.9), with_alpha(col, if t.dark { 0.18 } else { 0.0 } * (1.0 - hover)));
+        paint::glow_ellipse(
+            p,
+            spot,
+            vec2(rect.height() * 1.4, rect.height() * 0.9),
+            with_alpha(col, if t.dark { 0.18 } else { 0.0 } * (1.0 - hover)),
+        );
         if hover > 0.01 {
             paint::soft_shadow(p, rect, radius, 22.0, egui::Vec2::ZERO, with_alpha(hc, 0.45 * hover));
         }
@@ -199,7 +221,16 @@ pub struct StarBorderButton {
 impl StarBorderButton {
     /// A star-border button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, color: None, background: None, text_color: None, radius: None, duration: 5.0, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            color: None,
+            background: None,
+            text_color: None,
+            radius: None,
+            duration: 5.0,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -251,7 +282,12 @@ impl Widget for StarBorderButton {
         };
         let bg_top = self.background.unwrap_or(if t.dark { mix(t.background, t.accent, 0.08) } else { t.card });
         let bg_bot = self.background.unwrap_or(if t.dark { t.background } else { mix(t.card, t.muted, 0.6) });
-        paint::fill_convex_fn(p, &paint::rounded_rect_points(rect, radius, 10), 5, paint::linear_fn(rect, 90.0, &[bg_top, bg_bot]));
+        paint::fill_convex_fn(
+            p,
+            &paint::rounded_rect_points(rect, radius, 10),
+            5,
+            paint::linear_fn(rect, 90.0, &[bg_top, bg_bot]),
+        );
         // star light spills inward only, so nothing floats outside the button
         for (s, f) in [(top, ft), (bottom, fb)] {
             util::inner_glow(p, rect, radius, s, spread * 0.9, with_alpha(color, (0.16 + 0.1 * hover) * f));

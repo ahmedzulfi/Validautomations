@@ -192,7 +192,18 @@ pub fn paint_icon_width(painter: &Painter, icon: Icon, rect: Rect, color: Color3
         }
         Icon::ThumbUp | Icon::ThumbDown => {
             let f = |(x, y): (f32, f32)| if icon == Icon::ThumbDown { (x, 24.0 - y) } else { (x, y) };
-            let hand = [(8.0, 10.5), (11.5, 3.5), (12.8, 3.5), (14.2, 5.0), (13.4, 9.5), (18.6, 9.5), (20.3, 11.6), (18.6, 19.0), (17.0, 20.0), (8.0, 20.0)];
+            let hand = [
+                (8.0, 10.5),
+                (11.5, 3.5),
+                (12.8, 3.5),
+                (14.2, 5.0),
+                (13.4, 9.5),
+                (18.6, 9.5),
+                (20.3, 11.6),
+                (18.6, 19.0),
+                (17.0, 20.0),
+                (8.0, 20.0),
+            ];
             let hand: Vec<(f32, f32)> = hand.into_iter().map(f).collect();
             pen.closed(&hand);
             let a = f((3.5, 10.5));

@@ -1,8 +1,8 @@
+use crate::stagger::{stagger_ranks, StaggerFrom};
 use crate::util;
 use egui::{Color32, Response, Sense, Ui, Widget};
 use glowkit_core::text::{scramble_char, SCRAMBLE_CHARS};
 use glowkit_core::{mix, Clock, Theme, Trigger};
-use crate::stagger::{stagger_ranks, StaggerFrom};
 
 /// Characters scramble through random symbols, then lock into the real text one by one.
 ///

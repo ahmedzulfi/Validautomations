@@ -124,7 +124,8 @@ impl Presence {
         let ckey = self.id.with("glowkit_presence_size");
         let okey = self.id.with("glowkit_presence_shift");
         let first = ui.data(|d| d.get_temp::<PresenceState>(skey)).is_none();
-        let mut st = ui.data(|d| d.get_temp::<PresenceState>(skey)).unwrap_or(PresenceState { mounted: false, last_pos: None });
+        let mut st =
+            ui.data(|d| d.get_temp::<PresenceState>(skey)).unwrap_or(PresenceState { mounted: false, last_pos: None });
         let dt = glowkit_core::dt(ui);
         let exit = self.exit.unwrap_or(self.initial);
         let exit_tr = self.exit_transition.unwrap_or(Transition::tween(0.22));
@@ -140,12 +141,14 @@ impl Presence {
             ui.data_mut(|d| d.insert_temp(skey, st));
             return None;
         }
-        let (target, tr, k_target) = if self.visible { (Props::IDENTITY, self.transition, 1.0) } else { (exit, exit_tr, 0.0) };
+        let (target, tr, k_target) =
+            if self.visible { (Props::IDENTITY, self.transition, 1.0) } else { (exit, exit_tr, 0.0) };
         let (props, moving) = with_motion_value(ui, pkey, target, |mv: &mut MotionValue<Props>| {
             mv.animate_to(target, tr);
             (mv.update(dt), mv.is_animating())
         });
-        let collapse_tr = if self.visible { Transition::tween(0.32).ease(glowkit_core::Easing::OutCubic) } else { exit_tr };
+        let collapse_tr =
+            if self.visible { Transition::tween(0.32).ease(glowkit_core::Easing::OutCubic) } else { exit_tr };
         let (k, k_moving) = with_motion_value(ui, ckey, k_target, |mv: &mut MotionValue<f32>| {
             mv.animate_to(k_target, collapse_tr);
             (mv.update(dt), mv.is_animating())
@@ -173,7 +176,12 @@ impl Presence {
 
         let space = if self.collapse { Space::Collapse(k) } else { Space::Normal };
         let all = props.then(self.style).then(Props::new().offset(shift));
-        let ir = layered(ui, self.id, LayerSpec { props: all, origin: self.origin, sense: Sense::hover(), space }, add_contents);
+        let ir = layered(
+            ui,
+            self.id,
+            LayerSpec { props: all, origin: self.origin, sense: Sense::hover(), space },
+            add_contents,
+        );
         if !self.visible && !moving && !k_moving {
             st.mounted = false;
             st.last_pos = None;
@@ -193,7 +201,8 @@ struct ListEntry<T> {
 /// Merge the previously shown entries with the new items: new order wins, removed entries stay
 /// next to the neighbour they followed so they can animate out in place.
 fn merge<T: Clone>(old: &[ListEntry<T>], new: Vec<(Id, T)>) -> Vec<ListEntry<T>> {
-    let mut out: Vec<ListEntry<T>> = new.into_iter().map(|(key, item)| ListEntry { key, item, removing: false }).collect();
+    let mut out: Vec<ListEntry<T>> =
+        new.into_iter().map(|(key, item)| ListEntry { key, item, removing: false }).collect();
     let mut prev_kept: Option<Id> = None;
     let mut pending_front = 0;
     for e in old {
@@ -332,7 +341,8 @@ mod tests {
     #[test]
     fn merge_keeps_removed_in_place() {
         let id = |i: u32| Id::NULL.with(i);
-        let old: Vec<ListEntry<u32>> = [1, 2, 3, 4].iter().map(|&i| ListEntry { key: id(i), item: i, removing: false }).collect();
+        let old: Vec<ListEntry<u32>> =
+            [1, 2, 3, 4].iter().map(|&i| ListEntry { key: id(i), item: i, removing: false }).collect();
         let new = vec![(id(1), 1), (id(3), 3), (id(5), 5)];
         let m = merge(&old, new);
         assert_eq!(keys(&m), vec![(1, false), (2, true), (3, false), (4, true), (5, false)]);

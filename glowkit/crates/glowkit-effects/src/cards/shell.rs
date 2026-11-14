@@ -107,7 +107,9 @@ pub(crate) fn show_shell<R>(
     let ctx = ShellCtx { rect, id, pointer };
     let content = bg(ui, &ctx);
     let inner_rect = rect.shrink(base.padding).translate(content.offset);
-    let mut child = ui.new_child(UiBuilder::new().id_salt(id.with("content")).max_rect(inner_rect).layout(Layout::top_down(Align::Min)));
+    let mut child = ui.new_child(
+        UiBuilder::new().id_salt(id.with("content")).max_rect(inner_rect).layout(Layout::top_down(Align::Min)),
+    );
     child.set_clip_rect(rect.intersect(ui.clip_rect()));
     if content.opacity < 1.0 {
         child.multiply_opacity(content.opacity);
@@ -147,7 +149,10 @@ pub(crate) fn shade_rounded(painter: &egui::Painter, rect: Rect, radius: f32, ce
     m.reserve_vertices((cols + 1) * (rows + 1));
     for y in 0..=rows {
         for x in 0..=cols {
-            let p = pos2(rect.min.x + rect.width() * x as f32 / cols as f32, rect.min.y + rect.height() * y as f32 / rows as f32);
+            let p = pos2(
+                rect.min.x + rect.width() * x as f32 / cols as f32,
+                rect.min.y + rect.height() * y as f32 / rows as f32,
+            );
             let p = project_into(rect, radius, p);
             m.colored_vertex(p, f(p));
         }
@@ -191,10 +196,29 @@ pub(crate) fn tracked_pointer(ui: &Ui, ctx: &ShellCtx, ambient: bool, seed: f32)
 }
 
 /// The standard card surface: soft shadow, fill and hairline border.
-pub(crate) fn card_surface(painter: &egui::Painter, t: &Theme, rect: Rect, radius: f32, fill: Color32, border: Option<Color32>) {
-    glowkit_core::paint::soft_shadow(painter, rect, radius, 20.0, vec2(0.0, 6.0), glowkit_core::with_alpha(Color32::BLACK, if t.dark { 0.35 } else { 0.07 }));
+pub(crate) fn card_surface(
+    painter: &egui::Painter,
+    t: &Theme,
+    rect: Rect,
+    radius: f32,
+    fill: Color32,
+    border: Option<Color32>,
+) {
+    glowkit_core::paint::soft_shadow(
+        painter,
+        rect,
+        radius,
+        20.0,
+        vec2(0.0, 6.0),
+        glowkit_core::with_alpha(Color32::BLACK, if t.dark { 0.35 } else { 0.07 }),
+    );
     painter.rect_filled(rect, crate::buttons::util::cr(radius), fill);
     if let Some(b) = border {
-        painter.rect_stroke(rect, crate::buttons::util::cr(radius), egui::Stroke::new(1.0, b), egui::StrokeKind::Inside);
+        painter.rect_stroke(
+            rect,
+            crate::buttons::util::cr(radius),
+            egui::Stroke::new(1.0, b),
+            egui::StrokeKind::Inside,
+        );
     }
 }

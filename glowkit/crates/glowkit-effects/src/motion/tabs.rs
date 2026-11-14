@@ -1,4 +1,7 @@
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui,
+    Widget,
+};
 use glowkit_core::color::{mix, shade, with_alpha};
 use glowkit_core::{paint, Theme};
 
@@ -84,7 +87,11 @@ impl Widget for AnimatedTabs<'_> {
         let pad_x = 16.0;
         let h = self.font_size + 20.0;
         let inset = if self.style == TabHighlight::Underline { 0.0 } else { 4.0 };
-        let widths: Vec<f32> = self.labels.iter().map(|l| ui.painter().layout_no_wrap(l.clone(), font.clone(), Color32::WHITE).size().x + pad_x * 2.0).collect();
+        let widths: Vec<f32> = self
+            .labels
+            .iter()
+            .map(|l| ui.painter().layout_no_wrap(l.clone(), font.clone(), Color32::WHITE).size().x + pad_x * 2.0)
+            .collect();
         let total = widths.iter().sum::<f32>() + inset * 2.0;
         let (rect, mut response) = ui.allocate_exact_size(vec2(total, h + inset * 2.0), Sense::click());
         let id = response.id;
@@ -113,18 +120,28 @@ impl Widget for AnimatedTabs<'_> {
         // leading and trailing edges use different springs so the pill stretches in motion
         let target = tabs[sel];
         let (fast, slow) = ((self.stiffness, self.damping), (self.stiffness * 0.55, self.damping * 0.75));
-        let moving_right = glowkit_core::with_state(ui, id.with("dir"), || (target.center().x, true), |(cx, right)| {
-            if (target.center().x - *cx).abs() > 0.5 {
-                *right = target.center().x > *cx;
-                *cx = target.center().x;
-            }
-            *right
-        });
+        let moving_right = glowkit_core::with_state(
+            ui,
+            id.with("dir"),
+            || (target.center().x, true),
+            |(cx, right)| {
+                if (target.center().x - *cx).abs() > 0.5 {
+                    *right = target.center().x > *cx;
+                    *cx = target.center().x;
+                }
+                *right
+            },
+        );
         let (ls, rs) = if moving_right { (slow, fast) } else { (fast, slow) };
         let l = glowkit_core::anim::spring(ui, id.with("l"), target.min.x, ls.0, ls.1);
         let r = glowkit_core::anim::spring(ui, id.with("r"), target.max.x, rs.0, rs.1);
         let pill = Rect::from_min_max(pos2(l, target.min.y), pos2(r.max(l + 4.0), target.max.y));
-        let hv_alpha = glowkit_core::anim::follow(ui, id.with("hva"), if self.hover && hovered.is_some() { 1.0 } else { 0.0 }, 12.0);
+        let hv_alpha = glowkit_core::anim::follow(
+            ui,
+            id.with("hva"),
+            if self.hover && hovered.is_some() { 1.0 } else { 0.0 },
+            12.0,
+        );
         let hv_t = hovered.map(|i| tabs[i]).unwrap_or(pill);
         let hl = glowkit_core::anim::spring(ui, id.with("hl"), hv_t.min.x, 420.0, 34.0);
         let hr = glowkit_core::anim::spring(ui, id.with("hr"), hv_t.max.x, 420.0, 34.0);
@@ -139,7 +156,10 @@ impl Widget for AnimatedTabs<'_> {
                 painter.rect(rect, radius, t.muted, Stroke::new(1.0, t.border), StrokeKind::Inside);
             }
             TabHighlight::Underline => {
-                painter.line_segment([pos2(rect.min.x, rect.max.y - 0.5), pos2(rect.max.x, rect.max.y - 0.5)], Stroke::new(1.0, t.border));
+                painter.line_segment(
+                    [pos2(rect.min.x, rect.max.y - 0.5), pos2(rect.max.x, rect.max.y - 0.5)],
+                    Stroke::new(1.0, t.border),
+                );
             }
         }
         if hv_alpha > 0.01 {
@@ -155,7 +175,14 @@ impl Widget for AnimatedTabs<'_> {
         };
         match self.style {
             TabHighlight::Pill => {
-                paint::soft_shadow(painter, pill, h / 2.0, 6.0, vec2(0.0, 1.0), with_alpha(Color32::BLACK, if t.dark { 0.4 } else { 0.1 }));
+                paint::soft_shadow(
+                    painter,
+                    pill,
+                    h / 2.0,
+                    6.0,
+                    vec2(0.0, 1.0),
+                    with_alpha(Color32::BLACK, if t.dark { 0.4 } else { 0.1 }),
+                );
                 painter.rect(pill, inner_r, pill_fill, Stroke::new(1.0, with_alpha(t.border, 0.8)), StrokeKind::Inside);
             }
             TabHighlight::Solid => {
@@ -163,7 +190,10 @@ impl Widget for AnimatedTabs<'_> {
                 painter.rect_filled(pill, inner_r, pill_fill);
             }
             TabHighlight::Underline => {
-                let u = Rect::from_min_max(pos2(pill.min.x + 8.0, rect.max.y - 2.5), pos2(pill.max.x - 8.0, rect.max.y + 0.5));
+                let u = Rect::from_min_max(
+                    pos2(pill.min.x + 8.0, rect.max.y - 2.5),
+                    pos2(pill.max.x - 8.0, rect.max.y + 0.5),
+                );
                 painter.rect_filled(u, CornerRadius::same(2), pill_fill);
             }
         }

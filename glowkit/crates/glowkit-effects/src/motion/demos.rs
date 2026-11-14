@@ -64,19 +64,30 @@ fn review(ui: &mut Ui, i: usize) {
         .inner_margin(egui::Margin::same(14))
         .show(ui, |ui| {
             ui.vertical(|ui| {
-            ui.set_width(250.0);
-            ui.horizontal(|ui| {
-                let (r, _) = ui.allocate_exact_size(vec2(32.0, 32.0), Sense::hover());
-                paint::gradient_circle(ui.painter(), r.center(), 16.0, &[t.chart[i % 6], shade(t.chart[(i + 2) % 6], -0.1)]);
-                ui.painter().text(r.center(), Align2::CENTER_CENTER, &name[..1], FontId::proportional(14.0), Color32::WHITE);
-                ui.vertical(|ui| {
-                    ui.spacing_mut().item_spacing.y = 0.0;
-                    ui.label(RichText::new(name).size(13.5).strong().color(t.foreground));
-                    ui.label(RichText::new(handle).size(12.0).color(t.muted_foreground));
+                ui.set_width(250.0);
+                ui.horizontal(|ui| {
+                    let (r, _) = ui.allocate_exact_size(vec2(32.0, 32.0), Sense::hover());
+                    paint::gradient_circle(
+                        ui.painter(),
+                        r.center(),
+                        16.0,
+                        &[t.chart[i % 6], shade(t.chart[(i + 2) % 6], -0.1)],
+                    );
+                    ui.painter().text(
+                        r.center(),
+                        Align2::CENTER_CENTER,
+                        &name[..1],
+                        FontId::proportional(14.0),
+                        Color32::WHITE,
+                    );
+                    ui.vertical(|ui| {
+                        ui.spacing_mut().item_spacing.y = 0.0;
+                        ui.label(RichText::new(name).size(13.5).strong().color(t.foreground));
+                        ui.label(RichText::new(handle).size(12.0).color(t.muted_foreground));
+                    });
                 });
-            });
-            ui.add_space(4.0);
-            ui.label(RichText::new(text).size(13.0).color(t.foreground));
+                ui.add_space(4.0);
+                ui.label(RichText::new(text).size(13.0).color(t.foreground));
             });
         });
 }
@@ -100,7 +111,13 @@ fn notification(ui: &mut Ui, i: usize) {
     p.text(tile.center(), Align2::CENTER_CENTER, icon, FontId::proportional(18.0), Color32::WHITE);
     let x = tile.max.x + 12.0;
     let g = p.text(pos2(x, r.center().y - 9.0), Align2::LEFT_CENTER, title, FontId::proportional(14.5), t.foreground);
-    p.text(pos2(g.max.x + 6.0, r.center().y - 9.0), Align2::LEFT_CENTER, format!("· {}m ago", 2 + i * 3), FontId::proportional(12.0), t.muted_foreground);
+    p.text(
+        pos2(g.max.x + 6.0, r.center().y - 9.0),
+        Align2::LEFT_CENTER,
+        format!("· {}m ago", 2 + i * 3),
+        FontId::proportional(12.0),
+        t.muted_foreground,
+    );
     p.text(pos2(x, r.center().y + 11.0), Align2::LEFT_CENTER, body, FontId::proportional(12.5), t.muted_foreground);
 }
 
@@ -115,7 +132,13 @@ fn slide_card(ui: &mut Ui, i: usize) {
     paint::gradient_rect(p, art, 10.0, 35.0, &[a, b]);
     p.text(art.center(), Align2::CENTER_CENTER, &f.icon, FontId::proportional(44.0), Color32::WHITE);
     p.text(pos2(r.min.x, art.max.y + 14.0), Align2::LEFT_TOP, &f.title, FontId::proportional(17.0), t.foreground);
-    p.text(pos2(r.min.x, art.max.y + 38.0), Align2::LEFT_TOP, &f.subtitle, FontId::proportional(13.0), t.muted_foreground);
+    p.text(
+        pos2(r.min.x, art.max.y + 38.0),
+        Align2::LEFT_TOP,
+        &f.subtitle,
+        FontId::proportional(13.0),
+        t.muted_foreground,
+    );
 }
 
 pub fn all() -> Vec<Demo> {

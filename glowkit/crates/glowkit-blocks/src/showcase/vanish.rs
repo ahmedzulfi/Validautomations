@@ -57,7 +57,14 @@ pub struct VanishInput<'a> {
 impl<'a> VanishInput<'a> {
     /// An input editing `text`.
     pub fn new(text: &'a mut String) -> Self {
-        Self { text, placeholders: vec!["Type something and press Enter".into()], width: 520.0, font_size: 15.0, autoplay: false, interval: 3.0 }
+        Self {
+            text,
+            placeholders: vec!["Type something and press Enter".into()],
+            width: 520.0,
+            font_size: 15.0,
+            autoplay: false,
+            interval: 3.0,
+        }
     }
     /// Placeholder prompts to cycle through.
     pub fn placeholders(mut self, p: &[&str]) -> Self {
@@ -97,7 +104,8 @@ impl<'a> VanishInput<'a> {
         let pad = h * 0.42;
         let btn_r = h * 0.34;
         let btn_c = pos2(rect.max.x - h * 0.5, rect.center().y);
-        let text_rect = Rect::from_min_max(pos2(rect.min.x + pad, rect.min.y + 4.0), pos2(btn_c.x - btn_r - 8.0, rect.max.y - 4.0));
+        let text_rect =
+            Rect::from_min_max(pos2(rect.min.x + pad, rect.min.y + 4.0), pos2(btn_c.x - btn_r - 8.0, rect.max.y - 4.0));
         let row_h = ui.painter().layout_no_wrap("Ag".into(), font.clone(), Color32::WHITE).size().y;
         let text_origin = pos2(text_rect.min.x, rect.center().y - row_h / 2.0);
         let mut st: VanishState = glowkit_core::state(ui, id, VanishState::default);
@@ -107,7 +115,14 @@ impl<'a> VanishInput<'a> {
         let p = ui.painter().clone();
         let focused_prev = ui.memory(|m| m.has_focus(id.with("edit")));
         let ring = glowkit_core::anim::follow(ui, id.with("ring"), if focused_prev { 1.0 } else { 0.0 }, 12.0);
-        paint::soft_shadow(&p, rect, h / 2.0, 18.0, vec2(0.0, 6.0), Color32::from_black_alpha(if t.dark { 90 } else { 22 }));
+        paint::soft_shadow(
+            &p,
+            rect,
+            h / 2.0,
+            18.0,
+            vec2(0.0, 6.0),
+            Color32::from_black_alpha(if t.dark { 90 } else { 22 }),
+        );
         p.rect_filled(rect, h / 2.0, if t.dark { t.card } else { Color32::WHITE });
         p.rect_stroke(rect, h / 2.0, Stroke::new(1.0, t.border.lerp_to_gamma(t.ring, ring * 0.8)), StrokeKind::Inside);
 
@@ -202,7 +217,15 @@ impl<'a> VanishInput<'a> {
             for (ch, off, delay) in st.glyphs.iter() {
                 let k = 1.0 - smoothstep(*delay, *delay + 0.08, el);
                 if k > 0.0 {
-                    glowkit_core::text::paint_char(&clip, *ch, text_origin + *off, &font, with_alpha(t.foreground, k), 1.0, 0.0);
+                    glowkit_core::text::paint_char(
+                        &clip,
+                        *ch,
+                        text_origin + *off,
+                        &font,
+                        with_alpha(t.foreground, k),
+                        1.0,
+                        0.0,
+                    );
                 }
             }
             for pt in st.particles.iter() {
@@ -223,7 +246,11 @@ impl<'a> VanishInput<'a> {
         if let Some(at) = &auto_text {
             let r = clip.text(text_origin, egui::Align2::LEFT_TOP, at, font.clone(), t.foreground);
             if (time * 2.0).fract() < 0.6 {
-                clip.rect_filled(Rect::from_min_size(pos2(r.max.x + 1.0, text_origin.y + 1.0), vec2(1.5, row_h - 2.0)), 0.0, t.foreground);
+                clip.rect_filled(
+                    Rect::from_min_size(pos2(r.max.x + 1.0, text_origin.y + 1.0), vec2(1.5, row_h - 2.0)),
+                    0.0,
+                    t.foreground,
+                );
             }
         }
         // placeholders
@@ -238,7 +265,13 @@ impl<'a> VanishInput<'a> {
             let leave_k = smoothstep(self.interval - 0.35, self.interval, f);
             let dy = (1.0 - enter_k) * 10.0 - leave_k * 10.0;
             let a = enter_k * (1.0 - leave_k);
-            clip.text(text_origin + vec2(0.0, dy), egui::Align2::LEFT_TOP, &self.placeholders[i], font.clone(), with_alpha(t.muted_foreground, a));
+            clip.text(
+                text_origin + vec2(0.0, dy),
+                egui::Align2::LEFT_TOP,
+                &self.placeholders[i],
+                font.clone(),
+                with_alpha(t.muted_foreground, a),
+            );
         }
         // button
         let has_text = !self.text.is_empty() || auto_text.as_ref().is_some_and(|s| !s.is_empty());
@@ -250,7 +283,13 @@ impl<'a> VanishInput<'a> {
         let ax = btn_c.x - len / 2.0 + (1.0 - on) * 0.0;
         let tail = len * (0.35 + 0.65 * on);
         p.line_segment([pos2(ax + len - tail, btn_c.y), pos2(ax + len, btn_c.y)], Stroke::new(2.0, fg));
-        super::util::chevron(&p, pos2(ax + len - btn_r * 0.15, btn_c.y), btn_r * 0.7, vec2(1.0, 0.0), Stroke::new(2.0, fg));
+        super::util::chevron(
+            &p,
+            pos2(ax + len - btn_r * 0.15, btn_c.y),
+            btn_r * 0.7,
+            vec2(1.0, 0.0),
+            Stroke::new(2.0, fg),
+        );
         if btn.hovered() {
             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
         }

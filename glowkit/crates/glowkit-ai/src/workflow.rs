@@ -186,7 +186,12 @@ impl Widget for Workflow<'_> {
         }
         let ns = self.node_size;
         let inner = rect.shrink2(vec2(ns.x / 2.0 + 16.0, ns.y / 2.0 + 16.0));
-        let center = |n: &WorkflowNode| pos2(inner.min.x + n.pos.x.clamp(0.0, 1.0) * inner.width(), inner.min.y + n.pos.y.clamp(0.0, 1.0) * inner.height());
+        let center = |n: &WorkflowNode| {
+            pos2(
+                inner.min.x + n.pos.x.clamp(0.0, 1.0) * inner.width(),
+                inner.min.y + n.pos.y.clamp(0.0, 1.0) * inner.height(),
+            )
+        };
         let time = glowkit_core::time(ui);
         let mut animate = false;
         // edges
@@ -196,7 +201,11 @@ impl Widget for Workflow<'_> {
             let pb = center(b) - vec2(ns.x / 2.0, 0.0);
             let dx = ((pb.x - pa.x).abs() * 0.5).max(40.0);
             let pts = paint::cubic_bezier(pa, pa + vec2(dx, 0.0), pb - vec2(dx, 0.0), pb, 48);
-            let base = if e.active { mix(common::border_strong(&t), a.kind.color(&t), 0.35) } else { common::border_strong(&t) };
+            let base = if e.active {
+                mix(common::border_strong(&t), a.kind.color(&t), 0.35)
+            } else {
+                common::border_strong(&t)
+            };
             paint::gradient_polyline(&painter, &pts, false, 1.6, |_| base);
             if e.active {
                 animate = true;
@@ -219,7 +228,14 @@ impl Widget for Workflow<'_> {
             let c = center(n);
             let r = Rect::from_center_size(c, ns);
             let kc = n.kind.color(&t);
-            paint::soft_shadow(&painter, r, 10.0, 14.0, vec2(0.0, 4.0), Color32::from_black_alpha(if t.dark { 90 } else { 22 }));
+            paint::soft_shadow(
+                &painter,
+                r,
+                10.0,
+                14.0,
+                vec2(0.0, 4.0),
+                Color32::from_black_alpha(if t.dark { 90 } else { 22 }),
+            );
             painter.rect_filled(r, CornerRadius::same(10), t.card);
             let stroke_col = match n.status {
                 NodeStatus::Running => {
@@ -237,17 +253,39 @@ impl Widget for Workflow<'_> {
             painter.rect_stroke(ib, CornerRadius::same(8), Stroke::new(1.0, with_alpha(kc, 0.3)), StrokeKind::Inside);
             paint_icon(&painter, n.kind.icon(), ib.shrink(8.0), kc);
             let tx = ib.max.x + 10.0;
-            let tag = common::text(&painter, pos2(tx, r.min.y + 11.0), Align2::LEFT_TOP, n.kind.label(), 9.5, with_alpha(kc, 0.95));
+            let tag = common::text(
+                &painter,
+                pos2(tx, r.min.y + 11.0),
+                Align2::LEFT_TOP,
+                n.kind.label(),
+                9.5,
+                with_alpha(kc, 0.95),
+            );
             if !n.subtitle.is_empty() {
                 let sub = painter.with_clip_rect(Rect::from_min_max(r.min, pos2(r.max.x - 20.0, r.max.y)));
-                common::text(&sub, pos2(tag.max.x + 6.0, tag.center().y), Align2::LEFT_CENTER, format!("·  {}", n.subtitle), 10.5, t.muted_foreground);
+                common::text(
+                    &sub,
+                    pos2(tag.max.x + 6.0, tag.center().y),
+                    Align2::LEFT_CENTER,
+                    format!("·  {}", n.subtitle),
+                    10.5,
+                    t.muted_foreground,
+                );
             }
             let tg = ui.painter().layout_no_wrap(n.title.to_owned(), egui::FontId::proportional(13.0), t.foreground);
-            common::paint_galley_fx(&painter, pos2(tx, tag.max.y + 3.0), &tg, |_| common::Fx { bold: true, ..Default::default() });
+            common::paint_galley_fx(&painter, pos2(tx, tag.max.y + 3.0), &tg, |_| common::Fx {
+                bold: true,
+                ..Default::default()
+            });
             if n.status == NodeStatus::Done {
                 let cc = pos2(r.max.x - 12.0, r.min.y + 12.0);
                 painter.circle_filled(cc, 6.0, t.success);
-                paint_icon(&painter, Icon::Check, Rect::from_center_size(cc, vec2(8.0, 8.0)), if t.dark { Color32::from_rgb(5, 25, 12) } else { Color32::WHITE });
+                paint_icon(
+                    &painter,
+                    Icon::Check,
+                    Rect::from_center_size(cc, vec2(8.0, 8.0)),
+                    if t.dark { Color32::from_rgb(5, 25, 12) } else { Color32::WHITE },
+                );
             }
             // ports
             for (px, used) in [(r.min.x, n.kind != NodeKind::Trigger), (r.max.x, n.kind != NodeKind::Output)] {

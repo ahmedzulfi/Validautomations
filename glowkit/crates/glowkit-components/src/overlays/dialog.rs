@@ -1,6 +1,8 @@
 use super::kit::{self, Btn};
 use super::LineIcon;
-use egui::{pos2, vec2, Color32, CornerRadius, Id, Key, LayerId, Order, Rect, Sense, Stroke, StrokeKind, Ui, UiBuilder};
+use egui::{
+    pos2, vec2, Color32, CornerRadius, Id, Key, LayerId, Order, Rect, Sense, Stroke, StrokeKind, Ui, UiBuilder,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
@@ -35,13 +37,22 @@ fn backdrop(ui: &Ui, id: Id, area: Rect, clip: Rect, p: f32, blocking: bool, rou
     r.inner
 }
 
-fn footer_buttons(ui: &mut Ui, right: egui::Pos2, id: Id, primary: Option<&str>, secondary: Option<&str>, destructive: bool) -> (bool, bool) {
+fn footer_buttons(
+    ui: &mut Ui,
+    right: egui::Pos2,
+    id: Id,
+    primary: Option<&str>,
+    secondary: Option<&str>,
+    destructive: bool,
+) -> (bool, bool) {
     let mut x = right.x;
     let (mut pc, mut sc) = (false, false);
     if let Some(label) = primary {
         let w = kit::button_width(ui, label, 13.5);
         let r = Rect::from_min_max(pos2(x - w, right.y - 34.0), pos2(x, right.y));
-        pc = kit::button_at(ui, r, id.with("primary"), label, if destructive { Btn::Destructive } else { Btn::Primary }).clicked();
+        pc =
+            kit::button_at(ui, r, id.with("primary"), label, if destructive { Btn::Destructive } else { Btn::Primary })
+                .clicked();
         x -= w + 8.0;
     }
     if let Some(label) = secondary {
@@ -179,7 +190,8 @@ impl<'a> Dialog<'a> {
         let pad = 24.0;
         let w = self.width.min(area.width() - 32.0);
         let inner_w = w - pad * 2.0;
-        let title_g = kit::wrap(ui, &self.title, 18.0, t.foreground, inner_w - if self.close_button { 24.0 } else { 0.0 });
+        let title_g =
+            kit::wrap(ui, &self.title, 18.0, t.foreground, inner_w - if self.close_button { 24.0 } else { 0.0 });
         let desc_g = self.description.as_ref().map(|d| kit::wrap(ui, d, 14.0, t.muted_foreground, inner_w));
         let body_h: f32 = glowkit_core::state(ui, id.with("body_h"), || 0.0);
         let icon_h = if self.icon.is_some() { 52.0 } else { 0.0 };
@@ -228,12 +240,22 @@ impl<'a> Dialog<'a> {
                 closed = kit::icon_button(ui, cr, lid.with("close"), LineIcon::X, t.muted_foreground).clicked();
             }
             let body_top = y + 18.0;
-            let mut body = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_max(pos2(x, body_top), pos2(rect.max.x - pad, rect.max.y + 2000.0))));
+            let mut body = ui.new_child(
+                UiBuilder::new()
+                    .max_rect(Rect::from_min_max(pos2(x, body_top), pos2(rect.max.x - pad, rect.max.y + 2000.0))),
+            );
             body.set_clip_rect(ui.clip_rect());
             let inner = add(&mut body);
             let used = body.min_rect().height();
             let used = if body.min_rect().width() <= 0.5 && used <= 0.5 { 0.0 } else { used };
-            let (pc, sc) = footer_buttons(ui, pos2(rect.max.x - pad, rect.max.y - pad), lid, primary.as_deref(), secondary.as_deref(), destructive);
+            let (pc, sc) = footer_buttons(
+                ui,
+                pos2(rect.max.x - pad, rect.max.y - pad),
+                lid,
+                primary.as_deref(),
+                secondary.as_deref(),
+                destructive,
+            );
             (inner, used, closed, pc, sc)
         });
         let (inner, used, closed, pc, sc) = res.inner;
@@ -403,7 +425,16 @@ pub struct Sheet<'a> {
 impl<'a> Sheet<'a> {
     /// A sheet controlled by `open`, with a title.
     pub fn new(open: &'a mut bool, title: impl Into<String>) -> Self {
-        Self { open, title: title.into(), description: None, side: SheetSide::Right, size: 360.0, within: None, primary: None, secondary: None }
+        Self {
+            open,
+            title: title.into(),
+            description: None,
+            side: SheetSide::Right,
+            size: 360.0,
+            within: None,
+            primary: None,
+            secondary: None,
+        }
     }
     /// Muted text under the title.
     pub fn description(mut self, text: impl Into<String>) -> Self {
@@ -463,64 +494,105 @@ impl<'a> Sheet<'a> {
         let size = if horizontal { self.size.min(area.width() * 0.9) } else { self.size.min(area.height() * 0.9) };
         let hidden = (1.0 - s) * (size + 30.0);
         let rect = match self.side {
-            SheetSide::Right => Rect::from_min_max(pos2(area.max.x - size + hidden, area.min.y), pos2(area.max.x + hidden, area.max.y)),
-            SheetSide::Left => Rect::from_min_max(pos2(area.min.x - hidden, area.min.y), pos2(area.min.x + size - hidden, area.max.y)),
-            SheetSide::Top => Rect::from_min_max(pos2(area.min.x, area.min.y - hidden), pos2(area.max.x, area.min.y + size - hidden)),
-            SheetSide::Bottom => Rect::from_min_max(pos2(area.min.x, area.max.y - size + hidden), pos2(area.max.x, area.max.y + hidden)),
+            SheetSide::Right => {
+                Rect::from_min_max(pos2(area.max.x - size + hidden, area.min.y), pos2(area.max.x + hidden, area.max.y))
+            }
+            SheetSide::Left => {
+                Rect::from_min_max(pos2(area.min.x - hidden, area.min.y), pos2(area.min.x + size - hidden, area.max.y))
+            }
+            SheetSide::Top => {
+                Rect::from_min_max(pos2(area.min.x, area.min.y - hidden), pos2(area.max.x, area.min.y + size - hidden))
+            }
+            SheetSide::Bottom => {
+                Rect::from_min_max(pos2(area.min.x, area.max.y - size + hidden), pos2(area.max.x, area.max.y + hidden))
+            }
         };
         // extend a little past the edge so spring overshoot never shows a gap
-        let paint_rect = if self.within.is_some() { rect } else { match self.side {
-            SheetSide::Right => rect.with_max_x(rect.max.x + 40.0),
-            SheetSide::Left => rect.with_min_x(rect.min.x - 40.0),
-            SheetSide::Top => rect.with_min_y(rect.min.y - 40.0),
-            SheetSide::Bottom => rect.with_max_y(rect.max.y + 40.0),
-        } };
+        let paint_rect = if self.within.is_some() {
+            rect
+        } else {
+            match self.side {
+                SheetSide::Right => rect.with_max_x(rect.max.x + 40.0),
+                SheetSide::Left => rect.with_min_x(rect.min.x - 40.0),
+                SheetSide::Top => rect.with_min_y(rect.min.y - 40.0),
+                SheetSide::Bottom => rect.with_max_y(rect.max.y + 40.0),
+            }
+        };
         let r = t.radius.round().clamp(0.0, 255.0) as u8;
-        let corners = if self.within.is_some() { CornerRadius::same(r) } else { match self.side {
-            SheetSide::Right => CornerRadius { nw: r, sw: r, ne: 0, se: 0 },
-            SheetSide::Left => CornerRadius { ne: r, se: r, nw: 0, sw: 0 },
-            SheetSide::Top => CornerRadius { sw: r, se: r, nw: 0, ne: 0 },
-            SheetSide::Bottom => CornerRadius { nw: r, ne: r, sw: 0, se: 0 },
-        } };
+        let corners = if self.within.is_some() {
+            CornerRadius::same(r)
+        } else {
+            match self.side {
+                SheetSide::Right => CornerRadius { nw: r, sw: r, ne: 0, se: 0 },
+                SheetSide::Left => CornerRadius { ne: r, se: r, nw: 0, sw: 0 },
+                SheetSide::Top => CornerRadius { sw: r, se: r, nw: 0, ne: 0 },
+                SheetSide::Bottom => CornerRadius { nw: r, ne: r, sw: 0, se: 0 },
+            }
+        };
         let lid = id.with("panel");
         let title = self.title.clone();
         let desc = self.description.clone();
         let (primary, secondary) = (self.primary.clone(), self.secondary.clone());
         let side = self.side;
-        let res = kit::float_layer(&ctx, lid, Order::Foreground, paint_rect, clip, 1.0, rect.center(), p.clamp(0.6, 1.0), |ui| {
-            ui.interact(rect, lid.with("block"), Sense::click());
-            let pnt = ui.painter();
-            glowkit_core::paint::soft_shadow(pnt, paint_rect, t.radius, 30.0, vec2(0.0, 0.0), kit::shadow_color(&t));
-            pnt.rect_filled(paint_rect, corners, t.popover);
-            pnt.rect_stroke(paint_rect, corners, Stroke::new(1.0, t.border), StrokeKind::Inside);
-            let pad = 24.0;
-            let mut y = rect.min.y + pad;
-            if side == SheetSide::Bottom {
-                let hr = Rect::from_center_size(pos2(rect.center().x, rect.min.y + 12.0), vec2(44.0, 5.0));
-                pnt.rect_filled(hr, 3.0, t.muted_foreground.gamma_multiply(0.45));
-                y += 6.0;
-            }
-            let x = rect.min.x + pad;
-            let inner_w = rect.width() - pad * 2.0;
-            let tg = kit::wrap(ui, &title, 18.0, t.foreground, inner_w - 30.0);
-            pnt.galley(pos2(x, y), tg.clone(), t.foreground);
-            y += tg.size().y;
-            if let Some(d) = &desc {
-                let dg = kit::wrap(ui, d, 14.0, t.muted_foreground, inner_w);
-                y += 6.0;
-                pnt.galley(pos2(x, y), dg.clone(), t.muted_foreground);
-                y += dg.size().y;
-            }
-            let cr = Rect::from_min_size(pos2(rect.max.x - 42.0, rect.min.y + 16.0), vec2(26.0, 26.0));
-            let closed = kit::icon_button(ui, cr, lid.with("close"), LineIcon::X, t.muted_foreground).clicked();
-            let footer_h = if primary.is_some() || secondary.is_some() { 34.0 + pad } else { 0.0 };
-            let body_rect = Rect::from_min_max(pos2(x, y + 20.0), pos2(rect.max.x - pad, rect.max.y - pad - footer_h));
-            let mut body = ui.new_child(UiBuilder::new().max_rect(body_rect));
-            body.set_clip_rect(body_rect.expand(4.0).intersect(ui.clip_rect()));
-            let inner = add(&mut body);
-            let (pc, sc) = footer_buttons(ui, pos2(rect.max.x - pad, rect.max.y - pad), lid, primary.as_deref(), secondary.as_deref(), false);
-            (inner, closed, pc, sc)
-        });
+        let res = kit::float_layer(
+            &ctx,
+            lid,
+            Order::Foreground,
+            paint_rect,
+            clip,
+            1.0,
+            rect.center(),
+            p.clamp(0.6, 1.0),
+            |ui| {
+                ui.interact(rect, lid.with("block"), Sense::click());
+                let pnt = ui.painter();
+                glowkit_core::paint::soft_shadow(
+                    pnt,
+                    paint_rect,
+                    t.radius,
+                    30.0,
+                    vec2(0.0, 0.0),
+                    kit::shadow_color(&t),
+                );
+                pnt.rect_filled(paint_rect, corners, t.popover);
+                pnt.rect_stroke(paint_rect, corners, Stroke::new(1.0, t.border), StrokeKind::Inside);
+                let pad = 24.0;
+                let mut y = rect.min.y + pad;
+                if side == SheetSide::Bottom {
+                    let hr = Rect::from_center_size(pos2(rect.center().x, rect.min.y + 12.0), vec2(44.0, 5.0));
+                    pnt.rect_filled(hr, 3.0, t.muted_foreground.gamma_multiply(0.45));
+                    y += 6.0;
+                }
+                let x = rect.min.x + pad;
+                let inner_w = rect.width() - pad * 2.0;
+                let tg = kit::wrap(ui, &title, 18.0, t.foreground, inner_w - 30.0);
+                pnt.galley(pos2(x, y), tg.clone(), t.foreground);
+                y += tg.size().y;
+                if let Some(d) = &desc {
+                    let dg = kit::wrap(ui, d, 14.0, t.muted_foreground, inner_w);
+                    y += 6.0;
+                    pnt.galley(pos2(x, y), dg.clone(), t.muted_foreground);
+                    y += dg.size().y;
+                }
+                let cr = Rect::from_min_size(pos2(rect.max.x - 42.0, rect.min.y + 16.0), vec2(26.0, 26.0));
+                let closed = kit::icon_button(ui, cr, lid.with("close"), LineIcon::X, t.muted_foreground).clicked();
+                let footer_h = if primary.is_some() || secondary.is_some() { 34.0 + pad } else { 0.0 };
+                let body_rect =
+                    Rect::from_min_max(pos2(x, y + 20.0), pos2(rect.max.x - pad, rect.max.y - pad - footer_h));
+                let mut body = ui.new_child(UiBuilder::new().max_rect(body_rect));
+                body.set_clip_rect(body_rect.expand(4.0).intersect(ui.clip_rect()));
+                let inner = add(&mut body);
+                let (pc, sc) = footer_buttons(
+                    ui,
+                    pos2(rect.max.x - pad, rect.max.y - pad),
+                    lid,
+                    primary.as_deref(),
+                    secondary.as_deref(),
+                    false,
+                );
+                (inner, closed, pc, sc)
+            },
+        );
         ctx.move_to_top(LayerId::new(Order::Foreground, lid));
         let (inner, closed, pc, sc) = res.inner;
         out.inner = Some(inner);

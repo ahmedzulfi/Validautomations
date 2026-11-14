@@ -3,7 +3,9 @@
 use crate::common;
 use crate::icons::{paint_icon, Icon};
 use crate::loader::paint_shimmer;
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder, Widget,
+};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
 
@@ -101,7 +103,12 @@ fn status_icon(ui: &Ui, id: egui::Id, c: egui::Pos2, status: TaskStatus, t: &The
         TaskStatus::Done => {
             let k = glowkit_core::ease(glowkit_core::Easing::OutBack, done);
             p.circle_filled(c, 8.0 * k.max(0.0), t.success);
-            paint_icon(p, Icon::Check, Rect::from_center_size(c, vec2(10.0, 10.0) * k.clamp(0.0, 1.2)), if t.dark { Color32::from_rgb(5, 25, 12) } else { Color32::WHITE });
+            paint_icon(
+                p,
+                Icon::Check,
+                Rect::from_center_size(c, vec2(10.0, 10.0) * k.clamp(0.0, 1.2)),
+                if t.dark { Color32::from_rgb(5, 25, 12) } else { Color32::WHITE },
+            );
         }
         TaskStatus::Failed => {
             p.circle_filled(c, 8.0, with_alpha(t.destructive, 0.15));
@@ -136,32 +143,68 @@ impl Widget for TaskList<'_> {
                 let ty = if self.description.is_some() { hr.min.y + 14.0 } else { hr.center().y - tg.size().y / 2.0 };
                 // title
                 let ix = hr.min.x + 16.0;
-                paint_icon(p, Icon::Sparkle, Rect::from_center_size(pos2(ix + 7.0, ty + tg.size().y / 2.0), vec2(15.0, 15.0)), t.accent);
+                paint_icon(
+                    p,
+                    Icon::Sparkle,
+                    Rect::from_center_size(pos2(ix + 7.0, ty + tg.size().y / 2.0), vec2(15.0, 15.0)),
+                    t.accent,
+                );
                 if running {
-                    paint_shimmer(ui, pos2(ix + 24.0, ty), self.title, 14.0, mix(t.muted_foreground, t.foreground, 0.4), t.foreground, 2.0);
+                    paint_shimmer(
+                        ui,
+                        pos2(ix + 24.0, ty),
+                        self.title,
+                        14.0,
+                        mix(t.muted_foreground, t.foreground, 0.4),
+                        t.foreground,
+                        2.0,
+                    );
                 } else {
-                    common::paint_galley_fx(ui.painter(), pos2(ix + 24.0, ty), &tg, |_| common::Fx { bold: true, ..Default::default() });
+                    common::paint_galley_fx(ui.painter(), pos2(ix + 24.0, ty), &tg, |_| common::Fx {
+                        bold: true,
+                        ..Default::default()
+                    });
                 }
                 if let Some(d) = self.description {
-                    common::text(ui.painter(), pos2(ix + 24.0, ty + tg.size().y + 4.0), Align2::LEFT_TOP, d, 12.5, t.muted_foreground);
+                    common::text(
+                        ui.painter(),
+                        pos2(ix + 24.0, ty + tg.size().y + 4.0),
+                        Align2::LEFT_TOP,
+                        d,
+                        12.5,
+                        t.muted_foreground,
+                    );
                 }
                 // progress
                 let p = ui.painter();
                 let chev = pos2(hr.max.x - 20.0, ty + tg.size().y / 2.0);
                 common::chevron(p, chev, 9.0, t.muted_foreground, open);
                 let count = format!("{done} of {total}");
-                let cr2 = common::text(p, pos2(chev.x - 16.0, chev.y), Align2::RIGHT_CENTER, count, 12.0, t.muted_foreground);
+                let cr2 =
+                    common::text(p, pos2(chev.x - 16.0, chev.y), Align2::RIGHT_CENTER, count, 12.0, t.muted_foreground);
                 let bar = Rect::from_min_size(pos2(cr2.min.x - 70.0, chev.y - 2.0), vec2(58.0, 4.0));
-                let frac = glowkit_core::anim::follow(ui, id.with("prog"), if total > 0 { done as f32 / total as f32 } else { 0.0 }, 8.0);
+                let frac = glowkit_core::anim::follow(
+                    ui,
+                    id.with("prog"),
+                    if total > 0 { done as f32 / total as f32 } else { 0.0 },
+                    8.0,
+                );
                 let p = ui.painter();
                 p.rect_filled(bar, CornerRadius::same(2), with_alpha(t.muted_foreground, 0.18));
                 if frac > 0.0 {
-                    p.rect_filled(Rect::from_min_size(bar.min, vec2(bar.width() * frac, bar.height())), CornerRadius::same(2), t.success);
+                    p.rect_filled(
+                        Rect::from_min_size(bar.min, vec2(bar.width() * frac, bar.height())),
+                        CornerRadius::same(2),
+                        t.success,
+                    );
                 }
                 common::reveal(ui, id.with("body"), open, |ui| {
                     ui.spacing_mut().item_spacing.y = 0.0;
                     let r = ui.available_rect_before_wrap();
-                    ui.painter().line_segment([pos2(r.min.x + 1.0, r.min.y), pos2(r.max.x - 1.0, r.min.y)], Stroke::new(1.0, with_alpha(t.border, 0.8)));
+                    ui.painter().line_segment(
+                        [pos2(r.min.x + 1.0, r.min.y), pos2(r.max.x - 1.0, r.min.y)],
+                        Stroke::new(1.0, with_alpha(t.border, 0.8)),
+                    );
                     ui.add_space(6.0);
                     for (i, it) in self.items.iter().enumerate() {
                         let (row, _) = ui.allocate_exact_size(vec2(width, 34.0), Sense::hover());
@@ -176,18 +219,42 @@ impl Widget for TaskList<'_> {
                         let g = common::galley(ui, it.label, 13.5, col);
                         let lr = Rect::from_min_size(pos2(x, row.center().y - g.size().y / 2.0), g.size());
                         if it.status == TaskStatus::Running {
-                            paint_shimmer(ui, lr.min, it.label, 13.5, mix(t.muted_foreground, t.foreground, 0.5), t.foreground, 1.6);
+                            paint_shimmer(
+                                ui,
+                                lr.min,
+                                it.label,
+                                13.5,
+                                mix(t.muted_foreground, t.foreground, 0.5),
+                                t.foreground,
+                                1.6,
+                            );
                         } else {
                             ui.painter().galley(lr.min, g, col);
                         }
                         if let Some(d) = it.detail {
-                            let dg = ui.painter().layout_no_wrap(d.to_owned(), egui::FontId::monospace(11.5), t.muted_foreground);
-                            let dr = Rect::from_min_size(pos2(lr.max.x + 10.0, row.center().y - 10.0), vec2(dg.size().x + 12.0, 20.0));
+                            let dg = ui.painter().layout_no_wrap(
+                                d.to_owned(),
+                                egui::FontId::monospace(11.5),
+                                t.muted_foreground,
+                            );
+                            let dr = Rect::from_min_size(
+                                pos2(lr.max.x + 10.0, row.center().y - 10.0),
+                                vec2(dg.size().x + 12.0, 20.0),
+                            );
                             if dr.max.x < row.max.x - 8.0 {
                                 let p = ui.painter();
                                 p.rect_filled(dr, CornerRadius::same(5), common::raised(&t));
-                                p.rect_stroke(dr, CornerRadius::same(5), Stroke::new(1.0, with_alpha(t.border, 0.8)), StrokeKind::Inside);
-                                p.galley(pos2(dr.min.x + 6.0, dr.center().y - dg.size().y / 2.0), dg, t.muted_foreground);
+                                p.rect_stroke(
+                                    dr,
+                                    CornerRadius::same(5),
+                                    Stroke::new(1.0, with_alpha(t.border, 0.8)),
+                                    StrokeKind::Inside,
+                                );
+                                p.galley(
+                                    pos2(dr.min.x + 6.0, dr.center().y - dg.size().y / 2.0),
+                                    dg,
+                                    t.muted_foreground,
+                                );
                             }
                         }
                     }

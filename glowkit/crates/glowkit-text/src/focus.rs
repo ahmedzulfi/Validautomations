@@ -1,6 +1,9 @@
 use crate::util;
 use egui::{pos2, vec2, Color32, Pos2, Rect, Response, Sense, Ui, Widget};
-use glowkit_core::{anim::{approach, spring2}, paint, Theme};
+use glowkit_core::{
+    anim::{approach, spring2},
+    paint, Theme,
+};
 
 /// A sentence where one word at a time is sharp and framed by animated corner brackets, while the
 /// other words stay blurred. The focus walks through the words (or follows the pointer).
@@ -24,7 +27,16 @@ pub struct TrueFocus {
 impl TrueFocus {
     /// Create the effect for `text` (split on whitespace).
     pub fn new(text: impl Into<String>) -> Self {
-        Self { text: text.into(), size: 56.0, color: None, frame_color: None, bold: true, blur: 5.0, interval: 1.8, manual: false }
+        Self {
+            text: text.into(),
+            size: 56.0,
+            color: None,
+            frame_color: None,
+            bold: true,
+            blur: 5.0,
+            interval: 1.8,
+            manual: false,
+        }
     }
     /// Font size in points.
     pub fn size(mut self, size: f32) -> Self {
@@ -66,7 +78,12 @@ impl TrueFocus {
 fn corners(painter: &egui::Painter, r: Rect, arm: f32, width: f32, color: Color32) {
     let s = egui::Stroke::new(width, color);
     let h = width / 2.0;
-    let pts: [(Pos2, f32, f32); 4] = [(r.left_top(), 1.0, 1.0), (r.right_top(), -1.0, 1.0), (r.right_bottom(), -1.0, -1.0), (r.left_bottom(), 1.0, -1.0)];
+    let pts: [(Pos2, f32, f32); 4] = [
+        (r.left_top(), 1.0, 1.0),
+        (r.right_top(), -1.0, 1.0),
+        (r.right_bottom(), -1.0, -1.0),
+        (r.left_bottom(), 1.0, -1.0),
+    ];
     for (c, sx, sy) in pts {
         let c = c + vec2(-sx * h, -sy * h);
         painter.line(vec![c + vec2(0.0, sy * arm), c, c + vec2(sx * arm, 0.0)], s);
@@ -99,7 +116,9 @@ impl Widget for TrueFocus {
         let id = resp.id;
         let time = glowkit_core::time(ui);
         let active = if self.manual {
-            let hovered = resp.hover_pos().and_then(|p| rects.iter().position(|r| r.expand2(vec2(gap / 2.0, pad.y * 2.0)).contains(p)));
+            let hovered = resp
+                .hover_pos()
+                .and_then(|p| rects.iter().position(|r| r.expand2(vec2(gap / 2.0, pad.y * 2.0)).contains(p)));
             let last = glowkit_core::state(ui, id.with("focus_last"), || 0usize);
             let a = hovered.unwrap_or(last).min(n - 1);
             glowkit_core::set_state(ui, id.with("focus_last"), a);
@@ -109,13 +128,18 @@ impl Widget for TrueFocus {
             ((time / self.interval) as usize) % n
         };
         let dt = glowkit_core::dt(ui);
-        let sharp = glowkit_core::with_state(ui, id.with("sharp"), || vec![0.0f32; n], |v| {
-            v.resize(n, 0.0);
-            for (i, s) in v.iter_mut().enumerate() {
-                *s = approach(*s, if i == active { 1.0 } else { 0.0 }, 12.0, dt);
-            }
-            v.clone()
-        });
+        let sharp = glowkit_core::with_state(
+            ui,
+            id.with("sharp"),
+            || vec![0.0f32; n],
+            |v| {
+                v.resize(n, 0.0);
+                for (i, s) in v.iter_mut().enumerate() {
+                    *s = approach(*s, if i == active { 1.0 } else { 0.0 }, 12.0, dt);
+                }
+                v.clone()
+            },
+        );
         if sharp.iter().enumerate().any(|(i, s)| (s - if i == active { 1.0 } else { 0.0 }).abs() > 1e-3) {
             ui.ctx().request_repaint();
         }

@@ -15,7 +15,8 @@ fn set_flag(ui: &Ui, key: &str, v: bool) {
 
 /// Row of trigger buttons laid over the top-left of the demo canvas.
 fn trigger_row(ui: &mut Ui, canvas: egui::Rect, add: impl FnOnce(&mut Ui)) {
-    let r = egui::Rect::from_min_size(canvas.min + vec2(16.0, canvas.height() - 54.0), vec2(canvas.width() - 32.0, 40.0));
+    let r =
+        egui::Rect::from_min_size(canvas.min + vec2(16.0, canvas.height() - 54.0), vec2(canvas.width() - 32.0, 40.0));
     let mut child = ui.new_child(egui::UiBuilder::new().max_rect(r).layout(Layout::left_to_right(Align::Center)));
     add(&mut child);
 }

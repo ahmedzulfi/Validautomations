@@ -56,7 +56,16 @@ pub struct NoticeBanner<'a> {
 impl<'a> NoticeBanner<'a> {
     /// A banner controlled by `visible`.
     pub fn new(visible: &'a mut bool, text: impl Into<String>) -> Self {
-        Self { visible, text: text.into(), badge: None, action: None, icon: None, style: BannerStyle::Gradient, height: 44.0, dismissable: true }
+        Self {
+            visible,
+            text: text.into(),
+            badge: None,
+            action: None,
+            icon: None,
+            style: BannerStyle::Gradient,
+            height: 44.0,
+            dismissable: true,
+        }
     }
     /// A small pill before the text (e.g. "New").
     pub fn badge(mut self, text: impl Into<String>) -> Self {
@@ -110,7 +119,12 @@ impl<'a> NoticeBanner<'a> {
                 // slow light sweep
                 let time = glowkit_core::time(ui);
                 let x = rect.min.x + ((time * 0.18).fract() * 1.6 - 0.3) * rect.width();
-                paint::glow_ellipse(&pnt, pos2(x, rect.center().y), vec2(140.0, self.height * 0.9), with_alpha(Color32::WHITE, 0.16));
+                paint::glow_ellipse(
+                    &pnt,
+                    pos2(x, rect.center().y),
+                    vec2(140.0, self.height * 0.9),
+                    with_alpha(Color32::WHITE, 0.16),
+                );
                 glowkit_core::animate(ui);
                 (Color32::WHITE, with_alpha(Color32::WHITE, 0.85))
             }
@@ -179,7 +193,11 @@ impl<'a> NoticeBanner<'a> {
             if hv > 0.02 {
                 pnt.line_segment([pos2(x, cy + 9.0), pos2(x + ul_w, cy + 9.0)], Stroke::new(1.0, fg));
             }
-            LineIcon::ArrowRight.paint(&pnt, Rect::from_center_size(pos2(x + a.size().x + 10.0 + hv * 3.0, cy), vec2(13.0, 13.0)), fg);
+            LineIcon::ArrowRight.paint(
+                &pnt,
+                Rect::from_center_size(pos2(x + a.size().x + 10.0 + hv * 3.0, cy), vec2(13.0, 13.0)),
+                fg,
+            );
             out.action_clicked = ar_resp.clicked();
         }
         if self.dismissable {

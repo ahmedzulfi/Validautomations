@@ -1,5 +1,7 @@
 use super::kit;
-use egui::{pos2, vec2, Color32, CornerRadius, CursorIcon, FontId, Id, Pos2, Rect, Response, Sense, Stroke, Ui, Widget};
+use egui::{
+    pos2, vec2, Color32, CornerRadius, CursorIcon, FontId, Id, Pos2, Rect, Response, Sense, Stroke, Ui, Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 use std::ops::RangeInclusive;
@@ -21,7 +23,18 @@ struct SliderStyle {
 
 impl SliderStyle {
     fn new(range: RangeInclusive<f32>) -> Self {
-        Self { range, step: None, width: None, tooltip: true, ticks: None, decimals: 0, prefix: String::new(), suffix: String::new(), color: None, disabled: false }
+        Self {
+            range,
+            step: None,
+            width: None,
+            tooltip: true,
+            ticks: None,
+            decimals: 0,
+            prefix: String::new(),
+            suffix: String::new(),
+            color: None,
+            disabled: false,
+        }
     }
     fn fmt(&self, v: f32) -> String {
         format!("{}{:.*}{}", self.prefix, self.decimals, v, self.suffix)
@@ -144,10 +157,14 @@ const TRACK_H: f32 = 6.0;
 fn layout(ui: &mut Ui, style: &SliderStyle) -> (Rect, Rect, Response) {
     let w = style.width.unwrap_or_else(|| ui.available_width().min(320.0));
     let h = 22.0 + if style.ticks.is_some() { 14.0 } else { 0.0 };
-    let (rect, resp) = ui.allocate_exact_size(vec2(w, h), if style.disabled { Sense::hover() } else { Sense::click_and_drag() });
+    let (rect, resp) =
+        ui.allocate_exact_size(vec2(w, h), if style.disabled { Sense::hover() } else { Sense::click_and_drag() });
     let resp = if style.disabled { resp } else { resp.on_hover_cursor(CursorIcon::PointingHand) };
     let cy = rect.min.y + 11.0;
-    let track = Rect::from_min_max(pos2(rect.min.x + THUMB_R, cy - TRACK_H / 2.0), pos2(rect.max.x - THUMB_R, cy + TRACK_H / 2.0));
+    let track = Rect::from_min_max(
+        pos2(rect.min.x + THUMB_R, cy - TRACK_H / 2.0),
+        pos2(rect.max.x - THUMB_R, cy + TRACK_H / 2.0),
+    );
     (rect, track, resp)
 }
 
@@ -160,13 +177,17 @@ fn paint_track(ui: &Ui, track: Rect, a: f32, b: f32, style: &SliderStyle) {
     painter.rect_filled(track.expand2(vec2(THUMB_R * 0.5, 0.0)), r, bg.gamma_multiply(alpha));
     let x0 = track.min.x + track.width() * a;
     let x1 = track.min.x + track.width() * b;
-    let fill = Rect::from_min_max(pos2(x0 - if a <= 0.0 { THUMB_R * 0.5 } else { 0.0 }, track.min.y), pos2(x1, track.max.y));
+    let fill =
+        Rect::from_min_max(pos2(x0 - if a <= 0.0 { THUMB_R * 0.5 } else { 0.0 }, track.min.y), pos2(x1, track.max.y));
     painter.rect_filled(fill, r, style.color.unwrap_or(t.primary).gamma_multiply(alpha));
     if let Some(n) = style.ticks {
         let n = n.max(2);
         for i in 0..n {
             let x = track.min.x + track.width() * i as f32 / (n - 1) as f32;
-            painter.line_segment([pos2(x, track.max.y + 8.0), pos2(x, track.max.y + 12.0)], Stroke::new(1.0, with_alpha(t.muted_foreground, 0.6)));
+            painter.line_segment(
+                [pos2(x, track.max.y + 8.0), pos2(x, track.max.y + 12.0)],
+                Stroke::new(1.0, with_alpha(t.muted_foreground, 0.6)),
+            );
         }
     }
 }
@@ -180,7 +201,14 @@ fn paint_thumb(ui: &Ui, id: Id, c: Pos2, active: bool, hover: bool, value: &str,
     if h > 0.0 {
         painter.circle_filled(c, THUMB_R + 4.0 * h, with_alpha(t.ring, 0.25 * h));
     }
-    glowkit_core::paint::soft_shadow(painter, Rect::from_center_size(c, vec2(THUMB_R * 2.0, THUMB_R * 2.0)), THUMB_R, 4.0, vec2(0.0, 1.0), Color32::from_black_alpha(if t.dark { 60 } else { 30 }));
+    glowkit_core::paint::soft_shadow(
+        painter,
+        Rect::from_center_size(c, vec2(THUMB_R * 2.0, THUMB_R * 2.0)),
+        THUMB_R,
+        4.0,
+        vec2(0.0, 1.0),
+        Color32::from_black_alpha(if t.dark { 60 } else { 30 }),
+    );
     let r = THUMB_R * (1.0 + 0.08 * a);
     painter.circle(c, r, t.background, Stroke::new(1.5, accent));
     if style.tooltip && h > 0.01 && !style.disabled {
@@ -214,7 +242,9 @@ impl Widget for Slider<'_> {
         }
         if resp.has_focus() {
             let step = self.style.step.unwrap_or((*self.style.range.end() - *self.style.range.start()) / 100.0);
-            let d = ui.input(|i| (i.key_pressed(egui::Key::ArrowRight) as i32 - i.key_pressed(egui::Key::ArrowLeft) as i32) as f32);
+            let d = ui.input(|i| {
+                (i.key_pressed(egui::Key::ArrowRight) as i32 - i.key_pressed(egui::Key::ArrowLeft) as i32) as f32
+            });
             if d != 0.0 {
                 *self.value = self.style.quantize(*self.value + d * step);
                 resp.mark_changed();
@@ -265,7 +295,15 @@ impl Widget for RangeSlider<'_> {
             for (i, tv) in [a, b].into_iter().enumerate() {
                 let c = pos2(track.min.x + track.width() * tv, track.center().y);
                 let near = hover_pos.map(|p| (p.x - c.x).abs() < 14.0).unwrap_or(false);
-                paint_thumb(ui, resp.id.with(i), c, resp.dragged() && active == i, near, &self.style.fmt(self.values[i]), &self.style);
+                paint_thumb(
+                    ui,
+                    resp.id.with(i),
+                    c,
+                    resp.dragged() && active == i,
+                    near,
+                    &self.style.fmt(self.values[i]),
+                    &self.style,
+                );
             }
         }
         resp

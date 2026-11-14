@@ -1,5 +1,7 @@
 use super::util::{bold_text, chevron, idle_time};
-use egui::{pos2, vec2, Align2, Color32, FontId, Painter, Pos2, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, FontId, Painter, Pos2, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder, Vec2,
+};
 use glowkit_core::{anim::smoothstep, color::with_alpha, mix, paint, Theme};
 use std::sync::Arc;
 
@@ -52,7 +54,16 @@ pub struct ScratchToReveal {
 impl ScratchToReveal {
     /// A scratch card of `size` points.
     pub fn new(size: Vec2) -> Self {
-        Self { size, brush: 26.0, threshold: 0.5, foil: None, label: "Scratch to reveal".into(), autoplay: true, reset_after: None, corner: 16.0 }
+        Self {
+            size,
+            brush: 26.0,
+            threshold: 0.5,
+            foil: None,
+            label: "Scratch to reveal".into(),
+            autoplay: true,
+            reset_after: None,
+            corner: 16.0,
+        }
     }
     /// Brush radius in points.
     pub fn brush(mut self, r: f32) -> Self {
@@ -96,7 +107,8 @@ impl ScratchToReveal {
         let (rect, resp) = ui.allocate_exact_size(self.size, Sense::drag());
         // content first
         {
-            let mut child = ui.new_child(UiBuilder::new().max_rect(rect).layout(egui::Layout::top_down(egui::Align::Center)));
+            let mut child =
+                ui.new_child(UiBuilder::new().max_rect(rect).layout(egui::Layout::top_down(egui::Align::Center)));
             child.set_clip_rect(rect.intersect(ui.clip_rect()));
             add(&mut child);
         }
@@ -115,11 +127,25 @@ impl ScratchToReveal {
             auto_t: 0.0,
         });
         if st.cols != cols || st.rows != rows {
-            st = ScratchState { cov: Arc::new(vec![1.0; (cols + 1) * (rows + 1)]), cols, rows, last: None, revealed_at: None, auto_t: 0.0 };
+            st = ScratchState {
+                cov: Arc::new(vec![1.0; (cols + 1) * (rows + 1)]),
+                cols,
+                rows,
+                last: None,
+                revealed_at: None,
+                auto_t: 0.0,
+            };
         }
         if let (Some(at), Some(after)) = (st.revealed_at, self.reset_after) {
             if (now - at) as f32 > after {
-                st = ScratchState { cov: Arc::new(vec![1.0; (cols + 1) * (rows + 1)]), cols, rows, last: None, revealed_at: None, auto_t: 0.0 };
+                st = ScratchState {
+                    cov: Arc::new(vec![1.0; (cols + 1) * (rows + 1)]),
+                    cols,
+                    rows,
+                    last: None,
+                    revealed_at: None,
+                    auto_t: 0.0,
+                };
             }
         }
         let active = resp.hovered() || resp.dragged();
@@ -186,7 +212,11 @@ impl ScratchToReveal {
             let p = ui.painter_at(rect);
             let stops = self.foil.clone().unwrap_or_else(|| {
                 let base = if t.dark { 0.55 } else { 0.35 };
-                vec![mix(t.gradient[0], Color32::WHITE, base), mix(t.gradient[1], Color32::WHITE, base), mix(t.gradient[2], Color32::WHITE, base)]
+                vec![
+                    mix(t.gradient[0], Color32::WHITE, base),
+                    mix(t.gradient[1], Color32::WHITE, base),
+                    mix(t.gradient[2], Color32::WHITE, base),
+                ]
             });
             let time = glowkit_core::time(ui);
             let band = (time * 0.35).fract() * 2.2 - 0.6;
@@ -202,7 +232,8 @@ impl ScratchToReveal {
                     let uv = vec2(x as f32 / cols as f32, y as f32 / rows as f32);
                     let a = cov[y * w1 + x] * fade;
                     // project vertices that fall outside the rounded rect onto its edge
-                    let mut pp = pos2(grid_rect.min.x + uv.x * grid_rect.width(), grid_rect.min.y + uv.y * grid_rect.height());
+                    let mut pp =
+                        pos2(grid_rect.min.x + uv.x * grid_rect.width(), grid_rect.min.y + uv.y * grid_rect.height());
                     pp.x = pp.x.min(rect.max.x);
                     pp.y = pp.y.min(rect.max.y);
                     let cx = pp.x.clamp(rect.min.x + corner, rect.max.x - corner);
@@ -214,7 +245,10 @@ impl ScratchToReveal {
                     let col = if a <= 0.0 {
                         Color32::TRANSPARENT
                     } else {
-                        let g = glowkit_core::color::gradient(&stops, (uv.x * aspect * 0.5 + uv.y * 0.5) / (aspect * 0.5 + 0.5));
+                        let g = glowkit_core::color::gradient(
+                            &stops,
+                            (uv.x * aspect * 0.5 + uv.y * 0.5) / (aspect * 0.5 + 0.5),
+                        );
                         let dd = (uv.x * 0.8 + uv.y * 0.4 - band).abs();
                         let shine = (1.0 - dd / 0.18).clamp(0.0, 1.0);
                         let grain = glowkit_core::rng::hash01((x * 7919 + y * 104729) as u64) * 0.08;
@@ -235,13 +269,36 @@ impl ScratchToReveal {
             let label_a = fade * (1.0 - cleared * 2.5).clamp(0.0, 1.0);
             if label_a > 0.0 {
                 let ink = with_alpha(mix(stops[0], Color32::BLACK, 0.55), label_a);
-                bold_text(&p, rect.center(), Align2::CENTER_CENTER, &format!("✦  {}  ✦", self.label), FontId::proportional(16.0), ink);
+                bold_text(
+                    &p,
+                    rect.center(),
+                    Align2::CENTER_CENTER,
+                    &format!("✦  {}  ✦", self.label),
+                    FontId::proportional(16.0),
+                    ink,
+                );
             }
             if let Some(ac) = auto_cursor {
                 // a little coin "scratching" the foil
-                paint::soft_shadow(&p, Rect::from_center_size(ac + vec2(2.0, 3.0), Vec2::splat(22.0)), 11.0, 6.0, Vec2::ZERO, Color32::from_black_alpha(80));
-                paint::gradient_circle(&p, ac + vec2(8.0, 8.0), 11.0, &[glowkit_core::hex("#FDE68A"), glowkit_core::hex("#F59E0B"), glowkit_core::hex("#B45309")]);
-                p.circle_stroke(ac + vec2(8.0, 8.0), 8.0, Stroke::new(1.0, with_alpha(glowkit_core::hex("#92400E"), 0.6)));
+                paint::soft_shadow(
+                    &p,
+                    Rect::from_center_size(ac + vec2(2.0, 3.0), Vec2::splat(22.0)),
+                    11.0,
+                    6.0,
+                    Vec2::ZERO,
+                    Color32::from_black_alpha(80),
+                );
+                paint::gradient_circle(
+                    &p,
+                    ac + vec2(8.0, 8.0),
+                    11.0,
+                    &[glowkit_core::hex("#FDE68A"), glowkit_core::hex("#F59E0B"), glowkit_core::hex("#B45309")],
+                );
+                p.circle_stroke(
+                    ac + vec2(8.0, 8.0),
+                    8.0,
+                    Stroke::new(1.0, with_alpha(glowkit_core::hex("#92400E"), 0.6)),
+                );
             }
         }
         if resp.hovered() {
@@ -325,16 +382,25 @@ impl egui::Widget for CompareSlider<'_> {
         let active = resp.dragged() || (self.follow_hover && resp.hovered());
         let idle = idle_time(ui, id, active || resp.hovered());
         let time = glowkit_core::time(ui);
-        let pos = glowkit_core::with_state(ui, id.with("pos"), || 0.5f32, |v| {
-            if let Some(pp) = resp.interact_pointer_pos().filter(|_| resp.dragged() || resp.clicked()).or(if self.follow_hover { resp.hover_pos() } else { None }) {
-                *v = ((pp.x - rect.min.x) / rect.width()).clamp(0.0, 1.0);
-            } else if self.autoplay && idle > 1.5 {
-                let target = 0.5 + 0.36 * (time * 0.9).sin();
-                let k = ((idle - 1.5) / 1.5).clamp(0.0, 1.0);
-                *v += (target - *v) * (0.08 * k);
-            }
-            *v
-        });
+        let pos = glowkit_core::with_state(
+            ui,
+            id.with("pos"),
+            || 0.5f32,
+            |v| {
+                if let Some(pp) = resp
+                    .interact_pointer_pos()
+                    .filter(|_| resp.dragged() || resp.clicked())
+                    .or(if self.follow_hover { resp.hover_pos() } else { None })
+                {
+                    *v = ((pp.x - rect.min.x) / rect.width()).clamp(0.0, 1.0);
+                } else if self.autoplay && idle > 1.5 {
+                    let target = 0.5 + 0.36 * (time * 0.9).sin();
+                    let k = ((idle - 1.5) / 1.5).clamp(0.0, 1.0);
+                    *v += (target - *v) * (0.08 * k);
+                }
+                *v
+            },
+        );
         if self.autoplay {
             glowkit_core::animate(ui);
         }
@@ -354,25 +420,54 @@ impl egui::Widget for CompareSlider<'_> {
             for (txt, right_side) in [(a, false), (b, true)] {
                 let g = p.layout_no_wrap(txt.clone(), font.clone(), Color32::PLACEHOLDER);
                 let pill = if right_side {
-                    Rect::from_min_size(pos2(rect.max.x - 14.0 - g.size().x - 20.0, rect.min.y + 14.0), g.size() + vec2(20.0, 10.0))
+                    Rect::from_min_size(
+                        pos2(rect.max.x - 14.0 - g.size().x - 20.0, rect.min.y + 14.0),
+                        g.size() + vec2(20.0, 10.0),
+                    )
                 } else {
                     Rect::from_min_size(rect.min + vec2(14.0, 14.0), g.size() + vec2(20.0, 10.0))
                 };
-                let vis = if right_side { smoothstep(pill.min.x - 30.0, pill.min.x + 10.0, x) } else { smoothstep(pill.max.x + 30.0, pill.max.x - 10.0, x) };
+                let vis = if right_side {
+                    smoothstep(pill.min.x - 30.0, pill.min.x + 10.0, x)
+                } else {
+                    smoothstep(pill.max.x + 30.0, pill.max.x - 10.0, x)
+                };
                 let a = 1.0 - vis;
                 p.rect_filled(pill, 99.0, Color32::from_black_alpha((110.0 * a) as u8));
-                p.rect_stroke(pill, 99.0, Stroke::new(1.0, Color32::from_white_alpha((40.0 * a) as u8)), StrokeKind::Inside);
+                p.rect_stroke(
+                    pill,
+                    99.0,
+                    Stroke::new(1.0, Color32::from_white_alpha((40.0 * a) as u8)),
+                    StrokeKind::Inside,
+                );
                 p.galley(pill.min + vec2(10.0, 5.0), g, with_alpha(Color32::WHITE, a));
             }
         }
         // divider
         let pclip = p.with_clip_rect(rect.intersect(p.clip_rect()));
-        paint::glow_ellipse(&pclip, pos2(x, rect.center().y), vec2(14.0, rect.height() * 0.6), with_alpha(t.accent, 0.35));
+        paint::glow_ellipse(
+            &pclip,
+            pos2(x, rect.center().y),
+            vec2(14.0, rect.height() * 0.6),
+            with_alpha(t.accent, 0.35),
+        );
         pclip.line_segment([pos2(x, rect.min.y), pos2(x, rect.max.y)], Stroke::new(2.0, hc));
         let hcen = pos2(x, rect.center().y);
-        let grab = glowkit_core::anim::follow(ui, id.with("grab"), if resp.hovered() || resp.dragged() { 1.0 } else { 0.0 }, 12.0);
+        let grab = glowkit_core::anim::follow(
+            ui,
+            id.with("grab"),
+            if resp.hovered() || resp.dragged() { 1.0 } else { 0.0 },
+            12.0,
+        );
         let hr = 17.0 + grab * 3.0;
-        paint::soft_shadow(&p, Rect::from_center_size(hcen, Vec2::splat(hr * 2.0)), hr, 12.0, vec2(0.0, 3.0), Color32::from_black_alpha(90));
+        paint::soft_shadow(
+            &p,
+            Rect::from_center_size(hcen, Vec2::splat(hr * 2.0)),
+            hr,
+            12.0,
+            vec2(0.0, 3.0),
+            Color32::from_black_alpha(90),
+        );
         p.circle_filled(hcen, hr, hc);
         let ink = mix(hc, Color32::BLACK, 0.75);
         chevron(&p, hcen - vec2(5.0, 0.0), 8.0, vec2(-1.0, 0.0), Stroke::new(2.0, ink));

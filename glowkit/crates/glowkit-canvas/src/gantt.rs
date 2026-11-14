@@ -1,7 +1,9 @@
 //! [`GanttChart`]: a project timeline with draggable / resizable task bars and dependencies.
 
 use crate::common::{self, arrow_head, qfont, Icon};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, Pos2, Rect, Sense, Shape, Stroke, StrokeKind, Ui, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, Pos2, Rect, Sense, Shape, Stroke, StrokeKind, Ui, Vec2,
+};
 use glowkit_core::{color::with_alpha, Theme};
 
 /// Days since 1970-01-01 for a civil date (proleptic Gregorian).
@@ -57,7 +59,16 @@ pub struct GanttTask {
 impl GanttTask {
     /// A task.
     pub fn new(id: u64, name: impl Into<String>, start: f32, duration: f32) -> Self {
-        Self { id, name: name.into(), start, duration, progress: 0.0, color: None, deps: Vec::new(), assignee: String::new() }
+        Self {
+            id,
+            name: name.into(),
+            start,
+            duration,
+            progress: 0.0,
+            color: None,
+            deps: Vec::new(),
+            assignee: String::new(),
+        }
     }
     /// Builder: progress.
     pub fn progress(mut self, p: f32) -> Self {
@@ -343,7 +354,11 @@ impl<'a> GanttChart<'a> {
             let x = tl.left() + (d as f32 - st.scroll) * px;
             let wd = weekday(base + d);
             if wd >= 5 && st.zoom != GanttZoom::Month {
-                bp.rect_filled(Rect::from_min_max(pos2(x, body.top()), pos2(x + px, body.bottom())), CornerRadius::ZERO, with_alpha(t.foreground, if t.dark { 0.025 } else { 0.03 }));
+                bp.rect_filled(
+                    Rect::from_min_max(pos2(x, body.top()), pos2(x + px, body.bottom())),
+                    CornerRadius::ZERO,
+                    with_alpha(t.foreground, if t.dark { 0.025 } else { 0.03 }),
+                );
             }
             let (_, _, dd) = civil_from_days(base + d);
             let line = match st.zoom {
@@ -352,21 +367,37 @@ impl<'a> GanttChart<'a> {
                 GanttZoom::Month => dd == 1,
             };
             if line {
-                bp.line_segment([pos2(x, body.top()), pos2(x, body.bottom())], Stroke::new(1.0, with_alpha(t.border, 0.7)));
+                bp.line_segment(
+                    [pos2(x, body.top()), pos2(x, body.bottom())],
+                    Stroke::new(1.0, with_alpha(t.border, 0.7)),
+                );
             }
         }
         // row separators + group bands
         for (kind, yy, h) in &rows {
             let ry = row_y(*yy);
             if let RowKind::Group(_) = kind {
-                bp.rect_filled(Rect::from_min_size(pos2(body.left(), ry), vec2(body.width(), *h)), CornerRadius::ZERO, with_alpha(t.foreground, 0.02));
+                bp.rect_filled(
+                    Rect::from_min_size(pos2(body.left(), ry), vec2(body.width(), *h)),
+                    CornerRadius::ZERO,
+                    with_alpha(t.foreground, 0.02),
+                );
             }
-            bp.line_segment([pos2(body.left(), ry + h), pos2(body.right(), ry + h)], Stroke::new(1.0, with_alpha(t.border, 0.45)));
+            bp.line_segment(
+                [pos2(body.left(), ry + h), pos2(body.right(), ry + h)],
+                Stroke::new(1.0, with_alpha(t.border, 0.45)),
+            );
         }
         // header
         let hp = painter.with_clip_rect(Rect::from_min_max(tl.min, pos2(tl.right(), tl.top() + HEAD)));
-        hp.line_segment([pos2(rect.left(), tl.top() + HEAD), pos2(rect.right(), tl.top() + HEAD)], Stroke::new(1.0, t.border));
-        hp.line_segment([pos2(tl.left(), tl.top() + HEAD / 2.0 + 2.0), pos2(tl.right(), tl.top() + HEAD / 2.0 + 2.0)], Stroke::new(1.0, with_alpha(t.border, 0.6)));
+        hp.line_segment(
+            [pos2(rect.left(), tl.top() + HEAD), pos2(rect.right(), tl.top() + HEAD)],
+            Stroke::new(1.0, t.border),
+        );
+        hp.line_segment(
+            [pos2(tl.left(), tl.top() + HEAD / 2.0 + 2.0), pos2(tl.right(), tl.top() + HEAD / 2.0 + 2.0)],
+            Stroke::new(1.0, with_alpha(t.border, 0.6)),
+        );
         let top_y = tl.top() + 14.0;
         let bot_y = tl.top() + HEAD - 13.0;
         for d in first..=last {
@@ -376,30 +407,84 @@ impl<'a> GanttChart<'a> {
             let is_today = d as f32 == data.today.floor();
             match st.zoom {
                 GanttZoom::Day => {
-                    let col = if is_today { t.accent } else if wd >= 5 { t.muted_foreground.gamma_multiply(0.6) } else { t.muted_foreground };
-                    hp.text(pos2(x + px / 2.0, bot_y), Align2::CENTER_CENTER, format!("{} {}", ["M", "T", "W", "T", "F", "S", "S"][wd as usize], dd), qfont(11.0), col);
+                    let col = if is_today {
+                        t.accent
+                    } else if wd >= 5 {
+                        t.muted_foreground.gamma_multiply(0.6)
+                    } else {
+                        t.muted_foreground
+                    };
+                    hp.text(
+                        pos2(x + px / 2.0, bot_y),
+                        Align2::CENTER_CENTER,
+                        format!("{} {}", ["M", "T", "W", "T", "F", "S", "S"][wd as usize], dd),
+                        qfont(11.0),
+                        col,
+                    );
                     if dd == 1 || d == first {
-                        hp.text(pos2(x.max(tl.left()) + 8.0, top_y), Align2::LEFT_CENTER, format!("{} {}", MONTHS[mm as usize - 1], yy), qfont(12.0), t.foreground);
+                        hp.text(
+                            pos2(x.max(tl.left()) + 8.0, top_y),
+                            Align2::LEFT_CENTER,
+                            format!("{} {}", MONTHS[mm as usize - 1], yy),
+                            qfont(12.0),
+                            t.foreground,
+                        );
                     }
                 }
                 GanttZoom::Week => {
                     if wd == 0 {
-                        hp.line_segment([pos2(x, tl.top() + HEAD / 2.0 + 2.0), pos2(x, tl.top() + HEAD)], Stroke::new(1.0, with_alpha(t.border, 0.6)));
-                        hp.text(pos2(x + 6.0, bot_y), Align2::LEFT_CENTER, format!("{} {}", MONTHS[mm as usize - 1], dd), qfont(11.0), t.muted_foreground);
+                        hp.line_segment(
+                            [pos2(x, tl.top() + HEAD / 2.0 + 2.0), pos2(x, tl.top() + HEAD)],
+                            Stroke::new(1.0, with_alpha(t.border, 0.6)),
+                        );
+                        hp.text(
+                            pos2(x + 6.0, bot_y),
+                            Align2::LEFT_CENTER,
+                            format!("{} {}", MONTHS[mm as usize - 1], dd),
+                            qfont(11.0),
+                            t.muted_foreground,
+                        );
                     }
                     if dd == 1 || d == first {
-                        hp.text(pos2(x.max(tl.left()) + 8.0, top_y), Align2::LEFT_CENTER, format!("{} {}", MONTHS[mm as usize - 1], yy), qfont(12.0), t.foreground);
+                        hp.text(
+                            pos2(x.max(tl.left()) + 8.0, top_y),
+                            Align2::LEFT_CENTER,
+                            format!("{} {}", MONTHS[mm as usize - 1], yy),
+                            qfont(12.0),
+                            t.foreground,
+                        );
                     }
                 }
                 GanttZoom::Month => {
                     if dd == 1 {
-                        hp.line_segment([pos2(x, tl.top() + HEAD / 2.0 + 2.0), pos2(x, tl.top() + HEAD)], Stroke::new(1.0, with_alpha(t.border, 0.6)));
-                        hp.text(pos2(x + 6.0, bot_y), Align2::LEFT_CENTER, MONTHS[mm as usize - 1], qfont(11.0), t.muted_foreground);
+                        hp.line_segment(
+                            [pos2(x, tl.top() + HEAD / 2.0 + 2.0), pos2(x, tl.top() + HEAD)],
+                            Stroke::new(1.0, with_alpha(t.border, 0.6)),
+                        );
+                        hp.text(
+                            pos2(x + 6.0, bot_y),
+                            Align2::LEFT_CENTER,
+                            MONTHS[mm as usize - 1],
+                            qfont(11.0),
+                            t.muted_foreground,
+                        );
                         if mm == 1 || d == first {
-                            hp.text(pos2(x.max(tl.left()) + 8.0, top_y), Align2::LEFT_CENTER, yy.to_string(), qfont(12.0), t.foreground);
+                            hp.text(
+                                pos2(x.max(tl.left()) + 8.0, top_y),
+                                Align2::LEFT_CENTER,
+                                yy.to_string(),
+                                qfont(12.0),
+                                t.foreground,
+                            );
                         }
                     } else if d == first {
-                        hp.text(pos2(tl.left() + 8.0, top_y), Align2::LEFT_CENTER, yy.to_string(), qfont(12.0), t.foreground);
+                        hp.text(
+                            pos2(tl.left() + 8.0, top_y),
+                            Align2::LEFT_CENTER,
+                            yy.to_string(),
+                            qfont(12.0),
+                            t.foreground,
+                        );
                     }
                 }
             }
@@ -413,7 +498,11 @@ impl<'a> GanttChart<'a> {
                 let ry = row_y(*yy);
                 let x0 = tl.left() + (task.start - st.scroll) * px;
                 let x1 = tl.left() + (task.end() - st.scroll) * px;
-                let r = if task.duration <= 0.0 { Rect::from_center_size(pos2(x0, ry + h / 2.0), Vec2::splat(16.0)) } else { Rect::from_min_max(pos2(x0, ry + 7.0), pos2(x1.max(x0 + 4.0), ry + h - 7.0)) };
+                let r = if task.duration <= 0.0 {
+                    Rect::from_center_size(pos2(x0, ry + h / 2.0), Vec2::splat(16.0))
+                } else {
+                    Rect::from_min_max(pos2(x0, ry + 7.0), pos2(x1.max(x0 + 4.0), ry + h - 7.0))
+                };
                 bars.push((task.id, r, *gi));
             }
         }
@@ -425,8 +514,13 @@ impl<'a> GanttChart<'a> {
                 continue;
             }
             let task = data.task(*tid).cloned().expect("task");
-            let resp = ui.interact(r.expand2(vec2(4.0, 2.0)).intersect(body), id.with(("bar", *tid)), Sense::click_and_drag());
-            let p = if resp.drag_started() { ui.input(|i| i.pointer.press_origin()).or(pointer).unwrap_or_default() } else { pointer.unwrap_or_default() };
+            let resp =
+                ui.interact(r.expand2(vec2(4.0, 2.0)).intersect(body), id.with(("bar", *tid)), Sense::click_and_drag());
+            let p = if resp.drag_started() {
+                ui.input(|i| i.pointer.press_origin()).or(pointer).unwrap_or_default()
+            } else {
+                pointer.unwrap_or_default()
+            };
             let edge = if task.duration > 0.0 && r.width() > 18.0 {
                 if (p.x - r.left()).abs() < 6.0 {
                     Some(Mode::Left)
@@ -449,7 +543,14 @@ impl<'a> GanttChart<'a> {
             }
             if resp.drag_started() {
                 let pd = day_of(p.x);
-                st.drag = Some(GDrag { task: *tid, mode: edge.unwrap_or(Mode::Move), grab_day: pd, start: task.start, duration: task.duration, progress: task.progress });
+                st.drag = Some(GDrag {
+                    task: *tid,
+                    mode: edge.unwrap_or(Mode::Move),
+                    grab_day: pd,
+                    start: task.start,
+                    duration: task.duration,
+                    progress: task.progress,
+                });
             }
         }
         if let Some(d) = st.drag {
@@ -471,7 +572,11 @@ impl<'a> GanttChart<'a> {
                         changed = true;
                     }
                 }
-                ui.ctx().set_cursor_icon(if d.mode == Mode::Move { CursorIcon::Grabbing } else { CursorIcon::ResizeHorizontal });
+                ui.ctx().set_cursor_icon(if d.mode == Mode::Move {
+                    CursorIcon::Grabbing
+                } else {
+                    CursorIcon::ResizeHorizontal
+                });
             }
             if ui.input(|i| !i.pointer.primary_down()) {
                 st.drag = None;
@@ -486,7 +591,13 @@ impl<'a> GanttChart<'a> {
                     let (Some(a), Some(b)) = (bar_of(*dep), bar_of(task.id)) else { continue };
                     let hl = active == Some(task.id) || active == Some(*dep);
                     let bad = data.task(*dep).is_some_and(|d| d.end() > task.start + 1e-3);
-                    let col = if bad { t.destructive } else if hl { t.accent } else { with_alpha(t.muted_foreground, 0.6) };
+                    let col = if bad {
+                        t.destructive
+                    } else if hl {
+                        t.accent
+                    } else {
+                        with_alpha(t.muted_foreground, 0.6)
+                    };
                     // leave from the bottom of the predecessor (keeps labels clear), enter from the left
                     let pb = b.left_center();
                     let ax = (a.right() - 8.0).max(a.left() + 4.0).min(a.right());
@@ -520,38 +631,83 @@ impl<'a> GanttChart<'a> {
             if task.duration <= 0.0 {
                 let c = r.center();
                 let s = 8.0 + hov * 1.5;
-                bp.add(Shape::convex_polygon(vec![c - vec2(0.0, s), c + vec2(s, 0.0), c + vec2(0.0, s), c - vec2(s, 0.0)], col, Stroke::new(1.5, t.card)));
+                bp.add(Shape::convex_polygon(
+                    vec![c - vec2(0.0, s), c + vec2(s, 0.0), c + vec2(0.0, s), c - vec2(s, 0.0)],
+                    col,
+                    Stroke::new(1.5, t.card),
+                ));
                 bp.text(pos2(c.x + 14.0, c.y), Align2::LEFT_CENTER, &task.name, qfont(12.0), t.foreground);
                 continue;
             }
             let rr = CornerRadius::same(6);
             if hov > 0.0 {
-                glowkit_core::paint::soft_shadow(&bp, *r, 6.0, 10.0 * hov, vec2(0.0, 3.0), Color32::from_black_alpha(if t.dark { 100 } else { 30 }));
+                glowkit_core::paint::soft_shadow(
+                    &bp,
+                    *r,
+                    6.0,
+                    10.0 * hov,
+                    vec2(0.0, 3.0),
+                    Color32::from_black_alpha(if t.dark { 100 } else { 30 }),
+                );
             }
-            bp.rect(*r, rr, with_alpha(col, if t.dark { 0.22 } else { 0.18 }), Stroke::new(1.0, with_alpha(col, 0.55 + 0.45 * hov)), StrokeKind::Inside);
+            bp.rect(
+                *r,
+                rr,
+                with_alpha(col, if t.dark { 0.22 } else { 0.18 }),
+                Stroke::new(1.0, with_alpha(col, 0.55 + 0.45 * hov)),
+                StrokeKind::Inside,
+            );
             if task.progress > 0.0 {
                 let mut pr = *r;
                 pr.set_width(r.width() * task.progress);
                 bp.rect_filled(pr.shrink(1.0), CornerRadius::same(5), with_alpha(col, if t.dark { 0.7 } else { 0.55 }));
             }
-            let label = format!("{}{}", task.name, if task.progress > 0.0 && task.progress < 1.0 { format!("  {:.0}%", task.progress * 100.0) } else { String::new() });
+            let label = format!(
+                "{}{}",
+                task.name,
+                if task.progress > 0.0 && task.progress < 1.0 {
+                    format!("  {:.0}%", task.progress * 100.0)
+                } else {
+                    String::new()
+                }
+            );
             let gw = bp.layout_no_wrap(label.clone(), qfont(12.0), Color32::WHITE).size().x;
             if gw + 16.0 < r.width() {
                 bp.text(pos2(r.left() + 8.0, r.center().y), Align2::LEFT_CENTER, label, qfont(12.0), t.foreground);
             } else {
-                bp.text(pos2(r.right() + 8.0, r.center().y), Align2::LEFT_CENTER, label, qfont(12.0), t.foreground.gamma_multiply(0.9));
+                bp.text(
+                    pos2(r.right() + 8.0, r.center().y),
+                    Align2::LEFT_CENTER,
+                    label,
+                    qfont(12.0),
+                    t.foreground.gamma_multiply(0.9),
+                );
             }
             if !task.assignee.is_empty() && r.right() + 8.0 + gw + 30.0 < body.right() && gw + 16.0 < r.width() {
-                common::avatar(&bp, pos2(r.right() + 14.0, r.center().y), 9.0, &task.assignee, common::color_for(&t, &task.assignee), t.card);
+                common::avatar(
+                    &bp,
+                    pos2(r.right() + 14.0, r.center().y),
+                    9.0,
+                    &task.assignee,
+                    common::color_for(&t, &task.assignee),
+                    t.card,
+                );
             }
             if hov > 0.05 {
                 // grips + progress handle
                 for x in [r.left() + 3.5, r.right() - 3.5] {
-                    bp.line_segment([pos2(x, r.top() + 5.0), pos2(x, r.bottom() - 5.0)], Stroke::new(2.0, with_alpha(t.foreground, 0.5 * hov)));
+                    bp.line_segment(
+                        [pos2(x, r.top() + 5.0), pos2(x, r.bottom() - 5.0)],
+                        Stroke::new(2.0, with_alpha(t.foreground, 0.5 * hov)),
+                    );
                 }
                 let hx = r.left() + r.width() * task.progress;
                 let hy = r.bottom();
-                bp.add(Shape::convex_polygon(vec![pos2(hx, hy - 3.0), pos2(hx + 5.0, hy + 4.0), pos2(hx - 5.0, hy + 4.0)], with_alpha(t.foreground, hov), Stroke::NONE));
+                bp.add(Shape::convex_polygon(
+                    vec![pos2(hx, hy - 3.0), pos2(hx + 5.0, hy + 4.0), pos2(hx - 5.0, hy + 4.0)],
+                    with_alpha(t.foreground, hov),
+                    Stroke::NONE,
+                ));
             }
         }
         // group summary bars
@@ -563,11 +719,24 @@ impl<'a> GanttChart<'a> {
                     let x0 = tl.left() + (s - st.scroll) * px;
                     let x1 = tl.left() + (e - st.scroll) * px;
                     let col = g.color.unwrap_or(t.chart[gi % t.chart.len()]);
-                    let done: f32 = g.tasks.iter().map(|k| k.progress * k.duration).sum::<f32>() / g.tasks.iter().map(|k| k.duration).sum::<f32>().max(1.0);
-                    bp.rect_filled(Rect::from_min_max(pos2(x0, ry - 3.0), pos2(x1, ry + 3.0)), CornerRadius::same(3), with_alpha(col, 0.3));
-                    bp.rect_filled(Rect::from_min_max(pos2(x0, ry - 3.0), pos2(x0 + (x1 - x0) * done, ry + 3.0)), CornerRadius::same(3), col);
+                    let done: f32 = g.tasks.iter().map(|k| k.progress * k.duration).sum::<f32>()
+                        / g.tasks.iter().map(|k| k.duration).sum::<f32>().max(1.0);
+                    bp.rect_filled(
+                        Rect::from_min_max(pos2(x0, ry - 3.0), pos2(x1, ry + 3.0)),
+                        CornerRadius::same(3),
+                        with_alpha(col, 0.3),
+                    );
+                    bp.rect_filled(
+                        Rect::from_min_max(pos2(x0, ry - 3.0), pos2(x0 + (x1 - x0) * done, ry + 3.0)),
+                        CornerRadius::same(3),
+                        col,
+                    );
                     for x in [x0, x1] {
-                        bp.add(Shape::convex_polygon(vec![pos2(x - 4.0, ry - 3.0), pos2(x + 4.0, ry - 3.0), pos2(x, ry + 6.0)], col, Stroke::NONE));
+                        bp.add(Shape::convex_polygon(
+                            vec![pos2(x - 4.0, ry - 3.0), pos2(x + 4.0, ry - 3.0), pos2(x, ry + 6.0)],
+                            col,
+                            Stroke::NONE,
+                        ));
                     }
                 }
             }
@@ -576,16 +745,40 @@ impl<'a> GanttChart<'a> {
         let tx = tl.left() + (data.today - st.scroll) * px;
         if tx > tl.left() && tx < tl.right() {
             let pulse = 0.5 + 0.5 * (glowkit_core::time(ui) * 2.0).sin();
-            painter.line_segment([pos2(tx, tl.top() + HEAD), pos2(tx, rect.bottom() - 1.0)], Stroke::new(1.5, t.accent));
-            glowkit_core::paint::glow(&painter, pos2(tx, tl.top() + HEAD), 10.0 + 4.0 * pulse, with_alpha(t.accent, 0.35));
-            common::pill(&painter, pos2(tx, tl.top() + HEAD), "Today", qfont(10.5), t.accent_foreground, t.accent, Stroke::NONE);
+            painter
+                .line_segment([pos2(tx, tl.top() + HEAD), pos2(tx, rect.bottom() - 1.0)], Stroke::new(1.5, t.accent));
+            glowkit_core::paint::glow(
+                &painter,
+                pos2(tx, tl.top() + HEAD),
+                10.0 + 4.0 * pulse,
+                with_alpha(t.accent, 0.35),
+            );
+            common::pill(
+                &painter,
+                pos2(tx, tl.top() + HEAD),
+                "Today",
+                qfont(10.5),
+                t.accent_foreground,
+                t.accent,
+                Stroke::NONE,
+            );
             glowkit_core::animate(ui);
         }
 
         // ---- sidebar
-        painter.rect_filled(Rect::from_min_max(side.min + vec2(1.0, 1.0), pos2(side.right(), side.bottom() - 1.0)), CornerRadius { nw: 11, sw: 11, ne: 0, se: 0 }, t.card);
+        painter.rect_filled(
+            Rect::from_min_max(side.min + vec2(1.0, 1.0), pos2(side.right(), side.bottom() - 1.0)),
+            CornerRadius { nw: 11, sw: 11, ne: 0, se: 0 },
+            t.card,
+        );
         painter.line_segment([side.right_top(), side.right_bottom()], Stroke::new(1.0, t.border));
-        painter.text(pos2(side.left() + 14.0, side.top() + HEAD / 2.0), Align2::LEFT_CENTER, "Task", qfont(12.0), t.muted_foreground);
+        painter.text(
+            pos2(side.left() + 14.0, side.top() + HEAD / 2.0),
+            Align2::LEFT_CENTER,
+            "Task",
+            qfont(12.0),
+            t.muted_foreground,
+        );
         // zoom segmented control
         let seg = Rect::from_min_size(pos2(side.right() - 132.0, side.top() + 12.0), vec2(122.0, 26.0));
         painter.rect_filled(seg, CornerRadius::same(7), t.muted);
@@ -598,7 +791,13 @@ impl<'a> GanttChart<'a> {
         for (k, (z, label)) in zooms.iter().enumerate() {
             let r = Rect::from_min_size(pos2(seg.left() + k as f32 * sw, seg.top()), vec2(sw, seg.height()));
             let resp = ui.interact(r, id.with(("z", k)), Sense::click());
-            painter.text(r.center(), Align2::CENTER_CENTER, *label, qfont(11.5), if st.zoom == *z { t.foreground } else { t.muted_foreground });
+            painter.text(
+                r.center(),
+                Align2::CENTER_CENTER,
+                *label,
+                qfont(11.5),
+                if st.zoom == *z { t.foreground } else { t.muted_foreground },
+            );
             if resp.on_hover_cursor(CursorIcon::PointingHand).clicked() {
                 st.zoom = *z;
             }
@@ -614,20 +813,42 @@ impl<'a> GanttChart<'a> {
             match kind {
                 RowKind::Group(gi) => {
                     let g = &data.groups[*gi];
-                    let resp = ui.interact(r.intersect(Rect::from_min_max(pos2(side.left(), body.top()), side.max)), id.with(("grp", *gi)), Sense::click());
+                    let resp = ui.interact(
+                        r.intersect(Rect::from_min_max(pos2(side.left(), body.top()), side.max)),
+                        id.with(("grp", *gi)),
+                        Sense::click(),
+                    );
                     let hv = ui.ctx().animate_bool_with_time(id.with(("gh", *gi)), resp.hovered(), 0.1);
                     sp.rect_filled(r, CornerRadius::ZERO, with_alpha(t.foreground, 0.02 + 0.03 * hv));
                     let rot = ui.ctx().animate_bool_with_time(id.with(("gc", *gi)), g.collapsed, 0.15);
                     let ic = Rect::from_center_size(pos2(r.left() + 16.0, r.center().y), Vec2::splat(12.0));
                     let pts: Vec<Pos2> = [(3.5f32, 6.0f32), (8.0, 10.5), (12.5, 6.0)]
                         .iter()
-                        .map(|&(x, yv)| common::rotate_about(ic.min + vec2(x, yv) * ic.width() / 16.0, ic.center(), -rot * std::f32::consts::FRAC_PI_2))
+                        .map(|&(x, yv)| {
+                            common::rotate_about(
+                                ic.min + vec2(x, yv) * ic.width() / 16.0,
+                                ic.center(),
+                                -rot * std::f32::consts::FRAC_PI_2,
+                            )
+                        })
                         .collect();
                     sp.add(Shape::line(pts, Stroke::new(1.5, t.muted_foreground)));
                     let col = g.color.unwrap_or(t.chart[gi % t.chart.len()]);
                     sp.circle_filled(pos2(r.left() + 32.0, r.center().y), 4.0, col);
-                    sp.text(pos2(r.left() + 42.0, r.center().y), Align2::LEFT_CENTER, &g.name, qfont(13.0), t.foreground);
-                    sp.text(pos2(r.right() - 12.0, r.center().y), Align2::RIGHT_CENTER, g.tasks.len().to_string(), qfont(11.0), t.muted_foreground);
+                    sp.text(
+                        pos2(r.left() + 42.0, r.center().y),
+                        Align2::LEFT_CENTER,
+                        &g.name,
+                        qfont(13.0),
+                        t.foreground,
+                    );
+                    sp.text(
+                        pos2(r.right() - 12.0, r.center().y),
+                        Align2::RIGHT_CENTER,
+                        g.tasks.len().to_string(),
+                        qfont(11.0),
+                        t.muted_foreground,
+                    );
                     if resp.on_hover_cursor(CursorIcon::PointingHand).clicked() {
                         toggle = Some(*gi);
                     }
@@ -637,18 +858,37 @@ impl<'a> GanttChart<'a> {
                     let hl = active == Some(task.id);
                     if hl {
                         sp.rect_filled(r, CornerRadius::ZERO, with_alpha(t.accent, 0.08));
-                        bp.rect_filled(Rect::from_min_size(pos2(body.left(), ry), vec2(body.width(), *h)), CornerRadius::ZERO, with_alpha(t.accent, 0.04));
+                        bp.rect_filled(
+                            Rect::from_min_size(pos2(body.left(), ry), vec2(body.width(), *h)),
+                            CornerRadius::ZERO,
+                            with_alpha(t.accent, 0.04),
+                        );
                     }
                     let name = common::elide(&sp, &task.name, qfont(12.5), sidebar - 100.0);
-                    sp.text(pos2(r.left() + 32.0, r.center().y), Align2::LEFT_CENTER, name, qfont(12.5), t.foreground.gamma_multiply(0.92));
+                    sp.text(
+                        pos2(r.left() + 32.0, r.center().y),
+                        Align2::LEFT_CENTER,
+                        name,
+                        qfont(12.5),
+                        t.foreground.gamma_multiply(0.92),
+                    );
                     let (_, m, d) = data.date(task.start);
-                    sp.text(pos2(r.right() - 12.0, r.center().y), Align2::RIGHT_CENTER, format!("{} {}", MONTHS[m as usize - 1], d), qfont(11.0), t.muted_foreground);
+                    sp.text(
+                        pos2(r.right() - 12.0, r.center().y),
+                        Align2::RIGHT_CENTER,
+                        format!("{} {}", MONTHS[m as usize - 1], d),
+                        qfont(11.0),
+                        t.muted_foreground,
+                    );
                     if data.violates(task.id) {
                         sp.circle_filled(pos2(r.left() + 20.0, r.center().y), 3.0, t.destructive);
                     }
                 }
             }
-            sp.line_segment([pos2(side.left(), ry + h), pos2(side.right(), ry + h)], Stroke::new(1.0, with_alpha(t.border, 0.45)));
+            sp.line_segment(
+                [pos2(side.left(), ry + h), pos2(side.right(), ry + h)],
+                Stroke::new(1.0, with_alpha(t.border, 0.45)),
+            );
         }
         if let Some(gi) = toggle {
             data.groups[gi].collapsed = !data.groups[gi].collapsed;
@@ -660,9 +900,25 @@ impl<'a> GanttChart<'a> {
                 let (_, m1, d1) = data.date(task.end() - 1.0);
                 let txt = match d.mode {
                     Mode::Progress => format!("{:.0}% done", task.progress * 100.0),
-                    _ => format!("{} {} – {} {}, {}  ·  {}d", MONTHS[m0 as usize - 1], d0, MONTHS[m1 as usize - 1], d1, y0, task.duration),
+                    _ => format!(
+                        "{} {} – {} {}, {}  ·  {}d",
+                        MONTHS[m0 as usize - 1],
+                        d0,
+                        MONTHS[m1 as usize - 1],
+                        d1,
+                        y0,
+                        task.duration
+                    ),
                 };
-                common::pill(&painter, p + vec2(0.0, -26.0), &txt, qfont(11.5), t.foreground, t.popover, Stroke::new(1.0, t.border));
+                common::pill(
+                    &painter,
+                    p + vec2(0.0, -26.0),
+                    &txt,
+                    qfont(11.5),
+                    t.foreground,
+                    t.popover,
+                    Stroke::new(1.0, t.border),
+                );
             }
         }
         let _ = Icon::Dots;
@@ -696,7 +952,14 @@ mod tests {
         let g = Gantt {
             start: (2026, 1, 1),
             today: 0.0,
-            groups: vec![GanttGroup::new("g", vec![GanttTask::new(1, "a", 0.0, 5.0), GanttTask::new(2, "b", 3.0, 2.0).after(&[1]), GanttTask::new(3, "c", 5.0, 2.0).after(&[1])])],
+            groups: vec![GanttGroup::new(
+                "g",
+                vec![
+                    GanttTask::new(1, "a", 0.0, 5.0),
+                    GanttTask::new(2, "b", 3.0, 2.0).after(&[1]),
+                    GanttTask::new(3, "c", 5.0, 2.0).after(&[1]),
+                ],
+            )],
         };
         assert!(g.violates(2));
         assert!(!g.violates(3));

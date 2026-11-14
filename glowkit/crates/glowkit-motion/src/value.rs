@@ -236,7 +236,9 @@ impl Transition {
     /// Wait `seconds` before starting.
     pub fn delay(mut self, seconds: f32) -> Self {
         match &mut self {
-            Self::Tween { delay, .. } | Self::Spring { delay, .. } | Self::Inertia { delay, .. } => *delay = seconds.max(0.0),
+            Self::Tween { delay, .. } | Self::Spring { delay, .. } | Self::Inertia { delay, .. } => {
+                *delay = seconds.max(0.0)
+            }
             Self::Instant => {}
         }
         self
@@ -543,11 +545,16 @@ pub fn animate<T: Animatable>(ui: &Ui, id: Id, target: T, transition: Transition
 /// ```
 pub fn animate_from<T: Animatable>(ui: &Ui, id: Id, initial: T, target: T, transition: Transition) -> T {
     let dt = glowkit_core::dt(ui);
-    let (v, moving) = glowkit_core::with_state(ui, key(id), || MotionValue::new(initial), |mv: &mut MotionValue<T>| {
-        mv.animate_to(target, transition);
-        let v = mv.update(dt);
-        (v, mv.is_animating())
-    });
+    let (v, moving) = glowkit_core::with_state(
+        ui,
+        key(id),
+        || MotionValue::new(initial),
+        |mv: &mut MotionValue<T>| {
+            mv.animate_to(target, transition);
+            let v = mv.update(dt);
+            (v, mv.is_animating())
+        },
+    );
     if moving {
         ui.ctx().request_repaint();
     }
@@ -569,10 +576,15 @@ pub fn with_motion_value<T: Animatable, R>(ui: &Ui, id: Id, init: T, f: impl FnO
 /// Advance the [`MotionValue`] under `id` by one frame without retargeting, returning its value.
 pub fn tick<T: Animatable>(ui: &Ui, id: Id, init: T) -> T {
     let dt = glowkit_core::dt(ui);
-    let (v, moving) = glowkit_core::with_state(ui, key(id), || MotionValue::new(init), |mv: &mut MotionValue<T>| {
-        let v = mv.update(dt);
-        (v, mv.is_animating())
-    });
+    let (v, moving) = glowkit_core::with_state(
+        ui,
+        key(id),
+        || MotionValue::new(init),
+        |mv: &mut MotionValue<T>| {
+            let v = mv.update(dt);
+            (v, mv.is_animating())
+        },
+    );
     if moving {
         ui.ctx().request_repaint();
     }

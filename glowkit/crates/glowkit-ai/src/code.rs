@@ -3,7 +3,10 @@
 use crate::common::{self, Fx};
 use crate::icons::{paint_icon, Icon};
 use egui::text::LayoutJob;
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Rect, Response, Sense, Stroke, StrokeKind, TextFormat, Ui, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Rect, Response, Sense, Stroke, StrokeKind, TextFormat, Ui,
+    Widget,
+};
 use glowkit_core::color::{hex, mix, with_alpha};
 use glowkit_core::Theme;
 
@@ -29,15 +32,64 @@ pub enum TokenKind {
 }
 
 const RUST_KW: &[&str] = &[
-    "as", "async", "await", "break", "const", "continue", "crate", "dyn", "else", "enum", "extern", "false", "fn", "for", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub", "ref", "return", "self", "Self", "static", "struct", "super", "trait", "true", "type", "unsafe", "use", "where", "while",
+    "as", "async", "await", "break", "const", "continue", "crate", "dyn", "else", "enum", "extern", "false", "fn",
+    "for", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub", "ref", "return", "self", "Self",
+    "static", "struct", "super", "trait", "true", "type", "unsafe", "use", "where", "while",
 ];
 const JS_KW: &[&str] = &[
-    "async", "await", "break", "case", "catch", "class", "const", "continue", "default", "delete", "do", "else", "export", "extends", "false", "finally", "for", "from", "function", "if", "import", "in", "instanceof", "interface", "let", "new", "null", "of", "return", "static", "super", "switch", "this", "throw", "true", "try", "type", "typeof", "undefined", "var", "void", "while", "yield",
+    "async",
+    "await",
+    "break",
+    "case",
+    "catch",
+    "class",
+    "const",
+    "continue",
+    "default",
+    "delete",
+    "do",
+    "else",
+    "export",
+    "extends",
+    "false",
+    "finally",
+    "for",
+    "from",
+    "function",
+    "if",
+    "import",
+    "in",
+    "instanceof",
+    "interface",
+    "let",
+    "new",
+    "null",
+    "of",
+    "return",
+    "static",
+    "super",
+    "switch",
+    "this",
+    "throw",
+    "true",
+    "try",
+    "type",
+    "typeof",
+    "undefined",
+    "var",
+    "void",
+    "while",
+    "yield",
 ];
 const PY_KW: &[&str] = &[
-    "False", "None", "True", "and", "as", "assert", "async", "await", "break", "class", "continue", "def", "del", "elif", "else", "except", "finally", "for", "from", "global", "if", "import", "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise", "return", "try", "while", "with", "yield", "self",
+    "False", "None", "True", "and", "as", "assert", "async", "await", "break", "class", "continue", "def", "del",
+    "elif", "else", "except", "finally", "for", "from", "global", "if", "import", "in", "is", "lambda", "nonlocal",
+    "not", "or", "pass", "raise", "return", "try", "while", "with", "yield", "self",
 ];
-const SH_KW: &[&str] = &["if", "then", "else", "fi", "for", "do", "done", "while", "case", "esac", "function", "export", "echo", "cd", "sudo"];
+const SH_KW: &[&str] = &[
+    "if", "then", "else", "fi", "for", "do", "done", "while", "case", "esac", "function", "export", "echo", "cd",
+    "sudo",
+];
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Lang {
@@ -89,7 +141,9 @@ pub fn highlight(code: &str, lang: &str) -> Vec<(std::ops::Range<usize>, TokenKi
     while i < n {
         let c = b[i];
         // comments
-        if line_comment.iter().any(|lc| code[i..].starts_with(lc)) && !(lang == Lang::Other && c == b'#' && i > 0 && b[i - 1] != b'\n' && b[i - 1] != b' ') {
+        if line_comment.iter().any(|lc| code[i..].starts_with(lc))
+            && !(lang == Lang::Other && c == b'#' && i > 0 && b[i - 1] != b'\n' && b[i - 1] != b' ')
+        {
             let e = code[i..].find('\n').map(|k| i + k).unwrap_or(n);
             push(&mut out, &mut text_start, i, e, TokenKind::Comment);
             i = e;
@@ -153,7 +207,11 @@ pub fn highlight(code: &str, lang: &str) -> Vec<(std::ops::Range<usize>, TokenKi
                 Some(TokenKind::Macro)
             } else if lang != Lang::Other && j < n && b[j] == b'(' {
                 Some(TokenKind::Function)
-            } else if lang != Lang::Other && lang != Lang::Shell && word.as_bytes()[0].is_ascii_uppercase() && word.len() > 1 {
+            } else if lang != Lang::Other
+                && lang != Lang::Shell
+                && word.as_bytes()[0].is_ascii_uppercase()
+                && word.len() > 1
+            {
                 Some(TokenKind::Type)
             } else {
                 None
@@ -181,13 +239,55 @@ pub(crate) fn token_color(k: TokenKind, t: &Theme) -> Color32 {
     let d = t.dark;
     match k {
         TokenKind::Text => with_alpha(t.foreground, if d { 0.88 } else { 0.9 }),
-        TokenKind::Keyword => if d { hex("#C4A5FF") } else { hex("#7C3AED") },
-        TokenKind::String => if d { hex("#9AE6B4") } else { hex("#15803D") },
-        TokenKind::Comment => if d { hex("#6B6B76") } else { hex("#A1A1AA") },
-        TokenKind::Number => if d { hex("#FDBA74") } else { hex("#C2410C") },
-        TokenKind::Function => if d { hex("#93C5FD") } else { hex("#1D4ED8") },
-        TokenKind::Type => if d { hex("#7DD3FC") } else { hex("#0E7490") },
-        TokenKind::Macro => if d { hex("#F9A8D4") } else { hex("#BE185D") },
+        TokenKind::Keyword => {
+            if d {
+                hex("#C4A5FF")
+            } else {
+                hex("#7C3AED")
+            }
+        }
+        TokenKind::String => {
+            if d {
+                hex("#9AE6B4")
+            } else {
+                hex("#15803D")
+            }
+        }
+        TokenKind::Comment => {
+            if d {
+                hex("#6B6B76")
+            } else {
+                hex("#A1A1AA")
+            }
+        }
+        TokenKind::Number => {
+            if d {
+                hex("#FDBA74")
+            } else {
+                hex("#C2410C")
+            }
+        }
+        TokenKind::Function => {
+            if d {
+                hex("#93C5FD")
+            } else {
+                hex("#1D4ED8")
+            }
+        }
+        TokenKind::Type => {
+            if d {
+                hex("#7DD3FC")
+            } else {
+                hex("#0E7490")
+            }
+        }
+        TokenKind::Macro => {
+            if d {
+                hex("#F9A8D4")
+            } else {
+                hex("#BE185D")
+            }
+        }
     }
 }
 
@@ -207,10 +307,18 @@ pub(crate) fn code_job(code: &str, lang: &str, size: f32, t: &Theme, highlight_o
     let lh = Some((size * 1.6).round());
     if highlight_on {
         for (r, k) in highlight(code, lang) {
-            job.append(&code[r], 0.0, TextFormat { font_id: font.clone(), color: token_color(k, t), line_height: lh, ..Default::default() });
+            job.append(
+                &code[r],
+                0.0,
+                TextFormat { font_id: font.clone(), color: token_color(k, t), line_height: lh, ..Default::default() },
+            );
         }
     } else {
-        job.append(code, 0.0, TextFormat { font_id: font, color: token_color(TokenKind::Text, t), line_height: lh, ..Default::default() });
+        job.append(
+            code,
+            0.0,
+            TextFormat { font_id: font, color: token_color(TokenKind::Text, t), line_height: lh, ..Default::default() },
+        );
     }
     job.wrap.max_width = f32::INFINITY;
     job
@@ -292,9 +400,19 @@ impl Widget for CodeBlock<'_> {
         painter.rect_stroke(rect, cr, Stroke::new(1.0, t.border), StrokeKind::Inside);
         if self.header {
             let hr = Rect::from_min_size(rect.min, vec2(width, header_h));
-            painter.line_segment([pos2(hr.min.x + 1.0, hr.max.y), pos2(hr.max.x - 1.0, hr.max.y)], Stroke::new(1.0, with_alpha(t.border, 0.8)));
+            painter.line_segment(
+                [pos2(hr.min.x + 1.0, hr.max.y), pos2(hr.max.x - 1.0, hr.max.y)],
+                Stroke::new(1.0, with_alpha(t.border, 0.8)),
+            );
             let label = if self.lang.is_empty() { "text" } else { self.lang };
-            common::mono(painter, pos2(hr.min.x + 14.0, hr.center().y), Align2::LEFT_CENTER, label.to_lowercase(), 11.5, t.muted_foreground);
+            common::mono(
+                painter,
+                pos2(hr.min.x + 14.0, hr.center().y),
+                Align2::LEFT_CENTER,
+                label.to_lowercase(),
+                11.5,
+                t.muted_foreground,
+            );
             // copy button
             let id = resp.id.with("copy");
             let now = ui.input(|i| i.time);
@@ -311,7 +429,12 @@ impl Widget for CodeBlock<'_> {
                 painter.rect_filled(br, CornerRadius::same(6), common::hover_fill(&t).gamma_multiply(h));
             }
             let col = if copied { t.success } else { t.muted_foreground.lerp_to_gamma(t.foreground, h) };
-            paint_icon(painter, if copied { Icon::Check } else { Icon::Copy }, Rect::from_center_size(pos2(br.min.x + 15.0, br.center().y), vec2(13.0, 13.0)), col);
+            paint_icon(
+                painter,
+                if copied { Icon::Check } else { Icon::Copy },
+                Rect::from_center_size(pos2(br.min.x + 15.0, br.center().y), vec2(13.0, 13.0)),
+                col,
+            );
             common::text(painter, pos2(br.min.x + 26.0, br.center().y), Align2::LEFT_CENTER, label, 12.0, col);
             if bresp.clicked() {
                 ui.ctx().copy_text(self.code.to_owned());
@@ -329,12 +452,20 @@ impl Widget for CodeBlock<'_> {
             for (k, row) in galley.rows.iter().enumerate().take(lines) {
                 let _ = row;
                 let y = inner.min.y + k as f32 * (self.size * 1.6).round();
-                common::mono(painter, pos2(inner.min.x + gutter - 14.0, y + (self.size * 1.6).round() / 2.0), Align2::RIGHT_CENTER, k + 1, self.size * 0.92, with_alpha(t.muted_foreground, 0.55));
+                common::mono(
+                    painter,
+                    pos2(inner.min.x + gutter - 14.0, y + (self.size * 1.6).round() / 2.0),
+                    Align2::RIGHT_CENTER,
+                    k + 1,
+                    self.size * 0.92,
+                    with_alpha(t.muted_foreground, 0.55),
+                );
             }
         }
         let code_rect = Rect::from_min_max(pos2(inner.min.x + gutter, inner.min.y), pos2(body.max.x, body.max.y));
         let overflow = galley.size().x > code_rect.width() - pad;
-        let mut child = ui.new_child(egui::UiBuilder::new().max_rect(code_rect).layout(egui::Layout::top_down(egui::Align::Min)));
+        let mut child =
+            ui.new_child(egui::UiBuilder::new().max_rect(code_rect).layout(egui::Layout::top_down(egui::Align::Min)));
         child.set_clip_rect(code_rect.intersect(ui.clip_rect()));
         let fade = self.fade;
         let paint = move |ui: &mut Ui| {
@@ -348,7 +479,10 @@ impl Widget for CodeBlock<'_> {
             }
         };
         if overflow {
-            egui::ScrollArea::horizontal().id_salt(resp.id.with("scroll")).auto_shrink([false, true]).show(&mut child, paint);
+            egui::ScrollArea::horizontal()
+                .id_salt(resp.id.with("scroll"))
+                .auto_shrink([false, true])
+                .show(&mut child, paint);
         } else {
             paint(&mut child);
         }
@@ -364,7 +498,8 @@ mod tests {
     fn highlights_rust() {
         let code = "fn main() { let x = 42; println!(\"hi\"); } // done";
         let toks = highlight(code, "rust");
-        let kinds: Vec<(&str, TokenKind)> = toks.iter().map(|(r, k)| (&code[r.clone()], *k)).filter(|(_, k)| *k != TokenKind::Text).collect();
+        let kinds: Vec<(&str, TokenKind)> =
+            toks.iter().map(|(r, k)| (&code[r.clone()], *k)).filter(|(_, k)| *k != TokenKind::Text).collect();
         assert!(kinds.contains(&("fn", TokenKind::Keyword)));
         assert!(kinds.contains(&("main", TokenKind::Function)));
         assert!(kinds.contains(&("42", TokenKind::Number)));

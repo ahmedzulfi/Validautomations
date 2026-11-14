@@ -35,13 +35,69 @@ fn chips(ui: &mut Ui, label: &str, items: &[&str], current: usize) -> usize {
 fn workflow_graph(t: &Theme) -> Graph {
     let mut g = Graph::new();
     let c = t.chart;
-    let hook = g.add(Node::new("Webhook", pos2(0.0, 120.0)).subtitle("POST /orders").icon("⚡").color(c[3]).output(Port::new("body")).line("Last call 2s ago").status(NodeStatus::Done));
-    let filter = g.add(Node::new("If", pos2(280.0, 120.0)).subtitle("amount > $500").icon("?").color(c[1]).input(Port::new("in")).output(Port::new("true")).output(Port::new("false")).status(NodeStatus::Done));
-    let enrich = g.add(Node::new("HTTP Request", pos2(560.0, -30.0)).subtitle("GET /customers/:id").icon("↗").color(c[5]).input(Port::new("in")).output(Port::new("json")).line("Retry 3x · 10s timeout").status(NodeStatus::Running));
-    let ai = g.add(Node::new("AI Summarize", pos2(840.0, 60.0)).subtitle("Model · temperature 0.2").icon("✦").color(c[0]).input(Port::new("order")).input(Port::new("customer")).output(Port::new("summary")).line("\"Write a 2-line brief…\""));
-    let notify = g.add(Node::new("Notify #sales", pos2(1120.0, 0.0)).subtitle("Chat message").icon("#").color(c[2]).input(Port::new("text")).output(Port::new("ok")));
-    let db = g.add(Node::new("Insert row", pos2(1120.0, 170.0)).subtitle("orders_large").icon("▤").color(c[4]).input(Port::new("row")).output(Port::new("id")));
-    let mail = g.add(Node::new("Send receipt", pos2(560.0, 260.0)).subtitle("Email · template #12").icon("@").color(c[3]).input(Port::new("to")).output(Port::new("sent")));
+    let hook = g.add(
+        Node::new("Webhook", pos2(0.0, 120.0))
+            .subtitle("POST /orders")
+            .icon("⚡")
+            .color(c[3])
+            .output(Port::new("body"))
+            .line("Last call 2s ago")
+            .status(NodeStatus::Done),
+    );
+    let filter = g.add(
+        Node::new("If", pos2(280.0, 120.0))
+            .subtitle("amount > $500")
+            .icon("?")
+            .color(c[1])
+            .input(Port::new("in"))
+            .output(Port::new("true"))
+            .output(Port::new("false"))
+            .status(NodeStatus::Done),
+    );
+    let enrich = g.add(
+        Node::new("HTTP Request", pos2(560.0, -30.0))
+            .subtitle("GET /customers/:id")
+            .icon("↗")
+            .color(c[5])
+            .input(Port::new("in"))
+            .output(Port::new("json"))
+            .line("Retry 3x · 10s timeout")
+            .status(NodeStatus::Running),
+    );
+    let ai = g.add(
+        Node::new("AI Summarize", pos2(840.0, 60.0))
+            .subtitle("Model · temperature 0.2")
+            .icon("✦")
+            .color(c[0])
+            .input(Port::new("order"))
+            .input(Port::new("customer"))
+            .output(Port::new("summary"))
+            .line("\"Write a 2-line brief…\""),
+    );
+    let notify = g.add(
+        Node::new("Notify #sales", pos2(1120.0, 0.0))
+            .subtitle("Chat message")
+            .icon("#")
+            .color(c[2])
+            .input(Port::new("text"))
+            .output(Port::new("ok")),
+    );
+    let db = g.add(
+        Node::new("Insert row", pos2(1120.0, 170.0))
+            .subtitle("orders_large")
+            .icon("▤")
+            .color(c[4])
+            .input(Port::new("row"))
+            .output(Port::new("id")),
+    );
+    let mail = g.add(
+        Node::new("Send receipt", pos2(560.0, 260.0))
+            .subtitle("Email · template #12")
+            .icon("@")
+            .color(c[3])
+            .input(Port::new("to"))
+            .output(Port::new("sent")),
+    );
     g.link((hook, 0), (filter, 0)).anim = EdgeAnim::Dashes;
     g.link((filter, 0), (enrich, 0)).label("true").anim = EdgeAnim::Dashes;
     g.link((filter, 1), (mail, 0)).label("false");
@@ -61,13 +117,72 @@ fn shader_graph() -> Graph {
     let f = |l: &str| Port::typed(l, "float", FLOAT);
     let v2 = |l: &str| Port::typed(l, "vec2", VEC2);
     let col = |l: &str| Port::typed(l, "color", COLOR);
-    let uv = g.add(Node::new("UV", pos2(0.0, 0.0)).subtitle("Input").icon("◫").color(VEC2).width(170.0).output(v2("uv")));
-    let time = g.add(Node::new("Time", pos2(0.0, 150.0)).subtitle("Input").icon("◷").color(FLOAT).width(170.0).output(f("t")).output(f("sin t")));
-    let noise = g.add(Node::new("Noise", pos2(240.0, -20.0)).subtitle("Fractal · 4 octaves").icon("≈").color(FLOAT).width(190.0).input(v2("uv")).input(f("scale")).input(f("offset")).output(f("value")).custom(84.0).tag("noise"));
-    let ramp = g.add(Node::new("Color Ramp", pos2(500.0, 10.0)).subtitle("3 stops").icon("▥").color(COLOR).width(190.0).input(f("factor")).output(col("color")).custom(26.0).tag("ramp"));
-    let fres = g.add(Node::new("Fresnel", pos2(500.0, 230.0)).subtitle("IOR 1.45").icon("◐").color(FLOAT).width(190.0).input(f("ior")).output(f("fac")));
-    let mix_n = g.add(Node::new("Mix", pos2(760.0, 60.0)).subtitle("Multiply").icon("×").color(COLOR).width(180.0).input(col("a")).input(f("b")).output(col("result")));
-    let out = g.add(Node::new("Material Output", pos2(1010.0, 40.0)).subtitle("Surface").icon("◉").color(hex("#A78BFA")).width(210.0).input(col("base color")).input(f("roughness")).input(col("emission")).custom(96.0).tag("output"));
+    let uv =
+        g.add(Node::new("UV", pos2(0.0, 0.0)).subtitle("Input").icon("◫").color(VEC2).width(170.0).output(v2("uv")));
+    let time = g.add(
+        Node::new("Time", pos2(0.0, 150.0))
+            .subtitle("Input")
+            .icon("◷")
+            .color(FLOAT)
+            .width(170.0)
+            .output(f("t"))
+            .output(f("sin t")),
+    );
+    let noise = g.add(
+        Node::new("Noise", pos2(240.0, -20.0))
+            .subtitle("Fractal · 4 octaves")
+            .icon("≈")
+            .color(FLOAT)
+            .width(190.0)
+            .input(v2("uv"))
+            .input(f("scale"))
+            .input(f("offset"))
+            .output(f("value"))
+            .custom(84.0)
+            .tag("noise"),
+    );
+    let ramp = g.add(
+        Node::new("Color Ramp", pos2(500.0, 10.0))
+            .subtitle("3 stops")
+            .icon("▥")
+            .color(COLOR)
+            .width(190.0)
+            .input(f("factor"))
+            .output(col("color"))
+            .custom(26.0)
+            .tag("ramp"),
+    );
+    let fres = g.add(
+        Node::new("Fresnel", pos2(500.0, 230.0))
+            .subtitle("IOR 1.45")
+            .icon("◐")
+            .color(FLOAT)
+            .width(190.0)
+            .input(f("ior"))
+            .output(f("fac")),
+    );
+    let mix_n = g.add(
+        Node::new("Mix", pos2(760.0, 60.0))
+            .subtitle("Multiply")
+            .icon("×")
+            .color(COLOR)
+            .width(180.0)
+            .input(col("a"))
+            .input(f("b"))
+            .output(col("result")),
+    );
+    let out = g.add(
+        Node::new("Material Output", pos2(1010.0, 40.0))
+            .subtitle("Surface")
+            .icon("◉")
+            .color(hex("#A78BFA"))
+            .width(210.0)
+            .input(col("base color"))
+            .input(f("roughness"))
+            .input(col("emission"))
+            .custom(96.0)
+            .tag("output"),
+    );
     g.link((uv, 0), (noise, 0));
     g.link((time, 0), (noise, 2)).anim = EdgeAnim::Dots;
     g.link((noise, 0), (ramp, 0));
@@ -116,14 +231,87 @@ fn shader_body(p: &egui::Painter, r: Rect, zoom: f32, n: &Node, time: f32) {
 fn agent_graph(t: &Theme) -> Graph {
     let mut g = Graph::new();
     let c = t.chart;
-    let q = g.add(Node::new("User query", pos2(0.0, 80.0)).subtitle("chat input").icon("›").color(c[5]).width(180.0).output(Port::new("text")).line("\"Compare Q3 churn by region\""));
-    let plan = g.add(Node::new("Planner", pos2(250.0, 80.0)).subtitle("LLM · tool calling").icon("✦").color(c[0]).input(Port::new("goal")).output(Port::new("search")).output(Port::new("sql")).custom(14.0).tag("agent"));
-    let rag = g.add(Node::new("Retriever", pos2(530.0, -40.0)).subtitle("vector search · k=8").icon("⌕").color(c[1]).input(Port::new("query")).output(Port::new("chunks")).custom(14.0).tag("agent"));
-    let sql = g.add(Node::new("SQL tool", pos2(530.0, 170.0)).subtitle("warehouse · read-only").icon("▤").color(c[4]).input(Port::new("query")).output(Port::new("rows")).custom(14.0).tag("agent"));
-    let rerank = g.add(Node::new("Reranker", pos2(800.0, -40.0)).subtitle("cross-encoder").icon("⇅").color(c[1]).width(180.0).input(Port::new("chunks")).output(Port::new("top 3")).custom(14.0).tag("agent"));
-    let writer = g.add(Node::new("Writer", pos2(1040.0, 70.0)).subtitle("LLM · streaming").icon("✎").color(c[0]).input(Port::new("context").multi()).output(Port::new("draft")).custom(14.0).tag("agent"));
-    let guard = g.add(Node::new("Guardrails", pos2(1300.0, 70.0)).subtitle("PII · policy").icon("⛨").color(c[2]).width(180.0).input(Port::new("draft")).output(Port::new("answer")).custom(14.0).tag("agent"));
-    for (a, ap, b, bp) in [(q, 0, plan, 0), (plan, 0, rag, 0), (plan, 1, sql, 0), (rag, 0, rerank, 0), (rerank, 0, writer, 0), (sql, 0, writer, 0), (writer, 0, guard, 0)] {
+    let q = g.add(
+        Node::new("User query", pos2(0.0, 80.0))
+            .subtitle("chat input")
+            .icon("›")
+            .color(c[5])
+            .width(180.0)
+            .output(Port::new("text"))
+            .line("\"Compare Q3 churn by region\""),
+    );
+    let plan = g.add(
+        Node::new("Planner", pos2(250.0, 80.0))
+            .subtitle("LLM · tool calling")
+            .icon("✦")
+            .color(c[0])
+            .input(Port::new("goal"))
+            .output(Port::new("search"))
+            .output(Port::new("sql"))
+            .custom(14.0)
+            .tag("agent"),
+    );
+    let rag = g.add(
+        Node::new("Retriever", pos2(530.0, -40.0))
+            .subtitle("vector search · k=8")
+            .icon("⌕")
+            .color(c[1])
+            .input(Port::new("query"))
+            .output(Port::new("chunks"))
+            .custom(14.0)
+            .tag("agent"),
+    );
+    let sql = g.add(
+        Node::new("SQL tool", pos2(530.0, 170.0))
+            .subtitle("warehouse · read-only")
+            .icon("▤")
+            .color(c[4])
+            .input(Port::new("query"))
+            .output(Port::new("rows"))
+            .custom(14.0)
+            .tag("agent"),
+    );
+    let rerank = g.add(
+        Node::new("Reranker", pos2(800.0, -40.0))
+            .subtitle("cross-encoder")
+            .icon("⇅")
+            .color(c[1])
+            .width(180.0)
+            .input(Port::new("chunks"))
+            .output(Port::new("top 3"))
+            .custom(14.0)
+            .tag("agent"),
+    );
+    let writer = g.add(
+        Node::new("Writer", pos2(1040.0, 70.0))
+            .subtitle("LLM · streaming")
+            .icon("✎")
+            .color(c[0])
+            .input(Port::new("context").multi())
+            .output(Port::new("draft"))
+            .custom(14.0)
+            .tag("agent"),
+    );
+    let guard = g.add(
+        Node::new("Guardrails", pos2(1300.0, 70.0))
+            .subtitle("PII · policy")
+            .icon("⛨")
+            .color(c[2])
+            .width(180.0)
+            .input(Port::new("draft"))
+            .output(Port::new("answer"))
+            .custom(14.0)
+            .tag("agent"),
+    );
+    for (a, ap, b, bp) in [
+        (q, 0, plan, 0),
+        (plan, 0, rag, 0),
+        (plan, 1, sql, 0),
+        (rag, 0, rerank, 0),
+        (rerank, 0, writer, 0),
+        (sql, 0, writer, 0),
+        (writer, 0, guard, 0),
+    ] {
         let col = g.node(a).and_then(|n| n.color);
         let e = g.link((a, ap), (b, bp));
         e.anim = EdgeAnim::Dots;
@@ -145,7 +333,13 @@ fn agent_tick(g: &mut Graph, time: f32) {
     let k = (time / 1.3) % 7.0;
     for n in &mut g.nodes {
         if let Some(i) = stage(&n.title) {
-            n.status = if k < i { NodeStatus::None } else if k < i + 1.0 { NodeStatus::Running } else { NodeStatus::Done };
+            n.status = if k < i {
+                NodeStatus::None
+            } else if k < i + 1.0 {
+                NodeStatus::Running
+            } else {
+                NodeStatus::Done
+            };
         }
     }
 }
@@ -171,13 +365,18 @@ fn flow_palette(t: &Theme) -> Vec<PaletteItem> {
     vec![
         PaletteItem { template: Node::shape(NodeShape::Terminator, "Start / End", Pos2::ZERO).color(c[4]) },
         PaletteItem { template: Node::shape(NodeShape::Process, "Process", Pos2::ZERO).color(c[0]) },
-        PaletteItem { template: { let mut n = Node::shape(NodeShape::Decision, "Decision", Pos2::ZERO).color(c[3]); n.outputs = vec![Port::new("yes"), Port::new("no")]; n } },
+        PaletteItem {
+            template: {
+                let mut n = Node::shape(NodeShape::Decision, "Decision", Pos2::ZERO).color(c[3]);
+                n.outputs = vec![Port::new("yes"), Port::new("no")];
+                n
+            },
+        },
         PaletteItem { template: Node::shape(NodeShape::Data, "Input / Output", Pos2::ZERO).color(c[1]) },
         PaletteItem { template: Node::shape(NodeShape::Document, "Document", Pos2::ZERO).color(c[5]) },
         PaletteItem { template: Node::shape(NodeShape::Circle, "Event", Pos2::ZERO).color(c[2]) },
     ]
 }
-
 
 fn flowchart_graph(t: &Theme) -> Graph {
     let pal = flow_palette(t);
@@ -548,20 +747,54 @@ fn infinite_demo(ui: &mut Ui, view: &mut CanvasView, bg: Background) {
             if !sr.expand(40.0).intersects(cv.rect) {
                 continue;
             }
-            cv.painter.text(sr.left_top() - vec2(0.0, 8.0 * z), egui::Align2::LEFT_BOTTOM, *name, crate::common::qfont(12.0 * z), t.muted_foreground);
-            paint::soft_shadow(&cv.painter, sr, 10.0 * z, 18.0 * z, vec2(0.0, 6.0 * z), Color32::from_black_alpha(if t.dark { 120 } else { 30 }));
-            cv.painter.rect(sr, CornerRadius::same((10.0 * z) as u8), t.card, egui::Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
+            cv.painter.text(
+                sr.left_top() - vec2(0.0, 8.0 * z),
+                egui::Align2::LEFT_BOTTOM,
+                *name,
+                crate::common::qfont(12.0 * z),
+                t.muted_foreground,
+            );
+            paint::soft_shadow(
+                &cv.painter,
+                sr,
+                10.0 * z,
+                18.0 * z,
+                vec2(0.0, 6.0 * z),
+                Color32::from_black_alpha(if t.dark { 120 } else { 30 }),
+            );
+            cv.painter.rect(
+                sr,
+                CornerRadius::same((10.0 * z) as u8),
+                t.card,
+                egui::Stroke::new(1.0, t.border),
+                egui::StrokeKind::Inside,
+            );
             // mock UI inside each frame
             let pad = 14.0 * z;
             let inner = sr.shrink(pad);
-            cv.painter.rect_filled(Rect::from_min_size(inner.min, vec2(inner.width() * 0.45, 8.0 * z)), CornerRadius::same(3), with_alpha(t.foreground, 0.7));
-            cv.painter.rect_filled(Rect::from_min_size(inner.min + vec2(0.0, 16.0 * z), vec2(inner.width() * 0.7, 6.0 * z)), CornerRadius::same(3), with_alpha(t.foreground, 0.2));
-            let hero = Rect::from_min_max(inner.min + vec2(0.0, 32.0 * z), pos2(inner.right(), inner.bottom() - 26.0 * z));
+            cv.painter.rect_filled(
+                Rect::from_min_size(inner.min, vec2(inner.width() * 0.45, 8.0 * z)),
+                CornerRadius::same(3),
+                with_alpha(t.foreground, 0.7),
+            );
+            cv.painter.rect_filled(
+                Rect::from_min_size(inner.min + vec2(0.0, 16.0 * z), vec2(inner.width() * 0.7, 6.0 * z)),
+                CornerRadius::same(3),
+                with_alpha(t.foreground, 0.2),
+            );
+            let hero =
+                Rect::from_min_max(inner.min + vec2(0.0, 32.0 * z), pos2(inner.right(), inner.bottom() - 26.0 * z));
             if hero.height() > 4.0 {
                 let c1 = *col;
                 let c2 = t.chart[(k + 2) % 6];
                 let shift = (time * 0.3 + k as f32).sin() * 0.5 + 0.5;
-                paint::gradient_rect(&cv.painter, hero, 8.0 * z, 30.0 + 40.0 * shift, &[with_alpha(c1, 0.85), with_alpha(c2, 0.6)]);
+                paint::gradient_rect(
+                    &cv.painter,
+                    hero,
+                    8.0 * z,
+                    30.0 + 40.0 * shift,
+                    &[with_alpha(c1, 0.85), with_alpha(c2, 0.6)],
+                );
             }
             let btn = Rect::from_min_size(pos2(inner.left(), inner.bottom() - 18.0 * z), vec2(70.0 * z, 18.0 * z));
             cv.painter.rect_filled(btn, CornerRadius::same((9.0 * z) as u8), *col);
@@ -569,7 +802,13 @@ fn infinite_demo(ui: &mut Ui, view: &mut CanvasView, bg: Background) {
         glowkit_core::animate(cv.ui);
         // hint
         let hint = "Drag or space+drag to pan  ·  Ctrl+wheel / pinch to zoom  ·  middle-drag anywhere";
-        cv.painter.text(pos2(cv.rect.center().x, cv.rect.top() + 22.0), egui::Align2::CENTER_CENTER, hint, crate::common::qfont(11.5), t.muted_foreground);
+        cv.painter.text(
+            pos2(cv.rect.center().x, cv.rect.top() + 22.0),
+            egui::Align2::CENTER_CENTER,
+            hint,
+            crate::common::qfont(11.5),
+            t.muted_foreground,
+        );
         let items: Vec<(Rect, Color32)> = frames.iter().map(|f| (f.1, f.2)).collect();
         let rect = cv.rect;
         MiniMap::new(&mut *cv.view, rect).items(&items).show(cv.ui);
@@ -588,11 +827,36 @@ fn whiteboard_doc() -> Document {
     let blue = WB_COLORS[4];
     let red = WB_COLORS[1];
     let green = WB_COLORS[3];
-    d.add(WbShape::freehand(synthetic_stroke(&[pos2(-6.0, -62.0), pos2(80.0, -66.0), pos2(170.0, -61.0), pos2(236.0, -64.0)]), true).stroke(Color32::from_rgb(250, 204, 21)).width(16.0));
+    d.add(
+        WbShape::freehand(
+            synthetic_stroke(&[pos2(-6.0, -62.0), pos2(80.0, -66.0), pos2(170.0, -61.0), pos2(236.0, -64.0)]),
+            true,
+        )
+        .stroke(Color32::from_rgb(250, 204, 21))
+        .width(16.0),
+    );
     d.add(WbShape::text(pos2(-10.0, -96.0), "Launch plan · Q1", 30.0));
-    let design = d.add(WbShape::new(ShapeKind::Rect, Rect::from_min_size(pos2(0.0, 20.0), vec2(170.0, 90.0))).sketchy(true).fill(with_alpha(blue, 0.22)).stroke(blue).label("Design"));
-    let build = d.add(WbShape::new(ShapeKind::Diamond, Rect::from_min_size(pos2(260.0, 0.0), vec2(170.0, 130.0))).sketchy(true).fill(with_alpha(WB_COLORS[2], 0.22)).stroke(WB_COLORS[2]).label("Ready?"));
-    let ship = d.add(WbShape::new(ShapeKind::Ellipse, Rect::from_min_size(pos2(520.0, 15.0), vec2(170.0, 100.0))).sketchy(true).fill(with_alpha(green, 0.22)).stroke(green).label("Ship"));
+    let design = d.add(
+        WbShape::new(ShapeKind::Rect, Rect::from_min_size(pos2(0.0, 20.0), vec2(170.0, 90.0)))
+            .sketchy(true)
+            .fill(with_alpha(blue, 0.22))
+            .stroke(blue)
+            .label("Design"),
+    );
+    let build = d.add(
+        WbShape::new(ShapeKind::Diamond, Rect::from_min_size(pos2(260.0, 0.0), vec2(170.0, 130.0)))
+            .sketchy(true)
+            .fill(with_alpha(WB_COLORS[2], 0.22))
+            .stroke(WB_COLORS[2])
+            .label("Ready?"),
+    );
+    let ship = d.add(
+        WbShape::new(ShapeKind::Ellipse, Rect::from_min_size(pos2(520.0, 15.0), vec2(170.0, 100.0)))
+            .sketchy(true)
+            .fill(with_alpha(green, 0.22))
+            .stroke(green)
+            .label("Ship"),
+    );
     let mut a1 = WbShape::linear(ShapeKind::Arrow, pos2(170.0, 65.0), pos2(260.0, 65.0)).sketchy(true);
     a1.bind_a = Some(design);
     a1.bind_b = Some(build);
@@ -601,16 +865,25 @@ fn whiteboard_doc() -> Document {
     a2.bind_a = Some(build);
     a2.bind_b = Some(ship);
     d.add(a2);
-    d.add(WbShape::sticky(pos2(-30.0, 170.0), "Talk to 5 customers before freezing scope", STICKY_COLORS[0]).rotated(-0.04));
+    d.add(
+        WbShape::sticky(pos2(-30.0, 170.0), "Talk to 5 customers before freezing scope", STICKY_COLORS[0])
+            .rotated(-0.04),
+    );
     d.add(WbShape::sticky(pos2(170.0, 180.0), "Perf budget:\n< 1 ms / frame", STICKY_COLORS[2]).rotated(0.03));
     d.add(WbShape::sticky(pos2(370.0, 172.0), "Launch blog post + demo video", STICKY_COLORS[1]).rotated(-0.02));
     // a hand-drawn circle around "Ship" and a check mark
-    let circle: Vec<Pos2> = (0..=26).map(|i| {
-        let a = -0.6 + i as f32 / 24.0 * std::f32::consts::TAU;
-        pos2(605.0 + a.cos() * (112.0 + (i as f32 * 0.8).sin() * 3.0), 65.0 + a.sin() * 70.0)
-    }).collect();
+    let circle: Vec<Pos2> = (0..=26)
+        .map(|i| {
+            let a = -0.6 + i as f32 / 24.0 * std::f32::consts::TAU;
+            pos2(605.0 + a.cos() * (112.0 + (i as f32 * 0.8).sin() * 3.0), 65.0 + a.sin() * 70.0)
+        })
+        .collect();
     d.add(WbShape::freehand(synthetic_stroke(&circle), false).stroke(red).width(2.6));
-    d.add(WbShape::freehand(synthetic_stroke(&[pos2(600.0, 190.0), pos2(618.0, 212.0), pos2(660.0, 160.0)]), false).stroke(green).width(4.0));
+    d.add(
+        WbShape::freehand(synthetic_stroke(&[pos2(600.0, 190.0), pos2(618.0, 212.0), pos2(660.0, 160.0)]), false)
+            .stroke(green)
+            .width(4.0),
+    );
     d.add(WbShape::text(pos2(670.0, 176.0), "on track!", 20.0).stroke(green));
     d
 }
@@ -624,23 +897,40 @@ fn kanban_board(t: &Theme) -> Board {
     Board {
         columns: vec![
             Column::new(1, "Backlog", t.muted_foreground).cards(vec![
-                Card::new(1, "Dark mode for the analytics dashboard").label("Design", design).assignees(&["MK"]).checklist(1, 4),
+                Card::new(1, "Dark mode for the analytics dashboard")
+                    .label("Design", design)
+                    .assignees(&["MK"])
+                    .checklist(1, 4),
                 Card::new(2, "Export reports as CSV").label("Feature", eng).due("Nov 28"),
                 Card::new(3, "Audit onboarding emails").label("Growth", growth).assignees(&["JS", "AL"]),
             ]),
             Column::new(2, "To do", t.info).cards(vec![
-                Card::new(4, "Rate-limit the public API").label("Backend", eng).label("P1", bug).assignees(&["DO"]).due("Nov 18").priority(bug),
+                Card::new(4, "Rate-limit the public API")
+                    .label("Backend", eng)
+                    .label("P1", bug)
+                    .assignees(&["DO"])
+                    .due("Nov 18")
+                    .priority(bug),
                 Card::new(5, "Write migration guide for v2").label("Docs", docs).checklist(2, 6),
             ]),
             Column::new(3, "In progress", t.warning).wip(3).cards(vec![
-                Card::new(6, "Kanban drag & drop polish").label("Frontend", design).assignees(&["AK", "MK"]).checklist(5, 7).due("Nov 14"),
-                Card::new(7, "Fix flaky checkout test").label("Bug", bug).assignees(&["DO"]).due("!Nov 10").priority(bug),
+                Card::new(6, "Kanban drag & drop polish")
+                    .label("Frontend", design)
+                    .assignees(&["AK", "MK"])
+                    .checklist(5, 7)
+                    .due("Nov 14"),
+                Card::new(7, "Fix flaky checkout test")
+                    .label("Bug", bug)
+                    .assignees(&["DO"])
+                    .due("!Nov 10")
+                    .priority(bug),
                 Card::new(8, "Pricing page experiment").label("Growth", growth).assignees(&["JS"]),
                 Card::new(9, "Search indexing worker").label("Backend", eng).assignees(&["LC"]).checklist(3, 5),
             ]),
-            Column::new(4, "Review", t.chart[2]).cards(vec![
-                Card::new(10, "New billing settings screen").label("Design", design).assignees(&["AL"]).checklist(8, 8),
-            ]),
+            Column::new(4, "Review", t.chart[2]).cards(vec![Card::new(10, "New billing settings screen")
+                .label("Design", design)
+                .assignees(&["AL"])
+                .checklist(8, 8)]),
             Column::new(5, "Done", t.success).cards(vec![
                 Card::new(11, "SSO with SAML").label("Backend", eng).assignees(&["LC"]),
                 Card::new(12, "Changelog page").label("Docs", docs),
@@ -658,25 +948,41 @@ fn gantt_data(t: &Theme) -> Gantt {
         start: (2026, 11, 2),
         today: 9.0,
         groups: vec![
-            GanttGroup::new("Discovery", vec![
-                GanttTask::new(1, "User interviews", 0.0, 4.0).progress(1.0).assignee("JS"),
-                GanttTask::new(2, "Competitive audit", 1.0, 3.0).progress(1.0).assignee("MK"),
-                GanttTask::new(3, "Scope sign-off", 5.0, 0.0).after(&[1, 2]),
-            ]).color(t.chart[0]),
-            GanttGroup::new("Design", vec![
-                GanttTask::new(4, "Wireframes", 5.0, 5.0).progress(0.8).after(&[3]).assignee("AL"),
-                GanttTask::new(5, "Visual design", 10.0, 6.0).progress(0.25).after(&[4]).assignee("MK"),
-                GanttTask::new(6, "Prototype review", 16.0, 0.0).after(&[5]),
-            ]).color(t.chart[2]),
-            GanttGroup::new("Engineering", vec![
-                GanttTask::new(7, "API + data model", 7.0, 8.0).progress(0.45).after(&[3]).assignee("LC"),
-                GanttTask::new(8, "Frontend build", 15.0, 10.0).progress(0.0).after(&[5, 7]).assignee("AK"),
-                GanttTask::new(9, "QA & bug bash", 25.0, 4.0).after(&[8]).assignee("DO"),
-            ]).color(t.chart[1]),
-            GanttGroup::new("Launch", vec![
-                GanttTask::new(10, "Marketing site", 20.0, 7.0).progress(0.1).assignee("JS"),
-                GanttTask::new(11, "Public launch", 30.0, 0.0).after(&[9, 10]),
-            ]).color(t.chart[4]),
+            GanttGroup::new(
+                "Discovery",
+                vec![
+                    GanttTask::new(1, "User interviews", 0.0, 4.0).progress(1.0).assignee("JS"),
+                    GanttTask::new(2, "Competitive audit", 1.0, 3.0).progress(1.0).assignee("MK"),
+                    GanttTask::new(3, "Scope sign-off", 5.0, 0.0).after(&[1, 2]),
+                ],
+            )
+            .color(t.chart[0]),
+            GanttGroup::new(
+                "Design",
+                vec![
+                    GanttTask::new(4, "Wireframes", 5.0, 5.0).progress(0.8).after(&[3]).assignee("AL"),
+                    GanttTask::new(5, "Visual design", 10.0, 6.0).progress(0.25).after(&[4]).assignee("MK"),
+                    GanttTask::new(6, "Prototype review", 16.0, 0.0).after(&[5]),
+                ],
+            )
+            .color(t.chart[2]),
+            GanttGroup::new(
+                "Engineering",
+                vec![
+                    GanttTask::new(7, "API + data model", 7.0, 8.0).progress(0.45).after(&[3]).assignee("LC"),
+                    GanttTask::new(8, "Frontend build", 15.0, 10.0).progress(0.0).after(&[5, 7]).assignee("AK"),
+                    GanttTask::new(9, "QA & bug bash", 25.0, 4.0).after(&[8]).assignee("DO"),
+                ],
+            )
+            .color(t.chart[1]),
+            GanttGroup::new(
+                "Launch",
+                vec![
+                    GanttTask::new(10, "Marketing site", 20.0, 7.0).progress(0.1).assignee("JS"),
+                    GanttTask::new(11, "Public launch", 30.0, 0.0).after(&[9, 10]),
+                ],
+            )
+            .color(t.chart[4]),
         ],
     }
 }
@@ -718,13 +1024,50 @@ fn timeline_data() -> Timeline {
         fps: 30.0,
         duration: 64.0,
         tracks: vec![
-            Track::new("Effects", ClipKind::Effect, vec![Clip::new(13, "Color grade · warm", 0.0, 24.0), Clip::new(14, "Glow", 33.0, 9.0)]),
-            Track::new("Titles", ClipKind::Title, vec![Clip::new(1, "Opening title", 1.0, 4.5), Clip::new(2, "Lower third · Maya", 14.0, 5.0), Clip::new(3, "End card", 52.0, 6.0)]),
-            Track::new("Video 2", ClipKind::Video, vec![Clip::new(4, "B-roll city.mp4", 9.0, 7.5), Clip::new(5, "Drone.mov", 33.0, 9.0)]),
-            Track::new("Video 1", ClipKind::Video, vec![Clip::new(6, "Intro.mp4", 0.0, 9.0), Clip::new(7, "Interview A.mp4", 9.0, 15.0), Clip::new(8, "Demo screen.mov", 24.0, 18.0), Clip::new(9, "Outro.mp4", 42.0, 16.0)]),
-            Track::new("Voice", ClipKind::Audio, vec![Clip::new(10, "VO take 3.wav", 2.0, 20.0), Clip::new(11, "VO take 5.wav", 25.0, 16.0)]),
+            Track::new(
+                "Effects",
+                ClipKind::Effect,
+                vec![Clip::new(13, "Color grade · warm", 0.0, 24.0), Clip::new(14, "Glow", 33.0, 9.0)],
+            ),
+            Track::new(
+                "Titles",
+                ClipKind::Title,
+                vec![
+                    Clip::new(1, "Opening title", 1.0, 4.5),
+                    Clip::new(2, "Lower third · Maya", 14.0, 5.0),
+                    Clip::new(3, "End card", 52.0, 6.0),
+                ],
+            ),
+            Track::new(
+                "Video 2",
+                ClipKind::Video,
+                vec![Clip::new(4, "B-roll city.mp4", 9.0, 7.5), Clip::new(5, "Drone.mov", 33.0, 9.0)],
+            ),
+            Track::new(
+                "Video 1",
+                ClipKind::Video,
+                vec![
+                    Clip::new(6, "Intro.mp4", 0.0, 9.0),
+                    Clip::new(7, "Interview A.mp4", 9.0, 15.0),
+                    Clip::new(8, "Demo screen.mov", 24.0, 18.0),
+                    Clip::new(9, "Outro.mp4", 42.0, 16.0),
+                ],
+            ),
+            Track::new(
+                "Voice",
+                ClipKind::Audio,
+                vec![Clip::new(10, "VO take 3.wav", 2.0, 20.0), Clip::new(11, "VO take 5.wav", 25.0, 16.0)],
+            ),
             Track::new("Music", ClipKind::Audio, vec![Clip::new(12, "Lo-fi bed.mp3", 0.0, 58.0)]),
-            Track::new("SFX", ClipKind::Audio, vec![Clip::new(15, "Whoosh.wav", 8.4, 1.2), Clip::new(16, "Click.wav", 23.6, 0.8), Clip::new(17, "Riser.wav", 40.0, 2.4)]),
+            Track::new(
+                "SFX",
+                ClipKind::Audio,
+                vec![
+                    Clip::new(15, "Whoosh.wav", 8.4, 1.2),
+                    Clip::new(16, "Click.wav", 23.6, 0.8),
+                    Clip::new(17, "Riser.wav", 40.0, 2.4),
+                ],
+            ),
         ],
     }
 }
@@ -734,9 +1077,28 @@ fn timeline_data() -> Timeline {
 // ------------------------------------------------------------------------------------------------
 
 fn grid_data() -> GridData {
-    let first = ["Ada", "Lin", "Sam", "Maya", "Noah", "Iris", "Omar", "Zoe", "Liam", "Aria", "Kenji", "Lena", "Mateo", "Priya", "Elias", "Nora"];
-    let last = ["Park", "Chen", "Ortiz", "Patel", "Kim", "Novak", "Haddad", "Silva", "Berg", "Rossi", "Tanaka", "Fischer", "Diaz", "Rao", "Weber", "Lund"];
-    let company = ["Northwind", "Acme Labs", "Globex", "Initech", "Umbrella", "Hooli", "Vandelay", "Stark Ind.", "Wayne Corp", "Pied Piper", "Soylent", "Tyrell"];
+    let first = [
+        "Ada", "Lin", "Sam", "Maya", "Noah", "Iris", "Omar", "Zoe", "Liam", "Aria", "Kenji", "Lena", "Mateo", "Priya",
+        "Elias", "Nora",
+    ];
+    let last = [
+        "Park", "Chen", "Ortiz", "Patel", "Kim", "Novak", "Haddad", "Silva", "Berg", "Rossi", "Tanaka", "Fischer",
+        "Diaz", "Rao", "Weber", "Lund",
+    ];
+    let company = [
+        "Northwind",
+        "Acme Labs",
+        "Globex",
+        "Initech",
+        "Umbrella",
+        "Hooli",
+        "Vandelay",
+        "Stark Ind.",
+        "Wayne Corp",
+        "Pied Piper",
+        "Soylent",
+        "Tyrell",
+    ];
     let plan = ["Enterprise", "Pro", "Starter", "Trial", "Churned", "Paused"];
     let country = ["US", "DE", "JP", "BR", "IN", "FR", "UK", "CA", "SE", "KR"];
     let mut rng = glowkit_core::Rng::new(42);
@@ -827,7 +1189,18 @@ fn sample_signature() -> Ink {
     let slant = 0.32;
     let sl = |p: Pos2| pos2(p.x + (base - p.y) * slant, p.y);
     // capital "J" with a curl
-    let cap = [pos2(92.0, 70.0), pos2(118.0, 64.0), pos2(150.0, 66.0), pos2(126.0, 72.0), pos2(118.0, 110.0), pos2(112.0, 160.0), pos2(98.0, 186.0), pos2(80.0, 182.0), pos2(78.0, 166.0), pos2(98.0, 150.0)];
+    let cap = [
+        pos2(92.0, 70.0),
+        pos2(118.0, 64.0),
+        pos2(150.0, 66.0),
+        pos2(126.0, 72.0),
+        pos2(118.0, 110.0),
+        pos2(112.0, 160.0),
+        pos2(98.0, 186.0),
+        pos2(80.0, 182.0),
+        pos2(78.0, 166.0),
+        pos2(98.0, 150.0),
+    ];
     ink.strokes.push(synthetic_stroke(&cap.map(sl)));
     // the cursive body: humps of varying height, tall ones loop like ascenders
     let heights = [0.42, 0.5, 1.1, 0.46, 0.4, 0.95, 0.5, 0.36, 0.44];
@@ -845,13 +1218,25 @@ fn sample_signature() -> Ink {
         x0 += w;
     }
     // trailing swoop
-    pts.extend([pos2(x0 + 14.0, base - 18.0), pos2(x0 + 30.0, base - 34.0), pos2(x0 + 22.0, base - 30.0), pos2(x0 + 34.0, base + 2.0), pos2(x0 + 60.0, base + 4.0)]);
+    pts.extend([
+        pos2(x0 + 14.0, base - 18.0),
+        pos2(x0 + 30.0, base - 34.0),
+        pos2(x0 + 22.0, base - 30.0),
+        pos2(x0 + 34.0, base + 2.0),
+        pos2(x0 + 60.0, base + 4.0),
+    ]);
     let body: Vec<Pos2> = pts.into_iter().map(sl).collect();
     ink.strokes.push(synthetic_stroke(&body));
     // t-cross and i-dot
     ink.strokes.push(synthetic_stroke(&[pos2(196.0, 112.0), pos2(222.0, 108.0), pos2(240.0, 110.0)].map(sl)));
     ink.strokes.push(synthetic_stroke(&[pos2(330.0, 96.0), pos2(333.0, 94.0), pos2(334.0, 97.0)]));
     // underline flourish
-    ink.strokes.push(synthetic_stroke(&[pos2(70.0, 176.0), pos2(160.0, 170.0), pos2(280.0, 166.0), pos2(400.0, 160.0), pos2(436.0, 152.0)]));
+    ink.strokes.push(synthetic_stroke(&[
+        pos2(70.0, 176.0),
+        pos2(160.0, 170.0),
+        pos2(280.0, 166.0),
+        pos2(400.0, 160.0),
+        pos2(436.0, 152.0),
+    ]));
     ink
 }

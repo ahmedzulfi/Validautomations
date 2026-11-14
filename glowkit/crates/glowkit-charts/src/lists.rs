@@ -2,7 +2,9 @@
 
 use crate::common::*;
 use egui::epaint::Mesh;
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, Widget,
+};
 use glowkit_core::anim::{ease, stagger, Easing};
 use glowkit_core::color::{contrast_text, mix, shade, with_alpha};
 use glowkit_core::Theme;
@@ -68,7 +70,8 @@ impl Widget for FunnelChart<'_> {
         let font = FontId::proportional(12.0);
         let left_w = self.data.iter().map(|d| text_width(&painter, &d.label, &font)).fold(0.0, f32::max) + 16.0;
         let right_w = 96.0;
-        let area = Rect::from_min_max(pos2(rect.left() + left_w, rect.top()), pos2(rect.right() - right_w, rect.bottom()));
+        let area =
+            Rect::from_min_max(pos2(rect.left() + left_w, rect.top()), pos2(rect.right() - right_w, rect.bottom()));
         let row = area.height() / (n as f32 + (n as f32 - 1.0) * self.gap);
         let conn = row * self.gap;
         let max = self.data.iter().fold(0.0f64, |m, d| m.max(d.value)).max(1e-9);
@@ -84,13 +87,23 @@ impl Widget for FunnelChart<'_> {
                 palette(&t, i)
             } else {
                 let k = i as f32 / (n.max(2) - 1) as f32;
-                if t.dark { mix(base_col, shade(base_col, 0.18), k).gamma_multiply(1.0 - 0.35 * k) } else { mix(base_col, shade(base_col, 0.2), k) }
+                if t.dark {
+                    mix(base_col, shade(base_col, 0.18), k).gamma_multiply(1.0 - 0.35 * k)
+                } else {
+                    mix(base_col, shade(base_col, 0.2), k)
+                }
             }
         };
-        let hover = resp.hover_pos().filter(|p| rect.contains(*p)).map(|p| (((p.y - area.top()) / (row + conn)).floor().max(0.0) as usize).min(n - 1));
-        let halpha = glowkit_core::anim::follow(ui, id.with("hover_alpha"), if hover.is_some() { 1.0 } else { 0.0 }, 16.0);
+        let hover = resp
+            .hover_pos()
+            .filter(|p| rect.contains(*p))
+            .map(|p| (((p.y - area.top()) / (row + conn)).floor().max(0.0) as usize).min(n - 1));
+        let halpha =
+            glowkit_core::anim::follow(ui, id.with("hover_alpha"), if hover.is_some() { 1.0 } else { 0.0 }, 16.0);
         let cx = area.center().x;
-        let widths: Vec<f32> = (0..n).map(|i| area.width() * cur[i].max(0.02) * ease(Easing::OutCubic, stagger(e, i, 0.12, 0.6))).collect();
+        let widths: Vec<f32> = (0..n)
+            .map(|i| area.width() * cur[i].max(0.02) * ease(Easing::OutCubic, stagger(e, i, 0.12, 0.6)))
+            .collect();
         for i in 0..n {
             let y = area.top() + i as f32 * (row + conn);
             let w = widths[i];
@@ -123,22 +136,56 @@ impl Widget for FunnelChart<'_> {
                 // drop-off label in the connector
                 let conv = if self.data[i].value > 0.0 { self.data[i + 1].value / self.data[i].value } else { 0.0 };
                 if conn > 14.0 && e > 0.8 {
-                    painter.text(pos2(cx, (y0 + y1) / 2.0), Align2::CENTER_CENTER, format!("↓ {}", format_percent(conv)), FontId::proportional(10.5), t.muted_foreground);
+                    painter.text(
+                        pos2(cx, (y0 + y1) / 2.0),
+                        Align2::CENTER_CENTER,
+                        format!("↓ {}", format_percent(conv)),
+                        FontId::proportional(10.5),
+                        t.muted_foreground,
+                    );
                 }
             }
             let hl = hover == Some(i);
-            painter.text(pos2(rect.left(), y + row / 2.0), Align2::LEFT_CENTER, &self.data[i].label, font.clone(), if hl { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, 0.4) });
+            painter.text(
+                pos2(rect.left(), y + row / 2.0),
+                Align2::LEFT_CENTER,
+                &self.data[i].label,
+                font.clone(),
+                if hl { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, 0.4) },
+            );
             if w > 60.0 {
-                painter.text(r.center(), Align2::CENTER_CENTER, (self.base.format)(self.data[i].value), FontId::proportional(12.5), contrast_text(col(i)));
+                painter.text(
+                    r.center(),
+                    Align2::CENTER_CENTER,
+                    (self.base.format)(self.data[i].value),
+                    FontId::proportional(12.5),
+                    contrast_text(col(i)),
+                );
             }
             let of_top = self.data[i].value / self.data[0].value.max(1e-9);
-            painter.text(pos2(rect.right(), y + row / 2.0 - 7.0), Align2::RIGHT_CENTER, format_percent(of_top), FontId::proportional(13.0), t.foreground);
-            painter.text(pos2(rect.right(), y + row / 2.0 + 8.0), Align2::RIGHT_CENTER, "of total", FontId::proportional(10.5), t.muted_foreground);
+            painter.text(
+                pos2(rect.right(), y + row / 2.0 - 7.0),
+                Align2::RIGHT_CENTER,
+                format_percent(of_top),
+                FontId::proportional(13.0),
+                t.foreground,
+            );
+            painter.text(
+                pos2(rect.right(), y + row / 2.0 + 8.0),
+                Align2::RIGHT_CENTER,
+                "of total",
+                FontId::proportional(10.5),
+                t.muted_foreground,
+            );
         }
         if let (Some(i), true) = (hover, self.base.tooltip) {
             let mut rows = vec![TipRow::new(Some(col(i)), "Count", (self.base.format)(self.data[i].value))];
             if i > 0 {
-                rows.push(TipRow::new(None, "From previous", format_percent(self.data[i].value / self.data[i - 1].value.max(1e-9))));
+                rows.push(TipRow::new(
+                    None,
+                    "From previous",
+                    format_percent(self.data[i].value / self.data[i - 1].value.max(1e-9)),
+                ));
             }
             rows.push(TipRow::new(None, "Of total", format_percent(self.data[i].value / self.data[0].value.max(1e-9))));
             tooltip(ui, id, resp.hover_pos().unwrap_or(rect.center()), &self.data[i].label, &rows, halpha);
@@ -228,21 +275,31 @@ impl Widget for BarList<'_> {
         let painter = ui.painter_at(rect.expand(2.0));
         let mut order: Vec<usize> = (0..n).collect();
         if self.sorted {
-            order.sort_by(|a, b| self.data[*b].value.partial_cmp(&self.data[*a].value).unwrap_or(std::cmp::Ordering::Equal));
+            order.sort_by(|a, b| {
+                self.data[*b].value.partial_cmp(&self.data[*a].value).unwrap_or(std::cmp::Ordering::Equal)
+            });
         }
         let font = FontId::proportional(12.5);
         let total: f64 = self.data.iter().map(|d| d.value.max(0.0)).sum();
-        let vals: Vec<String> = order.iter().map(|&i| {
-            let v = (self.base.format)(self.data[i].value);
-            if self.share { format!("{v}  {}", format_percent(self.data[i].value / total.max(1e-9))) } else { v }
-        }).collect();
+        let vals: Vec<String> = order
+            .iter()
+            .map(|&i| {
+                let v = (self.base.format)(self.data[i].value);
+                if self.share {
+                    format!("{v}  {}", format_percent(self.data[i].value / total.max(1e-9)))
+                } else {
+                    v
+                }
+            })
+            .collect();
         let val_w = vals.iter().map(|v| text_width(&painter, v, &font)).fold(0.0, f32::max) + 16.0;
         let bar_area = rect.width() - val_w;
         let max = self.data.iter().fold(0.0f64, |m, d| m.max(d.value)).max(1e-9);
         let targets: Vec<f32> = order.iter().map(|&i| (self.data[i].value / max) as f32).collect();
         let cur = tween(ui, id, &targets);
         let e = entry_time(ui, id, self.base.animate, 0.7 + 0.05 * n as f32);
-        let hover = resp.hover_pos().map(|p| (((p.y - rect.top()) / (self.row_h + gap)).floor().max(0.0) as usize).min(n - 1));
+        let hover =
+            resp.hover_pos().map(|p| (((p.y - rect.top()) / (self.row_h + gap)).floor().max(0.0) as usize).min(n - 1));
         for (row, &i) in order.iter().enumerate() {
             let d = &self.data[i];
             let y = rect.top() + row as f32 * (self.row_h + gap);
@@ -252,14 +309,34 @@ impl Widget for BarList<'_> {
             let hl = hover == Some(row);
             let hov = glowkit_core::anim::follow(ui, id.with(("hov", row)), if hl { 1.0 } else { 0.0 }, 16.0);
             if hov > 0.01 {
-                painter.rect_filled(Rect::from_min_size(pos2(rect.left() - 4.0, y - 2.0), vec2(rect.width() + 8.0, self.row_h + 4.0)), CornerRadius::same(8), t.muted.gamma_multiply(hov * 0.8));
+                painter.rect_filled(
+                    Rect::from_min_size(pos2(rect.left() - 4.0, y - 2.0), vec2(rect.width() + 8.0, self.row_h + 4.0)),
+                    CornerRadius::same(8),
+                    t.muted.gamma_multiply(hov * 0.8),
+                );
             }
             let fill = with_alpha(base_c, if t.dark { 0.24 + 0.1 * hov } else { 0.18 + 0.08 * hov });
             let r = Rect::from_min_size(pos2(rect.left(), y), vec2(w, self.row_h));
             painter.rect_filled(r, CornerRadius::same(6), fill);
-            painter.rect_filled(Rect::from_min_size(r.min, vec2(3.0, self.row_h)), CornerRadius { nw: 6, sw: 6, ne: 0, se: 0 }, base_c.gamma_multiply(0.9));
-            painter.text(pos2(rect.left() + 12.0, y + self.row_h / 2.0), Align2::LEFT_CENTER, &d.label, font.clone(), t.foreground);
-            painter.text(pos2(rect.right(), y + self.row_h / 2.0), Align2::RIGHT_CENTER, &vals[row], font.clone(), if hl { t.foreground } else { t.foreground.gamma_multiply(0.85) });
+            painter.rect_filled(
+                Rect::from_min_size(r.min, vec2(3.0, self.row_h)),
+                CornerRadius { nw: 6, sw: 6, ne: 0, se: 0 },
+                base_c.gamma_multiply(0.9),
+            );
+            painter.text(
+                pos2(rect.left() + 12.0, y + self.row_h / 2.0),
+                Align2::LEFT_CENTER,
+                &d.label,
+                font.clone(),
+                t.foreground,
+            );
+            painter.text(
+                pos2(rect.right(), y + self.row_h / 2.0),
+                Align2::RIGHT_CENTER,
+                &vals[row],
+                font.clone(),
+                if hl { t.foreground } else { t.foreground.gamma_multiply(0.85) },
+            );
         }
         resp
     }
@@ -328,7 +405,12 @@ impl Widget for ProgressList<'_> {
         let id = resp.id;
         let painter = ui.painter_at(rect.expand(4.0));
         let e = entry_time(ui, id, self.animate, 0.8 + 0.08 * n as f32);
-        let fracs: Vec<f32> = self.data.iter().enumerate().map(|(i, d)| (d.value / self.targets.get(i).copied().unwrap_or(d.value).max(1e-9)) as f32).collect();
+        let fracs: Vec<f32> = self
+            .data
+            .iter()
+            .enumerate()
+            .map(|(i, d)| (d.value / self.targets.get(i).copied().unwrap_or(d.value).max(1e-9)) as f32)
+            .collect();
         let cur = tween(ui, id, &fracs);
         let font = FontId::proportional(12.5);
         for (i, d) in self.data.iter().enumerate() {
@@ -338,8 +420,20 @@ impl Widget for ProgressList<'_> {
             painter.text(pos2(rect.left(), y + 9.0), Align2::LEFT_CENTER, &d.label, font.clone(), t.foreground);
             let over = cur[i] > 1.0;
             let pct = format_percent(cur[i] as f64);
-            let pr = painter.text(pos2(rect.right(), y + 9.0), Align2::RIGHT_CENTER, &pct, font.clone(), if over { t.destructive } else { t.foreground });
-            painter.text(pos2(pr.left() - 10.0, y + 9.0), Align2::RIGHT_CENTER, format!("{} / {}", (self.format)(d.value), (self.format)(target)), FontId::proportional(11.5), t.muted_foreground);
+            let pr = painter.text(
+                pos2(rect.right(), y + 9.0),
+                Align2::RIGHT_CENTER,
+                &pct,
+                font.clone(),
+                if over { t.destructive } else { t.foreground },
+            );
+            painter.text(
+                pos2(pr.left() - 10.0, y + 9.0),
+                Align2::RIGHT_CENTER,
+                format!("{} / {}", (self.format)(d.value), (self.format)(target)),
+                FontId::proportional(11.5),
+                t.muted_foreground,
+            );
             let track = Rect::from_min_size(pos2(rect.left(), y + 24.0), vec2(rect.width(), self.thickness));
             let cr = CornerRadius::same((self.thickness / 2.0) as u8);
             painter.rect_filled(track, cr, track_color(&t));
@@ -419,13 +513,15 @@ impl Widget for Treemap<'_> {
         let e = entry_time(ui, id, self.base.animate, 1.4);
         // rank for stagger (largest first)
         let mut order: Vec<usize> = (0..n).collect();
-        order.sort_by(|a, b| self.data[*b].value.partial_cmp(&self.data[*a].value).unwrap_or(std::cmp::Ordering::Equal));
+        order
+            .sort_by(|a, b| self.data[*b].value.partial_cmp(&self.data[*a].value).unwrap_or(std::cmp::Ordering::Equal));
         let mut rank = vec![0; n];
         for (r, &i) in order.iter().enumerate() {
             rank[i] = r;
         }
         let hover = resp.hover_pos().and_then(|p| tiles.iter().position(|r| r.contains(p)));
-        let halpha = glowkit_core::anim::follow(ui, id.with("hover_alpha"), if hover.is_some() { 1.0 } else { 0.0 }, 16.0);
+        let halpha =
+            glowkit_core::anim::follow(ui, id.with("hover_alpha"), if hover.is_some() { 1.0 } else { 0.0 }, 16.0);
         for (i, d) in self.data.iter().enumerate() {
             let full = tiles[i].shrink(self.gap / 2.0);
             if full.width() < 1.0 || full.height() < 1.0 {
@@ -443,7 +539,13 @@ impl Widget for Treemap<'_> {
             let dim = if hover.is_some() && !hl { 1.0 - 0.3 * halpha } else { 1.0 };
             let c = shade(base_c, 0.06 * hov).gamma_multiply(g.clamp(0.0, 1.0) * dim);
             let cr = CornerRadius::same(self.radius.min(r.width().min(r.height()) / 2.0) as u8);
-            glowkit_core::paint::gradient_rect(&painter, r, cr.nw as f32, 120.0, &[c, shade(c, if t.dark { -0.05 } else { -0.04 })]);
+            glowkit_core::paint::gradient_rect(
+                &painter,
+                r,
+                cr.nw as f32,
+                120.0,
+                &[c, shade(c, if t.dark { -0.05 } else { -0.04 })],
+            );
             if hov > 0.01 {
                 painter.rect_stroke(r, cr, Stroke::new(1.5, with_alpha(Color32::WHITE, 0.6 * hov)), StrokeKind::Inside);
             }
@@ -452,8 +554,15 @@ impl Widget for Treemap<'_> {
             if r.width() > 34.0 && r.height() > 40.0 {
                 let name = truncate(&painter, &d.label, &f1, r.width() - 18.0);
                 painter.text(r.left_top() + vec2(10.0, 9.0), Align2::LEFT_TOP, name, f1, tc);
-                let val = truncate(&painter, &(self.base.format)(d.value), &FontId::proportional(11.5), r.width() - 18.0);
-                painter.text(r.left_top() + vec2(10.0, 26.0), Align2::LEFT_TOP, val, FontId::proportional(11.5), tc.gamma_multiply(0.75));
+                let val =
+                    truncate(&painter, &(self.base.format)(d.value), &FontId::proportional(11.5), r.width() - 18.0);
+                painter.text(
+                    r.left_top() + vec2(10.0, 26.0),
+                    Align2::LEFT_TOP,
+                    val,
+                    FontId::proportional(11.5),
+                    tc.gamma_multiply(0.75),
+                );
             } else if r.width() > 24.0 && r.height() > 18.0 {
                 let f2 = FontId::proportional(11.0);
                 let name = truncate(&painter, &d.label, &f2, r.width() - 8.0);
@@ -462,7 +571,10 @@ impl Widget for Treemap<'_> {
         }
         if let (Some(i), true) = (hover, self.base.tooltip) {
             let d = &self.data[i];
-            let rows = [TipRow::new(Some(d.color.unwrap_or_else(|| palette(&t, i))), "Value", (self.base.format)(d.value)), TipRow::new(None, "Share", format_percent(d.value / total))];
+            let rows = [
+                TipRow::new(Some(d.color.unwrap_or_else(|| palette(&t, i))), "Value", (self.base.format)(d.value)),
+                TipRow::new(None, "Share", format_percent(d.value / total)),
+            ];
             tooltip(ui, id, resp.hover_pos().unwrap_or(rect.center()), &d.label, &rows, halpha);
         }
         resp

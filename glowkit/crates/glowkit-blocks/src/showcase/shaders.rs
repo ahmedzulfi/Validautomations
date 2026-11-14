@@ -15,7 +15,10 @@ use std::f32::consts::TAU;
 /// Smoothed pointer position in `rect` (or a wandering point when idle), plus "is real".
 fn pointer(ui: &Ui, resp: &Response, rect: Rect) -> (Pos2, bool) {
     let time = glowkit_core::time(ui);
-    let auto = pos2(rect.center().x + rect.width() * 0.3 * (time * 0.45).sin(), rect.center().y + rect.height() * 0.25 * (time * 0.7).cos());
+    let auto = pos2(
+        rect.center().x + rect.width() * 0.3 * (time * 0.45).sin(),
+        rect.center().y + rect.height() * 0.25 * (time * 0.7).cos(),
+    );
     let target = resp.hover_pos().unwrap_or(auto);
     let x = glowkit_core::anim::follow(ui, resp.id.with("px"), target.x, 6.0);
     let y = glowkit_core::anim::follow(ui, resp.id.with("py"), target.y, 6.0);
@@ -92,8 +95,13 @@ impl DarkVeil {
         let t = Theme::of(ui);
         let time = glowkit_core::time(ui) * self.speed;
         let tint_a = self.tint.unwrap_or(t.gradient[0]);
-        let tint = if self.hue_shift { tint_a.lerp_to_gamma(t.gradient[1], 0.5 + 0.5 * (time * 0.07).sin()) } else { tint_a };
-        let (base, hi) = if t.dark { (hex("#040208"), mix(tint, Color32::WHITE, 0.25)) } else { (hex("#FBFAFF"), mix(tint, Color32::WHITE, 0.15)) };
+        let tint =
+            if self.hue_shift { tint_a.lerp_to_gamma(t.gradient[1], 0.5 + 0.5 * (time * 0.07).sin()) } else { tint_a };
+        let (base, hi) = if t.dark {
+            (hex("#040208"), mix(tint, Color32::WHITE, 0.25))
+        } else {
+            (hex("#FBFAFF"), mix(tint, Color32::WHITE, 0.15))
+        };
         let aspect = rect.width() / rect.height().max(1.0);
         let p = ui.painter_at(rect);
         let pu = vec2((ptr.x - rect.min.x) / rect.width(), (ptr.y - rect.min.y) / rect.height());
@@ -159,7 +167,11 @@ impl ColorBends {
     /// Paint into `rect`, bending toward `ptr`.
     pub fn paint_at(&self, ui: &Ui, rect: Rect, ptr: Pos2) {
         let t = Theme::of(ui);
-        let colors = if self.colors.is_empty() { vec![hex("#FF3D7F"), hex("#FF9F1C"), hex("#FFE14D"), hex("#2EC4B6"), hex("#3A86FF"), hex("#8338EC")] } else { self.colors.clone() };
+        let colors = if self.colors.is_empty() {
+            vec![hex("#FF3D7F"), hex("#FF9F1C"), hex("#FFE14D"), hex("#2EC4B6"), hex("#3A86FF"), hex("#8338EC")]
+        } else {
+            self.colors.clone()
+        };
         let time = glowkit_core::time(ui) * self.speed;
         let aspect = rect.width() / rect.height().max(1.0);
         let pu = vec2((ptr.x - rect.min.x) / rect.width(), (ptr.y - rect.min.y) / rect.height());
@@ -173,7 +185,8 @@ impl ColorBends {
             let y = uv.y - 0.5;
             let d = (uv - pu) * vec2(aspect, 1.0);
             let pull = (-d.length_sq() * 6.0).exp() * 0.35;
-            let h = x * 0.75 + y * 0.55
+            let h = x * 0.75
+                + y * 0.55
                 + 0.22 * (y * 3.1 + time * 0.6).sin()
                 + 0.16 * (x * 2.3 - time * 0.45).sin() * (y * 1.7 + time * 0.3).cos()
                 + pull * (d.y * 4.0).sin();
@@ -235,7 +248,11 @@ impl GradientBlinds {
     /// Paint into `rect` with the spotlight at `ptr`.
     pub fn paint_at(&self, ui: &Ui, rect: Rect, ptr: Pos2) {
         let t = Theme::of(ui);
-        let colors = if self.colors.is_empty() { vec![t.gradient[0], t.gradient[1], t.gradient[2], t.gradient[0]] } else { self.colors.clone() };
+        let colors = if self.colors.is_empty() {
+            vec![t.gradient[0], t.gradient[1], t.gradient[2], t.gradient[0]]
+        } else {
+            self.colors.clone()
+        };
         let time = glowkit_core::time(ui) * self.speed;
         let p = ui.painter_at(rect);
         let n = self.slats;
@@ -255,7 +272,8 @@ impl GradientBlinds {
                     let x = rect.min.x + (s as f32 + a) * sw + (v - 0.5) * rect.height() * shear;
                     let q = pos2(x, y);
                     let u = (q.x - rect.min.x) / rect.width();
-                    let flow = 0.5 + 0.5 * (u * 2.0 + v * 0.8 - time * 0.25 + (time * 0.4 + s as f32 * 0.35).sin() * 0.12).sin();
+                    let flow = 0.5
+                        + 0.5 * (u * 2.0 + v * 0.8 - time * 0.25 + (time * 0.4 + s as f32 * 0.35).sin() * 0.12).sin();
                     let c = gradient(&colors, (u * 0.8 + 0.2 * flow).clamp(0.0, 1.0));
                     // per-slat lighting: bright leading edge, falloff, thin dark gap
                     let shade = (1.0 - a).powf(1.6) * 0.55 + 0.45 * (1.0 - (a - 0.25).abs() * 1.3).clamp(0.0, 1.0);
@@ -334,7 +352,14 @@ impl Default for PixelBlast {
 impl PixelBlast {
     /// Square pixels over drifting noise.
     pub fn new() -> Self {
-        Self { size: None, speed: 1.0, pixel: 8.0, shape: PixelShape::Square, pattern: PixelPattern::Noise, colors: None }
+        Self {
+            size: None,
+            speed: 1.0,
+            pixel: 8.0,
+            shape: PixelShape::Square,
+            pattern: PixelPattern::Noise,
+            colors: None,
+        }
     }
     /// Pixel pitch in points.
     pub fn pixel_size(mut self, s: f32) -> Self {
@@ -467,10 +492,16 @@ impl FaultyTerminal {
         let tick = (time * 8.0) as u64;
         let flicker = 0.92 + 0.08 * hash01(tick);
         // a whole-screen glitch every few seconds
-        let glitch_row = if hash01(tick / 3 + 77) < 0.12 { Some((hash01(tick + 5) * rows as f32) as usize) } else { None };
-        let glyphs: Vec<std::sync::Arc<egui::Galley>> = charset.iter().map(|c| p.layout_no_wrap(c.to_string(), font.clone(), Color32::PLACEHOLDER)).collect();
+        let glitch_row =
+            if hash01(tick / 3 + 77) < 0.12 { Some((hash01(tick + 5) * rows as f32) as usize) } else { None };
+        let glyphs: Vec<std::sync::Arc<egui::Galley>> =
+            charset.iter().map(|c| p.layout_no_wrap(c.to_string(), font.clone(), Color32::PLACEHOLDER)).collect();
         for y in 0..rows {
-            let shift = if glitch_row.is_some_and(|g| g.abs_diff(y) <= 1) { (hash01(tick * 7 + y as u64) - 0.5) * cw * 6.0 } else { 0.0 };
+            let shift = if glitch_row.is_some_and(|g| g.abs_diff(y) <= 1) {
+                (hash01(tick * 7 + y as u64) - 0.5) * cw * 6.0
+            } else {
+                0.0
+            };
             for x in 0..cols {
                 let i = (y * cols + x) as u64;
                 let c = pos2(ox + x as f32 * cw + shift, oy + y as f32 * ch);
@@ -494,7 +525,11 @@ impl FaultyTerminal {
         let mut m = Mesh::default();
         let mut y = rect.min.y;
         while y < rect.max.y {
-            mesh_rect(&mut m, Rect::from_min_size(pos2(rect.min.x, y), vec2(rect.width(), 1.0)), Color32::from_black_alpha(70));
+            mesh_rect(
+                &mut m,
+                Rect::from_min_size(pos2(rect.min.x, y), vec2(rect.width(), 1.0)),
+                Color32::from_black_alpha(70),
+            );
             y += 3.0;
         }
         p.add(Shape::mesh(m));

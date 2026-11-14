@@ -92,10 +92,15 @@ impl LayoutScope {
         let rel = target.translate(-self.origin.to_vec2());
         let dt = glowkit_core::dt(ui);
         let tr = self.transition;
-        let (r, animating) = glowkit_core::with_state(ui, key, || MotionValue::new(rel), |mv: &mut MotionValue<Rect>| {
-            mv.animate_to(rel, tr);
-            (mv.update(dt), mv.is_animating())
-        });
+        let (r, animating) = glowkit_core::with_state(
+            ui,
+            key,
+            || MotionValue::new(rel),
+            |mv: &mut MotionValue<Rect>| {
+                mv.animate_to(rel, tr);
+                (mv.update(dt), mv.is_animating())
+            },
+        );
         if animating {
             ui.ctx().request_repaint();
         }
@@ -103,7 +108,13 @@ impl LayoutScope {
     }
 
     /// Place an item at an explicit `target` rect (no space is allocated) and draw it.
-    pub fn item_at(&mut self, ui: &mut Ui, key: impl Hash + std::fmt::Debug + Copy, target: Rect, add: impl FnOnce(&mut Ui)) -> Response {
+    pub fn item_at(
+        &mut self,
+        ui: &mut Ui,
+        key: impl Hash + std::fmt::Debug + Copy,
+        target: Rect,
+        add: impl FnOnce(&mut Ui),
+    ) -> Response {
         let frame = self.rect(ui, key, target);
         let layer = if frame.animating { self.overlay } else { ui.layer_id() };
         let mut child = ui.new_child(
@@ -117,7 +128,13 @@ impl LayoutScope {
     }
 
     /// Allocate `size` in the parent layout as the item's target and draw it animated.
-    pub fn item(&mut self, ui: &mut Ui, key: impl Hash + std::fmt::Debug + Copy, size: Vec2, add: impl FnOnce(&mut Ui)) -> Response {
+    pub fn item(
+        &mut self,
+        ui: &mut Ui,
+        key: impl Hash + std::fmt::Debug + Copy,
+        size: Vec2,
+        add: impl FnOnce(&mut Ui),
+    ) -> Response {
         let (target, _) = ui.allocate_exact_size(size, Sense::hover());
         self.item_at(ui, key, target, add)
     }

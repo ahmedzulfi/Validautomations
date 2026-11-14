@@ -373,7 +373,11 @@ impl Scene {
                     let (b0, a0) = vbase(ia);
                     let (b1, _) = vbase(ib);
                     let (b2, _) = vbase(ic);
-                    let bb = Rgb((b0[0] + b1[0] + b2[0]) / 3.0, (b0[1] + b1[1] + b2[1]) / 3.0, (b0[2] + b1[2] + b2[2]) / 3.0);
+                    let bb = Rgb(
+                        (b0[0] + b1[0] + b2[0]) / 3.0,
+                        (b0[1] + b1[1] + b2[1]) / 3.0,
+                        (b0[2] + b1[2] + b2[2]) / 3.0,
+                    );
                     let cen = (wp[ia] + wp[ib] + wp[ic]) / 3.0;
                     let c = self.shade(mat, &grad, bb, cen, fnw);
                     let mut c4 = [c.0, c.1, c.2, a0 * mat.opacity];
@@ -391,7 +395,11 @@ impl Scene {
                 }
             }
         }
-        if let Some(w) = mat.wire.or(if mat.shading == Shading::Wireframe { Some(crate::material::Wire::new(mat.color)) } else { None }) {
+        if let Some(w) = mat.wire.or(if mat.shading == Shading::Wireframe {
+            Some(crate::material::Wire::new(mat.color))
+        } else {
+            None
+        }) {
             let overlay = mat.shading != Shading::Wireframe;
             let span = (dmax - dmin).max(1e-3);
             let bias = span * 0.02 + 0.01;
@@ -418,10 +426,23 @@ impl Scene {
                 let depth = -(va.z + vb.z) * 0.5 - bias;
                 if w.glow > 0.0 {
                     let g = |c: [f32; 4]| additive_c(Self::to_c32([c[0], c[1], c[2], c[3] * 0.22 * w.glow], false));
-                    self.push(depth + bias * 0.01, Prim::Line { a: pa, b: pb, wa: w.width * 5.0, wb: w.width * 5.0, ca: g(ca), cb: g(cb) });
+                    self.push(
+                        depth + bias * 0.01,
+                        Prim::Line { a: pa, b: pb, wa: w.width * 5.0, wb: w.width * 5.0, ca: g(ca), cb: g(cb) },
+                    );
                 }
                 self.stats.lines += 1;
-                self.push(depth, Prim::Line { a: pa, b: pb, wa: w.width, wb: w.width, ca: Self::to_c32(ca, additive), cb: Self::to_c32(cb, additive) });
+                self.push(
+                    depth,
+                    Prim::Line {
+                        a: pa,
+                        b: pb,
+                        wa: w.width,
+                        wb: w.width,
+                        ca: Self::to_c32(ca, additive),
+                        cb: Self::to_c32(cb, additive),
+                    },
+                );
             }
         }
         self.restore(wp, vp, wn, col);
@@ -639,7 +660,11 @@ impl Scene {
             for axis in 0..2 {
                 for s in 0..pieces {
                     let (t0, t1) = (-h + size * s as f32 / pieces as f32, -h + size * (s + 1) as f32 / pieces as f32);
-                    let (a, b) = if axis == 0 { (Vec3::new(k, y, t0), Vec3::new(k, y, t1)) } else { (Vec3::new(t0, y, k), Vec3::new(t1, y, k)) };
+                    let (a, b) = if axis == 0 {
+                        (Vec3::new(k, y, t0), Vec3::new(k, y, t1))
+                    } else {
+                        (Vec3::new(t0, y, k), Vec3::new(t1, y, k))
+                    };
                     let fa = |p: Vec3| {
                         let r = (p.x * p.x + p.z * p.z).sqrt() / h;
                         color.gamma_multiply((1.0 - r * r).clamp(0.0, 1.0))
@@ -654,13 +679,32 @@ impl Scene {
     /// font size in world units; `anchor` picks which point of the text sits at `origin`.
     /// One-sided: invisible from behind.
     #[allow(clippy::too_many_arguments)]
-    pub fn text(&mut self, text: &str, origin: Vec3, right: Vec3, up: Vec3, height: f32, color: Color32, anchor: Align2) {
+    pub fn text(
+        &mut self,
+        text: &str,
+        origin: Vec3,
+        right: Vec3,
+        up: Vec3,
+        height: f32,
+        color: Color32,
+        anchor: Align2,
+    ) {
         self.text_fitted(text, origin, right, up, height, f32::INFINITY, color, anchor);
     }
 
     /// Like [`Scene::text`], but shrinks the text so it is at most `max_width` world units wide.
     #[allow(clippy::too_many_arguments)]
-    pub fn text_fitted(&mut self, text: &str, origin: Vec3, right: Vec3, up: Vec3, height: f32, max_width: f32, color: Color32, anchor: Align2) {
+    pub fn text_fitted(
+        &mut self,
+        text: &str,
+        origin: Vec3,
+        right: Vec3,
+        up: Vec3,
+        height: f32,
+        max_width: f32,
+        color: Color32,
+        anchor: Align2,
+    ) {
         let normal = right.cross(up);
         let to_cam = if self.proj.ortho { -self.camera.forward() } else { self.camera.position - origin };
         if normal.dot(to_cam) <= 0.0 || text.is_empty() {
@@ -701,7 +745,11 @@ impl Scene {
                     return;
                 }
                 let a = vx.color.a() as f32 / 255.0;
-                out.vertices.push(Vertex { pos: self.proj.project_unchecked(v), uv: pos2(vx.uv.x * norm.x, vx.uv.y * norm.y), color: color.gamma_multiply(a) });
+                out.vertices.push(Vertex {
+                    pos: self.proj.project_unchecked(v),
+                    uv: pos2(vx.uv.x * norm.x, vx.uv.y * norm.y),
+                    color: color.gamma_multiply(a),
+                });
             }
             out.indices.extend(m.indices.iter().map(|i| i + base));
         }
@@ -732,7 +780,11 @@ impl Scene {
             let base = out.vertices.len() as u32;
             for vx in &m.vertices {
                 let a = vx.color.a() as f32 / 255.0;
-                out.vertices.push(Vertex { pos: origin + row.pos.to_vec2() + vx.pos.to_vec2(), uv: pos2(vx.uv.x * norm.x, vx.uv.y * norm.y), color: color.gamma_multiply(a) });
+                out.vertices.push(Vertex {
+                    pos: origin + row.pos.to_vec2() + vx.pos.to_vec2(),
+                    uv: pos2(vx.uv.x * norm.x, vx.uv.y * norm.y),
+                    color: color.gamma_multiply(a),
+                });
             }
             out.indices.extend(m.indices.iter().map(|i| i + base));
         }
@@ -766,7 +818,9 @@ impl Scene {
                 }
                 Prim::Line { a, b, wa, wb, ca, cb } => emit_line(&mut m, *a, *b, *wa, *wb, *ca, *cb),
                 Prim::Disc { c, r, color, soft } => emit_disc(&mut m, *c, *r, *color, *soft),
-                Prim::Ball { c, r, color, light, spec, ambient } => emit_ball(&mut m, *c, *r, *color, *light, *spec, *ambient),
+                Prim::Ball { c, r, color, light, spec, ambient } => {
+                    emit_ball(&mut m, *c, *r, *color, *light, *spec, *ambient)
+                }
                 Prim::Text(tm) => {
                     flush(&mut m, &mut shapes);
                     shapes.push(Shape::mesh((**tm).clone()));
@@ -848,7 +902,8 @@ fn emit_disc(m: &mut EMesh, c: Pos2, r: f32, color: Color32, soft: bool) {
     };
     let base = m.vertices.len() as u32;
     m.vertices.push(Vertex { pos: c, uv: WHITE_UV, color });
-    let (r1, c1, r2) = if soft { (r * 0.4, color.gamma_multiply(0.45), r) } else { ((r - 0.35).max(0.3), color, r + 0.7) };
+    let (r1, c1, r2) =
+        if soft { (r * 0.4, color.gamma_multiply(0.45), r) } else { ((r - 0.35).max(0.3), color, r + 0.7) };
     let small = !soft && r < 1.0;
     let c1 = if small { color.gamma_multiply(r.max(0.15)) } else { c1 };
     for i in 0..n {
@@ -865,8 +920,20 @@ fn emit_disc(m: &mut EMesh, c: Pos2, r: f32, color: Color32, soft: bool) {
 }
 
 fn emit_ball(m: &mut EMesh, c: Pos2, r: f32, color: Color32, l: [f32; 3], spec: f32, ambient: f32) {
-    let segs: u32 = if r < 3.0 { 8 } else if r < 10.0 { 16 } else { 28 };
-    let rings: u32 = if r < 3.0 { 2 } else if r < 10.0 { 4 } else { 6 };
+    let segs: u32 = if r < 3.0 {
+        8
+    } else if r < 10.0 {
+        16
+    } else {
+        28
+    };
+    let rings: u32 = if r < 3.0 {
+        2
+    } else if r < 10.0 {
+        4
+    } else {
+        6
+    };
     let base_c = Rgb::from(color);
     let alpha = color.a() as f32 / 255.0;
     let additive = color.a() == 0;
@@ -900,7 +967,11 @@ fn emit_ball(m: &mut EMesh, c: Pos2, r: f32, color: Color32, l: [f32; 3], spec: 
     // feather ring
     for i in 0..segs {
         let a = i as f32 / segs as f32 * TAU;
-        m.vertices.push(Vertex { pos: c + vec2(a.cos(), a.sin()) * (r + 0.6), uv: WHITE_UV, color: Color32::TRANSPARENT });
+        m.vertices.push(Vertex {
+            pos: c + vec2(a.cos(), a.sin()) * (r + 0.6),
+            uv: WHITE_UV,
+            color: Color32::TRANSPARENT,
+        });
     }
     for i in 0..segs {
         let j = (i + 1) % segs;
@@ -946,11 +1017,19 @@ mod tests {
             let mut drawn = 0;
             for i in 0..n {
                 let mut s = Scene::new(ui.painter().clone(), rect, Camera::looking_at(vec3(0.0, 1.0, 4.0), Vec3::ZERO));
-                s.draw(&knot, Transform::IDENTITY.with_euler(0.0, i as f32 * 0.1, 0.0), &Material::smooth(Color32::WHITE));
+                s.draw(
+                    &knot,
+                    Transform::IDENTITY.with_euler(0.0, i as f32 * 0.1, 0.0),
+                    &Material::smooth(Color32::WHITE),
+                );
                 drawn = s.stats().triangles_drawn;
                 s.paint();
             }
-            println!("{} tris in, {drawn} drawn: {:.2} ms/frame", knot.triangle_count(), t0.elapsed().as_secs_f64() * 1000.0 / n as f64);
+            println!(
+                "{} tris in, {drawn} drawn: {:.2} ms/frame",
+                knot.triangle_count(),
+                t0.elapsed().as_secs_f64() * 1000.0 / n as f64
+            );
         });
         out.textures_delta.clear();
     }

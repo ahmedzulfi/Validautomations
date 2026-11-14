@@ -3,7 +3,10 @@
 use crate::common::{self, AvatarKind};
 use crate::icons::{paint_icon, Icon};
 use crate::markdown::Markdown;
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Id, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Id, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder,
+    Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
@@ -166,8 +169,12 @@ impl<'a> MessageActions<'a> {
                                 }
                                 st.copied_at = now;
                             }
-                            MessageAction::Like => st.feedback = if st.feedback == Some(true) { None } else { Some(true) },
-                            MessageAction::Dislike => st.feedback = if st.feedback == Some(false) { None } else { Some(false) },
+                            MessageAction::Like => {
+                                st.feedback = if st.feedback == Some(true) { None } else { Some(true) }
+                            }
+                            MessageAction::Dislike => {
+                                st.feedback = if st.feedback == Some(false) { None } else { Some(false) }
+                            }
                             _ => {}
                         }
                     }
@@ -213,20 +220,31 @@ impl Widget for BranchSwitcher<'_> {
         let (rect, mut resp) = ui.allocate_exact_size(vec2(w, 28.0), Sense::hover());
         let left = Rect::from_min_size(rect.min + vec2(0.0, 2.0), vec2(24.0, 24.0));
         let right = Rect::from_min_size(pos2(rect.max.x - 24.0, rect.min.y + 2.0), vec2(24.0, 24.0));
-        for (r, icon, enabled, delta) in [(left, Icon::ChevronLeft, *self.current > 0, -1i32), (right, Icon::ChevronRight, *self.current + 1 < total, 1)] {
+        for (r, icon, enabled, delta) in [
+            (left, Icon::ChevronLeft, *self.current > 0, -1i32),
+            (right, Icon::ChevronRight, *self.current + 1 < total, 1),
+        ] {
             let b = ui.interact(r, resp.id.with(delta), if enabled { Sense::click() } else { Sense::hover() });
             let h = common::anim_bool(ui, b.id.with("h"), b.hovered() && enabled, 0.12);
             if h > 0.0 {
                 ui.painter().rect_filled(r, CornerRadius::same(6), common::hover_fill(&t).gamma_multiply(h));
             }
-            let col = if enabled { t.muted_foreground.lerp_to_gamma(t.foreground, h) } else { with_alpha(t.muted_foreground, 0.35) };
+            let col = if enabled {
+                t.muted_foreground.lerp_to_gamma(t.foreground, h)
+            } else {
+                with_alpha(t.muted_foreground, 0.35)
+            };
             paint_icon(ui.painter(), icon, r.shrink(6.0), col);
             if b.clicked() {
                 *self.current = (*self.current as i32 + delta).clamp(0, total as i32 - 1) as usize;
                 resp.mark_changed();
             }
         }
-        ui.painter().galley(pos2(rect.center().x - g.size().x / 2.0, rect.center().y - g.size().y / 2.0), g, t.muted_foreground);
+        ui.painter().galley(
+            pos2(rect.center().x - g.size().x / 2.0, rect.center().y - g.size().y / 2.0),
+            g,
+            t.muted_foreground,
+        );
         resp
     }
 }
@@ -378,7 +396,12 @@ impl<'a> ChatMessage<'a> {
         let av = if self.user_avatar.is_some() { 40.0 } else { 0.0 };
         let max_w = (avail * self.max_bubble).max(120.0);
         let pad = vec2(16.0, 10.0);
-        let g = ui.painter().layout(self.content.to_owned(), FontId::proportional(self.size), t.foreground, max_w - pad.x * 2.0);
+        let g = ui.painter().layout(
+            self.content.to_owned(),
+            FontId::proportional(self.size),
+            t.foreground,
+            max_w - pad.x * 2.0,
+        );
         let bubble_size = g.size() + pad * 2.0;
         let ts_h = if self.timestamp.is_some() || self.actions { 26.0 } else { 0.0 };
         let (rect, response) = ui.allocate_exact_size(vec2(avail, bubble_size.y + ts_h), Sense::hover());
@@ -388,18 +411,36 @@ impl<'a> ChatMessage<'a> {
         let p = ui.painter();
         p.rect_filled(bubble, CornerRadius { nw: 18, ne: 18, sw: 18, se: 6 }, fill);
         if !t.dark {
-            p.rect_stroke(bubble, CornerRadius { nw: 18, ne: 18, sw: 18, se: 6 }, Stroke::new(1.0, with_alpha(t.border, 0.6)), StrokeKind::Inside);
+            p.rect_stroke(
+                bubble,
+                CornerRadius { nw: 18, ne: 18, sw: 18, se: 6 },
+                Stroke::new(1.0, with_alpha(t.border, 0.6)),
+                StrokeKind::Inside,
+            );
         }
         p.galley(bubble.min + pad, g, t.foreground);
         if let Some(ini) = self.user_avatar {
-            common::avatar(ui.painter(), pos2(rect.max.x - 15.0, rect.min.y + 15.0), 15.0, t, AvatarKind::Initials(ini));
+            common::avatar(
+                ui.painter(),
+                pos2(rect.max.x - 15.0, rect.min.y + 15.0),
+                15.0,
+                t,
+                AvatarKind::Initials(ini),
+            );
         }
         let mut action = None;
         if ts_h > 0.0 {
             let row = Rect::from_min_max(pos2(rect.min.x, bubble.max.y + 2.0), pos2(bubble.max.x, rect.max.y));
             let mut x = row.max.x - 4.0;
             if let Some(ts) = self.timestamp {
-                let r = common::text(ui.painter(), pos2(x, row.center().y), Align2::RIGHT_CENTER, ts, 11.0, with_alpha(t.muted_foreground, 0.8));
+                let r = common::text(
+                    ui.painter(),
+                    pos2(x, row.center().y),
+                    Align2::RIGHT_CENTER,
+                    ts,
+                    11.0,
+                    with_alpha(t.muted_foreground, 0.8),
+                );
                 x = r.min.x - 6.0;
             }
             if self.actions {
@@ -407,8 +448,15 @@ impl<'a> ChatMessage<'a> {
                 let acts = [MessageAction::Edit, MessageAction::Copy];
                 let w = acts.len() as f32 * 26.0;
                 let r = Rect::from_min_max(pos2(x - w, row.min.y), pos2(x, row.max.y));
-                let mut child = ui.new_child(UiBuilder::new().max_rect(r).layout(egui::Layout::left_to_right(egui::Align::Center)));
-                action = MessageActions::new().actions(&acts).copy_text(self.content).size(24.0).opacity(op).id(id).show(&mut child);
+                let mut child =
+                    ui.new_child(UiBuilder::new().max_rect(r).layout(egui::Layout::left_to_right(egui::Align::Center)));
+                action = MessageActions::new()
+                    .actions(&acts)
+                    .copy_text(self.content)
+                    .size(24.0)
+                    .opacity(op)
+                    .id(id)
+                    .show(&mut child);
             }
         }
         extra(ui);
@@ -423,47 +471,64 @@ impl<'a> ChatMessage<'a> {
         let hovered = ui.rect_contains_pointer(prev_rect);
         let col_rect = Rect::from_min_max(pos2(avail.min.x + indent, avail.min.y), pos2(avail.max.x, avail.max.y));
         let mut action = None;
-        let inner = ui.scope_builder(UiBuilder::new().max_rect(col_rect).layout(egui::Layout::top_down(egui::Align::Min)), |ui| {
-            ui.spacing_mut().item_spacing.y = 10.0;
-            if self.name.is_some() || self.timestamp.is_some() {
-                ui.horizontal(|ui| {
-                    ui.spacing_mut().item_spacing.x = 8.0;
-                    if let Some(n) = self.name {
-                        let g = common::galley(ui, n, 13.0, t.foreground);
-                        let (r, _) = ui.allocate_exact_size(vec2(g.size().x + 1.0, av_r * 2.0), Sense::hover());
-                        common::paint_galley_fx(ui.painter(), pos2(r.min.x, r.center().y - g.size().y / 2.0), &g, |_| common::Fx { bold: true, ..Default::default() });
-                    }
-                    if let Some(ts) = self.timestamp {
-                        let g = common::galley(ui, ts, 11.5, with_alpha(t.muted_foreground, 0.85));
-                        let (r, _) = ui.allocate_exact_size(vec2(g.size().x, av_r * 2.0), Sense::hover());
-                        ui.painter().galley(pos2(r.min.x, r.center().y - g.size().y / 2.0 + 0.5), g, t.muted_foreground);
-                    }
-                });
-            } else if self.avatar {
-                // align the first line of text with the avatar's center
-                ui.add_space(3.0);
-            }
-            extra(ui);
-            if !self.content.is_empty() || self.streaming {
-                ui.add(Markdown::new(self.content).size(self.size).caret(self.streaming).fade_tail(if self.streaming { 28 } else { 0 }));
-            }
-            if (self.actions || self.branch.is_some()) && !self.streaming {
-                let op = common::anim_bool(ui, id.with("hover"), hovered || self.actions_always, 0.18);
-                ui.add_space(-4.0);
-                let content = self.content;
-                let actions = self.actions;
-                let branch = self.branch;
-                ui.horizontal(|ui| {
-                    ui.spacing_mut().item_spacing.x = 4.0;
-                    if let Some((cur, total)) = branch {
-                        ui.add(BranchSwitcher::new(cur, total));
-                    }
-                    if actions {
-                        action = MessageActions::new().copy_text(content).opacity(op).id(id).show(ui);
-                    }
-                });
-            }
-        });
+        let inner = ui.scope_builder(
+            UiBuilder::new().max_rect(col_rect).layout(egui::Layout::top_down(egui::Align::Min)),
+            |ui| {
+                ui.spacing_mut().item_spacing.y = 10.0;
+                if self.name.is_some() || self.timestamp.is_some() {
+                    ui.horizontal(|ui| {
+                        ui.spacing_mut().item_spacing.x = 8.0;
+                        if let Some(n) = self.name {
+                            let g = common::galley(ui, n, 13.0, t.foreground);
+                            let (r, _) = ui.allocate_exact_size(vec2(g.size().x + 1.0, av_r * 2.0), Sense::hover());
+                            common::paint_galley_fx(
+                                ui.painter(),
+                                pos2(r.min.x, r.center().y - g.size().y / 2.0),
+                                &g,
+                                |_| common::Fx { bold: true, ..Default::default() },
+                            );
+                        }
+                        if let Some(ts) = self.timestamp {
+                            let g = common::galley(ui, ts, 11.5, with_alpha(t.muted_foreground, 0.85));
+                            let (r, _) = ui.allocate_exact_size(vec2(g.size().x, av_r * 2.0), Sense::hover());
+                            ui.painter().galley(
+                                pos2(r.min.x, r.center().y - g.size().y / 2.0 + 0.5),
+                                g,
+                                t.muted_foreground,
+                            );
+                        }
+                    });
+                } else if self.avatar {
+                    // align the first line of text with the avatar's center
+                    ui.add_space(3.0);
+                }
+                extra(ui);
+                if !self.content.is_empty() || self.streaming {
+                    ui.add(
+                        Markdown::new(self.content)
+                            .size(self.size)
+                            .caret(self.streaming)
+                            .fade_tail(if self.streaming { 28 } else { 0 }),
+                    );
+                }
+                if (self.actions || self.branch.is_some()) && !self.streaming {
+                    let op = common::anim_bool(ui, id.with("hover"), hovered || self.actions_always, 0.18);
+                    ui.add_space(-4.0);
+                    let content = self.content;
+                    let actions = self.actions;
+                    let branch = self.branch;
+                    ui.horizontal(|ui| {
+                        ui.spacing_mut().item_spacing.x = 4.0;
+                        if let Some((cur, total)) = branch {
+                            ui.add(BranchSwitcher::new(cur, total));
+                        }
+                        if actions {
+                            action = MessageActions::new().copy_text(content).opacity(op).id(id).show(ui);
+                        }
+                    });
+                }
+            },
+        );
         let rect = Rect::from_min_max(avail.min, pos2(avail.max.x, inner.response.rect.max.y));
         glowkit_core::set_state(ui, id.with("rect"), rect);
         if self.avatar {

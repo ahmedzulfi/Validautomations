@@ -87,35 +87,59 @@ impl Widget for BarChart3D {
         Viewport3D::new(salt_or(&self.id_salt, "bar-chart-3d"))
             .height(self.height)
             .fov(34.0)
-            .controls(OrbitControls::new().distance(span * 1.55 + 3.6).pitch(0.5).yaw(0.6).auto_rotate(0.12).pitch_range(0.1, 1.3).target(vec3(0.0, 0.7, 0.0)))
+            .controls(
+                OrbitControls::new()
+                    .distance(span * 1.55 + 3.6)
+                    .pitch(0.5)
+                    .yaw(0.6)
+                    .auto_rotate(0.12)
+                    .pitch_range(0.1, 1.3)
+                    .target(vec3(0.0, 0.7, 0.0)),
+            )
             .show(ui, |scene, ctx| {
                 if rows == 0 || cols == 0 {
                     return;
                 }
                 let cube = ctx.mesh("bar", || Mesh::cube(1.0));
                 let restart = ctx.response.double_clicked();
-                let start = ctx.state("start", || ctx.time, |s| {
-                    if restart {
-                        *s = ctx.time;
-                    }
-                    *s
-                });
+                let start = ctx.state(
+                    "start",
+                    || ctx.time,
+                    |s| {
+                        if restart {
+                            *s = ctx.time;
+                        }
+                        *s
+                    },
+                );
                 let el = ctx.time - start;
                 let pitch = 1.0;
                 let foot = 0.62;
                 let hmax = 2.6;
-                let pos = |r: usize, c: usize| vec3((c as f32 - (cols - 1) as f32 / 2.0) * pitch, 0.0, (r as f32 - (rows - 1) as f32 / 2.0) * pitch);
+                let pos = |r: usize, c: usize| {
+                    vec3(
+                        (c as f32 - (cols - 1) as f32 / 2.0) * pitch,
+                        0.0,
+                        (r as f32 - (rows - 1) as f32 / 2.0) * pitch,
+                    )
+                };
                 // hover pick
                 let ray = ctx.pointer.map(|p| scene.ray(p));
                 let mut hovered: Option<(usize, usize)> = None;
                 let mut best = f32::INFINITY;
-                let grow = |r: usize, c: usize| ease(Easing::OutBack, ((el - (r + c) as f32 * 0.06) / 0.9).clamp(0.0, 1.0));
+                let grow =
+                    |r: usize, c: usize| ease(Easing::OutBack, ((el - (r + c) as f32 * 0.06) / 0.9).clamp(0.0, 1.0));
                 if let Some((o, d)) = ray {
                     for (r, row) in self.data.iter().enumerate() {
                         for (c, v) in row.iter().enumerate() {
                             let h = (v / max * hmax * grow(r, c)).max(0.02);
                             let p = pos(r, c);
-                            if let Some(tt) = ray_box(o, d, p - vec3(foot / 2.0, 0.0, foot / 2.0), p + vec3(foot / 2.0, h, foot / 2.0)) {
+                            if let Some(tt) = ray_box(
+                                o,
+                                d,
+                                p - vec3(foot / 2.0, 0.0, foot / 2.0),
+                                p + vec3(foot / 2.0, h, foot / 2.0),
+                            ) {
                                 if tt < best {
                                     best = tt;
                                     hovered = Some((r, c));
@@ -130,7 +154,8 @@ impl Widget for BarChart3D {
                 scene.lights = Lights::default();
                 let floor_w = cols as f32 * pitch + 0.6;
                 let floor_d = rows as f32 * pitch + 0.6;
-                let plate = if t.dark { color::mix(t.card, t.muted, 0.6) } else { color::mix(t.background, t.muted, 0.9) };
+                let plate =
+                    if t.dark { color::mix(t.card, t.muted, 0.6) } else { color::mix(t.background, t.muted, 0.9) };
                 let gl = color::with_alpha(t.muted_foreground, if t.dark { 0.25 } else { 0.35 });
                 scene.underlay(|s| {
                     let (hw, hd) = (floor_w / 2.0, floor_d / 2.0);
@@ -157,9 +182,20 @@ impl Widget for BarChart3D {
                         let base = palette[r % palette.len()];
                         let hot = hovered == Some((r, c));
                         let dim = hovered.is_some() && !hot;
-                        let col = if hot { color::mix(base, Color32::WHITE, 0.25) } else if dim { color::mix(base, t.card, 0.35) } else { base };
-                        let mat = Material::smooth(col).specular(0.35).shininess(30.0).rim(if hot { 0.6 } else { 0.15 }).emissive(if hot { 0.15 } else { 0.0 });
-                        let tf = Transform::from_translation(p + vec3(0.0, h / 2.0, 0.0)).with_scale3(vec3(foot, h, foot));
+                        let col = if hot {
+                            color::mix(base, Color32::WHITE, 0.25)
+                        } else if dim {
+                            color::mix(base, t.card, 0.35)
+                        } else {
+                            base
+                        };
+                        let mat = Material::smooth(col)
+                            .specular(0.35)
+                            .shininess(30.0)
+                            .rim(if hot { 0.6 } else { 0.15 })
+                            .emissive(if hot { 0.15 } else { 0.0 });
+                        let tf =
+                            Transform::from_translation(p + vec3(0.0, h / 2.0, 0.0)).with_scale3(vec3(foot, h, foot));
                         scene.group(p + vec3(0.0, h / 2.0, 0.0), |s| s.draw(&cube, tf, &mat));
                     }
                 }
@@ -179,7 +215,9 @@ impl Widget for BarChart3D {
                         (Some(a), Some(b)) => format!("{a} · {b}: {v}"),
                         _ => format!("{v}"),
                     };
-                    scene.overlay(|s| s.label(&name, pos(r, c) + vec3(0.0, h + 0.25, 0.0), 13.0, t.foreground, Align2::CENTER_BOTTOM));
+                    scene.overlay(|s| {
+                        s.label(&name, pos(r, c) + vec3(0.0, h + 0.25, 0.0), 13.0, t.foreground, Align2::CENTER_BOTTOM)
+                    });
                 }
             })
             .response
@@ -403,12 +441,23 @@ impl Widget for SolarSystem {
         let dark = t.dark;
         let sun = self.sun.unwrap_or(color::hex("#FDB813"));
         let outer = self.planets.iter().map(|p| p.orbit + p.radius).fold(2.0, f32::max);
-        let bg = if dark { Background::Radial(color::mix(t.card, sun, 0.06), color::mix(t.card, Color32::BLACK, 0.35)) } else { Background::None };
+        let bg = if dark {
+            Background::Radial(color::mix(t.card, sun, 0.06), color::mix(t.card, Color32::BLACK, 0.35))
+        } else {
+            Background::None
+        };
         Viewport3D::new(salt_or(&self.id_salt, "solar-system"))
             .height(self.height)
             .background(bg)
             .fov(34.0)
-            .controls(OrbitControls::new().distance(outer * 2.4).pitch(0.48).yaw(0.3).auto_rotate(0.05).distance_range(outer * 0.6, outer * 4.0))
+            .controls(
+                OrbitControls::new()
+                    .distance(outer * 2.4)
+                    .pitch(0.48)
+                    .yaw(0.3)
+                    .auto_rotate(0.05)
+                    .distance_range(outer * 0.6, outer * 4.0),
+            )
             .show(ui, |scene, ctx| {
                 let time = ctx.time * self.speed;
                 let cam = scene.camera().position;
@@ -419,15 +468,24 @@ impl Widget for SolarSystem {
                             let h = |k: u64| hash01(i as u64 * 41 + k);
                             let d = Vec3::from_spherical(60.0, h(1) * TAU, (h(2) * 2.0 - 1.0).asin());
                             let tw = 0.6 + 0.4 * (ctx.time * (0.5 + h(3) * 2.0) + h(4) * 9.0).sin();
-                            s.point_px(cam + d, 0.5 + h(5) * 0.8, crate::additive(Color32::WHITE.gamma_multiply((0.15 + h(6) * 0.45) * tw)));
+                            s.point_px(
+                                cam + d,
+                                0.5 + h(5) * 0.8,
+                                crate::additive(Color32::WHITE.gamma_multiply((0.15 + h(6) * 0.45) * tw)),
+                            );
                         }
                     });
                 }
                 // sun
                 scene.glow_point(Vec3::ZERO, 2.4, glow_c(&t, sun, if dark { 0.35 } else { 0.25 }));
-                scene.glow_point(Vec3::ZERO, 1.1, glow_c(&t, color::mix(sun, Color32::WHITE, 0.3), if dark { 0.55 } else { 0.4 }));
+                scene.glow_point(
+                    Vec3::ZERO,
+                    1.1,
+                    glow_c(&t, color::mix(sun, Color32::WHITE, 0.3), if dark { 0.55 } else { 0.4 }),
+                );
                 scene.ball_lit(Vec3::ZERO, 0.7, color::mix(sun, Color32::WHITE, 0.25), (cam).normalized(), 0.85, 0.2);
-                let ring_c = if dark { color::with_alpha(Color32::WHITE, 0.12) } else { color::with_alpha(t.foreground, 0.16) };
+                let ring_c =
+                    if dark { color::with_alpha(Color32::WHITE, 0.12) } else { color::with_alpha(t.foreground, 0.16) };
                 for (i, p) in self.planets.iter().enumerate() {
                     scene.circle(Vec3::ZERO, p.orbit, Vec3::X, Vec3::Z, 96, 1.0, ring_c);
                     let a = time * p.speed + i as f32 * 2.1;
@@ -455,13 +513,25 @@ impl Widget for SolarSystem {
                     if p.moon {
                         let ma = time * 3.0;
                         let mp = pos + vec3(ma.cos(), 0.15 * ma.sin(), ma.sin()) * (p.radius * 2.0);
-                        scene.ball_lit(mp, p.radius * 0.3, color::hex("#D4D4D8"), -mp.normalized(), if dark { 0.06 } else { 0.25 }, 0.2);
+                        scene.ball_lit(
+                            mp,
+                            p.radius * 0.3,
+                            color::hex("#D4D4D8"),
+                            -mp.normalized(),
+                            if dark { 0.06 } else { 0.25 },
+                            0.2,
+                        );
                     }
                     if self.labels {
-                        let near = ctx.pointer.and_then(|m| scene.project(pos).map(|(s, _)| s.distance(m) < 40.0)).unwrap_or(false);
+                        let near = ctx
+                            .pointer
+                            .and_then(|m| scene.project(pos).map(|(s, _)| s.distance(m) < 40.0))
+                            .unwrap_or(false);
                         if near || ctx.pointer.is_none() && p.radius > 0.3 {
                             let lc = if near { t.foreground } else { t.muted_foreground };
-                            scene.overlay(|s| s.label(&p.name, pos - vec3(0.0, p.radius + 0.12, 0.0), 11.0, lc, Align2::CENTER_TOP));
+                            scene.overlay(|s| {
+                                s.label(&p.name, pos - vec3(0.0, p.radius + 0.12, 0.0), 11.0, lc, Align2::CENTER_TOP)
+                            });
                         }
                     }
                 }
@@ -478,6 +548,8 @@ mod tests {
     fn ray_box_hits() {
         let hit = ray_box(vec3(0.0, 0.5, 5.0), vec3(0.0, 0.0, -1.0), vec3(-0.5, 0.0, -0.5), vec3(0.5, 1.0, 0.5));
         assert!((hit.unwrap() - 4.5).abs() < 1e-5);
-        assert!(ray_box(vec3(2.0, 0.5, 5.0), vec3(0.0, 0.0, -1.0), vec3(-0.5, 0.0, -0.5), vec3(0.5, 1.0, 0.5)).is_none());
+        assert!(
+            ray_box(vec3(2.0, 0.5, 5.0), vec3(0.0, 0.0, -1.0), vec3(-0.5, 0.0, -0.5), vec3(0.5, 1.0, 0.5)).is_none()
+        );
     }
 }

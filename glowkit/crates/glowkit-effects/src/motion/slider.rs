@@ -26,7 +26,16 @@ pub struct ElasticSlider<'a> {
 impl<'a> ElasticSlider<'a> {
     /// A slider editing `value` within `range`.
     pub fn new(value: &'a mut f32, range: RangeInclusive<f32>) -> Self {
-        Self { value, range, width: 260.0, step: None, icons: ("🔈".into(), "🔊".into()), show_value: true, color: None, max_stretch: 36.0 }
+        Self {
+            value,
+            range,
+            width: 260.0,
+            step: None,
+            icons: ("🔈".into(), "🔊".into()),
+            show_value: true,
+            color: None,
+            max_stretch: 36.0,
+        }
     }
     /// Track width in points.
     pub fn width(mut self, w: f32) -> Self {
@@ -68,7 +77,8 @@ impl Widget for ElasticSlider<'_> {
         let (rect, mut response) = ui.allocate_exact_size(total, Sense::click_and_drag());
         let id = response.id;
         let track_y = rect.min.y + 18.0;
-        let track = Rect::from_min_max(pos2(rect.min.x + icon_w, track_y - 3.0), pos2(rect.max.x - icon_w, track_y + 3.0));
+        let track =
+            Rect::from_min_max(pos2(rect.min.x + icon_w, track_y - 3.0), pos2(rect.max.x - icon_w, track_y + 3.0));
         let (lo, hi) = (*self.range.start(), *self.range.end());
         let mut overflow_target = 0.0;
         if response.hovered() || response.dragged() {
@@ -87,9 +97,16 @@ impl Widget for ElasticSlider<'_> {
                     response.mark_changed();
                 }
                 if response.dragged() {
-                    let d = if p.x < track.min.x { p.x - track.min.x } else if p.x > track.max.x { p.x - track.max.x } else { 0.0 };
+                    let d = if p.x < track.min.x {
+                        p.x - track.min.x
+                    } else if p.x > track.max.x {
+                        p.x - track.max.x
+                    } else {
+                        0.0
+                    };
                     // exponential decay: the further you pull, the harder it resists
-                    overflow_target = d.signum() * self.max_stretch * (1.0 - (-d.abs() / (self.max_stretch * 2.5)).exp());
+                    overflow_target =
+                        d.signum() * self.max_stretch * (1.0 - (-d.abs() / (self.max_stretch * 2.5)).exp());
                 }
             }
         }
@@ -128,17 +145,35 @@ impl Widget for ElasticSlider<'_> {
         let right_scale = 1.0 + overflow.max(0.0) / self.max_stretch.max(1.0) * 0.45;
         let icol = if active { t.foreground } else { t.muted_foreground };
         if !self.icons.0.is_empty() {
-            painter.text(pos2(tr.min.x - icon_w / 2.0, track_y), Align2::CENTER_CENTER, &self.icons.0, FontId::proportional(16.0 * left_scale), icol);
+            painter.text(
+                pos2(tr.min.x - icon_w / 2.0, track_y),
+                Align2::CENTER_CENTER,
+                &self.icons.0,
+                FontId::proportional(16.0 * left_scale),
+                icol,
+            );
         }
         if !self.icons.1.is_empty() {
-            painter.text(pos2(tr.max.x + icon_w / 2.0, track_y), Align2::CENTER_CENTER, &self.icons.1, FontId::proportional(16.0 * right_scale), icol);
+            painter.text(
+                pos2(tr.max.x + icon_w / 2.0, track_y),
+                Align2::CENTER_CENTER,
+                &self.icons.1,
+                FontId::proportional(16.0 * right_scale),
+                icol,
+            );
         }
         if self.show_value {
             let txt = match self.step {
                 Some(s) if s >= 1.0 => format!("{:.0}", *self.value),
                 _ => format!("{:.2}", *self.value),
             };
-            painter.text(pos2(rect.center().x, rect.max.y - 12.0), Align2::CENTER_CENTER, txt, FontId::monospace(13.0), t.muted_foreground);
+            painter.text(
+                pos2(rect.center().x, rect.max.y - 12.0),
+                Align2::CENTER_CENTER,
+                txt,
+                FontId::monospace(13.0),
+                t.muted_foreground,
+            );
         }
         response
     }

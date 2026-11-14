@@ -37,7 +37,10 @@ mod stateful;
 
 pub use border::{HoverBorderGradient, MovingBorderButton, StarBorderButton};
 pub use glow::{GlowButton, NeonButton, PulsatingButton};
-pub use interactive::{ArrowSlideButton, FillHoverButton, InteractiveHoverButton, MagneticButton, PixelButton, PushButton3D, PushStyle, RippleButton};
+pub use interactive::{
+    ArrowSlideButton, FillHoverButton, InteractiveHoverButton, MagneticButton, PixelButton, PushButton3D, PushStyle,
+    RippleButton,
+};
 pub use shimmer::{GradientOutlineButton, RainbowButton, ShimmerButton, ShinyButton};
 pub use stateful::{CopyButton, ParticleBurstButton, StatefulButton, StatefulButtonState, SubscribeButton};
 

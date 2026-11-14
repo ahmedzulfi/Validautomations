@@ -316,7 +316,16 @@ pub struct Playback {
 
 impl Default for Playback {
     fn default() -> Self {
-        Self { time: 0.0, playing: true, speed: 1.0, reversed: false, looping: false, yoyo: false, loop_delay: 0.0, hold: 0.0 }
+        Self {
+            time: 0.0,
+            playing: true,
+            speed: 1.0,
+            reversed: false,
+            looping: false,
+            yoyo: false,
+            loop_delay: 0.0,
+            hold: 0.0,
+        }
     }
 }
 
@@ -495,24 +504,54 @@ impl Widget for Scrubber<'_> {
         let palette = self.colors.clone().unwrap_or_else(|| t.chart.to_vec());
         painter.rect_filled(rect, t.corner_scaled(0.8), t.muted);
         // ruler ticks
-        let step = if duration > 4.0 { 1.0 } else if duration > 1.5 { 0.5 } else { 0.25 };
+        let step = if duration > 4.0 {
+            1.0
+        } else if duration > 1.5 {
+            0.5
+        } else {
+            0.25
+        };
         let mut s = 0.0;
         while s <= duration + 1e-3 {
             let x = to_x(s);
-            painter.line_segment([pos2(x, rect.min.y + 13.0), pos2(x, rect.max.y - 3.0)], Stroke::new(1.0, with_alpha(t.border, 0.6)));
-            painter.text(pos2(x, rect.min.y + 3.0), egui::Align2::CENTER_TOP, format!("{s:.1}"), FontId::monospace(9.5), t.muted_foreground);
+            painter.line_segment(
+                [pos2(x, rect.min.y + 13.0), pos2(x, rect.max.y - 3.0)],
+                Stroke::new(1.0, with_alpha(t.border, 0.6)),
+            );
+            painter.text(
+                pos2(x, rect.min.y + 3.0),
+                egui::Align2::CENTER_TOP,
+                format!("{s:.1}"),
+                FontId::monospace(9.5),
+                t.muted_foreground,
+            );
             s += step;
         }
         for (name, time) in self.timeline.labels() {
             let x = to_x(*time);
-            painter.text(pos2(x + 3.0, rect.min.y + 3.0), egui::Align2::LEFT_TOP, name, FontId::proportional(9.5), t.accent);
+            painter.text(
+                pos2(x + 3.0, rect.min.y + 3.0),
+                egui::Align2::LEFT_TOP,
+                name,
+                FontId::proportional(9.5),
+                t.accent,
+            );
         }
         for (row, track) in tracks.iter().enumerate() {
             let y0 = rect.min.y + ruler + row as f32 * self.row_height;
             let color = palette[row % palette.len().max(1)];
-            painter.text(pos2(rect.min.x + 10.0, y0 + self.row_height / 2.0), egui::Align2::LEFT_CENTER, *track, FontId::monospace(11.0), t.muted_foreground);
+            painter.text(
+                pos2(rect.min.x + 10.0, y0 + self.row_height / 2.0),
+                egui::Align2::LEFT_CENTER,
+                *track,
+                FontId::monospace(11.0),
+                t.muted_foreground,
+            );
             for e in self.timeline.entries().iter().filter(|e| e.track == *track) {
-                let bar = Rect::from_min_max(pos2(to_x(e.start), y0 + 3.0), pos2(to_x(e.end()).max(to_x(e.start) + 3.0), y0 + self.row_height - 3.0));
+                let bar = Rect::from_min_max(
+                    pos2(to_x(e.start), y0 + 3.0),
+                    pos2(to_x(e.end()).max(to_x(e.start) + 3.0), y0 + self.row_height - 3.0),
+                );
                 let active = self.playback.time >= e.start && self.playback.time <= e.end();
                 painter.rect_filled(bar, CornerRadius::same(5), with_alpha(color, if active { 0.55 } else { 0.25 }));
                 // progress fill
@@ -521,9 +560,20 @@ impl Widget for Scrubber<'_> {
                     let fill = Rect::from_min_max(bar.min, pos2(bar.min.x + bar.width() * k, bar.max.y));
                     painter.rect_filled(fill, CornerRadius::same(5), with_alpha(color, 0.85));
                 }
-                painter.rect_stroke(bar, CornerRadius::same(5), Stroke::new(1.0, with_alpha(color, 0.9)), StrokeKind::Inside);
+                painter.rect_stroke(
+                    bar,
+                    CornerRadius::same(5),
+                    Stroke::new(1.0, with_alpha(color, 0.9)),
+                    StrokeKind::Inside,
+                );
                 if bar.width() > 46.0 {
-                    painter.text(bar.left_center() + vec2(6.0, 0.0), egui::Align2::LEFT_CENTER, &e.name, FontId::proportional(10.5), t.foreground);
+                    painter.text(
+                        bar.left_center() + vec2(6.0, 0.0),
+                        egui::Align2::LEFT_CENTER,
+                        &e.name,
+                        FontId::proportional(10.5),
+                        t.foreground,
+                    );
                 }
             }
         }

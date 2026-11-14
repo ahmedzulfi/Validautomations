@@ -72,15 +72,23 @@ pub use gesture::{rubber_band, Axis, DragResponse, Draggable, Reorder, ReorderIt
 pub use group::{GroupScope, MotionGroup, StaggerOrder, Variants};
 pub use keyframes::{Keyframes, Repeat, RepeatType};
 pub use layout::{LayoutAnim, LayoutFrame, LayoutScope};
-pub use morph::{align_outlines, centroid, fill_outline, lerp_points, morph_polygon, resample_closed, MorphShape, ShapeKind};
+pub use morph::{
+    align_outlines, centroid, fill_outline, lerp_points, morph_polygon, resample_closed, MorphShape, ShapeKind,
+};
 pub use motion_box::{MotionBox, MotionResponse};
 pub use path::{MotionPath, PathPoint};
 pub use physics::{Lanyard, Rope, SpringChain};
 pub use presence::{Presence, PresenceList};
-pub use scroll::{in_view, parallax, scroll_offset, scroll_progress, scroll_progress_of, transform, transform_with, visible_fraction, InView};
+pub use scroll::{
+    in_view, parallax, scroll_offset, scroll_progress, scroll_progress_of, transform, transform_with, visible_fraction,
+    InView,
+};
 pub use timeline::{At, Playback, Scrubber, Timeline, TimelineEntry, Tween};
 pub use transform::{rotate_layer, rotate_shape, transformed, Props};
-pub use value::{animate, animate_from, motion_value, tick, with_motion_value, Animatable, Components, MotionValue, Transition, MAX_DIM};
+pub use value::{
+    animate, animate_from, motion_value, tick, with_motion_value, Animatable, Components, MotionValue, Transition,
+    MAX_DIM,
+};
 
 /// Re-export of the easing curves (from `glowkit-core`).
 pub use glowkit_core::anim::Easing;

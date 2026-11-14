@@ -2,8 +2,8 @@
 //! Motion & layout components: docks, marquees, animated lists, card stacks, carousels,
 //! tabs, steppers, beams, orbits and presence transitions.
 
-pub(crate) mod common;
 mod carousel;
+pub(crate) mod common;
 mod dock;
 mod expandable;
 mod flowing;

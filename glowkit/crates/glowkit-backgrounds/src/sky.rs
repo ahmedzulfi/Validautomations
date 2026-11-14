@@ -234,7 +234,15 @@ impl Default for ShootingStars {
 impl ShootingStars {
     /// Shooting stars over a default [`StarField`].
     pub fn new() -> Self {
-        Self { base: Base::default(), stars: Some(StarField::new()), colors: None, delay: (1.0, 3.5), speed: 1.0, trail: 170.0, width: 2.0 }
+        Self {
+            base: Base::default(),
+            stars: Some(StarField::new()),
+            colors: None,
+            delay: (1.0, 3.5),
+            speed: 1.0,
+            trail: 170.0,
+            width: 2.0,
+        }
     }
     /// The star field painted underneath (`StarField::new()` by default).
     pub fn stars(mut self, stars: StarField) -> Self {
@@ -296,7 +304,13 @@ impl ShootingStars {
                 } else {
                     rect.left_top() + vec2(rng.range(0.0, rect.width() * 0.75), -20.0)
                 };
-                s.shots.push(Shot { pos, dir: Vec2::angled(ang), speed: rng.range(500.0, 900.0), len: trail * rng.range(0.7, 1.2), age: 0.0 });
+                s.shots.push(Shot {
+                    pos,
+                    dir: Vec2::angled(ang),
+                    speed: rng.range(500.0, 900.0),
+                    len: trail * rng.range(0.7, 1.2),
+                    age: 0.0,
+                });
             }
             for sh in &mut s.shots {
                 sh.pos += sh.dir * sh.speed * speed * dt;
@@ -310,7 +324,9 @@ impl ShootingStars {
             let grow = (sh.age * 3.0).min(1.0);
             let tail = sh.pos - sh.dir * sh.len * grow;
             let pts: Vec<Pos2> = (0..=12).map(|k| tail.lerp(sh.pos, k as f32 / 12.0)).collect();
-            gradient_polyline(p, &pts, false, self.width * 3.5, |s| light(lut.sample(s).to_color(), s.powi(3) * 0.25, dark));
+            gradient_polyline(p, &pts, false, self.width * 3.5, |s| {
+                light(lut.sample(s).to_color(), s.powi(3) * 0.25, dark)
+            });
             gradient_polyline(p, &pts, false, self.width, |s| lut.sample(s).to_color().gamma_multiply(s.powf(1.5)));
             p.circle_filled(sh.pos, self.width * 5.0, light(c1, 0.25, dark));
             p.circle_filled(sh.pos, self.width * 0.8, if dark { Color32::WHITE } else { c1 });

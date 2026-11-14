@@ -1,6 +1,8 @@
 use crate::inputs::kit::{self, UiIcon};
 use egui::text::{LayoutJob, TextFormat};
-use egui::{pos2, vec2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget};
+use egui::{
+    pos2, vec2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget,
+};
 use glowkit_core::color::{hex, mix, with_alpha};
 use glowkit_core::Theme;
 
@@ -82,7 +84,8 @@ impl Widget for Timeline {
             })
             .collect();
         let gap = 22.0;
-        let heights: Vec<f32> = layouts.iter().map(|(tg, dg)| (tg.size().y + 4.0 + dg.size().y).max(marker) + gap).collect();
+        let heights: Vec<f32> =
+            layouts.iter().map(|(tg, dg)| (tg.size().y + 4.0 + dg.size().y).max(marker) + gap).collect();
         let total: f32 = heights.iter().sum::<f32>() - gap;
         let (rect, resp) = ui.allocate_exact_size(vec2(w, total.max(0.0)), Sense::hover());
         let prog = glowkit_core::anim::follow(ui, resp.id.with("p"), self.active as f32, 4.0);
@@ -135,7 +138,13 @@ impl Widget for Timeline {
             let tgh = tg.size().y;
             let tcol = if i <= self.active { t.foreground } else { t.muted_foreground };
             p.galley(pos2(rect.min.x + text_x, ty), tg, tcol);
-            p.text(pos2(rect.min.x + text_x + tgw + 10.0, ty + tgh / 2.0), egui::Align2::LEFT_CENTER, &it.time, FontId::proportional(12.0), t.muted_foreground);
+            p.text(
+                pos2(rect.min.x + text_x + tgw + 10.0, ty + tgh / 2.0),
+                egui::Align2::LEFT_CENTER,
+                &it.time,
+                FontId::proportional(12.0),
+                t.muted_foreground,
+            );
             p.galley(pos2(rect.min.x + text_x, ty + tgh + 4.0), dg, t.muted_foreground);
         }
         resp
@@ -145,11 +154,35 @@ impl Widget for Timeline {
 /// Tiny Rust-ish syntax highlighter (keywords, types, strings, numbers, comments, macros, calls).
 fn highlight(job: &mut LayoutJob, code: &str, t: &Theme, font: &FontId) {
     let (kw, ty, st, num, com, mac, func, txt, punct) = if t.dark {
-        (hex("#C792EA"), hex("#82AAFF"), hex("#C3E88D"), hex("#F78C6C"), hex("#6B7280"), hex("#89DDFF"), hex("#FFCB6B"), hex("#E4E4E7"), hex("#A1A1AA"))
+        (
+            hex("#C792EA"),
+            hex("#82AAFF"),
+            hex("#C3E88D"),
+            hex("#F78C6C"),
+            hex("#6B7280"),
+            hex("#89DDFF"),
+            hex("#FFCB6B"),
+            hex("#E4E4E7"),
+            hex("#A1A1AA"),
+        )
     } else {
-        (hex("#7C3AED"), hex("#2563EB"), hex("#15803D"), hex("#C2410C"), hex("#9CA3AF"), hex("#0E7490"), hex("#A16207"), hex("#18181B"), hex("#52525B"))
+        (
+            hex("#7C3AED"),
+            hex("#2563EB"),
+            hex("#15803D"),
+            hex("#C2410C"),
+            hex("#9CA3AF"),
+            hex("#0E7490"),
+            hex("#A16207"),
+            hex("#18181B"),
+            hex("#52525B"),
+        )
     };
-    const KW: [&str; 30] = ["fn", "let", "mut", "pub", "use", "mod", "struct", "enum", "impl", "for", "in", "if", "else", "match", "return", "while", "loop", "move", "self", "Self", "true", "false", "as", "const", "static", "trait", "where", "async", "await", "crate"];
+    const KW: [&str; 30] = [
+        "fn", "let", "mut", "pub", "use", "mod", "struct", "enum", "impl", "for", "in", "if", "else", "match",
+        "return", "while", "loop", "move", "self", "Self", "true", "false", "as", "const", "static", "trait", "where",
+        "async", "await", "crate",
+    ];
     let fmt = |c: Color32| TextFormat { font_id: font.clone(), color: c, ..Default::default() };
     let chars: Vec<char> = code.chars().collect();
     let mut i = 0;
@@ -227,7 +260,15 @@ pub struct CodeBlock {
 impl CodeBlock {
     /// A code block showing `code`.
     pub fn new(code: impl Into<String>) -> Self {
-        Self { code: code.into(), title: None, language: "rust".into(), line_numbers: true, highlight: None, width: None, plain: false }
+        Self {
+            code: code.into(),
+            title: None,
+            language: "rust".into(),
+            line_numbers: true,
+            highlight: None,
+            width: None,
+            plain: false,
+        }
     }
     /// File name shown in the header.
     pub fn title(mut self, t: impl Into<String>) -> Self {
@@ -281,12 +322,26 @@ impl Widget for CodeBlock {
         p.rect(rect, cr, bg, Stroke::new(1.0, t.border), StrokeKind::Inside);
         // header
         let head = Rect::from_min_size(rect.min, vec2(w, head_h));
-        p.rect_filled(head.shrink(1.0), CornerRadius { nw: cr.nw, ne: cr.ne, sw: 0, se: 0 }, if t.dark { with_alpha(t.muted, 0.6) } else { t.muted });
+        p.rect_filled(
+            head.shrink(1.0),
+            CornerRadius { nw: cr.nw, ne: cr.ne, sw: 0, se: 0 },
+            if t.dark { with_alpha(t.muted, 0.6) } else { t.muted },
+        );
         let y = kit::snap(ui, head.max.y) - 0.5;
         p.line_segment([pos2(rect.min.x, y), pos2(rect.max.x, y)], Stroke::new(1.0, t.border));
-        UiIcon::Code.paint(p, Rect::from_center_size(pos2(head.min.x + 22.0, head.center().y), vec2(15.0, 15.0)), t.muted_foreground);
+        UiIcon::Code.paint(
+            p,
+            Rect::from_center_size(pos2(head.min.x + 22.0, head.center().y), vec2(15.0, 15.0)),
+            t.muted_foreground,
+        );
         let label = self.title.clone().unwrap_or_else(|| self.language.clone());
-        p.text(pos2(head.min.x + 38.0, head.center().y), egui::Align2::LEFT_CENTER, label, FontId::proportional(13.0), t.foreground);
+        p.text(
+            pos2(head.min.x + 38.0, head.center().y),
+            egui::Align2::LEFT_CENTER,
+            label,
+            FontId::proportional(13.0),
+            t.foreground,
+        );
         // copy button
         let cid = resp.id.with("copy");
         let now = ui.input(|i| i.time);
@@ -306,7 +361,13 @@ impl Widget for CodeBlock {
         if since < 1.6 {
             let k = (since / 0.25).clamp(0.0, 1.0);
             kit::check_path(p, br.shrink(7.0), t.success, 1.8, k);
-            p.text(pos2(br.min.x - 6.0, head.center().y), egui::Align2::RIGHT_CENTER, "Copied!", FontId::proportional(12.0), with_alpha(t.success, (1.6 - since).clamp(0.0, 1.0)));
+            p.text(
+                pos2(br.min.x - 6.0, head.center().y),
+                egui::Align2::RIGHT_CENTER,
+                "Copied!",
+                FontId::proportional(12.0),
+                with_alpha(t.success, (1.6 - since).clamp(0.0, 1.0)),
+            );
             ui.ctx().request_repaint();
         } else {
             UiIcon::Copy.paint(p, br.shrink(7.0), t.muted_foreground.lerp_to_gamma(t.foreground, hov));
@@ -314,16 +375,32 @@ impl Widget for CodeBlock {
         // body
         let gutter = if self.line_numbers { 16.0 + 8.0 * (lines.len().to_string().len() as f32) + 14.0 } else { 16.0 };
         let body_top = head.max.y + pad_y;
-        let clip = p.with_clip_rect(Rect::from_min_max(pos2(rect.min.x + 1.0, head.max.y), rect.max - vec2(1.0, 1.0)).intersect(p.clip_rect()));
+        let clip = p.with_clip_rect(
+            Rect::from_min_max(pos2(rect.min.x + 1.0, head.max.y), rect.max - vec2(1.0, 1.0)).intersect(p.clip_rect()),
+        );
         for (i, line) in lines.iter().enumerate() {
             let ly = body_top + i as f32 * line_h;
             let hl = self.highlight.as_ref().map(|r| r.contains(&(i + 1))).unwrap_or(false);
             if hl {
-                clip.rect_filled(Rect::from_min_size(pos2(rect.min.x + 1.0, ly), vec2(w - 2.0, line_h)), CornerRadius::ZERO, with_alpha(t.accent, if t.dark { 0.12 } else { 0.08 }));
-                clip.rect_filled(Rect::from_min_size(pos2(rect.min.x + 1.0, ly), vec2(2.0, line_h)), CornerRadius::ZERO, t.accent);
+                clip.rect_filled(
+                    Rect::from_min_size(pos2(rect.min.x + 1.0, ly), vec2(w - 2.0, line_h)),
+                    CornerRadius::ZERO,
+                    with_alpha(t.accent, if t.dark { 0.12 } else { 0.08 }),
+                );
+                clip.rect_filled(
+                    Rect::from_min_size(pos2(rect.min.x + 1.0, ly), vec2(2.0, line_h)),
+                    CornerRadius::ZERO,
+                    t.accent,
+                );
             }
             if self.line_numbers {
-                clip.text(pos2(rect.min.x + gutter - 14.0, ly + line_h / 2.0), egui::Align2::RIGHT_CENTER, (i + 1).to_string(), font.clone(), with_alpha(t.muted_foreground, if hl { 1.0 } else { 0.6 }));
+                clip.text(
+                    pos2(rect.min.x + gutter - 14.0, ly + line_h / 2.0),
+                    egui::Align2::RIGHT_CENTER,
+                    (i + 1).to_string(),
+                    font.clone(),
+                    with_alpha(t.muted_foreground, if hl { 1.0 } else { 0.6 }),
+                );
             }
             let mut job = LayoutJob::default();
             if self.plain {

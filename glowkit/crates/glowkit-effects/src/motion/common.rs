@@ -69,7 +69,14 @@ pub(crate) fn sample_faces() -> Vec<CardFace> {
 
 /// Fill a (possibly transformed) convex outline with a soft drop shadow made of stacked
 /// translucent copies, so rotated cards still cast believable shadows.
-pub(crate) fn polygon_shadow(painter: &Painter, outline: &[Pos2], center: Pos2, offset: Vec2, spread: f32, color: Color32) {
+pub(crate) fn polygon_shadow(
+    painter: &Painter,
+    outline: &[Pos2],
+    center: Pos2,
+    offset: Vec2,
+    spread: f32,
+    color: Color32,
+) {
     let layers = 8;
     for k in 0..layers {
         let f = (k + 1) as f32 / layers as f32;
@@ -126,7 +133,14 @@ pub(crate) fn paint_card_face(painter: &Painter, t: &Theme, face: &CardFace, ind
     let a = pose.alpha;
     if pose.shadow > 0.0 {
         let sc = if t.dark { Color32::BLACK } else { Color32::from_rgb(40, 40, 90).gamma_multiply(0.45) };
-        polygon_shadow(painter, &outline, pose.center, vec2(0.0, 10.0 * pose.scale), 16.0 * pose.scale, sc.gamma_multiply(a * pose.shadow));
+        polygon_shadow(
+            painter,
+            &outline,
+            pose.center,
+            vec2(0.0, 10.0 * pose.scale),
+            16.0 * pose.scale,
+            sc.gamma_multiply(a * pose.shadow),
+        );
     }
     // gradient evaluated in the card's local space so it rotates with the card
     let (s, co) = (-pose.angle).sin_cos();
@@ -184,7 +198,12 @@ pub(crate) fn paint_card_face(painter: &Painter, t: &Theme, face: &CardFace, ind
 
 /// A tapered, color-graded ribbon through `pts` (head first). `width(t)` and `color(t)` get
 /// `t = 0` at the head and `1` at the tail. Edges are feathered for anti-aliasing.
-pub(crate) fn tapered_ribbon(painter: &Painter, pts: &[Pos2], width: impl Fn(f32) -> f32, color: impl Fn(f32) -> Color32) {
+pub(crate) fn tapered_ribbon(
+    painter: &Painter,
+    pts: &[Pos2],
+    width: impl Fn(f32) -> f32,
+    color: impl Fn(f32) -> Color32,
+) {
     let n = pts.len();
     if n < 2 {
         return;
@@ -249,7 +268,13 @@ pub(crate) fn sd_round_rect(p: Pos2, rect: Rect, r: f32) -> f32 {
 /// Fill the region where `field(p) < 0` inside `bounds` using marching squares on a grid of
 /// `cell`-sized squares, with an anti-aliased outline. This is how the "gooey" (metaball)
 /// effects are drawn without a GPU filter.
-pub(crate) fn fill_field(painter: &Painter, bounds: Rect, cell: f32, field: impl Fn(Pos2) -> f32, color: impl Fn(Pos2) -> Color32) {
+pub(crate) fn fill_field(
+    painter: &Painter,
+    bounds: Rect,
+    cell: f32,
+    field: impl Fn(Pos2) -> f32,
+    color: impl Fn(Pos2) -> Color32,
+) {
     let cols = ((bounds.width() / cell).ceil() as usize).clamp(1, 400);
     let rows = ((bounds.height() / cell).ceil() as usize).clamp(1, 400);
     let cw = bounds.width() / cols as f32;

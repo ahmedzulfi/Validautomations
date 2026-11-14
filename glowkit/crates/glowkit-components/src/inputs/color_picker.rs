@@ -1,5 +1,8 @@
 use super::kit::{self, control_radius};
-use egui::{pos2, vec2, Align, Color32, CornerRadius, CursorIcon, FontId, Id, Layout, Pos2, Rect, Response, Sense, Stroke, StrokeKind, TextEdit, Ui, Widget};
+use egui::{
+    pos2, vec2, Align, Color32, CornerRadius, CursorIcon, FontId, Id, Layout, Pos2, Rect, Response, Sense, Stroke,
+    StrokeKind, TextEdit, Ui, Widget,
+};
 use glowkit_core::color::{hex, hsv, with_alpha};
 use glowkit_core::paint::{fill_convex_fn, rounded_rect_points, subdivide_closed};
 use glowkit_core::Theme;
@@ -112,7 +115,8 @@ fn checker(painter: &egui::Painter, rect: Rect, cell: f32, t: &Theme) {
     for y in 0..ny {
         for x in 0..nx {
             if (x + y) % 2 == 0 {
-                let r = Rect::from_min_size(rect.min + vec2(x as f32 * cell, y as f32 * cell), vec2(cell, cell)).intersect(rect);
+                let r = Rect::from_min_size(rect.min + vec2(x as f32 * cell, y as f32 * cell), vec2(cell, cell))
+                    .intersect(rect);
                 painter.rect_filled(r, CornerRadius::ZERO, b);
             }
         }
@@ -120,7 +124,14 @@ fn checker(painter: &egui::Painter, rect: Rect, cell: f32, t: &Theme) {
 }
 
 fn thumb(painter: &egui::Painter, c: Pos2, fill: Color32, r: f32) {
-    glowkit_core::paint::soft_shadow(painter, Rect::from_center_size(c, vec2(r * 2.0, r * 2.0)), r, 4.0, vec2(0.0, 1.0), Color32::from_black_alpha(70));
+    glowkit_core::paint::soft_shadow(
+        painter,
+        Rect::from_center_size(c, vec2(r * 2.0, r * 2.0)),
+        r,
+        4.0,
+        vec2(0.0, 1.0),
+        Color32::from_black_alpha(70),
+    );
     painter.circle(c, r, fill, Stroke::new(2.5, Color32::WHITE));
     painter.circle_stroke(c, r + 1.25, Stroke::new(0.6, Color32::from_black_alpha(40)));
 }
@@ -128,7 +139,12 @@ fn thumb(painter: &egui::Painter, c: Pos2, fill: Color32, r: f32) {
 impl ColorPicker<'_> {
     fn panel(self, ui: &mut Ui, id: Id) -> Response {
         let t = Theme::of(ui);
-        let mut st: PickerState = glowkit_core::state(ui, id, || PickerState { hsv: to_hsv(*self.color), alpha: self.color.a() as f32 / 255.0, last: *self.color, hex_buf: to_hex(*self.color) });
+        let mut st: PickerState = glowkit_core::state(ui, id, || PickerState {
+            hsv: to_hsv(*self.color),
+            alpha: self.color.a() as f32 / 255.0,
+            last: *self.color,
+            hex_buf: to_hex(*self.color),
+        });
         if st.last != *self.color {
             let new = to_hsv(*self.color);
             st.hsv = [if new[1] < 1e-3 || new[2] < 1e-3 { st.hsv[0] } else { new[0] }, new[1], new[2]];
@@ -159,9 +175,15 @@ impl ColorPicker<'_> {
                     let v = 1.0 - ((p.y - area.min.y) / area.height()).clamp(0.0, 1.0);
                     hsv(hue, s, v)
                 });
-                painter.rect_stroke(area, CornerRadius::same(rad as u8), Stroke::new(1.0, with_alpha(Color32::BLACK, 0.08)), StrokeKind::Inside);
+                painter.rect_stroke(
+                    area,
+                    CornerRadius::same(rad as u8),
+                    Stroke::new(1.0, with_alpha(Color32::BLACK, 0.08)),
+                    StrokeKind::Inside,
+                );
                 let c = pos2(area.min.x + st.hsv[1] * area.width(), area.min.y + (1.0 - st.hsv[2]) * area.height());
-                let grab = glowkit_core::anim::spring(ui, id.with("grab"), if ar.dragged() { 1.0 } else { 0.0 }, 500.0, 24.0);
+                let grab =
+                    glowkit_core::anim::spring(ui, id.with("grab"), if ar.dragged() { 1.0 } else { 0.0 }, 500.0, 24.0);
                 thumb(painter, c, hsv(hue, st.hsv[1], st.hsv[2]), 7.0 + 2.0 * grab);
 
                 // preview + sliders
@@ -177,7 +199,13 @@ impl ColorPicker<'_> {
                         let p = ui.painter().with_clip_rect(prev.shrink(3.0));
                         checker(&p, prev, 5.0, &t);
                     }
-                    ui.painter().rect(prev, pr, with_alpha(cur, st.alpha), Stroke::new(1.0, t.border), StrokeKind::Inside);
+                    ui.painter().rect(
+                        prev,
+                        pr,
+                        with_alpha(cur, st.alpha),
+                        Stroke::new(1.0, t.border),
+                        StrokeKind::Inside,
+                    );
                     ui.vertical(|ui| {
                         ui.spacing_mut().item_spacing.y = 10.0;
                         let sw = w - pv - 12.0;
@@ -191,8 +219,15 @@ impl ColorPicker<'_> {
                             }
                         }
                         let pts = subdivide_closed(&rounded_rect_points(hr, 6.0, 6), 4.0);
-                        fill_convex_fn(ui.painter(), &pts, 3, |p| hsv(((p.x - hr.min.x - 6.0) / (hr.width() - 12.0)).clamp(0.0, 1.0) * 360.0, 1.0, 1.0));
-                        thumb(ui.painter(), pos2(hr.min.x + 6.0 + st.hsv[0] / 359.9 * (hr.width() - 12.0), hr.center().y), hsv(st.hsv[0], 1.0, 1.0), 7.0);
+                        fill_convex_fn(ui.painter(), &pts, 3, |p| {
+                            hsv(((p.x - hr.min.x - 6.0) / (hr.width() - 12.0)).clamp(0.0, 1.0) * 360.0, 1.0, 1.0)
+                        });
+                        thumb(
+                            ui.painter(),
+                            pos2(hr.min.x + 6.0 + st.hsv[0] / 359.9 * (hr.width() - 12.0), hr.center().y),
+                            hsv(st.hsv[0], 1.0, 1.0),
+                            7.0,
+                        );
                         if self.alpha {
                             let (arr, aresp) = ui.allocate_exact_size(vec2(sw, 12.0), Sense::click_and_drag());
                             let aresp = aresp.on_hover_cursor(CursorIcon::PointingHand);
@@ -210,8 +245,15 @@ impl ColorPicker<'_> {
                                 let p = ui.painter().with_clip_rect(inner);
                                 checker(&p, inner, 4.0, &t);
                             }
-                            fill_convex_fn(ui.painter(), &pts, 3, |p| with_alpha(cur, ((p.x - arr.min.x - 6.0) / (arr.width() - 12.0)).clamp(0.0, 1.0)));
-                            thumb(ui.painter(), pos2(arr.min.x + 6.0 + st.alpha * (arr.width() - 12.0), arr.center().y), with_alpha(cur, st.alpha), 7.0);
+                            fill_convex_fn(ui.painter(), &pts, 3, |p| {
+                                with_alpha(cur, ((p.x - arr.min.x - 6.0) / (arr.width() - 12.0)).clamp(0.0, 1.0))
+                            });
+                            thumb(
+                                ui.painter(),
+                                pos2(arr.min.x + 6.0 + st.alpha * (arr.width() - 12.0), arr.center().y),
+                                with_alpha(cur, st.alpha),
+                                7.0,
+                            );
                         }
                     });
                 });
@@ -225,25 +267,34 @@ impl ColorPicker<'_> {
                     let focused = ui.memory(|m| m.has_focus(te_id));
                     let fk = kit::anim(ui, te_id.with("f"), focused, 0.15);
                     kit::field_chrome(ui.painter(), fr, &t, 0.0, fk, false, false);
-                    ui.painter().text(pos2(fr.min.x + 10.0, fr.center().y), egui::Align2::LEFT_CENTER, "HEX", FontId::proportional(11.5), t.muted_foreground);
+                    ui.painter().text(
+                        pos2(fr.min.x + 10.0, fr.center().y),
+                        egui::Align2::LEFT_CENTER,
+                        "HEX",
+                        FontId::proportional(11.5),
+                        t.muted_foreground,
+                    );
                     if !focused {
                         st.hex_buf = to_hex(hsv(st.hsv[0], st.hsv[1], st.hsv[2]));
                     }
                     let ter = Rect::from_min_max(pos2(fr.min.x + 44.0, fr.min.y), pos2(fr.max.x - 8.0, fr.max.y));
                     let r = ui
-                        .scope_builder(egui::UiBuilder::new().max_rect(ter).layout(Layout::left_to_right(Align::Center)), |ui| {
-                            ui.add(
-                                TextEdit::singleline(&mut st.hex_buf)
-                                    .id(te_id)
-                                    .frame(egui::Frame::NONE)
-                                    .margin(egui::Margin::ZERO)
-                                    .font(FontId::monospace(13.0))
-                                    .text_color(t.foreground)
-                                    .desired_width(ter.width())
-                                    .char_limit(7)
-                                    .align(egui::Align2::LEFT_CENTER),
-                            )
-                        })
+                        .scope_builder(
+                            egui::UiBuilder::new().max_rect(ter).layout(Layout::left_to_right(Align::Center)),
+                            |ui| {
+                                ui.add(
+                                    TextEdit::singleline(&mut st.hex_buf)
+                                        .id(te_id)
+                                        .frame(egui::Frame::NONE)
+                                        .margin(egui::Margin::ZERO)
+                                        .font(FontId::monospace(13.0))
+                                        .text_color(t.foreground)
+                                        .desired_width(ter.width())
+                                        .char_limit(7)
+                                        .align(egui::Align2::LEFT_CENTER),
+                                )
+                            },
+                        )
                         .inner;
                     if r.changed() {
                         if let Some(c) = parse_hex(&st.hex_buf) {
@@ -256,7 +307,13 @@ impl ColorPicker<'_> {
                         ui.add_space(8.0);
                         let (ar, _) = ui.allocate_exact_size(vec2(72.0, 32.0), Sense::hover());
                         kit::field_chrome(ui.painter(), ar, &t, 0.0, 0.0, false, false);
-                        ui.painter().text(ar.center(), egui::Align2::CENTER_CENTER, format!("{:.0}%", st.alpha * 100.0), FontId::proportional(13.0), t.foreground);
+                        ui.painter().text(
+                            ar.center(),
+                            egui::Align2::CENTER_CENTER,
+                            format!("{:.0}%", st.alpha * 100.0),
+                            FontId::proportional(13.0),
+                            t.foreground,
+                        );
                     }
                 });
 
@@ -270,13 +327,29 @@ impl ColorPicker<'_> {
                         for (i, &c) in self.swatches.iter().enumerate() {
                             let (r, sr) = ui.allocate_exact_size(vec2(s, s), Sense::click());
                             let sr = sr.on_hover_cursor(CursorIcon::PointingHand);
-                            let hov = glowkit_core::anim::spring(ui, id.with(("sw", i)), if sr.hovered() { 1.0 } else { 0.0 }, 500.0, 20.0);
+                            let hov = glowkit_core::anim::spring(
+                                ui,
+                                id.with(("sw", i)),
+                                if sr.hovered() { 1.0 } else { 0.0 },
+                                500.0,
+                                20.0,
+                            );
                             let rr = Rect::from_center_size(r.center(), r.size() * (1.0 + 0.12 * hov));
                             let selected = to_hex(c) == to_hex(cur);
                             ui.painter().rect_filled(rr, CornerRadius::same(6), c);
                             if selected {
-                                ui.painter().rect_stroke(rr.expand(2.0), CornerRadius::same(8), Stroke::new(1.5, t.foreground), StrokeKind::Inside);
-                                ui.painter().rect_stroke(rr, CornerRadius::same(6), Stroke::new(1.0, t.background), StrokeKind::Outside);
+                                ui.painter().rect_stroke(
+                                    rr.expand(2.0),
+                                    CornerRadius::same(8),
+                                    Stroke::new(1.5, t.foreground),
+                                    StrokeKind::Inside,
+                                );
+                                ui.painter().rect_stroke(
+                                    rr,
+                                    CornerRadius::same(6),
+                                    Stroke::new(1.0, t.background),
+                                    StrokeKind::Outside,
+                                );
                             }
                             if sr.clicked() {
                                 let h = to_hsv(c);
@@ -319,8 +392,20 @@ impl Widget for ColorPicker<'_> {
         let focus = kit::anim(ui, id.with("f"), open, 0.16);
         kit::field_chrome(ui.painter(), rect, &t, hover, focus, false, false);
         let sw = Rect::from_center_size(pos2(rect.min.x + 20.0, rect.center().y), vec2(20.0, 20.0));
-        ui.painter().rect(sw, CornerRadius::same(5), *self.color, Stroke::new(1.0, with_alpha(t.foreground, 0.12)), StrokeKind::Inside);
-        ui.painter().text(pos2(sw.max.x + 10.0, rect.center().y), egui::Align2::LEFT_CENTER, text, FontId::monospace(13.0), t.foreground);
+        ui.painter().rect(
+            sw,
+            CornerRadius::same(5),
+            *self.color,
+            Stroke::new(1.0, with_alpha(t.foreground, 0.12)),
+            StrokeKind::Inside,
+        );
+        ui.painter().text(
+            pos2(sw.max.x + 10.0, rect.center().y),
+            egui::Align2::LEFT_CENTER,
+            text,
+            FontId::monospace(13.0),
+            t.foreground,
+        );
         if resp.clicked() {
             egui::Popup::toggle_id(ui.ctx(), popup_id);
         }
@@ -336,7 +421,12 @@ impl Widget for ColorPicker<'_> {
                     .stroke(t.border_stroke())
                     .corner_radius(t.corner())
                     .inner_margin(egui::Margin::same(12))
-                    .shadow(egui::epaint::Shadow { offset: [0, 8], blur: 24, spread: 0, color: Color32::from_black_alpha(if t.dark { 100 } else { 30 }) }),
+                    .shadow(egui::epaint::Shadow {
+                        offset: [0, 8],
+                        blur: 24,
+                        spread: 0,
+                        color: Color32::from_black_alpha(if t.dark { 100 } else { 30 }),
+                    }),
             )
             .show(|ui| {
                 ui.set_width(width);

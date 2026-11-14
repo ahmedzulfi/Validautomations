@@ -108,10 +108,16 @@ impl AnimatedList {
             let item_rect = Rect::from_min_size(egui::pos2(rect.min.x, top), vec2(rect.width(), heights[i]));
             let scale = 0.7 + 0.3 * pop;
             let c = item_rect.center();
-            let tf = TSTransform::from_translation(c.to_vec2()) * TSTransform::from_scaling(scale) * TSTransform::from_translation(-c.to_vec2());
+            let tf = TSTransform::from_translation(c.to_vec2())
+                * TSTransform::from_scaling(scale)
+                * TSTransform::from_translation(-c.to_vec2());
             let mut measured = heights[i];
             ui.with_visual_transform(tf, |ui| {
-                let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_size(item_rect.min, vec2(rect.width(), 2000.0))).id_salt(("item", i)));
+                let mut child = ui.new_child(
+                    UiBuilder::new()
+                        .max_rect(Rect::from_min_size(item_rect.min, vec2(rect.width(), 2000.0)))
+                        .id_salt(("item", i)),
+                );
                 child.set_clip_rect(clip);
                 child.multiply_opacity(alpha);
                 item(&mut child, i);

@@ -30,7 +30,15 @@ impl Default for Magnet {
 impl Magnet {
     /// Moderate pull within 80 pt of the content.
     pub fn new() -> Self {
-        Self { strength: 0.35, padding: 80.0, stiffness: 220.0, damping: 16.0, max_offset: 40.0, autoplay: false, salt: 0 }
+        Self {
+            strength: 0.35,
+            padding: 80.0,
+            stiffness: 220.0,
+            damping: 16.0,
+            max_offset: 40.0,
+            autoplay: false,
+            salt: 0,
+        }
     }
     /// Fraction of the pointer's offset from the content center that the content follows.
     pub fn strength(mut self, s: f32) -> Self {
@@ -71,7 +79,8 @@ impl Magnet {
         let mut target = Vec2::ZERO;
         if let Some(r) = prev {
             let field = r.expand(self.padding);
-            let pointer = ui.input(|i| i.pointer.hover_pos()).filter(|p| field.contains(*p) && ui.rect_contains_pointer(field));
+            let pointer =
+                ui.input(|i| i.pointer.hover_pos()).filter(|p| field.contains(*p) && ui.rect_contains_pointer(field));
             if let Some(p) = pointer {
                 target = (p - r.center()) * self.strength;
             } else if self.autoplay {

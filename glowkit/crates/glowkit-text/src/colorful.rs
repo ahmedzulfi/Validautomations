@@ -23,7 +23,15 @@ pub struct ColorfulText {
 impl ColorfulText {
     /// Create the effect for `text`.
     pub fn new(text: impl Into<String>) -> Self {
-        Self { text: text.into(), size: 48.0, colors: Vec::new(), bold: true, interval: 3.0, stagger: 0.05, duration: 0.55 }
+        Self {
+            text: text.into(),
+            size: 48.0,
+            colors: Vec::new(),
+            bold: true,
+            interval: 3.0,
+            stagger: 0.05,
+            duration: 0.55,
+        }
     }
     /// Font size in points.
     pub fn size(mut self, size: f32) -> Self {

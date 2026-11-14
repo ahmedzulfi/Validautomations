@@ -1,6 +1,9 @@
 //! Shared geometry, vector icons and small chrome helpers used by every canvas component.
 
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Id, Painter, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Id, Painter, Pos2, Rect, Response, Sense, Shape, Stroke,
+    StrokeKind, Ui, Vec2,
+};
 use glowkit_core::{color::with_alpha, paint, Theme};
 use std::f32::consts::TAU;
 
@@ -227,7 +230,15 @@ pub fn elide(painter: &Painter, text: &str, font: FontId, max_width: f32) -> Str
 }
 
 /// A rounded pill with centered text; returns its rect.
-pub fn pill(painter: &Painter, center: Pos2, text: &str, font: FontId, fg: Color32, bg: Color32, stroke: Stroke) -> Rect {
+pub fn pill(
+    painter: &Painter,
+    center: Pos2,
+    text: &str,
+    font: FontId,
+    fg: Color32,
+    bg: Color32,
+    stroke: Stroke,
+) -> Rect {
     let g = painter.layout_no_wrap(text.to_owned(), font, fg);
     let size = g.size() + vec2(14.0, 6.0);
     let r = Rect::from_center_size(center, size);
@@ -239,7 +250,13 @@ pub fn pill(painter: &Painter, center: Pos2, text: &str, font: FontId, fg: Color
 /// Small avatar circle with initials.
 pub fn avatar(painter: &Painter, center: Pos2, radius: f32, initials: &str, color: Color32, ring: Color32) {
     painter.circle(center, radius, color, Stroke::new(1.5, ring));
-    painter.text(center, Align2::CENTER_CENTER, initials, FontId::proportional(radius * 0.85), glowkit_core::color::contrast_text(color));
+    painter.text(
+        center,
+        Align2::CENTER_CENTER,
+        initials,
+        FontId::proportional(radius * 0.85),
+        glowkit_core::color::contrast_text(color),
+    );
 }
 
 /// Deterministic color for a string (stable across runs), picked from the theme chart palette.
@@ -311,7 +328,8 @@ pub fn paint_icon(painter: &Painter, rect: Rect, icon: Icon, color: Color32) {
     };
     match icon {
         Icon::Select => {
-            let pts = vec![p(4.0, 2.5), p(4.0, 13.0), p(6.8, 10.4), p(8.8, 14.2), p(10.4, 13.4), p(8.5, 9.8), p(12.2, 9.6)];
+            let pts =
+                vec![p(4.0, 2.5), p(4.0, 13.0), p(6.8, 10.4), p(8.8, 14.2), p(10.4, 13.4), p(8.5, 9.8), p(12.2, 9.6)];
             painter.add(Shape::closed_line(pts, st));
         }
         Icon::Hand => {
@@ -319,7 +337,16 @@ pub fn paint_icon(painter: &Painter, rect: Rect, icon: Icon, color: Color32) {
             line(&[(7.5, 8.0), (7.5, 3.0)]);
             line(&[(10.0, 8.0), (10.0, 3.5)]);
             line(&[(12.3, 8.5), (12.3, 5.0)]);
-            line(&[(5.0, 9.0), (3.2, 7.8), (2.6, 9.0), (5.6, 13.2), (7.5, 14.2), (10.5, 14.2), (12.3, 12.0), (12.3, 8.5)]);
+            line(&[
+                (5.0, 9.0),
+                (3.2, 7.8),
+                (2.6, 9.0),
+                (5.6, 13.2),
+                (7.5, 14.2),
+                (10.5, 14.2),
+                (12.3, 12.0),
+                (12.3, 8.5),
+            ]);
         }
         Icon::Pen => {
             closed(&[(3.0, 13.0), (3.6, 10.2), (11.2, 2.6), (13.4, 4.8), (5.8, 12.4)]);
@@ -330,7 +357,12 @@ pub fn paint_icon(painter: &Painter, rect: Rect, icon: Icon, color: Color32) {
             line(&[(3.0, 14.0), (13.0, 14.0)]);
         }
         Icon::Rect => {
-            painter.rect_stroke(Rect::from_min_max(p(2.5, 3.5), p(13.5, 12.5)), CornerRadius::same((1.5 * u) as u8), st, StrokeKind::Middle);
+            painter.rect_stroke(
+                Rect::from_min_max(p(2.5, 3.5), p(13.5, 12.5)),
+                CornerRadius::same((1.5 * u) as u8),
+                st,
+                StrokeKind::Middle,
+            );
         }
         Icon::Ellipse => {
             painter.add(Shape::ellipse_stroke(c, vec2(5.8 * u, 4.8 * u), st));
@@ -367,7 +399,12 @@ pub fn paint_icon(painter: &Painter, rect: Rect, icon: Icon, color: Color32) {
             line(&[(6.0, 13.5), (2.5, 13.5), (2.5, 10.0)]);
         }
         Icon::Lock | Icon::Unlock => {
-            painter.rect_stroke(Rect::from_min_max(p(3.5, 7.5), p(12.5, 14.0)), CornerRadius::same((1.5 * u) as u8), st, StrokeKind::Middle);
+            painter.rect_stroke(
+                Rect::from_min_max(p(3.5, 7.5), p(12.5, 14.0)),
+                CornerRadius::same((1.5 * u) as u8),
+                st,
+                StrokeKind::Middle,
+            );
             if icon == Icon::Lock {
                 line(&[(5.5, 7.5), (5.5, 5.0), (6.5, 3.0), (9.5, 3.0), (10.5, 5.0), (10.5, 7.5)]);
             } else {
@@ -395,18 +432,47 @@ pub fn paint_icon(painter: &Painter, rect: Rect, icon: Icon, color: Color32) {
             line(&[(4.0, 4.5), (5.0, 13.5), (11.0, 13.5), (12.0, 4.5)]);
         }
         Icon::Copy => {
-            painter.rect_stroke(Rect::from_min_max(p(5.5, 5.5), p(13.5, 13.5)), CornerRadius::same((1.5 * u) as u8), st, StrokeKind::Middle);
+            painter.rect_stroke(
+                Rect::from_min_max(p(5.5, 5.5), p(13.5, 13.5)),
+                CornerRadius::same((1.5 * u) as u8),
+                st,
+                StrokeKind::Middle,
+            );
             line(&[(3.5, 10.5), (2.5, 10.5), (2.5, 2.5), (10.5, 2.5), (10.5, 3.5)]);
         }
         Icon::Map => {
-            closed(&[(2.0, 4.0), (6.0, 2.5), (10.0, 4.0), (14.0, 2.5), (14.0, 12.0), (10.0, 13.5), (6.0, 12.0), (2.0, 13.5)]);
+            closed(&[
+                (2.0, 4.0),
+                (6.0, 2.5),
+                (10.0, 4.0),
+                (14.0, 2.5),
+                (14.0, 12.0),
+                (10.0, 13.5),
+                (6.0, 12.0),
+                (2.0, 13.5),
+            ]);
             line(&[(6.0, 2.5), (6.0, 12.0)]);
             line(&[(10.0, 4.0), (10.0, 13.5)]);
         }
         Icon::Layout => {
-            painter.rect_stroke(Rect::from_min_max(p(1.5, 6.0), p(5.5, 10.0)), CornerRadius::same(1), st, StrokeKind::Middle);
-            painter.rect_stroke(Rect::from_min_max(p(10.5, 2.0), p(14.5, 6.0)), CornerRadius::same(1), st, StrokeKind::Middle);
-            painter.rect_stroke(Rect::from_min_max(p(10.5, 10.0), p(14.5, 14.0)), CornerRadius::same(1), st, StrokeKind::Middle);
+            painter.rect_stroke(
+                Rect::from_min_max(p(1.5, 6.0), p(5.5, 10.0)),
+                CornerRadius::same(1),
+                st,
+                StrokeKind::Middle,
+            );
+            painter.rect_stroke(
+                Rect::from_min_max(p(10.5, 2.0), p(14.5, 6.0)),
+                CornerRadius::same(1),
+                st,
+                StrokeKind::Middle,
+            );
+            painter.rect_stroke(
+                Rect::from_min_max(p(10.5, 10.0), p(14.5, 14.0)),
+                CornerRadius::same(1),
+                st,
+                StrokeKind::Middle,
+            );
             line(&[(5.5, 8.0), (8.0, 8.0), (8.0, 4.0), (10.5, 4.0)]);
             line(&[(8.0, 8.0), (8.0, 12.0), (10.5, 12.0)]);
         }
@@ -425,12 +491,22 @@ pub fn paint_icon(painter: &Painter, rect: Rect, icon: Icon, color: Color32) {
             painter.text(c, Align2::CENTER_CENTER, "?", FontId::proportional(13.0 * u), color);
         }
         Icon::Sketch => {
-            let pts: Vec<(f32, f32)> = (0..=16).map(|i| (2.0 + i as f32 * 0.75, 8.0 + ((i as f32) * 1.3).sin() * 3.0)).collect();
+            let pts: Vec<(f32, f32)> =
+                (0..=16).map(|i| (2.0 + i as f32 * 0.75, 8.0 + ((i as f32) * 1.3).sin() * 3.0)).collect();
             line(&pts);
         }
         Icon::Fill => {
-            painter.rect_filled(Rect::from_min_max(p(3.0, 3.0), p(13.0, 13.0)), CornerRadius::same((2.0 * u) as u8), with_alpha(color, 0.45));
-            painter.rect_stroke(Rect::from_min_max(p(3.0, 3.0), p(13.0, 13.0)), CornerRadius::same((2.0 * u) as u8), st, StrokeKind::Middle);
+            painter.rect_filled(
+                Rect::from_min_max(p(3.0, 3.0), p(13.0, 13.0)),
+                CornerRadius::same((2.0 * u) as u8),
+                with_alpha(color, 0.45),
+            );
+            painter.rect_stroke(
+                Rect::from_min_max(p(3.0, 3.0), p(13.0, 13.0)),
+                CornerRadius::same((2.0 * u) as u8),
+                st,
+                StrokeKind::Middle,
+            );
         }
         Icon::Export | Icon::Import => {
             line(&[(2.5, 10.0), (2.5, 13.5), (13.5, 13.5), (13.5, 10.0)]);
@@ -465,7 +541,14 @@ pub fn paint_icon(painter: &Painter, rect: Rect, icon: Icon, color: Color32) {
 
 /// Paint a floating panel (card with border and soft shadow).
 pub fn panel(painter: &Painter, t: &Theme, rect: Rect, radius: f32) {
-    paint::soft_shadow(painter, rect, radius, 16.0, vec2(0.0, 4.0), Color32::from_black_alpha(if t.dark { 110 } else { 28 }));
+    paint::soft_shadow(
+        painter,
+        rect,
+        radius,
+        16.0,
+        vec2(0.0, 4.0),
+        Color32::from_black_alpha(if t.dark { 110 } else { 28 }),
+    );
     painter.rect(rect, CornerRadius::same(radius as u8), t.popover, Stroke::new(1.0, t.border), StrokeKind::Inside);
 }
 
@@ -510,7 +593,10 @@ pub fn keycap(painter: &Painter, t: &Theme, left_center: Pos2, key: &str) -> f32
     let w = (g.size().x + 10.0).max(20.0);
     let r = Rect::from_min_size(left_center - vec2(0.0, 10.0), vec2(w, 20.0));
     painter.rect(r, CornerRadius::same(5), t.muted, Stroke::new(1.0, t.border), StrokeKind::Inside);
-    painter.line_segment([r.left_bottom() + vec2(3.0, -0.5), r.right_bottom() + vec2(-3.0, -0.5)], Stroke::new(1.0, with_alpha(t.foreground, 0.12)));
+    painter.line_segment(
+        [r.left_bottom() + vec2(3.0, -0.5), r.right_bottom() + vec2(-3.0, -0.5)],
+        Stroke::new(1.0, with_alpha(t.foreground, 0.12)),
+    );
     painter.galley(r.center() - g.size() / 2.0, g, t.foreground);
     w
 }
@@ -529,7 +615,12 @@ pub fn shortcut_overlay(painter: &Painter, t: &Theme, area: Rect, title: &str, e
         .iter()
         .map(|(keys, _)| {
             keys.split('+')
-                .map(|k| (painter.layout_no_wrap(k.trim().to_owned(), FontId::monospace(10.5), Color32::WHITE).size().x + 10.0).max(20.0) + 3.0)
+                .map(|k| {
+                    (painter.layout_no_wrap(k.trim().to_owned(), FontId::monospace(10.5), Color32::WHITE).size().x
+                        + 10.0)
+                        .max(20.0)
+                        + 3.0
+                })
                 .sum::<f32>()
         })
         .fold(0.0, f32::max)
@@ -544,8 +635,17 @@ pub fn shortcut_overlay(painter: &Painter, t: &Theme, area: Rect, title: &str, e
     p2.set_opacity(open);
     panel(&p2, t, rect, 12.0);
     p2.text(rect.left_top() + vec2(16.0, 18.0), Align2::LEFT_CENTER, title, FontId::proportional(14.0), t.foreground);
-    p2.text(rect.right_top() + vec2(-16.0, 18.0), Align2::RIGHT_CENTER, "press ? to close", FontId::proportional(11.0), t.muted_foreground);
-    p2.line_segment([rect.left_top() + vec2(12.0, 34.0), rect.right_top() + vec2(-12.0, 34.0)], Stroke::new(1.0, t.border));
+    p2.text(
+        rect.right_top() + vec2(-16.0, 18.0),
+        Align2::RIGHT_CENTER,
+        "press ? to close",
+        FontId::proportional(11.0),
+        t.muted_foreground,
+    );
+    p2.line_segment(
+        [rect.left_top() + vec2(12.0, 34.0), rect.right_top() + vec2(-12.0, 34.0)],
+        Stroke::new(1.0, t.border),
+    );
     for (i, (keys, desc)) in entries.iter().enumerate() {
         let col = i / rows;
         let row = i % rows;
@@ -568,7 +668,13 @@ pub fn shortcut_hint_chip(painter: &Painter, t: &Theme, right_bottom: Pos2) {
     let g = painter.layout_no_wrap("shortcuts".to_owned(), font, t.muted_foreground);
     let w = g.size().x + 40.0;
     let r = Rect::from_min_max(right_bottom - vec2(w, 26.0), right_bottom);
-    painter.rect(r, CornerRadius::same(13), with_alpha(t.popover, 0.92), Stroke::new(1.0, t.border), StrokeKind::Inside);
+    painter.rect(
+        r,
+        CornerRadius::same(13),
+        with_alpha(t.popover, 0.92),
+        Stroke::new(1.0, t.border),
+        StrokeKind::Inside,
+    );
     keycap(painter, t, pos2(r.left() + 4.0, r.center().y), "?");
     painter.galley(pos2(r.left() + 30.0, r.center().y - g.size().y / 2.0), g, t.muted_foreground);
 }
@@ -613,15 +719,17 @@ pub fn pressed_cmd(ui: &Ui, key: egui::Key, shift: bool) -> bool {
 /// Was the `?` key pressed (handles both `Questionmark` and `Shift+/`)?
 pub fn help_pressed(ui: &Ui) -> bool {
     ui.input(|i| {
-        i.events.iter().any(|e| matches!(e, egui::Event::Text(s) if s == "?"))
-            || i.key_pressed(egui::Key::Questionmark)
+        i.events.iter().any(|e| matches!(e, egui::Event::Text(s) if s == "?")) || i.key_pressed(egui::Key::Questionmark)
     })
 }
 
 /// Keep Tab/arrows/Escape for this widget while it has focus.
 pub fn lock_focus(ui: &Ui, id: Id) {
     ui.memory_mut(|m| {
-        m.set_focus_lock_filter(id, egui::EventFilter { tab: true, horizontal_arrows: true, vertical_arrows: true, escape: true })
+        m.set_focus_lock_filter(
+            id,
+            egui::EventFilter { tab: true, horizontal_arrows: true, vertical_arrows: true, escape: true },
+        )
     });
 }
 

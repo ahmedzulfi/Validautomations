@@ -28,10 +28,31 @@ fn showcase(ui: &mut Ui) {
                 ("Smooth", Material::smooth(t.chart[0]).specular(0.6).rim(0.3)),
                 ("Flat", Material::flat(t.chart[1])),
                 ("Toon", Material::toon(t.chart[2], 3)),
-                ("Matcap", Material::matcap([glowkit_core::color::shade(g[0], -0.25), g[1], glowkit_core::color::mix(g[2], Color32::WHITE, 0.4)])),
+                (
+                    "Matcap",
+                    Material::matcap([
+                        glowkit_core::color::shade(g[0], -0.25),
+                        g[1],
+                        glowkit_core::color::mix(g[2], Color32::WHITE, 0.4),
+                    ]),
+                ),
                 ("Normal", Material::normal()),
-                ("Wireframe", Material::wireframe(t.chart[5]).wire(Wire::new(t.chart[5]).width(1.2).glow(if t.dark { 1.0 } else { 0.0 }))),
-                ("Glow", Material::smooth(glowkit_core::color::shade(t.chart[3], if t.dark { -0.35 } else { -0.05 })).emissive(0.25).rim(1.6).rim_color(t.chart[3]).specular(0.2)),
+                (
+                    "Wireframe",
+                    Material::wireframe(t.chart[5]).wire(Wire::new(t.chart[5]).width(1.2).glow(if t.dark {
+                        1.0
+                    } else {
+                        0.0
+                    })),
+                ),
+                (
+                    "Glow",
+                    Material::smooth(glowkit_core::color::shade(t.chart[3], if t.dark { -0.35 } else { -0.05 }))
+                        .emissive(0.25)
+                        .rim(1.6)
+                        .rim_color(t.chart[3])
+                        .specular(0.2),
+                ),
                 ("Overlay", Material::smooth(t.chart[4]).wire(Wire::new(Color32::from_white_alpha(140)).width(1.0))),
             ];
             let meshes = [
@@ -47,13 +68,36 @@ fn showcase(ui: &mut Ui) {
             for (i, ((name, mat), mesh)) in items.iter().zip(meshes.iter()).enumerate() {
                 let (col, row) = (i % 4, i / 4);
                 let p = vec3((col as f32 - 1.5) * 2.4, 0.0, (row as f32 - 0.5) * 2.5);
-                let tf = Transform::from_translation(p + vec3(0.0, (ctx.time * 1.2 + i as f32).sin() * 0.1, 0.0)).with_euler(ctx.time * 0.4 + i as f32, ctx.time * 0.6, 0.0);
-                scene.shadow(p - vec3(0.0, 0.95, 0.0), 0.8, glowkit_core::color::with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.15 }));
+                let tf = Transform::from_translation(p + vec3(0.0, (ctx.time * 1.2 + i as f32).sin() * 0.1, 0.0))
+                    .with_euler(ctx.time * 0.4 + i as f32, ctx.time * 0.6, 0.0);
+                scene.shadow(
+                    p - vec3(0.0, 0.95, 0.0),
+                    0.8,
+                    glowkit_core::color::with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.15 }),
+                );
                 if *name == "Glow" {
-                    scene.underlay(|s| s.glow_point(p, 1.3, if t.dark { additive(t.chart[3].gamma_multiply(0.35)) } else { glowkit_core::color::with_alpha(t.chart[3], 0.25) }));
+                    scene.underlay(|s| {
+                        s.glow_point(
+                            p,
+                            1.3,
+                            if t.dark {
+                                additive(t.chart[3].gamma_multiply(0.35))
+                            } else {
+                                glowkit_core::color::with_alpha(t.chart[3], 0.25)
+                            },
+                        )
+                    });
                 }
                 scene.draw(mesh, tf, mat);
-                scene.text(name, p - vec3(0.0, 0.95, -0.95), Vec3::X, -Vec3::Z, 0.26, t.muted_foreground, egui::Align2::CENTER_CENTER);
+                scene.text(
+                    name,
+                    p - vec3(0.0, 0.95, -0.95),
+                    Vec3::X,
+                    -Vec3::Z,
+                    0.26,
+                    t.muted_foreground,
+                    egui::Align2::CENTER_CENTER,
+                );
             }
             scene.grid(-0.96, 12.0, 12, glowkit_core::color::with_alpha(t.muted_foreground, 0.2));
         });

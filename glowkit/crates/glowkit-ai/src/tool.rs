@@ -3,7 +3,9 @@
 use crate::code::CodeBlock;
 use crate::common;
 use crate::icons::{paint_icon, Icon};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder, Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
@@ -67,7 +69,17 @@ pub struct ToolCall<'a> {
 impl<'a> ToolCall<'a> {
     /// A call to the tool named `name`.
     pub fn new(name: &'a str) -> Self {
-        Self { name, status: ToolStatus::Pending, input: None, output: None, error: None, description: None, icon: Icon::Gear, default_open: false, id_salt: None }
+        Self {
+            name,
+            status: ToolStatus::Pending,
+            input: None,
+            output: None,
+            error: None,
+            description: None,
+            icon: Icon::Gear,
+            default_open: false,
+            id_salt: None,
+        }
     }
     /// Current status.
     pub fn status(mut self, s: ToolStatus) -> Self {
@@ -115,7 +127,11 @@ fn section_label(ui: &mut Ui, text: &str) {
     let t = Theme::of(ui);
     let g = ui.painter().layout_no_wrap(text.to_owned(), egui::FontId::proportional(11.0), t.muted_foreground);
     let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), g.size().y + 2.0), Sense::hover());
-    common::paint_galley_fx(ui.painter(), r.min, &g, |_| common::Fx { bold: true, color: Some(with_alpha(t.muted_foreground, 0.85)), ..Default::default() });
+    common::paint_galley_fx(ui.painter(), r.min, &g, |_| common::Fx {
+        bold: true,
+        color: Some(with_alpha(t.muted_foreground, 0.85)),
+        ..Default::default()
+    });
 }
 
 impl Widget for ToolCall<'_> {
@@ -147,11 +163,19 @@ impl Widget for ToolCall<'_> {
                 p.rect_filled(ib, CornerRadius::same(7), common::raised(&t));
                 p.rect_stroke(ib, CornerRadius::same(7), Stroke::new(1.0, t.border), StrokeKind::Inside);
                 paint_icon(p, self.icon, ib.shrink(6.5), t.muted_foreground);
-                let name_g = ui.painter().layout_no_wrap(self.name.to_owned(), egui::FontId::monospace(13.0), t.foreground);
+                let name_g =
+                    ui.painter().layout_no_wrap(self.name.to_owned(), egui::FontId::monospace(13.0), t.foreground);
                 let nx = ib.max.x + 11.0;
                 ui.painter().galley(pos2(nx, hr.center().y - name_g.size().y / 2.0), name_g.clone(), t.foreground);
                 if let Some(d) = self.description {
-                    common::text(ui.painter(), pos2(nx + name_g.size().x + 10.0, hr.center().y), Align2::LEFT_CENTER, d, 12.5, t.muted_foreground);
+                    common::text(
+                        ui.painter(),
+                        pos2(nx + name_g.size().x + 10.0, hr.center().y),
+                        Align2::LEFT_CENTER,
+                        d,
+                        12.5,
+                        t.muted_foreground,
+                    );
                 }
                 // status badge + chevron on the right
                 let chev_c = pos2(hr.max.x - 20.0, hr.center().y);
@@ -170,7 +194,9 @@ impl Widget for ToolCall<'_> {
                         common::spinner(p, ic, 4.6, 1.5, sc, glowkit_core::time(ui));
                         glowkit_core::animate(ui);
                     }
-                    ToolStatus::Completed => paint_icon(p, Icon::Check, Rect::from_center_size(ic, vec2(11.0, 11.0)), sc),
+                    ToolStatus::Completed => {
+                        paint_icon(p, Icon::Check, Rect::from_center_size(ic, vec2(11.0, 11.0)), sc)
+                    }
                     ToolStatus::Error => paint_icon(p, Icon::X, Rect::from_center_size(ic, vec2(10.0, 10.0)), sc),
                     ToolStatus::Pending => paint_icon(p, Icon::Clock, Rect::from_center_size(ic, vec2(11.0, 11.0)), sc),
                 }
@@ -179,7 +205,10 @@ impl Widget for ToolCall<'_> {
                 common::reveal(ui, id.with("body"), open, |ui| {
                     ui.spacing_mut().item_spacing.y = 8.0;
                     let r = ui.available_rect_before_wrap();
-                    ui.painter().line_segment([pos2(r.min.x + 1.0, r.min.y), pos2(r.max.x - 1.0, r.min.y)], Stroke::new(1.0, t.border));
+                    ui.painter().line_segment(
+                        [pos2(r.min.x + 1.0, r.min.y), pos2(r.max.x - 1.0, r.min.y)],
+                        Stroke::new(1.0, t.border),
+                    );
                     let inner = Rect::from_min_max(r.min + vec2(14.0, 12.0), pos2(r.max.x - 14.0, r.max.y));
                     ui.scope_builder(UiBuilder::new().max_rect(inner), |ui| {
                         ui.spacing_mut().item_spacing.y = 8.0;
@@ -193,7 +222,12 @@ impl Widget for ToolCall<'_> {
                             let g = common::galley_wrapped(ui, err, 12.5, t.destructive, w - 24.0);
                             let (er, _) = ui.allocate_exact_size(vec2(w, g.size().y + 20.0), Sense::hover());
                             ui.painter().rect_filled(er, t.corner_scaled(0.8), with_alpha(t.destructive, 0.08));
-                            ui.painter().rect_stroke(er, t.corner_scaled(0.8), Stroke::new(1.0, with_alpha(t.destructive, 0.25)), StrokeKind::Inside);
+                            ui.painter().rect_stroke(
+                                er,
+                                t.corner_scaled(0.8),
+                                Stroke::new(1.0, with_alpha(t.destructive, 0.25)),
+                                StrokeKind::Inside,
+                            );
                             ui.painter().galley(er.min + vec2(12.0, 10.0), g, t.destructive);
                         } else if let Some(out) = self.output {
                             section_label(ui, "RESULT");

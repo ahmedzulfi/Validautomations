@@ -2,16 +2,25 @@
 //! patterns, the [`MiniMap`] and the [`Controls`] panel.
 
 use crate::common::{icon_button, panel, Icon};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Id, Key, Painter, PointerButton, Pos2, Rect, Response, Sense, Stroke, StrokeKind, Ui, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Id, Key, Painter, PointerButton, Pos2, Rect,
+    Response, Sense, Stroke, StrokeKind, Ui, Vec2,
+};
 use glowkit_core::{anim::approach, color::with_alpha, Theme};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum ViewAnim {
     None,
     /// Smooth zoom keeping the world point under `anchor` (relative to the canvas min) fixed.
-    ZoomAt { anchor: Vec2, target: f32 },
+    ZoomAt {
+        anchor: Vec2,
+        target: f32,
+    },
     /// Fly to a pan/zoom pair.
-    To { pan: Vec2, zoom: f32 },
+    To {
+        pan: Vec2,
+        zoom: f32,
+    },
 }
 
 /// Pan / zoom state of an infinite canvas. Owned by the caller so it survives across frames
@@ -46,7 +55,15 @@ pub struct CanvasView {
 
 impl Default for CanvasView {
     fn default() -> Self {
-        Self { pan: Vec2::ZERO, zoom: 1.0, min_zoom: 0.15, max_zoom: 4.0, locked: false, needs_fit: true, anim: ViewAnim::None }
+        Self {
+            pan: Vec2::ZERO,
+            zoom: 1.0,
+            min_zoom: 0.15,
+            max_zoom: 4.0,
+            locked: false,
+            needs_fit: true,
+            anim: ViewAnim::None,
+        }
     }
 }
 
@@ -267,13 +284,19 @@ pub fn paint_background(painter: &Painter, rect: Rect, view: &CanvasView, kind: 
                 let x = x0 + ix as f32 * s;
                 let is_major = (((x - origin.x) / major).round() * major - (x - origin.x)).abs() < 0.5;
                 let c = if is_major { color.gamma_multiply(0.7) } else { col.gamma_multiply(0.45) };
-                painter.line_segment([pos2(x, rect.top()), pos2(x, rect.bottom())], Stroke::new(if is_major { 1.0 } else { 0.6 }, c));
+                painter.line_segment(
+                    [pos2(x, rect.top()), pos2(x, rect.bottom())],
+                    Stroke::new(if is_major { 1.0 } else { 0.6 }, c),
+                );
             }
             for iy in 0..ny {
                 let y = y0 + iy as f32 * s;
                 let is_major = (((y - origin.y) / major).round() * major - (y - origin.y)).abs() < 0.5;
                 let c = if is_major { color.gamma_multiply(0.7) } else { col.gamma_multiply(0.45) };
-                painter.line_segment([pos2(rect.left(), y), pos2(rect.right(), y)], Stroke::new(if is_major { 1.0 } else { 0.6 }, c));
+                painter.line_segment(
+                    [pos2(rect.left(), y), pos2(rect.right(), y)],
+                    Stroke::new(if is_major { 1.0 } else { 0.6 }, c),
+                );
             }
         }
         Background::Cross => {
@@ -385,7 +408,19 @@ pub struct CanvasResponse<R> {
 impl<'a> InfiniteCanvas<'a> {
     /// A canvas driven by the caller-owned `view`.
     pub fn new(view: &'a mut CanvasView) -> Self {
-        Self { view, background: Background::Dots, gap: 20.0, size: None, pan_on_drag: true, wheel: WheelMode::Pan, fill: None, pattern: None, id_salt: None, rounding: 10.0, border: true }
+        Self {
+            view,
+            background: Background::Dots,
+            gap: 20.0,
+            size: None,
+            pan_on_drag: true,
+            wheel: WheelMode::Pan,
+            fill: None,
+            pattern: None,
+            id_salt: None,
+            rounding: 10.0,
+            border: true,
+        }
     }
     /// Background pattern.
     pub fn background(mut self, b: Background) -> Self {
@@ -468,7 +503,8 @@ impl<'a> InfiniteCanvas<'a> {
 
         // --- wheel / pinch / trackpad
         if hovered && !view.locked {
-            let (zoom_delta, touch, scroll, pointer) = ui.input(|i| (i.zoom_delta(), i.multi_touch(), i.smooth_scroll_delta, i.pointer.hover_pos()));
+            let (zoom_delta, touch, scroll, pointer) =
+                ui.input(|i| (i.zoom_delta(), i.multi_touch(), i.smooth_scroll_delta, i.pointer.hover_pos()));
             let anchor = pointer.unwrap_or(rect.center());
             if let Some(touch) = touch {
                 view.zoom_at(rect, touch.center_pos, touch.zoom_delta);
@@ -495,7 +531,8 @@ impl<'a> InfiniteCanvas<'a> {
             if self.pan_on_drag && response.dragged_by(PointerButton::Primary) && !space {
                 view.pan_by(response.drag_delta());
             }
-            let (middle, delta, press) = ui.input(|i| (i.pointer.button_down(PointerButton::Middle), i.pointer.delta(), i.pointer.press_origin()));
+            let (middle, delta, press) = ui
+                .input(|i| (i.pointer.button_down(PointerButton::Middle), i.pointer.delta(), i.pointer.press_origin()));
             if middle && press.is_some_and(|p| rect.contains(p)) {
                 view.pan_by(delta);
                 ui.ctx().set_cursor_icon(CursorIcon::Grabbing);
@@ -533,7 +570,12 @@ impl<'a> InfiniteCanvas<'a> {
             }
         }
         if self.border {
-            ui.painter().rect_stroke(rect, CornerRadius::same(self.rounding as u8), Stroke::new(1.0, t.border), StrokeKind::Inside);
+            ui.painter().rect_stroke(
+                rect,
+                CornerRadius::same(self.rounding as u8),
+                Stroke::new(1.0, t.border),
+                StrokeKind::Inside,
+            );
         }
         CanvasResponse { response, rect, inner }
     }
@@ -617,7 +659,12 @@ impl<'a> MiniMap<'a> {
             }
         }
         let hov = ui.ctx().animate_bool_with_time(id.with("h"), resp.hovered() || resp.dragged(), 0.15);
-        mp.rect_stroke(vr, CornerRadius::same(3), Stroke::new(1.0 + hov * 0.5, t.accent.gamma_multiply(0.6 + 0.4 * hov)), StrokeKind::Middle);
+        mp.rect_stroke(
+            vr,
+            CornerRadius::same(3),
+            Stroke::new(1.0 + hov * 0.5, t.accent.gamma_multiply(0.6 + 0.4 * hov)),
+            StrokeKind::Middle,
+        );
         mp.rect_filled(vr, CornerRadius::same(3), with_alpha(t.accent, 0.06 + 0.05 * hov));
         if let Some(p) = resp.interact_pointer_pos() {
             if resp.is_pointer_button_down_on() {
@@ -686,7 +733,11 @@ impl<'a> Controls<'a> {
         let t = Theme::of(ui);
         let n = 4 + self.extras.len();
         let b = 30.0;
-        let size = if self.horizontal { vec2(n as f32 * b + 8.0 + 46.0, b + 8.0) } else { vec2(b + 8.0, n as f32 * b + 8.0 + 24.0) };
+        let size = if self.horizontal {
+            vec2(n as f32 * b + 8.0 + 46.0, b + 8.0)
+        } else {
+            vec2(b + 8.0, n as f32 * b + 8.0 + 24.0)
+        };
         let rect = self.anchor.align_size_within_rect(size, self.canvas.shrink(12.0));
         panel(ui.painter(), &t, rect, 10.0);
         let mut out = None;
@@ -695,7 +746,12 @@ impl<'a> Controls<'a> {
             (Icon::Plus, "Zoom in", false, ControlAction::ZoomIn),
             (Icon::Minus, "Zoom out", false, ControlAction::ZoomOut),
             (Icon::Fit, "Fit view", false, ControlAction::Fit),
-            (if self.view.locked { Icon::Lock } else { Icon::Unlock }, "Lock pan & zoom", self.view.locked, ControlAction::ToggleLock),
+            (
+                if self.view.locked { Icon::Lock } else { Icon::Unlock },
+                "Lock pan & zoom",
+                self.view.locked,
+                ControlAction::ToggleLock,
+            ),
         ];
         for (i, (ic, tip, act)) in self.extras.iter().enumerate() {
             buttons.push((*ic, tip, *act, ControlAction::Extra(i)));
@@ -714,7 +770,11 @@ impl<'a> Controls<'a> {
         }
         // zoom readout
         let pct = format!("{:.0}%", self.view.zoom * 100.0);
-        let readout = if self.horizontal { Rect::from_min_max(pos2(cursor.x, rect.top()), rect.max) } else { Rect::from_min_max(pos2(rect.left(), cursor.y), rect.max) };
+        let readout = if self.horizontal {
+            Rect::from_min_max(pos2(cursor.x, rect.top()), rect.max)
+        } else {
+            Rect::from_min_max(pos2(rect.left(), cursor.y), rect.max)
+        };
         ui.painter().text(readout.center(), Align2::CENTER_CENTER, pct, FontId::monospace(9.5), t.muted_foreground);
         match out {
             Some(ControlAction::ZoomIn) => self.view.zoom_in(self.canvas),

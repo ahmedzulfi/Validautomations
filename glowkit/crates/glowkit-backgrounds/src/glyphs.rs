@@ -59,7 +59,15 @@ impl Default for LetterGlitch {
 impl LetterGlitch {
     /// Glitching letters in the theme's colors.
     pub fn new() -> Self {
-        Self { base: Base::default(), colors: None, font_size: 15.0, speed: 1.0, amount: 0.05, outer_vignette: true, center_vignette: false }
+        Self {
+            base: Base::default(),
+            colors: None,
+            font_size: 15.0,
+            speed: 1.0,
+            amount: 0.05,
+            outer_vignette: true,
+            center_vignette: false,
+        }
     }
     /// Letter colors (default: a dim and two bright theme colors).
     pub fn colors(mut self, colors: &[Color32]) -> Self {
@@ -231,7 +239,13 @@ impl MatrixRain {
         let t = &f.theme;
         let dark = f.dark();
         let color = self.color.unwrap_or(t.success);
-        let head = self.head.unwrap_or_else(|| if dark { glowkit_core::mix(color, Color32::WHITE, 0.8) } else { glowkit_core::color::shade(color, -0.15) });
+        let head = self.head.unwrap_or_else(|| {
+            if dark {
+                glowkit_core::mix(color, Color32::WHITE, 0.8)
+            } else {
+                glowkit_core::color::shade(color, -0.15)
+            }
+        });
         let font = FontId::monospace(self.font_size);
         let glyphs = glyph_set(&f.painter, RAIN_CHARS, &font);
         if glyphs.is_empty() {

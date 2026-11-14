@@ -18,26 +18,26 @@
 pub use glowkit_core as core;
 pub use glowkit_core::{anim, color, egui, noise, paint, rng, Theme};
 
+#[cfg(feature = "three-d")]
+pub use glowkit_3d as three_d;
 #[cfg(feature = "ai")]
 pub use glowkit_ai as ai;
 #[cfg(feature = "backgrounds")]
 pub use glowkit_backgrounds as backgrounds;
 #[cfg(feature = "blocks")]
 pub use glowkit_blocks as blocks;
-#[cfg(feature = "motion")]
-pub use glowkit_motion as motion;
-#[cfg(feature = "three-d")]
-pub use glowkit_3d as three_d;
 #[cfg(feature = "canvas")]
 pub use glowkit_canvas as canvas;
-#[cfg(feature = "templates")]
-pub use glowkit_templates as templates;
 #[cfg(feature = "charts")]
 pub use glowkit_charts as charts;
 #[cfg(feature = "components")]
 pub use glowkit_components as components;
 #[cfg(feature = "effects")]
 pub use glowkit_effects as effects;
+#[cfg(feature = "motion")]
+pub use glowkit_motion as motion;
+#[cfg(feature = "templates")]
+pub use glowkit_templates as templates;
 #[cfg(feature = "text")]
 pub use glowkit_text as text;
 

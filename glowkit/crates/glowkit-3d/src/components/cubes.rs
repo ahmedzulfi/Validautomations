@@ -46,7 +46,19 @@ struct CubesState {
 impl TiltCubes {
     /// A 10 x 6 grid.
     pub fn new() -> Self {
-        Self { cols: 10, rows: 6, gap: 0.14, max_tilt: 50.0, radius: 2.2, face: None, ripple: None, border: None, auto: true, height: 340.0, id_salt: None }
+        Self {
+            cols: 10,
+            rows: 6,
+            gap: 0.14,
+            max_tilt: 50.0,
+            radius: 2.2,
+            face: None,
+            ripple: None,
+            border: None,
+            auto: true,
+            height: 340.0,
+            id_salt: None,
+        }
     }
     /// Grid size.
     pub fn grid(mut self, cols: usize, rows: usize) -> Self {
@@ -104,9 +116,17 @@ impl TiltCubes {
 impl Widget for TiltCubes {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
-        let face = self.face.unwrap_or(if t.dark { color::mix(t.card, t.accent, 0.2) } else { color::mix(t.background, t.muted, 0.9) });
+        let face = self.face.unwrap_or(if t.dark {
+            color::mix(t.card, t.accent, 0.2)
+        } else {
+            color::mix(t.background, t.muted, 0.9)
+        });
         let ripple = self.ripple.unwrap_or(t.accent);
-        let border = self.border.unwrap_or(if t.dark { color::with_alpha(color::mix(t.border, t.accent, 0.35), 0.9) } else { color::with_alpha(color::mix(t.border, t.foreground, 0.25), 0.9) });
+        let border = self.border.unwrap_or(if t.dark {
+            color::with_alpha(color::mix(t.border, t.accent, 0.35), 0.9)
+        } else {
+            color::with_alpha(color::mix(t.border, t.foreground, 0.25), 0.9)
+        });
         let (cols, rows) = (self.cols, self.rows);
         let pitch = 1.0 + self.gap;
         let (gw, gh) = (cols as f32 * pitch, rows as f32 * pitch);
@@ -124,7 +144,9 @@ impl Widget for TiltCubes {
                 scene.set_camera(cam);
                 scene.lights = Lights::default();
                 let mesh = ctx.mesh("cube", || Mesh::cube(1.0));
-                let center = |i: usize, j: usize| vec3((i as f32 + 0.5) * pitch - gw / 2.0, gh / 2.0 - (j as f32 + 0.5) * pitch, 0.0);
+                let center = |i: usize, j: usize| {
+                    vec3((i as f32 + 0.5) * pitch - gw / 2.0, gh / 2.0 - (j as f32 + 0.5) * pitch, 0.0)
+                };
                 let plane_hit = |p: egui::Pos2| -> Option<Vec3> {
                     let (o, d) = scene.ray(p);
                     if d.z.abs() < 1e-5 {
@@ -202,7 +224,11 @@ impl Widget for TiltCubes {
                         let tilt_k = ((rx * rx + ry * ry).sqrt() / max_tilt.max(1e-3)).clamp(0.0, 1.0);
                         let tint = color::gradient(&t.gradient, i as f32 / (cols.max(2) - 1) as f32);
                         let base = color::mix(color::mix(face, tint, tilt_k * 0.65), ripple, (flash * 0.9).min(1.0));
-                        let mat = Material::smooth(base).specular(0.25).shininess(24.0).wire(Wire::new(border).width(1.0).depth_fade(0.0)).emissive(flash * 0.25);
+                        let mat = Material::smooth(base)
+                            .specular(0.25)
+                            .shininess(24.0)
+                            .wire(Wire::new(border).width(1.0).depth_fade(0.0))
+                            .emissive(flash * 0.25);
                         scene.group(c + vec3(0.0, 0.0, lift), |s| s.draw(&mesh, tf, &mat));
                     }
                 }
@@ -281,7 +307,14 @@ impl PuzzleCube {
     /// Classic sticker colors.
     pub fn new() -> Self {
         Self {
-            colors: [color::hex("#EF4444"), color::hex("#F97316"), color::hex("#F8FAFC"), color::hex("#FACC15"), color::hex("#22C55E"), color::hex("#3B82F6")],
+            colors: [
+                color::hex("#EF4444"),
+                color::hex("#F97316"),
+                color::hex("#F8FAFC"),
+                color::hex("#FACC15"),
+                color::hex("#22C55E"),
+                color::hex("#3B82F6"),
+            ],
             body: None,
             turn_time: 0.45,
             pause: 0.25,
@@ -328,7 +361,9 @@ impl Widget for PuzzleCube {
         Viewport3D::new(salt_or(&self.id_salt, "puzzle-cube"))
             .height(self.height)
             .fov(34.0)
-            .controls(OrbitControls::new().distance(9.6).pitch(0.45).yaw(0.75).auto_rotate(0.35).distance_range(5.0, 16.0))
+            .controls(
+                OrbitControls::new().distance(9.6).pitch(0.45).yaw(0.75).auto_rotate(0.35).distance_range(5.0, 16.0),
+            )
             .show(ui, |scene, ctx| {
                 let now = ctx.time;
                 let (tt, pause) = (self.turn_time, self.pause);
@@ -392,13 +427,17 @@ impl Widget for PuzzleCube {
                     let m = tf.matrix();
                     scene.group(center, |s| {
                         s.draw(&body_mesh, m, &body_mat);
-                        for (fi, dir) in [Vec3::X, -Vec3::X, Vec3::Y, -Vec3::Y, Vec3::Z, -Vec3::Z].into_iter().enumerate() {
+                        for (fi, dir) in
+                            [Vec3::X, -Vec3::X, Vec3::Y, -Vec3::Y, Vec3::Z, -Vec3::Z].into_iter().enumerate()
+                        {
                             let comp = c.home[fi / 2];
                             let want = if fi % 2 == 0 { 1 } else { -1 };
                             if comp != want {
                                 continue;
                             }
-                            let local = Transform::from_translation(dir * 0.492).with_rotation(Quat::from_rotation_arc(Vec3::Z, dir)).matrix();
+                            let local = Transform::from_translation(dir * 0.492)
+                                .with_rotation(Quat::from_rotation_arc(Vec3::Z, dir))
+                                .matrix();
                             let mat = Material::smooth(self.colors[fi]).specular(0.6).shininess(60.0);
                             s.draw(&sticker, m * local, &mat);
                         }
@@ -553,7 +592,8 @@ impl Widget for VoxelText {
                 } else {
                     1.0 - ease(Easing::OutBack, ((ph - 5.7) / 1.1).clamp(0.0, 1.0))
                 };
-                let sway = Quat::from_axis_angle(Vec3::Y, (time * 0.45).sin() * 0.22) * Quat::from_axis_angle(Vec3::X, (time * 0.6).sin() * 0.08);
+                let sway = Quat::from_axis_angle(Vec3::Y, (time * 0.45).sin() * 0.22)
+                    * Quat::from_axis_angle(Vec3::X, (time * 0.6).sin() * 0.08);
                 scene.lights = Lights::default();
                 for (k, &(cx, cy)) in vox.iter().enumerate() {
                     let x = cx as f32 - ncols / 2.0 + 0.5;
@@ -566,7 +606,11 @@ impl Widget for VoxelText {
                     let world = sway.rotate(p);
                     let tc = (x / ncols + 0.5).clamp(0.0, 1.0);
                     let c = color::gradient(&stops, tc);
-                    let mat = Material::smooth(c).specular(0.6).shininess(36.0).rim(0.25).rim_color(color::mix(c, Color32::WHITE, 0.5));
+                    let mat = Material::smooth(c).specular(0.6).shininess(36.0).rim(0.25).rim_color(color::mix(
+                        c,
+                        Color32::WHITE,
+                        0.5,
+                    ));
                     let tf = Transform::from_translation(world).with_rotation(sway * spin);
                     scene.group(world, |s| s.draw(&cube, tf, &mat));
                 }

@@ -55,7 +55,17 @@ pub struct StatefulButton<'a> {
 impl<'a> StatefulButton<'a> {
     /// A stateful button with a label, bound to caller-owned state.
     pub fn new(label: impl Into<String>, state: &'a mut StatefulButtonState) -> Self {
-        Self { label: label.into(), state, loading_label: None, success_label: None, size: 15.0, color: None, success_color: None, reset_after: Some(2.0), simulate: None }
+        Self {
+            label: label.into(),
+            state,
+            loading_label: None,
+            success_label: None,
+            size: 15.0,
+            color: None,
+            success_color: None,
+            reset_after: Some(2.0),
+            simulate: None,
+        }
     }
     /// Label while loading. Defaults to the idle label.
     pub fn loading_label(mut self, label: impl Into<String>) -> Self {
@@ -139,7 +149,12 @@ impl Widget for StatefulButton<'_> {
         let body = pressed_rect(body, press);
         let base = self.color.unwrap_or(t.accent);
         let ok = self.success_color.unwrap_or(t.success);
-        let sk = glowkit_core::anim::follow(ui, resp.id.with("ok"), if *self.state == StatefulButtonState::Success { 1.0 } else { 0.0 }, 8.0);
+        let sk = glowkit_core::anim::follow(
+            ui,
+            resp.id.with("ok"),
+            if *self.state == StatefulButtonState::Success { 1.0 } else { 0.0 },
+            8.0,
+        );
         let fill = base.lerp_to_gamma(ok, sk);
         let fill = shade(fill, 0.04 * hover);
         let text = contrast_text(base);
@@ -154,10 +169,16 @@ impl Widget for StatefulButton<'_> {
         let ic = pos2(left + icon / 2.0, body.center().y);
         let clip = p.with_clip_rect(body);
         match phase.state {
-            StatefulButtonState::Loading => util::spinner(&clip, ic, icon * 0.42, 2.0, text.gamma_multiply(icon_k), time),
+            StatefulButtonState::Loading => {
+                util::spinner(&clip, ic, icon * 0.42, 2.0, text.gamma_multiply(icon_k), time)
+            }
             StatefulButtonState::Success => {
                 let k = (age / 0.35).clamp(0.0, 1.0);
-                clip.circle_filled(ic, icon * 0.5 * glowkit_core::ease(glowkit_core::Easing::OutBack, k), with_alpha(text, 0.22));
+                clip.circle_filled(
+                    ic,
+                    icon * 0.5 * glowkit_core::ease(glowkit_core::Easing::OutBack, k),
+                    with_alpha(text, 0.22),
+                );
                 util::check_mark(&clip, ic, icon * 0.6, 2.0, text, ((age - 0.1) / 0.3).clamp(0.0, 1.0));
             }
             StatefulButtonState::Idle => {}
@@ -193,7 +214,15 @@ pub struct SubscribeButton<'a> {
 impl<'a> SubscribeButton<'a> {
     /// A subscribe toggle bound to caller-owned state.
     pub fn new(on: &'a mut bool) -> Self {
-        Self { on, label: "Subscribe".into(), active_label: "Subscribed".into(), size: 15.0, color: None, active_color: None, min_width: None }
+        Self {
+            on,
+            label: "Subscribe".into(),
+            active_label: "Subscribed".into(),
+            size: 15.0,
+            color: None,
+            active_color: None,
+            min_width: None,
+        }
     }
     /// The two labels (inactive, active).
     pub fn labels(mut self, off: impl Into<String>, on: impl Into<String>) -> Self {
@@ -237,7 +266,12 @@ impl Widget for SubscribeButton<'_> {
         let p = ui.painter();
         p.rect_filled(rect, cr(radius), shade(fill, if t.dark { -0.03 } else { 0.03 } * hover));
         if k > 0.01 {
-            p.rect_stroke(rect, cr(radius), Stroke::new(1.0, with_alpha(t.border, k.clamp(0.0, 1.0))), StrokeKind::Inside);
+            p.rect_stroke(
+                rect,
+                cr(radius),
+                Stroke::new(1.0, with_alpha(t.border, k.clamp(0.0, 1.0))),
+                StrokeKind::Inside,
+            );
         }
         let clip = p.with_clip_rect(rect.shrink(1.0));
         let dy = rect.height();
@@ -280,7 +314,15 @@ pub struct CopyButton {
 impl CopyButton {
     /// A button that copies `text` to the clipboard when clicked.
     pub fn new(text: impl Into<String>) -> Self {
-        Self { text: text.into(), label: None, copied_label: None, size: 15.0, color: None, duration: 1.8, demo_loop: false }
+        Self {
+            text: text.into(),
+            label: None,
+            copied_label: None,
+            size: 15.0,
+            color: None,
+            duration: 1.8,
+            demo_loop: false,
+        }
     }
     /// Show a text label next to the icon (default: icon only).
     pub fn label(mut self, label: impl Into<String>) -> Self {
@@ -359,11 +401,24 @@ impl Widget for CopyButton {
         let p = ui.painter();
         let fill = shade(t.card, if t.dark { 0.03 } else { -0.02 } * hover).lerp_to_gamma(ok, 0.08 * k.clamp(0.0, 1.0));
         p.rect_filled(rect, cr(radius), fill);
-        p.rect_stroke(rect, cr(radius), Stroke::new(1.0, t.border.lerp_to_gamma(ok, 0.5 * k.clamp(0.0, 1.0))), StrokeKind::Inside);
+        p.rect_stroke(
+            rect,
+            cr(radius),
+            Stroke::new(1.0, t.border.lerp_to_gamma(ok, 0.5 * k.clamp(0.0, 1.0))),
+            StrokeKind::Inside,
+        );
         let ic = if label_w > 0.0 { pos2(rect.min.x + h * 0.5, rect.center().y) } else { rect.center() };
         let icon_s = self.size * 1.25;
         let kc = k.clamp(0.0, 1.2);
-        copy_icon(p, ic, icon_s, t.muted_foreground.lerp_to_gamma(t.foreground, hover), fill, (1.0 - kc).max(0.0), hover);
+        copy_icon(
+            p,
+            ic,
+            icon_s,
+            t.muted_foreground.lerp_to_gamma(t.foreground, hover),
+            fill,
+            (1.0 - kc).max(0.0),
+            hover,
+        );
         if k > 0.01 {
             util::check_mark(p, ic, icon_s * 0.55 * k.max(0.0), 2.0, ok, k.clamp(0.0, 1.0));
         }
@@ -374,8 +429,16 @@ impl Widget for CopyButton {
             let g1 = util::text_galley(ui, l, self.size * 0.93, t.foreground);
             let g2 = util::text_galley(ui, cl, self.size * 0.93, ok);
             let y = rect.center().y;
-            clip.galley_with_override_text_color(pos2(x, y - g1.size().y / 2.0 - kk * h * 0.8), g1, t.foreground.gamma_multiply(1.0 - kk));
-            clip.galley_with_override_text_color(pos2(x, y - g2.size().y / 2.0 + (1.0 - kk) * h * 0.8), g2, ok.gamma_multiply(kk));
+            clip.galley_with_override_text_color(
+                pos2(x, y - g1.size().y / 2.0 - kk * h * 0.8),
+                g1,
+                t.foreground.gamma_multiply(1.0 - kk),
+            );
+            clip.galley_with_override_text_color(
+                pos2(x, y - g2.size().y / 2.0 + (1.0 - kk) * h * 0.8),
+                g2,
+                ok.gamma_multiply(kk),
+            );
         }
         resp
     }
@@ -418,7 +481,15 @@ pub struct ParticleBurstButton {
 impl ParticleBurstButton {
     /// A particle-burst button with the given label.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), size: 15.0, colors: Vec::new(), background: None, count: 22, auto_burst: None, min_width: None }
+        Self {
+            label: label.into(),
+            size: 15.0,
+            colors: Vec::new(),
+            background: None,
+            count: 22,
+            auto_burst: None,
+            min_width: None,
+        }
     }
     setter!(/// Font size in points.
         size: f32);
@@ -510,7 +581,14 @@ impl Widget for ParticleBurstButton {
         let text = contrast_text(bg);
         let radius = body.height() / 2.0;
         let pnt = ui.painter();
-        paint::soft_shadow(pnt, body, radius, 14.0, vec2(0.0, 4.0), with_alpha(Color32::BLACK, if t.dark { 0.4 } else { 0.15 }));
+        paint::soft_shadow(
+            pnt,
+            body,
+            radius,
+            14.0,
+            vec2(0.0, 4.0),
+            with_alpha(Color32::BLACK, if t.dark { 0.4 } else { 0.15 }),
+        );
         pnt.rect_filled(body, cr(radius), shade(bg, if t.dark { -0.04 } else { 0.06 } * hover));
         let g = util::text_galley(ui, &self.label, self.size, text);
         util::galley_centered(pnt, &g, body.center(), text);

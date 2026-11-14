@@ -165,7 +165,8 @@ impl Widget for SlidingNumber {
             s.minus = glowkit_core::anim::approach(s.minus, if negative { 1.0 } else { 0.0 }, 14.0, dt);
             s.clone()
         });
-        let moving = st.cols.iter().any(|c| !c.roll.is_settled() || !c.presence.is_settled()) || (st.minus - if negative { 1.0 } else { 0.0 }).abs() > 1e-3;
+        let moving = st.cols.iter().any(|c| !c.roll.is_settled() || !c.presence.is_settled())
+            || (st.minus - if negative { 1.0 } else { 0.0 }).abs() > 1e-3;
         if moving {
             ui.ctx().request_repaint();
         }

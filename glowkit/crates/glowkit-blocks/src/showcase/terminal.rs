@@ -164,10 +164,21 @@ impl Widget for Terminal {
 
         // window
         let win_bg = if t.dark { t.card } else { hex("#FFFFFF") };
-        paint::soft_shadow(&p, rect, r, 28.0, vec2(0.0, 10.0), Color32::from_black_alpha(if t.dark { 120 } else { 30 }));
+        paint::soft_shadow(
+            &p,
+            rect,
+            r,
+            28.0,
+            vec2(0.0, 10.0),
+            Color32::from_black_alpha(if t.dark { 120 } else { 30 }),
+        );
         p.rect_filled(rect, r, win_bg);
         let bar = Rect::from_min_size(rect.min, vec2(rect.width(), 36.0));
-        p.rect_filled(bar, egui::CornerRadius { nw: r as u8, ne: r as u8, sw: 0, se: 0 }, t.muted.gamma_multiply(if t.dark { 0.6 } else { 0.7 }));
+        p.rect_filled(
+            bar,
+            egui::CornerRadius { nw: r as u8, ne: r as u8, sw: 0, se: 0 },
+            t.muted.gamma_multiply(if t.dark { 0.6 } else { 0.7 }),
+        );
         p.line_segment([bar.left_bottom(), bar.right_bottom()], Stroke::new(1.0, t.border));
         for (i, c) in [hex("#FF5F57"), hex("#FEBC2E"), hex("#28C840")].into_iter().enumerate() {
             let cc = pos2(bar.min.x + 18.0 + i as f32 * 20.0, bar.center().y);
@@ -178,7 +189,8 @@ impl Widget for Terminal {
         p.rect_stroke(rect, r, Stroke::new(1.0, t.border), StrokeKind::Inside);
 
         // body
-        let body = Rect::from_min_max(pos2(rect.min.x + 18.0, bar.max.y + 14.0), pos2(rect.max.x - 18.0, rect.max.y - 12.0));
+        let body =
+            Rect::from_min_max(pos2(rect.min.x + 18.0, bar.max.y + 14.0), pos2(rect.max.x - 18.0, rect.max.y - 12.0));
         let font = FontId::monospace(self.font_size);
         let lh = self.font_size * 1.65;
         let fg = t.foreground;
@@ -224,7 +236,11 @@ impl Widget for Terminal {
                     let typing = typed < n || is_last;
                     if typing && (cursor_on || typed < n) {
                         let cx = if txt.is_empty() { tx } else { tr.max.x.max(hr.max.x) + 1.0 };
-                        clip.rect_filled(Rect::from_min_size(pos2(cx, y + 1.0), vec2(self.font_size * 0.6, self.font_size * 1.2)), 1.0, with_alpha(fg, 0.75));
+                        clip.rect_filled(
+                            Rect::from_min_size(pos2(cx, y + 1.0), vec2(self.font_size * 0.6, self.font_size * 1.2)),
+                            1.0,
+                            with_alpha(fg, 0.75),
+                        );
                     }
                 }
                 LineKind::Output => {
@@ -253,7 +269,11 @@ impl Widget for Terminal {
                             let a = j as f32 / 8.0 * std::f32::consts::TAU;
                             let head = (time * 10.0) as i32;
                             let age = ((head - j).rem_euclid(8)) as f32 / 8.0;
-                            clip.circle_filled(c + vec2(a.cos(), a.sin()) * s, 1.3, with_alpha(accent, 1.0 - age * 0.85));
+                            clip.circle_filled(
+                                c + vec2(a.cos(), a.sin()) * s,
+                                1.3,
+                                with_alpha(accent, 1.0 - age * 0.85),
+                            );
                         }
                         clip.text(pos2(x0 + self.font_size * 1.4, y), Align2::LEFT_TOP, &l.text, font.clone(), muted);
                         let dots = ".".repeat(((time * 3.0) as usize) % 4);
@@ -262,7 +282,13 @@ impl Widget for Terminal {
                     } else {
                         let k = smoothstep(d, d + 0.25, local);
                         check(&clip, c, self.font_size * 0.9, Stroke::new(1.8, t.success), k);
-                        clip.text(pos2(x0 + self.font_size * 1.4, y), Align2::LEFT_TOP, done, font.clone(), fg.gamma_multiply(0.4 + 0.6 * k));
+                        clip.text(
+                            pos2(x0 + self.font_size * 1.4, y),
+                            Align2::LEFT_TOP,
+                            done,
+                            font.clone(),
+                            fg.gamma_multiply(0.4 + 0.6 * k),
+                        );
                     }
                 }
             }
@@ -272,7 +298,14 @@ impl Widget for Terminal {
         if el >= total - 0.3 && rows.len() == self.lines.len() {
             let pr = clip.text(pos2(body.min.x, y), Align2::LEFT_TOP, &self.prompt, font.clone(), prompt_col);
             if cursor_on {
-                clip.rect_filled(Rect::from_min_size(pos2(pr.max.x + 8.0, y + 1.0), vec2(self.font_size * 0.6, self.font_size * 1.2)), 1.0, with_alpha(fg, 0.75));
+                clip.rect_filled(
+                    Rect::from_min_size(
+                        pos2(pr.max.x + 8.0, y + 1.0),
+                        vec2(self.font_size * 0.6, self.font_size * 1.2),
+                    ),
+                    1.0,
+                    with_alpha(fg, 0.75),
+                );
             }
         }
         resp

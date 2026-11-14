@@ -206,7 +206,10 @@ impl Widget for HighlightText {
                     if *rp <= 0.0 {
                         continue;
                     }
-                    let full = Rect::from_min_max(pos2(r.min.x - s * 0.14, r.min.y + s * 0.08), pos2(r.max.x + bold + s * 0.14, r.max.y - s * 0.02));
+                    let full = Rect::from_min_max(
+                        pos2(r.min.x - s * 0.14, r.min.y + s * 0.08),
+                        pos2(r.max.x + bold + s * 0.14, r.max.y - s * 0.02),
+                    );
                     let part = Rect::from_min_max(full.min, pos2(full.min.x + full.width() * rp, full.max.y));
                     let clip = painter.with_clip_rect(part.intersect(painter.clip_rect()));
                     paint::gradient_rect(&clip, full, s * 0.14, 0.0, &[c0, c1]);
@@ -223,14 +226,18 @@ impl Widget for HighlightText {
                     let x0 = r.min.x - s * 0.04;
                     let x1 = x0 + (r.width() + bold + s * 0.08) * rp;
                     let line = Rect::from_min_max(pos2(x0, y - th / 2.0), pos2(x1.max(x0 + th), y + th / 2.0));
-                    let full = Rect::from_min_max(pos2(x0, line.min.y), pos2(x0 + r.width() + bold + s * 0.08, line.max.y));
+                    let full =
+                        Rect::from_min_max(pos2(x0, line.min.y), pos2(x0 + r.width() + bold + s * 0.08, line.max.y));
                     let clip = painter.with_clip_rect(line.intersect(painter.clip_rect()));
                     paint::gradient_rect(&clip, full, th / 2.0, 0.0, &[c0, c1]);
                 }
             }
             HighlightStyle::Box => {
                 for (r, rp) in rows.iter().zip(&row_p) {
-                    let b = Rect::from_min_max(pos2(r.min.x - s * 0.18, r.min.y + s * 0.02), pos2(r.max.x + bold + s * 0.18, r.max.y + s * 0.04));
+                    let b = Rect::from_min_max(
+                        pos2(r.min.x - s * 0.18, r.min.y + s * 0.02),
+                        pos2(r.max.x + bold + s * 0.18, r.max.y + s * 0.04),
+                    );
                     let mut pts = paint::rounded_rect_points(b, s * 0.16, 6);
                     // start at the top-left corner (last point), go clockwise and close the loop
                     let last = pts.len() - 1;
@@ -282,7 +289,11 @@ impl Widget for HighlightText {
                 let y = r.center().y + s * 0.06;
                 let x0 = r.min.x - s * 0.08;
                 let x1 = x0 + (r.width() + bold + s * 0.16) * rp;
-                painter.rect_filled(Rect::from_min_max(pos2(x0, y - th / 2.0), pos2(x1.max(x0 + th), y + th / 2.0)), CornerRadius::same((th / 2.0) as u8), c0);
+                painter.rect_filled(
+                    Rect::from_min_max(pos2(x0, y - th / 2.0), pos2(x1.max(x0 + th), y + th / 2.0)),
+                    CornerRadius::same((th / 2.0) as u8),
+                    c0,
+                );
             }
         }
         resp

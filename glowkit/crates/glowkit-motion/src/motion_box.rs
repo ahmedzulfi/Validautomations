@@ -146,9 +146,11 @@ impl MotionBox {
         }
         let transition =
             if g.gesture_cause { self.gesture_transition.unwrap_or(Transition::SNAPPY) } else { self.transition };
-        let props = animate_from(ui, self.id.with("glowkit_box"), self.initial.unwrap_or(self.animate), target, transition);
+        let props =
+            animate_from(ui, self.id.with("glowkit_box"), self.initial.unwrap_or(self.animate), target, transition);
         let sense = self.sense.unwrap_or(if self.tap.is_some() { Sense::click() } else { Sense::hover() });
-        let ir = layered(ui, self.id, LayerSpec { props, origin: self.origin, sense, space: Space::Normal }, add_contents);
+        let ir =
+            layered(ui, self.id, LayerSpec { props, origin: self.origin, sense, space: Space::Normal }, add_contents);
         let resp = ir.response;
         let (hovered, pressed) = (resp.contains_pointer(), resp.is_pointer_button_down_on());
         if (hovered != g.hovered && self.hover.is_some()) || (pressed != g.pressed && self.tap.is_some()) {

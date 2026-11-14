@@ -1,7 +1,10 @@
 //! Tiny charts for tables and KPI cards: sparklines, stat tiles and status trackers.
 
 use crate::common::*;
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui,
+    Widget,
+};
 use glowkit_core::anim::{ease, stagger, Easing};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
@@ -39,7 +42,15 @@ pub struct Sparkline<'a> {
 impl<'a> Sparkline<'a> {
     /// A sparkline of `values`.
     pub fn new(values: &'a [f64]) -> Self {
-        Self { values, kind: SparkKind::Line, size: vec2(120.0, 32.0), color: None, end_dot: true, animate: true, curve: Curve::Monotone }
+        Self {
+            values,
+            kind: SparkKind::Line,
+            size: vec2(120.0, 32.0),
+            color: None,
+            end_dot: true,
+            animate: true,
+            curve: Curve::Monotone,
+        }
     }
     /// Line, area or bars.
     pub fn kind(mut self, kind: SparkKind) -> Self {
@@ -75,7 +86,17 @@ impl<'a> Sparkline<'a> {
 
 /// Paint a sparkline into `rect` (shared with [`StatTile`]).
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn paint_spark(ui: &Ui, painter: &egui::Painter, rect: Rect, values: &[f64], kind: SparkKind, color: Color32, end_dot: bool, progress: f32, curve: Curve) {
+pub(crate) fn paint_spark(
+    ui: &Ui,
+    painter: &egui::Painter,
+    rect: Rect,
+    values: &[f64],
+    kind: SparkKind,
+    color: Color32,
+    end_dot: bool,
+    progress: f32,
+    curve: Curve,
+) {
     let t = Theme::of(ui);
     let n = values.len();
     if n == 0 {
@@ -104,15 +125,23 @@ pub(crate) fn paint_spark(ui: &Ui, painter: &egui::Painter, rect: Rect, values: 
                 let from = 0.0f64.max(lo);
                 let y = val_y(inner, lo, hi, from + (v - from) * g as f64);
                 let x0 = inner.left() + i as f32 * bw + bw * 0.15;
-                let r = Rect::from_min_max(pos2(x0, y.min(base)), pos2(x0 + bw * 0.7, y.max(base).max(y.min(base) + 1.0)));
+                let r =
+                    Rect::from_min_max(pos2(x0, y.min(base)), pos2(x0 + bw * 0.7, y.max(base).max(y.min(base) + 1.0)));
                 let col = if *v < 0.0 { t.destructive } else { color };
                 painter.rect_filled(r, CornerRadius::same((bw * 0.2).min(2.0) as u8), col);
             }
         }
         _ => {
-            let pts: Vec<Pos2> = values.iter().enumerate().map(|(i, v)| pos2(cat_x(inner, n, i, false), val_y(inner, lo, hi, *v))).collect();
+            let pts: Vec<Pos2> = values
+                .iter()
+                .enumerate()
+                .map(|(i, v)| pos2(cat_x(inner, n, i, false), val_y(inner, lo, hi, *v)))
+                .collect();
             let line = curve_points(&pts, curve);
-            let clip = Rect::from_min_max(rect.min - vec2(2.0, 2.0), pos2(rect.left() + (rect.width() + 4.0) * ease(Easing::InOutCubic, progress), rect.bottom() + 2.0));
+            let clip = Rect::from_min_max(
+                rect.min - vec2(2.0, 2.0),
+                pos2(rect.left() + (rect.width() + 4.0) * ease(Easing::InOutCubic, progress), rect.bottom() + 2.0),
+            );
             let lp = painter.with_clip_rect(clip.intersect(painter.clip_rect()));
             if kind == SparkKind::Area {
                 let lower: Vec<Pos2> = line.iter().map(|p| pos2(p.x, rect.bottom())).collect();
@@ -137,7 +166,17 @@ impl Widget for Sparkline<'_> {
         let t = Theme::of(ui);
         let e = entry_time(ui, resp.id, self.animate, 1.0);
         let painter = ui.painter_at(rect.expand(6.0));
-        paint_spark(ui, &painter, rect, self.values, self.kind, self.color.unwrap_or(t.accent), self.end_dot, (e / 0.9).min(1.0), self.curve);
+        paint_spark(
+            ui,
+            &painter,
+            rect,
+            self.values,
+            self.kind,
+            self.color.unwrap_or(t.accent),
+            self.end_dot,
+            (e / 0.9).min(1.0),
+            self.curve,
+        );
         resp
     }
 }
@@ -259,15 +298,39 @@ impl Widget for StatTile<'_> {
         let hov = glowkit_core::anim::follow(ui, id.with("hov"), if resp.hovered() { 1.0 } else { 0.0 }, 14.0);
         let r = t.corner();
         let shadow = if t.dark { Color32::from_black_alpha(90) } else { Color32::from_black_alpha(18) };
-        glowkit_core::paint::soft_shadow(&painter, rect.translate(vec2(0.0, 2.0)), t.radius, 10.0 + 8.0 * hov, egui::Vec2::ZERO, shadow);
+        glowkit_core::paint::soft_shadow(
+            &painter,
+            rect.translate(vec2(0.0, 2.0)),
+            t.radius,
+            10.0 + 8.0 * hov,
+            egui::Vec2::ZERO,
+            shadow,
+        );
         painter.rect_filled(rect, r, if t.dark { glowkit_core::color::shade(t.card, 0.015) } else { t.card });
-        painter.rect_stroke(rect, r, Stroke::new(1.0, t.border.lerp_to_gamma(t.muted_foreground, 0.15 * hov)), StrokeKind::Inside);
+        painter.rect_stroke(
+            rect,
+            r,
+            Stroke::new(1.0, t.border.lerp_to_gamma(t.muted_foreground, 0.15 * hov)),
+            StrokeKind::Inside,
+        );
         let pad = 16.0;
         let e = entry_time(ui, id, self.animate, 1.3);
         let shown = tween(ui, id, &[self.value as f32])[0] as f64 * ease(Easing::OutCubic, e / 1.1) as f64;
-        painter.text(rect.left_top() + vec2(pad, pad), Align2::LEFT_TOP, &self.title, FontId::proportional(12.5), t.muted_foreground);
+        painter.text(
+            rect.left_top() + vec2(pad, pad),
+            Align2::LEFT_TOP,
+            &self.title,
+            FontId::proportional(12.5),
+            t.muted_foreground,
+        );
         let num = format!("{}{}{}", self.prefix, format_thousands(shown, self.decimals), self.suffix);
-        let vr = painter.text(rect.left_top() + vec2(pad, pad + 22.0), Align2::LEFT_TOP, num, FontId::proportional(26.0), t.foreground);
+        let vr = painter.text(
+            rect.left_top() + vec2(pad, pad + 22.0),
+            Align2::LEFT_TOP,
+            num,
+            FontId::proportional(26.0),
+            t.foreground,
+        );
         let good_color = t.success;
         let bad_color = t.destructive;
         let mut accent = self.color.unwrap_or(t.accent);
@@ -287,10 +350,22 @@ impl Widget for StatTile<'_> {
             triangle(&painter, pos2(badge.left() + 10.0, badge.center().y), 7.0, up, col);
             painter.text(pos2(badge.left() + 17.0, badge.center().y), Align2::LEFT_CENTER, txt, font, col);
             if !self.caption.is_empty() {
-                painter.text(pos2(badge.right() + 8.0, badge.center().y), Align2::LEFT_CENTER, &self.caption, FontId::proportional(11.5), t.muted_foreground);
+                painter.text(
+                    pos2(badge.right() + 8.0, badge.center().y),
+                    Align2::LEFT_CENTER,
+                    &self.caption,
+                    FontId::proportional(11.5),
+                    t.muted_foreground,
+                );
             }
         } else if !self.caption.is_empty() {
-            painter.text(pos2(rect.left() + pad, row_y), Align2::LEFT_CENTER, &self.caption, FontId::proportional(11.5), t.muted_foreground);
+            painter.text(
+                pos2(rect.left() + pad, row_y),
+                Align2::LEFT_CENTER,
+                &self.caption,
+                FontId::proportional(11.5),
+                t.muted_foreground,
+            );
         }
         if let Some(sp) = self.spark {
             let top = row_y + 16.0;
@@ -299,7 +374,10 @@ impl Widget for StatTile<'_> {
                 Rect::from_min_max(pos2(rect.left() + pad, top), pos2(rect.right() - pad, rect.bottom() - pad + 2.0))
             } else {
                 // compact tile: sparkline next to the number
-                Rect::from_min_max(pos2(rect.right() - pad - rect.width() * 0.36, vr.top() + 2.0), pos2(rect.right() - pad, vr.bottom()))
+                Rect::from_min_max(
+                    pos2(rect.right() - pad - rect.width() * 0.36, vr.top() + 2.0),
+                    pos2(rect.right() - pad, vr.bottom()),
+                )
             };
             paint_spark(ui, &painter, sr, sp, self.kind, accent, true, (e / 1.0).min(1.0), Curve::Monotone);
         }
@@ -406,7 +484,8 @@ impl Widget for Tracker<'_> {
         let painter = ui.painter_at(rect.expand(4.0));
         let bw = ((rect.width() + self.gap) / n as f32 - self.gap).max(1.0);
         let e = entry_time(ui, id, self.animate, 1.2);
-        let hover = resp.hover_pos().map(|p| (((p.x - rect.left()) / (bw + self.gap)).floor().max(0.0) as usize).min(n - 1));
+        let hover =
+            resp.hover_pos().map(|p| (((p.x - rect.left()) / (bw + self.gap)).floor().max(0.0) as usize).min(n - 1));
         for (i, b) in self.blocks.iter().enumerate() {
             let col = b.color.unwrap_or(match b.status {
                 Status::Ok => t.success,
@@ -415,7 +494,8 @@ impl Widget for Tracker<'_> {
                 Status::Empty => with_alpha(t.muted_foreground, 0.2),
             });
             let a = ease(Easing::OutCubic, stagger(e, i, 0.6 / n as f32, 0.35));
-            let lift = glowkit_core::anim::follow(ui, id.with(("lift", i)), if hover == Some(i) { 1.0 } else { 0.0 }, 18.0);
+            let lift =
+                glowkit_core::anim::follow(ui, id.with(("lift", i)), if hover == Some(i) { 1.0 } else { 0.0 }, 18.0);
             let x = rect.left() + i as f32 * (bw + self.gap);
             let h = self.height * (0.4 + 0.6 * a);
             let r = Rect::from_min_size(pos2(x, rect.top() + 2.0 + (self.height - h) - 2.0 * lift), vec2(bw, h));

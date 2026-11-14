@@ -162,8 +162,15 @@ impl ShapeKind {
                 .collect(),
             ShapeKind::Blob(seed) => {
                 let mut rng = Rng::new(seed as u64 + 7);
-                let k: Vec<(f32, f32)> = (0..4).map(|i| (rng.range(0.05, 0.13) / (1.0 + i as f32 * 0.4), rng.range(0.0, TAU))).collect();
-                polar(96, &move |a| 0.9 + k.iter().enumerate().map(|(i, (amp, ph))| amp * ((i as f32 + 2.0) * a + ph).sin()).sum::<f32>())
+                let k: Vec<(f32, f32)> =
+                    (0..4).map(|i| (rng.range(0.05, 0.13) / (1.0 + i as f32 * 0.4), rng.range(0.0, TAU))).collect();
+                polar(96, &move |a| {
+                    0.9 + k
+                        .iter()
+                        .enumerate()
+                        .map(|(i, (amp, ph))| amp * ((i as f32 + 2.0) * a + ph).sin())
+                        .sum::<f32>()
+                })
             }
         }
     }
@@ -206,7 +213,14 @@ impl MorphShape {
     /// Circle → square → star → heart → blob, 0.8 s hold, 0.9 s morph.
     pub fn new() -> Self {
         Self {
-            shapes: vec![ShapeKind::Circle, ShapeKind::Square, ShapeKind::Star(5), ShapeKind::Heart, ShapeKind::Blob(3), ShapeKind::Triangle],
+            shapes: vec![
+                ShapeKind::Circle,
+                ShapeKind::Square,
+                ShapeKind::Star(5),
+                ShapeKind::Heart,
+                ShapeKind::Blob(3),
+                ShapeKind::Triangle,
+            ],
             size: 150.0,
             hold: 0.8,
             duration: 0.9,

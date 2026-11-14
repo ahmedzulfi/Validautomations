@@ -2,7 +2,10 @@ use super::area_input;
 use super::trail::{area_setters, area_widget};
 use crate::motion::common::{fill_field, smin};
 use egui::epaint::Mesh;
-use egui::{pos2, vec2, Align2, Color32, CursorIcon, FontId, Painter, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CursorIcon, FontId, Painter, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Vec2,
+    Widget,
+};
 use glowkit_core::anim::Spring;
 use glowkit_core::color::{gradient, mix, with_alpha};
 use glowkit_core::{paint, Theme};
@@ -65,7 +68,16 @@ impl Default for BlobCursor {
 impl BlobCursor {
     /// Three blobs in the theme gradient.
     pub fn new() -> Self {
-        Self { colors: None, sizes: vec![56.0, 84.0, 44.0], goo: 26.0, inner_dot: true, hide_cursor: true, autoplay: false, area: None, salt: 0 }
+        Self {
+            colors: None,
+            sizes: vec![56.0, 84.0, 44.0],
+            goo: 26.0,
+            inner_dot: true,
+            hide_cursor: true,
+            autoplay: false,
+            area: None,
+            salt: 0,
+        }
     }
     /// Gradient across the goo. Defaults to the theme gradient.
     pub fn colors(mut self, colors: &[Color32]) -> Self {
@@ -164,7 +176,9 @@ impl BlobCursor {
         // soft glow under the goo
         paint::glow(&painter, blobs[0], radii[0] * 2.4, with_alpha(colors[0], if t.dark { 0.35 } else { 0.22 }));
         fill_field(&painter, bounds, 3.0, field, move |p| {
-            let u = ((p.x - span.min.x) / span.width().max(1.0) * 0.6 + (p.y - span.min.y) / span.height().max(1.0) * 0.4).clamp(0.0, 1.0);
+            let u = ((p.x - span.min.x) / span.width().max(1.0) * 0.6
+                + (p.y - span.min.y) / span.height().max(1.0) * 0.4)
+                .clamp(0.0, 1.0);
             gradient(&cols, u)
         });
         if self.inner_dot {
@@ -225,7 +239,16 @@ impl Default for SmoothCursor {
 impl SmoothCursor {
     /// A foreground-colored arrow with a snappy spring.
     pub fn new() -> Self {
-        Self { color: None, size: 14.0, stiffness: 400.0, damping: 34.0, rotate: true, autoplay: false, area: None, salt: 0 }
+        Self {
+            color: None,
+            size: 14.0,
+            stiffness: 400.0,
+            damping: 34.0,
+            rotate: true,
+            autoplay: false,
+            area: None,
+            salt: 0,
+        }
     }
     /// Arrow fill color. Defaults to the theme foreground.
     pub fn color(mut self, c: Color32) -> Self {
@@ -294,7 +317,12 @@ impl SmoothCursor {
         let speed = vel.length();
         let stretch = (speed / 2500.0).min(0.35);
         let size = self.size * (1.0 + stretch * 0.6);
-        paint::glow(&painter, pos + vec2(0.0, 3.0), self.size * 2.4, with_alpha(Color32::BLACK, if t.dark { 0.45 } else { 0.18 }));
+        paint::glow(
+            &painter,
+            pos + vec2(0.0, 3.0),
+            self.size * 2.4,
+            with_alpha(Color32::BLACK, if t.dark { 0.45 } else { 0.18 }),
+        );
         let mut pts = arrow_points(pos, angle, size);
         // squash sideways with speed
         let (s, c) = angle.sin_cos();
@@ -352,7 +380,8 @@ impl FollowingPointer {
         if input.real && self.hide_cursor {
             ui.ctx().set_cursor_icon(CursorIcon::None);
         }
-        let visible = glowkit_core::anim::spring(ui, id.with("vis"), if input.pos.is_some() { 1.0 } else { 0.0 }, 300.0, 20.0);
+        let visible =
+            glowkit_core::anim::spring(ui, id.with("vis"), if input.pos.is_some() { 1.0 } else { 0.0 }, 300.0, 20.0);
         let dt = glowkit_core::dt(ui);
         let target = input.pos;
         let (tip, tag) = glowkit_core::with_state(
@@ -397,11 +426,24 @@ impl FollowingPointer {
         let tag_size = (galley.size() + pad * 2.0) * v.max(0.0);
         let tag_min = tag + vec2(10.0, 14.0);
         let tag_rect = Rect::from_min_size(tag_min, tag_size);
-        paint::soft_shadow(&painter, tag_rect, 99.0, 12.0, vec2(0.0, 4.0), with_alpha(Color32::BLACK, 0.3 * v.min(1.0)));
+        paint::soft_shadow(
+            &painter,
+            tag_rect,
+            99.0,
+            12.0,
+            vec2(0.0, 4.0),
+            with_alpha(Color32::BLACK, 0.3 * v.min(1.0)),
+        );
         painter.rect_filled(tag_rect, egui::CornerRadius::same(99), color);
         if v > 0.6 {
             let text_col = glowkit_core::color::contrast_text(color);
-            painter.text(tag_rect.center(), Align2::CENTER_CENTER, &self.label, FontId::proportional(13.0), with_alpha(text_col, ((v - 0.6) / 0.4).min(1.0)));
+            painter.text(
+                tag_rect.center(),
+                Align2::CENTER_CENTER,
+                &self.label,
+                FontId::proportional(13.0),
+                with_alpha(text_col, ((v - 0.6) / 0.4).min(1.0)),
+            );
         }
     }
 }

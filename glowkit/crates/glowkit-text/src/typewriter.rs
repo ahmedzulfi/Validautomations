@@ -240,7 +240,11 @@ impl Widget for TypewriterText {
         let y0 = rect.min.y + (line_h - prefix.size().y) / 2.0;
         let pcol = self.prefix_color.unwrap_or(t.foreground);
         util::paint_galley(&painter, pos2(x0, y0), &prefix, pcol, bold);
-        let col = if self.colors.is_empty() { self.color.unwrap_or(t.foreground) } else { self.colors[st.index % self.colors.len()] };
+        let col = if self.colors.is_empty() {
+            self.color.unwrap_or(t.foreground)
+        } else {
+            self.colors[st.index % self.colors.len()]
+        };
         let tx = x0 + prefix.size().x;
         util::paint_galley(&painter, pos2(tx, y0), &typed, col, bold);
 

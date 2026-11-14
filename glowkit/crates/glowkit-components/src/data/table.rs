@@ -2,7 +2,10 @@ use super::avatar::Avatar;
 use super::badge::{badge_colors, BadgeVariant};
 use crate::inputs::kit::{self, UiIcon};
 use crate::inputs::paint_checkbox;
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Id, Painter, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Id, Painter, Rect, Response, Sense, Stroke,
+    StrokeKind, Ui, Widget,
+};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
 use std::f32::consts::PI;
@@ -57,7 +60,12 @@ enum SortKey {
 impl TableCell {
     fn sort_key(&self) -> SortKey {
         match self {
-            TableCell::Text(s) | TableCell::Muted(s) | TableCell::Strong(s) | TableCell::Mono(s) | TableCell::Badge(s, _) | TableCell::Status(s, _) => SortKey::Str(s.to_lowercase()),
+            TableCell::Text(s)
+            | TableCell::Muted(s)
+            | TableCell::Strong(s)
+            | TableCell::Mono(s)
+            | TableCell::Badge(s, _)
+            | TableCell::Status(s, _) => SortKey::Str(s.to_lowercase()),
             TableCell::User { name, .. } => SortKey::Str(name.to_lowercase()),
             TableCell::Number(n, _) => SortKey::Num(*n),
             TableCell::Progress(p) => SortKey::Num(*p as f64),
@@ -139,7 +147,16 @@ pub struct DataTable<'a> {
 impl<'a> DataTable<'a> {
     /// A table with these columns and rows (each row has one cell per column).
     pub fn new(columns: Vec<TableColumn>, rows: &'a [Vec<TableCell>]) -> Self {
-        Self { columns, rows, selection: None, page_size: None, striped: false, width: None, row_height: None, id_salt: None }
+        Self {
+            columns,
+            rows,
+            selection: None,
+            page_size: None,
+            striped: false,
+            width: None,
+            row_height: None,
+            id_salt: None,
+        }
     }
     /// Add a checkbox column bound to per-row selection flags (resized to the row count).
     pub fn selection(mut self, s: &'a mut Vec<bool>) -> Self {
@@ -186,7 +203,13 @@ fn paint_cell(painter: &Painter, ui: &Ui, rect: Rect, cell: &TableCell, right: b
         }
         TableCell::Strong(s) => {
             painter.text(pos2(x, cy), align, s, FontId::proportional(14.0), al(t.foreground));
-            painter.text(pos2(x + if right { -0.35 } else { 0.35 }, cy), align, s, FontId::proportional(14.0), al(with_alpha(t.foreground, 0.5)));
+            painter.text(
+                pos2(x + if right { -0.35 } else { 0.35 }, cy),
+                align,
+                s,
+                FontId::proportional(14.0),
+                al(with_alpha(t.foreground, 0.5)),
+            );
         }
         TableCell::Mono(s) => {
             painter.text(pos2(x, cy), align, s, FontId::monospace(12.5), al(t.muted_foreground));
@@ -214,16 +237,42 @@ fn paint_cell(painter: &Painter, ui: &Ui, rect: Rect, cell: &TableCell, right: b
         TableCell::User { name, email } => {
             let ar = Rect::from_center_size(pos2(rect.min.x + 16.0, cy), vec2(32.0, 32.0));
             Avatar::new(name.clone()).paint(ui, ar);
-            painter.text(pos2(ar.max.x + 10.0, cy - 8.5), Align2::LEFT_CENTER, name, FontId::proportional(13.5), al(t.foreground));
-            painter.text(pos2(ar.max.x + 10.0, cy + 9.0), Align2::LEFT_CENTER, email, FontId::proportional(12.5), al(t.muted_foreground));
+            painter.text(
+                pos2(ar.max.x + 10.0, cy - 8.5),
+                Align2::LEFT_CENTER,
+                name,
+                FontId::proportional(13.5),
+                al(t.foreground),
+            );
+            painter.text(
+                pos2(ar.max.x + 10.0, cy + 9.0),
+                Align2::LEFT_CENTER,
+                email,
+                FontId::proportional(12.5),
+                al(t.muted_foreground),
+            );
         }
         TableCell::Progress(p) => {
             let w = rect.width().min(120.0);
             let bx = if right { x - w - 40.0 } else { x };
             let track = Rect::from_min_size(pos2(bx, cy - 3.0), vec2(w, 6.0));
-            painter.rect_filled(track, CornerRadius::same(3), al(if t.dark { t.secondary } else { mix(t.muted, t.input, 0.5) }));
-            painter.rect_filled(Rect::from_min_size(track.min, vec2(w * p.clamp(0.0, 1.0), 6.0)), CornerRadius::same(3), al(t.primary));
-            painter.text(pos2(track.max.x + 8.0, cy), Align2::LEFT_CENTER, format!("{:.0}%", p * 100.0), FontId::proportional(12.5), al(t.muted_foreground));
+            painter.rect_filled(
+                track,
+                CornerRadius::same(3),
+                al(if t.dark { t.secondary } else { mix(t.muted, t.input, 0.5) }),
+            );
+            painter.rect_filled(
+                Rect::from_min_size(track.min, vec2(w * p.clamp(0.0, 1.0), 6.0)),
+                CornerRadius::same(3),
+                al(t.primary),
+            );
+            painter.text(
+                pos2(track.max.x + 8.0, cy),
+                Align2::LEFT_CENTER,
+                format!("{:.0}%", p * 100.0),
+                FontId::proportional(12.5),
+                al(t.muted_foreground),
+            );
         }
     }
 }
@@ -235,7 +284,11 @@ fn icon_btn(ui: &mut Ui, rect: Rect, id: Id, icon: UiIcon, enabled: bool) -> boo
     let h = kit::anim(ui, id.with("h"), r.hovered() && enabled, 0.1);
     let fill = if t.dark { with_alpha(t.input, 0.3) } else { t.background }.lerp_to_gamma(t.secondary, h);
     ui.painter().rect(rect, CornerRadius::same(7), fill, Stroke::new(1.0, t.input), StrokeKind::Inside);
-    icon.paint(ui.painter(), Rect::from_center_size(rect.center(), vec2(15.0, 15.0)), if enabled { t.foreground } else { with_alpha(t.muted_foreground, 0.4) });
+    icon.paint(
+        ui.painter(),
+        Rect::from_center_size(rect.center(), vec2(15.0, 15.0)),
+        if enabled { t.foreground } else { with_alpha(t.muted_foreground, 0.4) },
+    );
     r.clicked()
 }
 
@@ -303,14 +356,19 @@ impl Widget for DataTable<'_> {
         }
         // header
         let header = Rect::from_min_size(rect.min, vec2(w, head_h));
-        p.rect_filled(header.shrink(1.0), CornerRadius { nw: cr.nw, ne: cr.ne, sw: 0, se: 0 }, with_alpha(t.muted, if t.dark { 0.55 } else { 0.7 }));
+        p.rect_filled(
+            header.shrink(1.0),
+            CornerRadius { nw: cr.nw, ne: cr.ne, sw: 0, se: 0 },
+            with_alpha(t.muted, if t.dark { 0.55 } else { 0.7 }),
+        );
         let y = kit::snap(ui, header.max.y) - 0.5;
         p.line_segment([pos2(rect.min.x, y), pos2(rect.max.x, y)], Stroke::new(1.0, t.border));
         if let Some(sel) = selection.as_deref_mut() {
             let all = !sel.is_empty() && sel.iter().all(|s| *s);
             let some = sel.iter().any(|s| *s);
             let cb = Rect::from_center_size(pos2(rect.min.x + pad + 8.0, header.center().y), vec2(16.0, 16.0));
-            let r = ui.interact(cb.expand(6.0), id.with("all"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
+            let r =
+                ui.interact(cb.expand(6.0), id.with("all"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
             if r.clicked() {
                 let v = !all;
                 sel.iter_mut().for_each(|s| *s = v);
@@ -337,7 +395,11 @@ impl Widget for DataTable<'_> {
                 0.0
             };
             if hov > 0.0 {
-                p.rect_filled(hr, CornerRadius::same(6), with_alpha(if t.dark { t.secondary } else { t.input }, 0.7 * hov));
+                p.rect_filled(
+                    hr,
+                    CornerRadius::same(6),
+                    with_alpha(if t.dark { t.secondary } else { t.input }, 0.7 * hov),
+                );
             }
             let tc = t.muted_foreground.lerp_to_gamma(t.foreground, if sorted.is_some() { 1.0 } else { hov });
             let g = p.layout_no_wrap(col.title.clone(), FontId::proportional(13.0), tc);
@@ -346,13 +408,27 @@ impl Widget for DataTable<'_> {
             p.galley(pos2(gx, header.center().y - g.size().y / 2.0), g, tc);
             if col.sortable {
                 let vis = kit::anim(ui, id.with(("sv", ci)), sorted.is_some(), 0.15).max(hov * 0.5);
-                let ang = glowkit_core::anim::spring(ui, id.with(("sa", ci)), if sorted == Some(false) { PI } else { 0.0 }, 300.0, 22.0);
+                let ang = glowkit_core::anim::spring(
+                    ui,
+                    id.with(("sa", ci)),
+                    if sorted == Some(false) { PI } else { 0.0 },
+                    300.0,
+                    22.0,
+                );
                 if vis > 0.01 {
-                    let c = if col.right { pos2(gx - 10.0, header.center().y) } else { pos2(gx + gw + 10.0, header.center().y) };
-                    let rot = |v: egui::Vec2| c + vec2(v.x * ang.cos() - v.y * ang.sin(), v.x * ang.sin() + v.y * ang.cos());
+                    let c = if col.right {
+                        pos2(gx - 10.0, header.center().y)
+                    } else {
+                        pos2(gx + gw + 10.0, header.center().y)
+                    };
+                    let rot =
+                        |v: egui::Vec2| c + vec2(v.x * ang.cos() - v.y * ang.sin(), v.x * ang.sin() + v.y * ang.cos());
                     let col_a = with_alpha(t.foreground, vis);
                     p.line_segment([rot(vec2(0.0, 5.0)), rot(vec2(0.0, -5.0))], Stroke::new(1.4, col_a));
-                    p.add(egui::Shape::line(vec![rot(vec2(-3.5, -1.5)), rot(vec2(0.0, -5.0)), rot(vec2(3.5, -1.5))], Stroke::new(1.4, col_a)));
+                    p.add(egui::Shape::line(
+                        vec![rot(vec2(-3.5, -1.5)), rot(vec2(0.0, -5.0)), rot(vec2(3.5, -1.5))],
+                        Stroke::new(1.4, col_a),
+                    ));
                 }
             }
         }
@@ -360,7 +436,8 @@ impl Widget for DataTable<'_> {
         let since = (now - st.changed_at) as f32;
         for (vi, &ri) in visible.iter().enumerate() {
             let rr = Rect::from_min_size(pos2(rect.min.x, header.max.y + vi as f32 * row_h), vec2(w, row_h));
-            let appear = glowkit_core::ease(glowkit_core::Easing::OutCubic, glowkit_core::anim::stagger(since, vi, 0.03, 0.25));
+            let appear =
+                glowkit_core::ease(glowkit_core::Easing::OutCubic, glowkit_core::anim::stagger(since, vi, 0.03, 0.25));
             if appear < 1.0 {
                 ui.ctx().request_repaint();
             }
@@ -369,10 +446,21 @@ impl Widget for DataTable<'_> {
             let selected = selection.as_deref().map(|s| s[ri]).unwrap_or(false);
             let sk = kit::anim(ui, id.with(("rs", ri)), selected, 0.14);
             let last = vi + 1 == visible.len();
-            let rcr = if last { CornerRadius { nw: 0, ne: 0, sw: cr.sw.saturating_sub(1), se: cr.se.saturating_sub(1) } } else { CornerRadius::ZERO };
-            let inner = Rect::from_min_max(pos2(rr.min.x + 1.0, rr.min.y), pos2(rr.max.x - 1.0, rr.max.y - if last { 1.0 } else { 0.0 }));
+            let rcr = if last {
+                CornerRadius { nw: 0, ne: 0, sw: cr.sw.saturating_sub(1), se: cr.se.saturating_sub(1) }
+            } else {
+                CornerRadius::ZERO
+            };
+            let inner = Rect::from_min_max(
+                pos2(rr.min.x + 1.0, rr.min.y),
+                pos2(rr.max.x - 1.0, rr.max.y - if last { 1.0 } else { 0.0 }),
+            );
             if self.striped && vi % 2 == 1 {
-                p.rect_filled(inner, rcr, if t.dark { with_alpha(t.secondary, 0.35) } else { with_alpha(t.muted, 0.8) });
+                p.rect_filled(
+                    inner,
+                    rcr,
+                    if t.dark { with_alpha(t.secondary, 0.35) } else { with_alpha(t.muted, 0.8) },
+                );
             }
             if sk > 0.0 {
                 p.rect_filled(inner, rcr, with_alpha(t.accent, (if t.dark { 0.10 } else { 0.06 }) * sk));
@@ -408,9 +496,20 @@ impl Widget for DataTable<'_> {
             let fy = rect.min.y + table_h + footer_h / 2.0 + 4.0;
             let left = match selection.as_deref() {
                 Some(s) => format!("{} of {} row(s) selected.", s.iter().filter(|x| **x).count(), n),
-                None => format!("Showing {}–{} of {}", (st.page * page_size + 1).min(n), (st.page * page_size + visible.len()).min(n), n),
+                None => format!(
+                    "Showing {}–{} of {}",
+                    (st.page * page_size + 1).min(n),
+                    (st.page * page_size + visible.len()).min(n),
+                    n
+                ),
             };
-            p.text(pos2(rect.min.x + 2.0, fy), Align2::LEFT_CENTER, left, FontId::proportional(13.0), t.muted_foreground);
+            p.text(
+                pos2(rect.min.x + 2.0, fy),
+                Align2::LEFT_CENTER,
+                left,
+                FontId::proportional(13.0),
+                t.muted_foreground,
+            );
             if self.page_size.is_some() {
                 let nb = Rect::from_center_size(pos2(rect.max.x - 16.0, fy), vec2(32.0, 32.0));
                 let pb = nb.translate(vec2(-40.0, 0.0));
@@ -422,7 +521,13 @@ impl Widget for DataTable<'_> {
                     st.page -= 1;
                     st.changed_at = now;
                 }
-                p.text(pos2(pb.min.x - 14.0, fy), Align2::RIGHT_CENTER, format!("Page {} of {}", st.page + 1, pages), FontId::proportional(13.0), t.foreground);
+                p.text(
+                    pos2(pb.min.x - 14.0, fy),
+                    Align2::RIGHT_CENTER,
+                    format!("Page {} of {}", st.page + 1, pages),
+                    FontId::proportional(13.0),
+                    t.foreground,
+                );
             }
         }
         glowkit_core::set_state(ui, id, st);

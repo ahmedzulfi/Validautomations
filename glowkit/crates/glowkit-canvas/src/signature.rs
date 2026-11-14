@@ -3,7 +3,9 @@
 use crate::common::{icon_button, qfont, Icon};
 use crate::freehand::{paint_ink, InkPoint, InkStyle};
 use crate::json;
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, Rect, Response, Sense, Stroke, StrokeKind, Ui, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, Rect, Response, Sense, Stroke, StrokeKind, Ui, Vec2,
+};
 use glowkit_core::{color::with_alpha, Theme};
 
 /// Captured ink: a list of strokes in pad-local coordinates (0,0 = top-left of the pad).
@@ -35,7 +37,10 @@ impl Ink {
             .strokes
             .iter()
             .map(|s| {
-                let pts: Vec<String> = s.iter().map(|p| format!("[{},{},{}]", json::num(p.pos.x), json::num(p.pos.y), json::num(p.t))).collect();
+                let pts: Vec<String> = s
+                    .iter()
+                    .map(|p| format!("[{},{},{}]", json::num(p.pos.x), json::num(p.pos.y), json::num(p.t)))
+                    .collect();
                 format!("[{}]", pts.join(","))
             })
             .collect();
@@ -46,7 +51,12 @@ impl Ink {
         let mut out = String::new();
         for s in &self.strokes {
             for (i, p) in s.iter().enumerate() {
-                out.push_str(&format!("{}{} {} ", if i == 0 { "M" } else { "L" }, json::num(p.pos.x), json::num(p.pos.y)));
+                out.push_str(&format!(
+                    "{}{} {} ",
+                    if i == 0 { "M" } else { "L" },
+                    json::num(p.pos.x),
+                    json::num(p.pos.y)
+                ));
             }
         }
         out.trim_end().to_owned()
@@ -80,7 +90,15 @@ pub struct SignaturePad<'a> {
 impl<'a> SignaturePad<'a> {
     /// A pad writing into `ink`.
     pub fn new(ink: &'a mut Ink) -> Self {
-        Self { ink, size: vec2(520.0, 200.0), color: None, style: InkStyle { size: 3.6, thinning: 0.6, streamline: 0.5, taper_start: 1.5, taper_end: 3.5 }, placeholder: "Sign here".into(), baseline: true, background: None }
+        Self {
+            ink,
+            size: vec2(520.0, 200.0),
+            color: None,
+            style: InkStyle { size: 3.6, thinning: 0.6, streamline: 0.5, taper_start: 1.5, taper_end: 3.5 },
+            placeholder: "Sign here".into(),
+            baseline: true,
+            background: None,
+        }
     }
     /// Pad size.
     pub fn size(mut self, s: Vec2) -> Self {
@@ -126,7 +144,13 @@ impl egui::Widget for SignaturePad<'_> {
         let painter = ui.painter_at(rect.expand(2.0));
         let fill = self.background.unwrap_or(if t.dark { t.background } else { t.card });
         let hov = ui.ctx().animate_bool_with_time(id.with("h"), resp.hovered() || resp.dragged(), 0.15);
-        painter.rect(rect, CornerRadius::same(12), fill, Stroke::new(1.0, t.border.lerp_to_gamma(t.accent, 0.5 * hov)), StrokeKind::Inside);
+        painter.rect(
+            rect,
+            CornerRadius::same(12),
+            fill,
+            Stroke::new(1.0, t.border.lerp_to_gamma(t.accent, 0.5 * hov)),
+            StrokeKind::Inside,
+        );
         let ink_col = self.color.unwrap_or(t.foreground);
         // capture
         if let Some(p) = resp.interact_pointer_pos() {
@@ -150,13 +174,28 @@ impl egui::Widget for SignaturePad<'_> {
         let base_y = rect.bottom() - rect.height() * 0.28;
         let empty_k = ui.ctx().animate_bool_with_time(id.with("empty"), self.ink.is_empty(), 0.35);
         if self.baseline {
-            painter.line_segment([pos2(rect.left() + 28.0, base_y), pos2(rect.right() - 28.0, base_y)], Stroke::new(1.0, with_alpha(t.muted_foreground, 0.45)));
-            painter.text(pos2(rect.left() + 30.0, base_y - 6.0), Align2::LEFT_BOTTOM, "×", qfont(18.0), with_alpha(t.muted_foreground, 0.7));
+            painter.line_segment(
+                [pos2(rect.left() + 28.0, base_y), pos2(rect.right() - 28.0, base_y)],
+                Stroke::new(1.0, with_alpha(t.muted_foreground, 0.45)),
+            );
+            painter.text(
+                pos2(rect.left() + 30.0, base_y - 6.0),
+                Align2::LEFT_BOTTOM,
+                "×",
+                qfont(18.0),
+                with_alpha(t.muted_foreground, 0.7),
+            );
         }
         if empty_k > 0.01 {
             let mut p = painter.clone();
             p.set_opacity(empty_k);
-            p.text(pos2(rect.center().x, base_y + 18.0 - 4.0 * (1.0 - empty_k)), Align2::CENTER_CENTER, &self.placeholder, qfont(12.5), t.muted_foreground);
+            p.text(
+                pos2(rect.center().x, base_y + 18.0 - 4.0 * (1.0 - empty_k)),
+                Align2::CENTER_CENTER,
+                &self.placeholder,
+                qfont(12.5),
+                t.muted_foreground,
+            );
         }
         // ink
         for s in &self.ink.strokes {

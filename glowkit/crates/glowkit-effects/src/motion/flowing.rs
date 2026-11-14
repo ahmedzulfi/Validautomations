@@ -65,9 +65,17 @@ impl FlowingMenu {
     pub fn show(self, ui: &mut Ui) -> InnerResponse<Option<usize>> {
         let t = Theme::of(ui);
         let n = self.items.len();
-        let (rect, response) = ui.allocate_exact_size(vec2(ui.available_width(), self.row_height * n as f32), Sense::click());
+        let (rect, response) =
+            ui.allocate_exact_size(vec2(ui.available_width(), self.row_height * n as f32), Sense::click());
         let id = response.id;
-        let rows: Vec<Rect> = (0..n).map(|i| Rect::from_min_size(rect.min + vec2(0.0, i as f32 * self.row_height), vec2(rect.width(), self.row_height))).collect();
+        let rows: Vec<Rect> = (0..n)
+            .map(|i| {
+                Rect::from_min_size(
+                    rect.min + vec2(0.0, i as f32 * self.row_height),
+                    vec2(rect.width(), self.row_height),
+                )
+            })
+            .collect();
         let pointer = response.hover_pos();
         let mut hovered = pointer.and_then(|p| rows.iter().position(|r| r.contains(p)));
         let mut sim_y = None;
@@ -93,27 +101,43 @@ impl FlowingMenu {
         for (i, r) in rows.iter().enumerate() {
             let on = hovered == Some(i);
             // remember which edge the pointer entered from
-            let from_top = glowkit_core::with_state(ui, id.with(("edge", i)), || (false, true), |(was, top)| {
-                if on && !*was {
-                    let y = pointer.map(|p| p.y).or(sim_y).unwrap_or(r.center().y);
-                    *top = y < r.center().y;
-                }
-                if !on && *was {
-                    let y = pointer.map(|p| p.y).unwrap_or(r.center().y);
-                    *top = y < r.center().y;
-                }
-                *was = on;
-                *top
-            });
-            let reveal = glowkit_core::anim::spring(ui, id.with(("rv", i)), if on { 1.0 } else { 0.0 }, 260.0, 30.0).clamp(0.0, 1.0);
+            let from_top = glowkit_core::with_state(
+                ui,
+                id.with(("edge", i)),
+                || (false, true),
+                |(was, top)| {
+                    if on && !*was {
+                        let y = pointer.map(|p| p.y).or(sim_y).unwrap_or(r.center().y);
+                        *top = y < r.center().y;
+                    }
+                    if !on && *was {
+                        let y = pointer.map(|p| p.y).unwrap_or(r.center().y);
+                        *top = y < r.center().y;
+                    }
+                    *was = on;
+                    *top
+                },
+            );
+            let reveal = glowkit_core::anim::spring(ui, id.with(("rv", i)), if on { 1.0 } else { 0.0 }, 260.0, 30.0)
+                .clamp(0.0, 1.0);
             if i > 0 {
                 painter.line_segment([r.left_top(), r.right_top()], Stroke::new(1.0, t.border));
             }
             let (icon, label) = &self.items[i];
-            painter.text(r.center(), Align2::CENTER_CENTER, label, font.clone(), with_alpha(t.foreground, (1.0 - reveal * 3.0).max(0.0)));
+            painter.text(
+                r.center(),
+                Align2::CENTER_CENTER,
+                label,
+                font.clone(),
+                with_alpha(t.foreground, (1.0 - reveal * 3.0).max(0.0)),
+            );
             if reveal > 0.001 {
                 let h = r.height() * reveal;
-                let bandr = if from_top { Rect::from_min_size(r.min, vec2(r.width(), h)) } else { Rect::from_min_max(pos2(r.min.x, r.max.y - h), r.max) };
+                let bandr = if from_top {
+                    Rect::from_min_size(r.min, vec2(r.width(), h))
+                } else {
+                    Rect::from_min_max(pos2(r.min.x, r.max.y - h), r.max)
+                };
                 let clip = painter.with_clip_rect(bandr);
                 clip.rect_filled(bandr, CornerRadius::ZERO, band);
                 // marquee of label + icon pills
@@ -129,15 +153,27 @@ impl FlowingMenu {
                 for k in 0..copies {
                     let x = r.min.x - off + k as f32 * unit;
                     clip.galley(pos2(x, cy - g.size().y / 2.0), g.clone(), band_text);
-                    let pill = Rect::from_center_size(pos2(x + g.size().x + 28.0 + pill_w / 2.0, cy), vec2(pill_w, r.height() * 0.56));
+                    let pill = Rect::from_center_size(
+                        pos2(x + g.size().x + 28.0 + pill_w / 2.0, cy),
+                        vec2(pill_w, r.height() * 0.56),
+                    );
                     let pc = t.chart[(i + k) % t.chart.len()];
                     clip.rect_filled(pill, CornerRadius::same(99), pc);
-                    clip.text(pill.center(), Align2::CENTER_CENTER, icon, FontId::proportional(r.height() * 0.3), Color32::WHITE);
+                    clip.text(
+                        pill.center(),
+                        Align2::CENTER_CENTER,
+                        icon,
+                        FontId::proportional(r.height() * 0.3),
+                        Color32::WHITE,
+                    );
                 }
                 ui.ctx().request_repaint();
             }
         }
-        painter.line_segment([rect.left_bottom() - vec2(0.0, 0.5), rect.right_bottom() - vec2(0.0, 0.5)], Stroke::new(1.0, t.border));
+        painter.line_segment(
+            [rect.left_bottom() - vec2(0.0, 0.5), rect.right_bottom() - vec2(0.0, 0.5)],
+            Stroke::new(1.0, t.border),
+        );
         painter.line_segment([rect.left_top(), rect.right_top()], Stroke::new(1.0, t.border));
         InnerResponse::new(clicked, response)
     }

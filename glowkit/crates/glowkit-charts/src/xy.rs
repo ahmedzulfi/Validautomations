@@ -68,7 +68,14 @@ pub struct ScatterChart<'a> {
 impl<'a> ScatterChart<'a> {
     /// A scatter chart of `series`.
     pub fn new(series: &'a [ScatterSeries]) -> Self {
-        Self { series, base: Base::new(300.0), x_title: String::new(), y_title: String::new(), radius: (4.0, 22.0), x_format: format_compact }
+        Self {
+            series,
+            base: Base::new(300.0),
+            x_title: String::new(),
+            y_title: String::new(),
+            radius: (4.0, 22.0),
+            x_format: format_compact,
+        }
     }
     base_setters!();
     axis_setters!();
@@ -105,9 +112,20 @@ impl Widget for ScatterChart<'_> {
         let legend_on = self.base.legend && k > 1;
         let mut focus = None;
         if legend_on {
-            let entries: Vec<LegendEntry> = self.series.iter().enumerate().map(|(i, s)| LegendEntry { label: s.name.clone(), color: color_of(i) }).collect();
+            let entries: Vec<LegendEntry> = self
+                .series
+                .iter()
+                .enumerate()
+                .map(|(i, s)| LegendEntry { label: s.name.clone(), color: color_of(i) })
+                .collect();
             let before = hidden.clone();
-            focus = legend(ui, id, Rect::from_min_max(pos2(rect.left(), rect.bottom() - LEGEND_H), rect.max), &entries, &mut hidden);
+            focus = legend(
+                ui,
+                id,
+                Rect::from_min_max(pos2(rect.left(), rect.bottom() - LEGEND_H), rect.max),
+                &entries,
+                &mut hidden,
+            );
             if before != hidden {
                 set_hidden_state(ui, id, hidden.clone());
             }
@@ -118,7 +136,8 @@ impl Widget for ScatterChart<'_> {
         }
         let (xlo, xhi) = pts().fold((f64::INFINITY, f64::NEG_INFINITY), |(a, b), p| (a.min(p[0]), b.max(p[0])));
         let (ylo, yhi) = pts().fold((f64::INFINITY, f64::NEG_INFINITY), |(a, b), p| (a.min(p[1]), b.max(p[1])));
-        let smax = self.series.iter().filter_map(|s| s.sizes.as_ref()).flatten().fold(0.0f64, |m, v| m.max(*v)).max(1e-9);
+        let smax =
+            self.series.iter().filter_map(|s| s.sizes.as_ref()).flatten().fold(0.0f64, |m, v| m.max(*v)).max(1e-9);
         let title_h = if self.y_title.is_empty() { 0.0 } else { 18.0 };
         let xt_h = if self.x_title.is_empty() { 0.0 } else { 18.0 };
         let xt = nice_ticks(xlo.min(0.0).max(xlo - (xhi - xlo) * 0.1), xhi, tick_count(rect.width() - 80.0, 90.0));
@@ -127,16 +146,48 @@ impl Widget for ScatterChart<'_> {
         let y_w = y_label_width(&painter, &yt, &fy);
         let mut base = self.base.clone();
         base.legend = legend_on;
-        let inner = Rect::from_min_max(pos2(rect.left(), rect.top() + title_h), pos2(rect.right(), rect.bottom() - xt_h));
+        let inner =
+            Rect::from_min_max(pos2(rect.left(), rect.top() + title_h), pos2(rect.right(), rect.bottom() - xt_h));
         let fr = cat_frame(inner, &base, y_w, None, legend_on, 0.0);
         let plot = Rect::from_min_max(fr.plot.min + vec2(0.0, 4.0), fr.plot.max - vec2(12.0, 0.0));
-        y_grid(&painter, &t, plot, &yt, yt.min, yt.max, self.base.grid, self.base.y_axis.then_some((fr.y_label_x, false)), &fy);
-        x_grid(&painter, &t, plot, &xt, xt.min, xt.max, self.base.grid, self.base.x_axis.then_some(plot.bottom() + 8.0));
+        y_grid(
+            &painter,
+            &t,
+            plot,
+            &yt,
+            yt.min,
+            yt.max,
+            self.base.grid,
+            self.base.y_axis.then_some((fr.y_label_x, false)),
+            &fy,
+        );
+        x_grid(
+            &painter,
+            &t,
+            plot,
+            &xt,
+            xt.min,
+            xt.max,
+            self.base.grid,
+            self.base.x_axis.then_some(plot.bottom() + 8.0),
+        );
         if !self.y_title.is_empty() {
-            painter.text(pos2(rect.left(), rect.top() + 2.0), Align2::LEFT_TOP, &self.y_title, FontId::proportional(11.5), t.muted_foreground);
+            painter.text(
+                pos2(rect.left(), rect.top() + 2.0),
+                Align2::LEFT_TOP,
+                &self.y_title,
+                FontId::proportional(11.5),
+                t.muted_foreground,
+            );
         }
         if !self.x_title.is_empty() {
-            painter.text(pos2(plot.center().x, plot.bottom() + 26.0), Align2::CENTER_TOP, &self.x_title, FontId::proportional(11.5), t.muted_foreground);
+            painter.text(
+                pos2(plot.center().x, plot.bottom() + 26.0),
+                Align2::CENTER_TOP,
+                &self.x_title,
+                FontId::proportional(11.5),
+                t.muted_foreground,
+            );
         }
         let vis_t: Vec<f32> = hidden.iter().map(|h| if *h { 0.0 } else { 1.0 }).collect();
         let vis = tween(ui, id, &vis_t);
@@ -179,14 +230,18 @@ impl Widget for ScatterChart<'_> {
                 painter.circle_stroke(q, r * g, Stroke::new(if bubble { 1.5 } else { 1.0 }, c.gamma_multiply(a)));
             }
         }
-        let halpha = glowkit_core::anim::follow(ui, id.with("hover_alpha"), if best.is_some() { 1.0 } else { 0.0 }, 18.0);
+        let halpha =
+            glowkit_core::anim::follow(ui, id.with("hover_alpha"), if best.is_some() { 1.0 } else { 0.0 }, 18.0);
         if let Some((s, j, _, q, r)) = best {
             let c = color_of(s);
             painter.circle_stroke(q, r + 4.0, Stroke::new(2.0, c.gamma_multiply(halpha)));
             crosshair_v(&painter, &t, q.x, q.y + r + 4.0, plot.bottom(), halpha * 0.8);
             let ser = &self.series[s];
             let p = ser.points[j];
-            let mut rows = vec![TipRow::new(Some(c), "x", (self.x_format)(p[0])), TipRow::new(None, "y", (self.base.format)(p[1]))];
+            let mut rows = vec![
+                TipRow::new(Some(c), "x", (self.x_format)(p[0])),
+                TipRow::new(None, "y", (self.base.format)(p[1])),
+            ];
             if !self.x_title.is_empty() {
                 rows[0].label = self.x_title.clone();
             }
@@ -286,23 +341,41 @@ impl Widget for CandlestickChart<'_> {
             return resp;
         }
         let painter = ui.painter_at(rect);
-        let (lo, hi) = self.candles.iter().fold((f64::INFINITY, f64::NEG_INFINITY), |(a, b), c| (a.min(c.low), b.max(c.high)));
+        let (lo, hi) =
+            self.candles.iter().fold((f64::INFINITY, f64::NEG_INFINITY), |(a, b), c| (a.min(c.low), b.max(c.high)));
         let ticks = nice_ticks(lo, hi, tick_count(rect.height() - 40.0, 44.0));
         let ft = tick_fmt(&ticks);
         let mut base = self.base.clone();
         base.legend = false;
         let y_w = y_label_width(&painter, &ticks, &ft);
         // price axis on the right, like trading terminals
-        let fr = cat_frame(rect, &{
-            let mut b = base.clone();
-            b.y_axis = false;
-            b
-        }, 0.0, Some(y_w.max(54.0)), false, 0.0);
+        let fr = cat_frame(
+            rect,
+            &{
+                let mut b = base.clone();
+                b.y_axis = false;
+                b
+            },
+            0.0,
+            Some(y_w.max(54.0)),
+            false,
+            0.0,
+        );
         let plot = fr.plot;
         let targets = [ticks.min as f32, ticks.max as f32];
         let dom = tween(ui, id, &targets);
         let (dlo, dhi) = (dom[0] as f64, dom[1] as f64);
-        y_grid(&painter, &t, plot, &ticks, dlo, dhi, self.base.grid, self.base.y_axis.then_some((fr.y2_label_x, true)), &ft);
+        y_grid(
+            &painter,
+            &t,
+            plot,
+            &ticks,
+            dlo,
+            dhi,
+            self.base.grid,
+            self.base.y_axis.then_some((fr.y2_label_x, true)),
+            &ft,
+        );
         if self.base.x_axis {
             x_labels(&painter, &t, plot, &self.labels, n, true, fr.x_label_y);
         }
@@ -311,7 +384,11 @@ impl Widget for CandlestickChart<'_> {
         let bw = plot.width() / n as f32;
         let body_w = (bw * 0.62).clamp(1.0, 18.0);
         let e = entry_time(ui, id, self.base.animate, 0.6 + n as f32 * 0.02 + 0.5);
-        let (hover, hx, halpha) = if self.base.tooltip { crate::cartesian::cat_hover(ui, id, &resp, plot, n, true) } else { (None, 0.0, 0.0) };
+        let (hover, hx, halpha) = if self.base.tooltip {
+            crate::cartesian::cat_hover(ui, id, &resp, plot, n, true)
+        } else {
+            (None, 0.0, 0.0)
+        };
         if halpha > 0.01 {
             crosshair_v(&painter, &t, hx, plot.top(), plot.bottom(), halpha);
         }
@@ -329,7 +406,10 @@ impl Widget for CandlestickChart<'_> {
             let s = |v: f64| val_y(plot, dlo, dhi, mid + (v - mid) * g as f64);
             painter.line_segment([pos2(x, s(c.high)), pos2(x, s(c.low))], Stroke::new(1.0, col));
             let (y0, y1) = (s(c.open), s(c.close));
-            let body = Rect::from_min_max(pos2(x - body_w / 2.0, y0.min(y1)), pos2(x + body_w / 2.0, y0.max(y1).max(y0.min(y1) + 1.0)));
+            let body = Rect::from_min_max(
+                pos2(x - body_w / 2.0, y0.min(y1)),
+                pos2(x + body_w / 2.0, y0.max(y1).max(y0.min(y1) + 1.0)),
+            );
             let cr = CornerRadius::same((body_w * 0.15).min(2.0) as u8);
             if up && self.hollow_up {
                 painter.rect_filled(body, cr, t.card);
@@ -341,7 +421,12 @@ impl Widget for CandlestickChart<'_> {
         if let Some(hp) = resp.hover_pos().filter(|p| plot.contains(*p)) {
             // horizontal crosshair with a price tag on the axis
             let y = crisp(&painter, hp.y);
-            painter.extend(Shape::dashed_line(&[pos2(plot.left(), y), pos2(plot.right(), y)], Stroke::new(1.0, t.muted_foreground.gamma_multiply(0.5)), 4.0, 3.0));
+            painter.extend(Shape::dashed_line(
+                &[pos2(plot.left(), y), pos2(plot.right(), y)],
+                Stroke::new(1.0, t.muted_foreground.gamma_multiply(0.5)),
+                4.0,
+                3.0,
+            ));
             let price = dlo + (plot.bottom() - hp.y) as f64 / plot.height() as f64 * (dhi - dlo);
             let txt = ft(price);
             let font = axis_font();
@@ -360,7 +445,11 @@ impl Widget for CandlestickChart<'_> {
                 TipRow::new(None, "High", f(c.high)),
                 TipRow::new(None, "Low", f(c.low)),
                 TipRow::new(None, "Close", f(c.close)),
-                TipRow::new(Some(col), "Change", format!("{}{}", if chg >= 0.0 { "+" } else { "" }, format_percent(chg))),
+                TipRow::new(
+                    Some(col),
+                    "Change",
+                    format!("{}{}", if chg >= 0.0 { "+" } else { "" }, format_percent(chg)),
+                ),
             ];
             let py = resp.hover_pos().map(|p| p.y).unwrap_or(plot.center().y);
             tooltip(ui, id, pos2(hx, py), self.labels.get(i).map(|s| s.as_str()).unwrap_or(""), &rows, halpha);

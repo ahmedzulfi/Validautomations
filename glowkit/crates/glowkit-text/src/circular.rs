@@ -126,12 +126,21 @@ impl Widget for CircularText {
         let dt = glowkit_core::dt(ui);
         let base = if self.period.abs() > 1e-3 { TAU / self.period } else { 0.0 };
         let target = if resp.hovered() { self.hover.factor() } else { 1.0 };
-        let target_speed = if base == 0.0 && resp.hovered() && self.hover != HoverSpin::Ignore { TAU / 6.0 * target.signum() } else { base * target };
-        let spin = glowkit_core::with_state(ui, resp.id.with("spin"), || Spin { angle: 0.0, factor: base }, |s| {
-            s.factor = approach(s.factor, target_speed, 5.0, dt);
-            s.angle = (s.angle + s.factor * dt) % TAU;
-            *s
-        });
+        let target_speed = if base == 0.0 && resp.hovered() && self.hover != HoverSpin::Ignore {
+            TAU / 6.0 * target.signum()
+        } else {
+            base * target
+        };
+        let spin = glowkit_core::with_state(
+            ui,
+            resp.id.with("spin"),
+            || Spin { angle: 0.0, factor: base },
+            |s| {
+                s.factor = approach(s.factor, target_speed, 5.0, dt);
+                s.angle = (s.angle + s.factor * dt) % TAU;
+                *s
+            },
+        );
         if spin.factor.abs() > 1e-4 || (spin.factor - target_speed).abs() > 1e-4 {
             glowkit_core::animate(ui);
         }

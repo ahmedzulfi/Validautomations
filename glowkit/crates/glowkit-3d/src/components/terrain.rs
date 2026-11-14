@@ -45,7 +45,16 @@ impl Default for WaveTerrain {
 impl WaveTerrain {
     /// Default synthwave terrain.
     pub fn new() -> Self {
-        Self { style: TerrainStyle::Synthwave, speed: 1.0, amplitude: 1.0, cols: 36, rows: 30, colors: None, height: 340.0, id_salt: None }
+        Self {
+            style: TerrainStyle::Synthwave,
+            speed: 1.0,
+            amplitude: 1.0,
+            cols: 36,
+            rows: 30,
+            colors: None,
+            height: 340.0,
+            id_salt: None,
+        }
     }
     /// Visual style.
     pub fn style(mut self, s: TerrainStyle) -> Self {
@@ -140,14 +149,16 @@ impl Widget for WaveTerrain {
                         let r = 5.0;
                         let strips = 14;
                         for k in 0..strips {
-                            let (y0, y1) = (r - 2.0 * r * k as f32 / strips as f32, r - 2.0 * r * (k + 1) as f32 / strips as f32);
+                            let (y0, y1) =
+                                (r - 2.0 * r * k as f32 / strips as f32, r - 2.0 * r * (k + 1) as f32 / strips as f32);
                             let gap = if y1 < 0.6 { ((0.6 - y1) / (2.0 * r) * 0.9).min(0.75) * (y0 - y1) } else { 0.0 };
                             let y1 = y1 + gap;
                             let half = |y: f32| (r * r - y * y).max(0.0).sqrt();
                             let col = |y: f32| color::mix(sun, low, ((r - y) / (2.0 * r)).clamp(0.0, 1.0));
                             let segs = 6;
                             for q in 0..segs {
-                                let (a0, a1) = (q as f32 / segs as f32 * 2.0 - 1.0, (q + 1) as f32 / segs as f32 * 2.0 - 1.0);
+                                let (a0, a1) =
+                                    (q as f32 / segs as f32 * 2.0 - 1.0, (q + 1) as f32 / segs as f32 * 2.0 - 1.0);
                                 let p = |y: f32, a: f32| sun_c + vec3(half(y) * a, y, 0.0);
                                 let (c0, c1) = (col(y0), col(y1));
                                 s.triangle([p(y0, a0), p(y1, a0), p(y1, a1)], [c0, c1, c1]);
@@ -160,7 +171,11 @@ impl Widget for WaveTerrain {
                                 let h = |k: u64| hash01(i * 17 + k);
                                 let p = vec3((h(1) - 0.5) * 70.0, 2.0 + h(2) * 18.0, -30.0);
                                 let tw = 0.5 + 0.5 * (ctx.time * (1.0 + h(3) * 2.0) + h(4) * TAU).sin();
-                                s.point_px(p, 0.6 + h(5) * 0.7, crate::additive(Color32::WHITE.gamma_multiply(0.2 + 0.5 * tw)));
+                                s.point_px(
+                                    p,
+                                    0.6 + h(5) * 0.7,
+                                    crate::additive(Color32::WHITE.gamma_multiply(0.2 + 0.5 * tw)),
+                                );
                             }
                         }
                     } else {
@@ -168,7 +183,11 @@ impl Widget for WaveTerrain {
                         s.ball_lit(sun_c, 1.6, color::mix(sun, Color32::WHITE, 0.4), vec3(0.0, 0.0, 1.0), 1.0, 0.0);
                     }
                 });
-                scene.fog = Some(if synth || dark { Fog::new(horizon, 9.0, depth - 2.0) } else { Fog::fade(10.0, depth - 2.0) });
+                scene.fog = Some(if synth || dark {
+                    Fog::new(horizon, 9.0, depth - 2.0)
+                } else {
+                    Fog::fade(10.0, depth - 2.0)
+                });
                 match self.style {
                     TerrainStyle::Wireframe => {
                         let lc = |p: Vec3| -> Color32 {
@@ -203,8 +222,16 @@ impl Widget for WaveTerrain {
                                 let p = pos(i, j);
                                 m.vertex(p, Vec3::Y);
                                 let k = (p.y / (1.6 * amp.max(0.1))).clamp(0.0, 1.0);
-                                let valley_c = if dark { color::mix(t.card, low, 0.35) } else { color::mix(t.background, low, 0.25) };
-                                colors.push(if synth { Color32::WHITE } else { color::gradient(&[valley_c, low, high, color::mix(high, Color32::WHITE, 0.6)], k) });
+                                let valley_c = if dark {
+                                    color::mix(t.card, low, 0.35)
+                                } else {
+                                    color::mix(t.background, low, 0.25)
+                                };
+                                colors.push(if synth {
+                                    Color32::WHITE
+                                } else {
+                                    color::gradient(&[valley_c, low, high, color::mix(high, Color32::WHITE, 0.6)], k)
+                                });
                             }
                         }
                         m.colors = colors;
@@ -227,11 +254,18 @@ impl Widget for WaveTerrain {
                             scene.lights = Lights::ambient(1.0);
                             let ground = if dark { color::hex("#12021F") } else { color::hex("#FBEFFF") };
                             let grid = if dark { color::hex("#FF3BD4") } else { color::hex("#C026D3") };
-                            let mat = Material::flat(ground).specular(0.0).double_sided(true).wire(Wire::new(grid).width(1.3).depth_fade(0.0));
+                            let mat = Material::flat(ground)
+                                .specular(0.0)
+                                .double_sided(true)
+                                .wire(Wire::new(grid).width(1.3).depth_fade(0.0));
                             scene.draw(&mesh, crate::Transform::IDENTITY, &mat);
                         } else {
                             scene.lights = Lights::default().with_directional(vec3(0.0, 0.3, -1.0), sun, 0.35);
-                            let mat = Material::flat(Color32::WHITE).specular(0.1).double_sided(true).wire(Wire::new(color::with_alpha(if dark { Color32::WHITE } else { t.foreground }, 0.12)).width(0.8).depth_fade(0.5));
+                            let mat = Material::flat(Color32::WHITE).specular(0.1).double_sided(true).wire(
+                                Wire::new(color::with_alpha(if dark { Color32::WHITE } else { t.foreground }, 0.12))
+                                    .width(0.8)
+                                    .depth_fade(0.5),
+                            );
                             scene.draw(&mesh, crate::Transform::IDENTITY, &mat);
                         }
                     }

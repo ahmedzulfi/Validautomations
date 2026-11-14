@@ -89,14 +89,20 @@ impl Widget for UnderlineLink {
                 p.galley(pos2(tx, ty), g, col);
             }
             LinkStyle::Highlight => {
-                let band = Rect::from_min_max(pos2(tx - 2.0, ty + g.size().y * 0.45), pos2(tx - 2.0 + (w + 4.0) * e, base_y + 1.0));
+                let band = Rect::from_min_max(
+                    pos2(tx - 2.0, ty + g.size().y * 0.45),
+                    pos2(tx - 2.0 + (w + 4.0) * e, base_y + 1.0),
+                );
                 if e > 0.01 {
                     p.rect_filled(band, 3.0, with_alpha(t.accent, 0.3));
                 }
                 p.galley(pos2(tx, ty), g, col);
             }
             LinkStyle::Arrow => {
-                p.line_segment([pos2(tx, base_y), pos2(tx + w, base_y)], Stroke::new(1.0, with_alpha(t.muted_foreground, 0.5)));
+                p.line_segment(
+                    [pos2(tx, base_y), pos2(tx + w, base_y)],
+                    Stroke::new(1.0, with_alpha(t.muted_foreground, 0.5)),
+                );
                 if e > 0.01 {
                     p.line_segment([pos2(tx, base_y), pos2(tx + w * e, base_y)], Stroke::new(1.0, t.accent));
                 }
@@ -107,11 +113,15 @@ impl Widget for UnderlineLink {
                 let ar = Rect::from_center_size(pos2(ax + s / 2.0, ty + g.size().y / 2.0), vec2(s, s));
                 let ang = -0.785 * (1.0 - e);
                 let c = ar.center();
-                let rot = |v: egui::Vec2| c + vec2(v.x * ang.cos() - v.y * ang.sin(), v.x * ang.sin() + v.y * ang.cos());
+                let rot =
+                    |v: egui::Vec2| c + vec2(v.x * ang.cos() - v.y * ang.sin(), v.x * ang.sin() + v.y * ang.cos());
                 let k = s / 2.0 * 0.8;
                 let acol = t.muted_foreground.lerp_to_gamma(t.accent, e);
                 p.line_segment([rot(vec2(-k, 0.0)), rot(vec2(k, 0.0))], Stroke::new(1.4, acol));
-                p.add(egui::Shape::line(vec![rot(vec2(k * 0.2, -k * 0.8)), rot(vec2(k, 0.0)), rot(vec2(k * 0.2, k * 0.8))], Stroke::new(1.4, acol)));
+                p.add(egui::Shape::line(
+                    vec![rot(vec2(k * 0.2, -k * 0.8)), rot(vec2(k, 0.0)), rot(vec2(k * 0.2, k * 0.8))],
+                    Stroke::new(1.4, acol),
+                ));
             }
         }
         resp
@@ -139,7 +149,11 @@ pub struct TableOfContents {
 impl TableOfContents {
     /// Entries as `(indent level, title)`; `active` is the highlighted entry.
     pub fn new(entries: &[(u8, &str)], active: usize) -> Self {
-        Self { entries: entries.iter().map(|(l, s)| (*l, s.to_string())).collect(), active, title: Some("On this page".into()) }
+        Self {
+            entries: entries.iter().map(|(l, s)| (*l, s.to_string())).collect(),
+            active,
+            title: Some("On this page".into()),
+        }
     }
     /// Heading above the list (`None` for no heading).
     pub fn title(mut self, title: Option<&str>) -> Self {
@@ -223,10 +237,17 @@ impl Widget for BottomNav<'_> {
         let accent = self.accent.unwrap_or(t.accent);
         let font = FontId::proportional(13.5);
         let icon_w = 48.0;
-        let label_ws: Vec<f32> = self.items.iter().map(|(_, l)| ui.painter().layout_no_wrap(l.clone(), font.clone(), Color32::WHITE).size().x + 10.0).collect();
+        let label_ws: Vec<f32> = self
+            .items
+            .iter()
+            .map(|(_, l)| ui.painter().layout_no_wrap(l.clone(), font.clone(), Color32::WHITE).size().x + 10.0)
+            .collect();
         let max_label = label_ws.iter().copied().fold(0.0, f32::max);
         let h = 64.0;
-        let w = self.width.unwrap_or(n as f32 * icon_w + max_label + 16.0 + (n as f32 - 1.0) * 6.0 + 24.0).min(ui.available_width());
+        let w = self
+            .width
+            .unwrap_or(n as f32 * icon_w + max_label + 16.0 + (n as f32 - 1.0) * 6.0 + 24.0)
+            .min(ui.available_width());
         let (outer, mut resp) = ui.allocate_exact_size(vec2(ui.available_width(), h), Sense::hover());
         let rect = Rect::from_center_size(outer.center(), vec2(w, h));
         let p = ui.painter();
@@ -236,7 +257,12 @@ impl Widget for BottomNav<'_> {
         p.rect_stroke(rect, h / 2.0, Stroke::new(1.0, t.border), StrokeKind::Inside);
         let a = (*self.active).min(n - 1);
         // per-item expansion springs
-        let exps: Vec<f32> = (0..n).map(|i| glowkit_core::anim::spring(ui, id.with(("e", i)), if i == a { 1.0 } else { 0.0 }, 320.0, 26.0).clamp(0.0, 1.2)).collect();
+        let exps: Vec<f32> = (0..n)
+            .map(|i| {
+                glowkit_core::anim::spring(ui, id.with(("e", i)), if i == a { 1.0 } else { 0.0 }, 320.0, 26.0)
+                    .clamp(0.0, 1.2)
+            })
+            .collect();
         let widths: Vec<f32> = (0..n).map(|i| icon_w + label_ws[i] * exps[i].clamp(0.0, 1.0)).collect();
         let content: f32 = widths.iter().sum::<f32>() + (n as f32 - 1.0) * 6.0;
         let mut x = rect.center().x - content / 2.0;
@@ -253,7 +279,8 @@ impl Widget for BottomNav<'_> {
                 p.rect_filled(r, item_h / 2.0, with_alpha(t.foreground, 0.05 * hv));
             }
             let col = t.muted_foreground.lerp_to_gamma(t.foreground, hv * 0.7).lerp_to_gamma(accent, e);
-            let bounce = 1.0 + (exps[i] - 1.0).max(-1.0) * 0.0 + if ir.is_pointer_button_down_on() { -0.08 } else { 0.0 };
+            let bounce =
+                1.0 + (exps[i] - 1.0).max(-1.0) * 0.0 + if ir.is_pointer_button_down_on() { -0.08 } else { 0.0 };
             let s = 20.0 * bounce;
             icon.paint(p, Rect::from_center_size(pos2(r.min.x + icon_w / 2.0, r.center().y), vec2(s, s)), col);
             if e > 0.05 {

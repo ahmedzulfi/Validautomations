@@ -2,7 +2,10 @@
 
 use crate::common;
 use crate::icons::{paint_icon, Icon};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Order, Pos2, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Order, Pos2, Rect, Response, Sense, Stroke, StrokeKind, Ui,
+    UiBuilder, Widget,
+};
 use glowkit_core::color::{hsv, mix, with_alpha};
 use glowkit_core::{paint, Theme};
 
@@ -46,7 +49,12 @@ pub(crate) fn provider_badge(p: &egui::Painter, center: Pos2, size: f32, provide
     let c = hsv(hue, 0.55, if t.dark { 0.9 } else { 0.62 });
     let r = Rect::from_center_size(center, vec2(size, size));
     p.rect_filled(r, CornerRadius::same((size * 0.28) as u8), with_alpha(c, if t.dark { 0.2 } else { 0.14 }));
-    p.rect_stroke(r, CornerRadius::same((size * 0.28) as u8), Stroke::new(1.0, with_alpha(c, 0.35)), StrokeKind::Inside);
+    p.rect_stroke(
+        r,
+        CornerRadius::same((size * 0.28) as u8),
+        Stroke::new(1.0, with_alpha(c, 0.35)),
+        StrokeKind::Inside,
+    );
     let letter: String = provider.chars().next().map(|c| c.to_ascii_uppercase()).into_iter().collect();
     p.text(center, Align2::CENTER_CENTER, letter, FontId::proportional(size * 0.58), c);
 }
@@ -95,9 +103,13 @@ impl Widget for ModelSelector<'_> {
         *self.selected = (*self.selected).min(self.models.len() - 1);
         let cur = self.models[*self.selected];
         let g = common::galley(ui, cur.name, 13.0, t.foreground);
-        let id = self.id_salt.map(|s| ui.scope_id().with_salt(s)).unwrap_or_else(|| ui.scope_id().with("glowkit_model_selector"));
+        let id = self
+            .id_salt
+            .map(|s| ui.scope_id().with_salt(s))
+            .unwrap_or_else(|| ui.scope_id().with("glowkit_model_selector"));
         let (rect, _) = ui.allocate_exact_size(vec2(g.size().x + 58.0, 32.0), Sense::hover());
-        let mut resp = ui.interact(rect, id.with("button"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+        let mut resp =
+            ui.interact(rect, id.with("button"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
         let mut open: bool = glowkit_core::state(ui, id.with("open"), || false);
         if resp.clicked() {
             open = !open;
@@ -124,11 +136,17 @@ impl Widget for ModelSelector<'_> {
             let width = 300.0;
             // open upward when there is no room below
             let providers = self.models.windows(2).filter(|w| w[0].provider != w[1].provider).count() + 1;
-            let est_h = self.models.iter().map(|m| if m.description.is_empty() { 38.0 } else { 52.0 }).sum::<f32>() + providers as f32 * 28.0 + 14.0;
+            let est_h = self.models.iter().map(|m| if m.description.is_empty() { 38.0 } else { 52.0 }).sum::<f32>()
+                + providers as f32 * 28.0
+                + 14.0;
             let below = ui.ctx().content_rect().max.y - rect.max.y;
             let up = below < est_h + 12.0 && rect.min.y > est_h + 12.0;
             let slide = (1.0 - open_t) * 6.0;
-            let (pos, pivot) = if up { (pos2(rect.min.x, rect.min.y - 6.0 + slide), Align2::LEFT_BOTTOM) } else { (pos2(rect.min.x, rect.max.y + 6.0 - slide), Align2::LEFT_TOP) };
+            let (pos, pivot) = if up {
+                (pos2(rect.min.x, rect.min.y - 6.0 + slide), Align2::LEFT_BOTTOM)
+            } else {
+                (pos2(rect.min.x, rect.max.y + 6.0 - slide), Align2::LEFT_TOP)
+            };
             let area = egui::Area::new(id.with("menu"))
                 .order(Order::Foreground)
                 .fade_in(false)
@@ -141,7 +159,12 @@ impl Widget for ModelSelector<'_> {
                         .fill(t.popover)
                         .stroke(Stroke::new(1.0, t.border))
                         .corner_radius(t.corner_scaled(1.2))
-                        .shadow(egui::Shadow { offset: [0, 10], blur: 30, spread: 0, color: Color32::from_black_alpha(if t.dark { 140 } else { 36 }) })
+                        .shadow(egui::Shadow {
+                            offset: [0, 10],
+                            blur: 30,
+                            spread: 0,
+                            color: Color32::from_black_alpha(if t.dark { 140 } else { 36 }),
+                        })
                         .inner_margin(egui::Margin::same(6))
                         .show(ui, |ui| {
                             ui.set_width(width);
@@ -150,7 +173,14 @@ impl Widget for ModelSelector<'_> {
                             for (i, m) in self.models.iter().enumerate() {
                                 if m.provider != last_provider {
                                     let (r, _) = ui.allocate_exact_size(vec2(width, 26.0), Sense::hover());
-                                    common::text(ui.painter(), pos2(r.min.x + 10.0, r.center().y + 2.0), Align2::LEFT_CENTER, m.provider, 11.5, t.muted_foreground);
+                                    common::text(
+                                        ui.painter(),
+                                        pos2(r.min.x + 10.0, r.center().y + 2.0),
+                                        Align2::LEFT_CENTER,
+                                        m.provider,
+                                        11.5,
+                                        t.muted_foreground,
+                                    );
                                     last_provider = m.provider;
                                 }
                                 let row_h = if m.description.is_empty() { 36.0 } else { 50.0 };
@@ -170,10 +200,22 @@ impl Widget for ModelSelector<'_> {
                                     common::badge(ui.painter(), pos2(nx + ng.size().x + 8.0, ty), tag, t.accent, &t);
                                 }
                                 if !m.description.is_empty() {
-                                    common::text(ui.painter(), pos2(nx, r.min.y + 35.0), Align2::LEFT_CENTER, m.description, 12.0, t.muted_foreground);
+                                    common::text(
+                                        ui.painter(),
+                                        pos2(nx, r.min.y + 35.0),
+                                        Align2::LEFT_CENTER,
+                                        m.description,
+                                        12.0,
+                                        t.muted_foreground,
+                                    );
                                 }
                                 if i == *self.selected {
-                                    paint_icon(ui.painter(), Icon::Check, Rect::from_center_size(pos2(r.max.x - 18.0, r.center().y), vec2(14.0, 14.0)), t.foreground);
+                                    paint_icon(
+                                        ui.painter(),
+                                        Icon::Check,
+                                        Rect::from_center_size(pos2(r.max.x - 18.0, r.center().y), vec2(14.0, 14.0)),
+                                        t.foreground,
+                                    );
                                 }
                                 if rr.clicked() {
                                     *self.selected = i;
@@ -266,20 +308,39 @@ impl<'a> Suggestions<'a> {
             let y = rect.min.y + ri as f32 * (h + gap);
             for &i in row {
                 let r = Rect::from_min_size(pos2(x, y), vec2(widths[i], h));
-                let resp = ui.interact(r, base.id.with(("sugg", i)), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+                let resp = ui
+                    .interact(r, base.id.with(("sugg", i)), Sense::click())
+                    .on_hover_cursor(egui::CursorIcon::PointingHand);
                 let hv = common::anim_bool(ui, resp.id.with("h"), resp.hovered(), 0.14);
                 let lift = hv * 1.0;
                 let r = r.translate(vec2(0.0, -lift));
                 let p = ui.painter();
                 let cr = CornerRadius::same((h / 2.0) as u8);
                 if hv > 0.0 {
-                    paint::soft_shadow(p, r, h / 2.0, 10.0, vec2(0.0, 2.0), Color32::from_black_alpha(((if t.dark { 70.0 } else { 18.0 }) * hv) as u8));
+                    paint::soft_shadow(
+                        p,
+                        r,
+                        h / 2.0,
+                        10.0,
+                        vec2(0.0, 2.0),
+                        Color32::from_black_alpha(((if t.dark { 70.0 } else { 18.0 }) * hv) as u8),
+                    );
                 }
                 p.rect_filled(r, cr, mix(t.card, common::raised(&t), hv));
-                p.rect_stroke(r, cr, Stroke::new(1.0, mix(t.border, common::border_strong(&t), hv)), StrokeKind::Inside);
+                p.rect_stroke(
+                    r,
+                    cr,
+                    Stroke::new(1.0, mix(t.border, common::border_strong(&t), hv)),
+                    StrokeKind::Inside,
+                );
                 let mut tx = r.min.x + 14.0;
                 if let Some(icon) = self.icon {
-                    paint_icon(p, icon, Rect::from_center_size(pos2(tx + self.size / 2.0, r.center().y), vec2(self.size, self.size)), t.muted_foreground.lerp_to_gamma(t.accent, hv));
+                    paint_icon(
+                        p,
+                        icon,
+                        Rect::from_center_size(pos2(tx + self.size / 2.0, r.center().y), vec2(self.size, self.size)),
+                        t.muted_foreground.lerp_to_gamma(t.accent, hv),
+                    );
                     tx += icon_w;
                 }
                 let col = mix(t.foreground, t.muted_foreground, 0.25 * (1.0 - hv));
@@ -343,7 +404,8 @@ impl Widget for Checkpoint<'_> {
         let tw = tg.as_ref().map(|g| g.size().x + 10.0).unwrap_or(0.0);
         let total = bw + tw;
         let br = Rect::from_min_size(pos2(rect.center().x - total / 2.0, rect.center().y - 14.0), vec2(bw, 28.0));
-        let resp = ui.interact(br, base.id.with("checkpoint"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+        let resp =
+            ui.interact(br, base.id.with("checkpoint"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
         let h = common::anim_bool(ui, resp.id.with("h"), resp.hovered(), 0.12);
         let p = ui.painter();
         let y = rect.center().y;
@@ -351,12 +413,26 @@ impl Widget for Checkpoint<'_> {
         p.line_segment([pos2(rect.min.x, y), pos2(br.min.x - 12.0, y)], Stroke::new(1.0, line));
         p.line_segment([pos2(br.max.x + tw + 12.0, y), pos2(rect.max.x, y)], Stroke::new(1.0, line));
         p.rect_filled(br, CornerRadius::same(14), mix(t.card, common::raised(&t), 0.5 + h * 0.5));
-        p.rect_stroke(br, CornerRadius::same(14), Stroke::new(1.0, mix(t.border, common::border_strong(&t), h)), StrokeKind::Inside);
+        p.rect_stroke(
+            br,
+            CornerRadius::same(14),
+            Stroke::new(1.0, mix(t.border, common::border_strong(&t), h)),
+            StrokeKind::Inside,
+        );
         let col = t.muted_foreground.lerp_to_gamma(t.foreground, h);
-        paint_icon(p, Icon::History, Rect::from_center_size(pos2(br.min.x + 15.0, br.center().y), vec2(13.0, 13.0)), col);
+        paint_icon(
+            p,
+            Icon::History,
+            Rect::from_center_size(pos2(br.min.x + 15.0, br.center().y), vec2(13.0, 13.0)),
+            col,
+        );
         p.galley(pos2(br.min.x + 26.0, br.center().y - g.size().y / 2.0), g, col);
         if let Some(tg) = tg {
-            p.galley(pos2(br.max.x + 10.0, br.center().y - tg.size().y / 2.0), tg, with_alpha(t.muted_foreground, 0.75));
+            p.galley(
+                pos2(br.max.x + 10.0, br.center().y - tg.size().y / 2.0),
+                tg,
+                with_alpha(t.muted_foreground, 0.75),
+            );
         }
         resp
     }
@@ -423,7 +499,9 @@ impl<'a> WebPreview<'a> {
         p.line_segment([pos2(rect.min.x, bar.max.y), pos2(rect.max.x, bar.max.y)], Stroke::new(1.0, t.border));
         // nav buttons
         let mut x = bar.min.x + 10.0;
-        for (icon, tip, k) in [(Icon::ChevronLeft, "Back", 0), (Icon::ChevronRight, "Forward", 1), (Icon::Refresh, "Reload", 2)] {
+        for (icon, tip, k) in
+            [(Icon::ChevronLeft, "Back", 0), (Icon::ChevronRight, "Forward", 1), (Icon::Refresh, "Reload", 2)]
+        {
             let r = Rect::from_min_size(pos2(x, bar.center().y - 14.0), vec2(28.0, 28.0));
             let mut child = ui.new_child(UiBuilder::new().max_rect(r));
             if common::icon_button(&mut child, icon, 28.0, None, tip).clicked() {
@@ -447,9 +525,15 @@ impl<'a> WebPreview<'a> {
         let p = ui.painter();
         p.rect_filled(ar, CornerRadius::same(15), t.card);
         p.rect_stroke(ar, CornerRadius::same(15), Stroke::new(1.0, t.border), StrokeKind::Inside);
-        paint_icon(p, Icon::Lock, Rect::from_center_size(pos2(ar.min.x + 16.0, ar.center().y), vec2(12.0, 12.0)), t.muted_foreground);
+        paint_icon(
+            p,
+            Icon::Lock,
+            Rect::from_center_size(pos2(ar.min.x + 16.0, ar.center().y), vec2(12.0, 12.0)),
+            t.muted_foreground,
+        );
         let te_rect = Rect::from_min_max(pos2(ar.min.x + 28.0, ar.min.y), pos2(ar.max.x - 10.0, ar.max.y));
-        let mut child = ui.new_child(UiBuilder::new().max_rect(te_rect).layout(egui::Layout::left_to_right(egui::Align::Center)));
+        let mut child =
+            ui.new_child(UiBuilder::new().max_rect(te_rect).layout(egui::Layout::left_to_right(egui::Align::Center)));
         let row_h = ui.fonts_mut(|f| f.row_height(&FontId::proportional(13.0)));
         let my = ((te_rect.height() - row_h) / 2.0).max(0.0) as i8;
         let te = egui::TextEdit::singleline(self.url)
@@ -469,11 +553,16 @@ impl<'a> WebPreview<'a> {
             let head = (time * 0.7).fract();
             let x0 = lb.min.x + lb.width() * (head * 1.4 - 0.4).max(0.0);
             let x1 = lb.min.x + lb.width() * (head * 1.4).min(1.0);
-            ui.painter().rect_filled(Rect::from_min_max(pos2(x0, lb.min.y), pos2(x1, lb.max.y)), CornerRadius::same(1), t.accent);
+            ui.painter().rect_filled(
+                Rect::from_min_max(pos2(x0, lb.min.y), pos2(x1, lb.max.y)),
+                CornerRadius::same(1),
+                t.accent,
+            );
             glowkit_core::animate(ui);
         }
         let body = Rect::from_min_max(pos2(rect.min.x + 1.0, bar.max.y + 1.0), rect.max - vec2(1.0, 1.0));
-        let mut child = ui.new_child(UiBuilder::new().max_rect(body.shrink(0.0)).layout(egui::Layout::top_down(egui::Align::Min)));
+        let mut child =
+            ui.new_child(UiBuilder::new().max_rect(body.shrink(0.0)).layout(egui::Layout::top_down(egui::Align::Min)));
         child.set_clip_rect(body.intersect(ui.clip_rect()));
         content(&mut child);
         ui.painter().rect_stroke(rect, cr, Stroke::new(1.0, t.border), StrokeKind::Inside);

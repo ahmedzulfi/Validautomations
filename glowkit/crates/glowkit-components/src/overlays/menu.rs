@@ -125,7 +125,10 @@ impl MenuEntry {
     }
     fn text(&self) -> &str {
         match self {
-            MenuEntry::Item { label, .. } | MenuEntry::Checkbox { label, .. } | MenuEntry::Radio { label, .. } | MenuEntry::Submenu { label, .. } => label,
+            MenuEntry::Item { label, .. }
+            | MenuEntry::Checkbox { label, .. }
+            | MenuEntry::Radio { label, .. }
+            | MenuEntry::Submenu { label, .. } => label,
             MenuEntry::Label(l) => l,
             MenuEntry::Separator => "",
         }
@@ -161,7 +164,15 @@ pub(crate) struct MenuOutcome {
 }
 
 fn has_icons(entries: &[MenuEntry]) -> bool {
-    entries.iter().any(|e| matches!(e, MenuEntry::Item { icon: Some(_), .. } | MenuEntry::Submenu { icon: Some(_), .. } | MenuEntry::Checkbox { .. } | MenuEntry::Radio { .. }))
+    entries.iter().any(|e| {
+        matches!(
+            e,
+            MenuEntry::Item { icon: Some(_), .. }
+                | MenuEntry::Submenu { icon: Some(_), .. }
+                | MenuEntry::Checkbox { .. }
+                | MenuEntry::Radio { .. }
+        )
+    })
 }
 
 fn measure(ctx: &Context, entries: &[MenuEntry]) -> Vec2Size {
@@ -169,9 +180,15 @@ fn measure(ctx: &Context, entries: &[MenuEntry]) -> Vec2Size {
     let mut w: f32 = 0.0;
     let mut h = 8.0;
     for e in entries {
-        let tw = ctx.fonts_mut(|f| f.layout_no_wrap(e.text().to_owned(), FontId::proportional(13.5), egui::Color32::WHITE).size().x);
+        let tw = ctx.fonts_mut(|f| {
+            f.layout_no_wrap(e.text().to_owned(), FontId::proportional(13.5), egui::Color32::WHITE).size().x
+        });
         let extra = match e {
-            MenuEntry::Item { shortcut: Some(s), .. } => ctx.fonts_mut(|f| f.layout_no_wrap(s.clone(), FontId::proportional(11.5), egui::Color32::WHITE).size().x) + 28.0,
+            MenuEntry::Item { shortcut: Some(s), .. } => {
+                ctx.fonts_mut(|f| {
+                    f.layout_no_wrap(s.clone(), FontId::proportional(11.5), egui::Color32::WHITE).size().x
+                }) + 28.0
+            }
             MenuEntry::Submenu { .. } => 30.0,
             _ => 12.0,
         };
@@ -241,7 +258,13 @@ pub(crate) fn menu_panel(
                 let n = selectable.len() as i32;
                 let next = match cur {
                     Some(c) => (c as i32 + d).rem_euclid(n),
-                    None => if d > 0 { 0 } else { n - 1 },
+                    None => {
+                        if d > 0 {
+                            0
+                        } else {
+                            n - 1
+                        }
+                    }
                 };
                 st.hover = Some(selectable[next as usize]);
                 st.sub_open = None;
@@ -295,78 +318,115 @@ pub(crate) fn menu_panel(
     let mut clicked: Option<usize> = activate_kb;
     let mut hovered_now: Option<usize> = None;
     let prev_hover = st.hover;
-    let layer = kit::float_layer(ctx, id, Order::Foreground, rect.expand(16.0), clip, 0.96 + 0.04 * pop, origin, p, |ui| {
-        ui.interact(rect, id.with("block"), Sense::click());
-        let pnt = ui.painter().clone();
-        kit::panel(&pnt, rect, &t, t.radius * 0.8);
-        if !hl_y.is_nan() && hl_a > 0.01 {
-            if let Some(h) = prev_hover {
-                let hr = Rect::from_min_size(pos2(rect.min.x + 4.0, hl_y), vec2(rect.width() - 8.0, rows[h].1.height()));
-                let destructive = matches!(entries[h], MenuEntry::Item { destructive: true, .. });
-                let fill = if destructive { with_alpha(t.destructive, 0.12) } else { kit::row_highlight(&t) };
-                pnt.rect_filled(hr, t.radius * 0.5, fill.gamma_multiply(hl_a));
-            }
-        }
-        for (i, r) in &rows {
-            let e = &entries[*i];
-            let resp = if e.selectable() { Some(ui.interact(*r, id.with(("row", *i)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand)) } else { None };
-            if let Some(resp) = &resp {
-                if resp.hovered() && ui.input(|inp| inp.pointer.delta() != egui::Vec2::ZERO || inp.pointer.any_pressed()) {
-                    hovered_now = Some(*i);
-                }
-                if resp.clicked() {
-                    clicked = Some(*i);
+    let layer =
+        kit::float_layer(ctx, id, Order::Foreground, rect.expand(16.0), clip, 0.96 + 0.04 * pop, origin, p, |ui| {
+            ui.interact(rect, id.with("block"), Sense::click());
+            let pnt = ui.painter().clone();
+            kit::panel(&pnt, rect, &t, t.radius * 0.8);
+            if !hl_y.is_nan() && hl_a > 0.01 {
+                if let Some(h) = prev_hover {
+                    let hr =
+                        Rect::from_min_size(pos2(rect.min.x + 4.0, hl_y), vec2(rect.width() - 8.0, rows[h].1.height()));
+                    let destructive = matches!(entries[h], MenuEntry::Item { destructive: true, .. });
+                    let fill = if destructive { with_alpha(t.destructive, 0.12) } else { kit::row_highlight(&t) };
+                    pnt.rect_filled(hr, t.radius * 0.5, fill.gamma_multiply(hl_a));
                 }
             }
-            let fg = t.foreground;
-            let text_pos = pos2(r.min.x + lead, r.center().y);
-            match e {
-                MenuEntry::Separator => {
-                    let yy = r.center().y;
-                    pnt.line_segment([pos2(rect.min.x, yy), pos2(rect.max.x, yy)], Stroke::new(1.0, t.border));
-                }
-                MenuEntry::Label(l) => {
-                    pnt.text(pos2(r.min.x + 10.0, r.center().y), Align2::LEFT_CENTER, l, FontId::proportional(12.5), t.muted_foreground);
-                }
-                MenuEntry::Item { label, icon, shortcut, destructive, disabled } => {
-                    let col = if *disabled {
-                        with_alpha(t.muted_foreground, 0.5)
-                    } else if *destructive {
-                        t.destructive
-                    } else {
-                        fg
-                    };
-                    if let Some(ic) = icon {
-                        let icol = if *destructive || *disabled { col } else { t.muted_foreground.lerp_to_gamma(fg, if prev_hover == Some(*i) { 1.0 } else { 0.0 }) };
-                        ic.paint(&pnt, Rect::from_center_size(pos2(r.min.x + 17.0, r.center().y), vec2(15.0, 15.0)), icol);
+            for (i, r) in &rows {
+                let e = &entries[*i];
+                let resp = if e.selectable() {
+                    Some(
+                        ui.interact(*r, id.with(("row", *i)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand),
+                    )
+                } else {
+                    None
+                };
+                if let Some(resp) = &resp {
+                    if resp.hovered()
+                        && ui.input(|inp| inp.pointer.delta() != egui::Vec2::ZERO || inp.pointer.any_pressed())
+                    {
+                        hovered_now = Some(*i);
                     }
-                    pnt.text(text_pos, Align2::LEFT_CENTER, label, FontId::proportional(13.5), col);
-                    if let Some(s) = shortcut {
-                        kit::shortcut_text(&pnt, pos2(r.max.x - 10.0, r.center().y), s, &t);
+                    if resp.clicked() {
+                        clicked = Some(*i);
                     }
                 }
-                MenuEntry::Checkbox { label, checked } => {
-                    if *checked {
-                        LineIcon::Check.paint_with(&pnt, Rect::from_center_size(pos2(r.min.x + 17.0, r.center().y), vec2(14.0, 14.0)), fg, 1.7);
+                let fg = t.foreground;
+                let text_pos = pos2(r.min.x + lead, r.center().y);
+                match e {
+                    MenuEntry::Separator => {
+                        let yy = r.center().y;
+                        pnt.line_segment([pos2(rect.min.x, yy), pos2(rect.max.x, yy)], Stroke::new(1.0, t.border));
                     }
-                    pnt.text(text_pos, Align2::LEFT_CENTER, label, FontId::proportional(13.5), fg);
-                }
-                MenuEntry::Radio { label, selected } => {
-                    if *selected {
-                        pnt.circle_filled(pos2(r.min.x + 17.0, r.center().y), 3.5, fg);
+                    MenuEntry::Label(l) => {
+                        pnt.text(
+                            pos2(r.min.x + 10.0, r.center().y),
+                            Align2::LEFT_CENTER,
+                            l,
+                            FontId::proportional(12.5),
+                            t.muted_foreground,
+                        );
                     }
-                    pnt.text(text_pos, Align2::LEFT_CENTER, label, FontId::proportional(13.5), fg);
-                }
-                MenuEntry::Submenu { label, icon, .. } => {
-                    if let Some(ic) = icon {
-                        ic.paint(&pnt, Rect::from_center_size(pos2(r.min.x + 17.0, r.center().y), vec2(15.0, 15.0)), t.muted_foreground);
+                    MenuEntry::Item { label, icon, shortcut, destructive, disabled } => {
+                        let col = if *disabled {
+                            with_alpha(t.muted_foreground, 0.5)
+                        } else if *destructive {
+                            t.destructive
+                        } else {
+                            fg
+                        };
+                        if let Some(ic) = icon {
+                            let icol = if *destructive || *disabled {
+                                col
+                            } else {
+                                t.muted_foreground.lerp_to_gamma(fg, if prev_hover == Some(*i) { 1.0 } else { 0.0 })
+                            };
+                            ic.paint(
+                                &pnt,
+                                Rect::from_center_size(pos2(r.min.x + 17.0, r.center().y), vec2(15.0, 15.0)),
+                                icol,
+                            );
+                        }
+                        pnt.text(text_pos, Align2::LEFT_CENTER, label, FontId::proportional(13.5), col);
+                        if let Some(s) = shortcut {
+                            kit::shortcut_text(&pnt, pos2(r.max.x - 10.0, r.center().y), s, &t);
+                        }
                     }
-                    pnt.text(text_pos, Align2::LEFT_CENTER, label, FontId::proportional(13.5), fg);
-                    LineIcon::ChevronRight.paint(&pnt, Rect::from_center_size(pos2(r.max.x - 14.0, r.center().y), vec2(14.0, 14.0)), t.muted_foreground);
+                    MenuEntry::Checkbox { label, checked } => {
+                        if *checked {
+                            LineIcon::Check.paint_with(
+                                &pnt,
+                                Rect::from_center_size(pos2(r.min.x + 17.0, r.center().y), vec2(14.0, 14.0)),
+                                fg,
+                                1.7,
+                            );
+                        }
+                        pnt.text(text_pos, Align2::LEFT_CENTER, label, FontId::proportional(13.5), fg);
+                    }
+                    MenuEntry::Radio { label, selected } => {
+                        if *selected {
+                            pnt.circle_filled(pos2(r.min.x + 17.0, r.center().y), 3.5, fg);
+                        }
+                        pnt.text(text_pos, Align2::LEFT_CENTER, label, FontId::proportional(13.5), fg);
+                    }
+                    MenuEntry::Submenu { label, icon, .. } => {
+                        if let Some(ic) = icon {
+                            ic.paint(
+                                &pnt,
+                                Rect::from_center_size(pos2(r.min.x + 17.0, r.center().y), vec2(15.0, 15.0)),
+                                t.muted_foreground,
+                            );
+                        }
+                        pnt.text(text_pos, Align2::LEFT_CENTER, label, FontId::proportional(13.5), fg);
+                        LineIcon::ChevronRight.paint(
+                            &pnt,
+                            Rect::from_center_size(pos2(r.max.x - 14.0, r.center().y), vec2(14.0, 14.0)),
+                            t.muted_foreground,
+                        );
+                    }
                 }
             }
-        }
-    });
+        });
     let _ = layer;
     ctx.move_to_top(egui::LayerId::new(Order::Foreground, id));
 
@@ -381,7 +441,10 @@ pub(crate) fn menu_panel(
     }
     // pointer left the panel (and no submenu open): clear hover so the highlight fades out
     let pointer = ctx.pointer_hover_pos();
-    if st.sub_open.is_none() && pointer.is_some_and(|pp| !rect.contains(pp)) && ctx.input(|i| i.pointer.delta() != egui::Vec2::ZERO) {
+    if st.sub_open.is_none()
+        && pointer.is_some_and(|pp| !rect.contains(pp))
+        && ctx.input(|i| i.pointer.delta() != egui::Vec2::ZERO)
+    {
         st.hover = None;
     }
     if let Some(c) = clicked {
@@ -412,7 +475,19 @@ pub(crate) fn menu_panel(
         if sp > 0.01 {
             if let MenuEntry::Submenu { entries: children, .. } = &entries[si] {
                 let row = rows[si].1;
-                let sub_out = menu_panel(ctx, sub_id.with(si), row, true, children, sp * p, sp, keyboard && st.sub_focus, bounds, clip, 0.0);
+                let sub_out = menu_panel(
+                    ctx,
+                    sub_id.with(si),
+                    row,
+                    true,
+                    children,
+                    sp * p,
+                    sp,
+                    keyboard && st.sub_focus,
+                    bounds,
+                    clip,
+                    0.0,
+                );
                 if sub_out.key_left || (sub_out.close && sub_out.activated.is_none()) {
                     st.sub_open = None;
                     st.sub_focus = false;
@@ -559,7 +634,10 @@ impl ContextMenu {
         let ctx = response.ctx.clone();
         let id = response.id.with("glowkit_ctxmenu");
         let (mut open, mut pos) = ctx.data_mut(|d| {
-            (d.get_temp::<bool>(response.id.with("glowkit_ctx_open")).unwrap_or(false), d.get_temp::<Pos2>(response.id.with("glowkit_ctx_pos")))
+            (
+                d.get_temp::<bool>(response.id.with("glowkit_ctx_open")).unwrap_or(false),
+                d.get_temp::<Pos2>(response.id.with("glowkit_ctx_pos")),
+            )
         });
         let mut just_opened = false;
         if response.secondary_clicked() || response.long_touched() {

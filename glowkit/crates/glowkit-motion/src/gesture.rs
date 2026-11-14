@@ -266,7 +266,8 @@ impl Draggable {
 
     /// Current offset and whether it is being dragged, for the draggable stored under `id`.
     pub fn state(ui: &Ui, id: Id) -> (Vec2, bool) {
-        ui.data(|d| d.get_temp::<DragState>(id.with("glowkit_drag"))).map_or((Vec2::ZERO, false), |s| (s.offset.get(), s.dragging))
+        ui.data(|d| d.get_temp::<DragState>(id.with("glowkit_drag")))
+            .map_or((Vec2::ZERO, false), |s| (s.offset.get(), s.dragging))
     }
 
     /// Show the contents.
@@ -289,8 +290,11 @@ impl Draggable {
             if let (Some(p), true) = (pointer, down) {
                 st.tracker.push(now, p);
                 let raw = st.start_offset + self.axis.mask(p - st.grab);
-                let (lo, hi) = st.rest.map_or((Vec2::splat(f32::NEG_INFINITY), Vec2::splat(f32::INFINITY)), |r| self.offset_limits(r));
-                let off = vec2(rubber_band(raw.x, lo.x, hi.x, self.elastic), rubber_band(raw.y, lo.y, hi.y, self.elastic));
+                let (lo, hi) = st
+                    .rest
+                    .map_or((Vec2::splat(f32::NEG_INFINITY), Vec2::splat(f32::INFINITY)), |r| self.offset_limits(r));
+                let off =
+                    vec2(rubber_band(raw.x, lo.x, hi.x, self.elastic), rubber_band(raw.y, lo.y, hi.y, self.elastic));
                 let v = self.axis.mask(st.tracker.velocity());
                 st.offset.set_with_velocity(off, v);
             }
@@ -309,7 +313,12 @@ impl Draggable {
         }
         let gesture = animate(ui, self.id.with("glowkit_drag_gesture"), gesture, Transition::SNAPPY);
         let props = gesture.then(Props::new().offset(offset));
-        let ir = layered(ui, self.id, LayerSpec { props, origin: Align2::CENTER_CENTER, sense: Sense::drag(), space: Space::Normal }, add_contents);
+        let ir = layered(
+            ui,
+            self.id,
+            LayerSpec { props, origin: Align2::CENTER_CENTER, sense: Sense::drag(), space: Space::Normal },
+            add_contents,
+        );
         let resp = ir.response;
         st.rest = Some(resp.rect);
         ui.data_mut(|d| d.insert_temp(self.id.with("glowkit_drag_hover"), resp.contains_pointer()));
@@ -353,7 +362,13 @@ impl Draggable {
         if resp.contains_pointer() || st.dragging {
             ui.ctx().set_cursor_icon(if st.dragging { egui::CursorIcon::Grabbing } else { egui::CursorIcon::Grab });
         }
-        let out = DragResponse { inner: ir.inner, response: resp, offset, dragging: st.dragging, velocity: st.offset.velocity() };
+        let out = DragResponse {
+            inner: ir.inner,
+            response: resp,
+            offset,
+            dragging: st.dragging,
+            velocity: st.offset.velocity(),
+        };
         ui.data_mut(|d| d.insert_temp(skey, st));
         out
     }
@@ -404,7 +419,13 @@ pub struct Reorder {
 impl Reorder {
     /// A reorderable list stored under `id`.
     pub fn new(id: Id) -> Self {
-        Self { id, item_height: 44.0, gap: 8.0, transition: Transition::spring(420.0, 34.0), lift: Props::new().scale(1.03) }
+        Self {
+            id,
+            item_height: 44.0,
+            gap: 8.0,
+            transition: Transition::spring(420.0, 34.0),
+            lift: Props::new().scale(1.03),
+        }
     }
     /// Height of every row.
     pub fn item_height(mut self, h: f32) -> Self {
@@ -428,7 +449,13 @@ impl Reorder {
     }
 
     /// Show the list. Returns `true` if the order changed this frame.
-    pub fn show<T, K: Hash + std::fmt::Debug>(self, ui: &mut Ui, items: &mut [T], key: impl Fn(&T) -> K, mut add: impl FnMut(&mut Ui, &T, ReorderItem)) -> bool {
+    pub fn show<T, K: Hash + std::fmt::Debug>(
+        self,
+        ui: &mut Ui,
+        items: &mut [T],
+        key: impl Fn(&T) -> K,
+        mut add: impl FnMut(&mut Ui, &T, ReorderItem),
+    ) -> bool {
         let dkey = self.id.with("glowkit_reorder_drag");
         let mut drag: Option<ReorderDrag> = ui.data(|d| d.get_temp(dkey));
         let width = ui.available_width();
@@ -449,7 +476,8 @@ impl Reorder {
             dr.tracker.push(now, p);
             if let Some(mut i) = keys.iter().position(|k| *k == dr.key) {
                 let center = p.y - dr.grab_dy - origin.y + self.item_height / 2.0;
-                let slot = ((center - self.item_height / 2.0) / pitch).round().clamp(0.0, n.saturating_sub(1) as f32) as usize;
+                let slot =
+                    ((center - self.item_height / 2.0) / pitch).round().clamp(0.0, n.saturating_sub(1) as f32) as usize;
                 while i < slot {
                     items.swap(i, i + 1);
                     i += 1;
@@ -480,7 +508,8 @@ impl Reorder {
             let mut mv: MotionValue<f32> = ui.data(|d| d.get_temp(ykey)).unwrap_or(MotionValue::new(slot_y));
             if is_drag {
                 if let (Some(p), Some(dr)) = (pointer, drag) {
-                    let y = (p.y - dr.grab_dy - origin.y).clamp(-self.item_height * 0.5, total.height() - self.item_height * 0.5);
+                    let y = (p.y - dr.grab_dy - origin.y)
+                        .clamp(-self.item_height * 0.5, total.height() - self.item_height * 0.5);
                     mv.set_with_velocity(y, dr.tracker.velocity().y);
                 }
             } else {
@@ -503,7 +532,12 @@ impl Reorder {
             if resp.hovered() || is_drag {
                 ui.ctx().set_cursor_icon(if is_drag { egui::CursorIcon::Grabbing } else { egui::CursorIcon::Grab });
             }
-            let lift = animate(ui, k.with("glowkit_reorder_lift"), if is_drag { self.lift } else { Props::IDENTITY }, Transition::SNAPPY);
+            let lift = animate(
+                ui,
+                k.with("glowkit_reorder_lift"),
+                if is_drag { self.lift } else { Props::IDENTITY },
+                Transition::SNAPPY,
+            );
             let state = ReorderItem { index: i, dragging: is_drag, moving, rect };
             let layer_ui_id = k.with("glowkit_reorder_item");
             if is_drag || moving || lift != Props::IDENTITY {
@@ -511,7 +545,17 @@ impl Reorder {
                 child.set_clip_rect(ui.clip_rect());
                 if is_drag || lift != Props::IDENTITY {
                     // the dragged row gets its own transformed layer so it can scale
-                    layered(&mut child, layer_ui_id, LayerSpec { props: lift, origin: Align2::CENTER_CENTER, sense: Sense::hover(), space: Space::Normal }, |ui| add(ui, item, state));
+                    layered(
+                        &mut child,
+                        layer_ui_id,
+                        LayerSpec {
+                            props: lift,
+                            origin: Align2::CENTER_CENTER,
+                            sense: Sense::hover(),
+                            space: Space::Normal,
+                        },
+                        |ui| add(ui, item, state),
+                    );
                 } else {
                     add(&mut child, item, state);
                 }

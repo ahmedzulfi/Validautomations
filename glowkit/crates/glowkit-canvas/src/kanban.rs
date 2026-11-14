@@ -1,7 +1,10 @@
 //! [`KanbanBoard`]: columns of cards with spring-animated drag and drop.
 
 use crate::common::{self, avatar, icon_button, qfont, Icon};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, Id, Pos2, Rect, Sense, Stroke, StrokeKind, TextEdit, Ui, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, Id, Pos2, Rect, Sense, Stroke, StrokeKind, TextEdit, Ui,
+    Vec2,
+};
 use glowkit_core::{color::with_alpha, paint, Spring, Theme};
 use std::collections::HashMap;
 
@@ -268,7 +271,9 @@ impl<'a> KanbanBoard<'a> {
                 }
             }
             if best.is_none() {
-                best = (0..board.columns.len()).min_by(|a, b| (col_rect(*a).center().x - center.x).abs().total_cmp(&(col_rect(*b).center().x - center.x).abs()));
+                best = (0..board.columns.len()).min_by(|a, b| {
+                    (col_rect(*a).center().x - center.x).abs().total_cmp(&(col_rect(*b).center().x - center.x).abs())
+                });
             }
             if let Some(k) = best {
                 let col = &board.columns[k];
@@ -285,7 +290,14 @@ impl<'a> KanbanBoard<'a> {
                 st.target = Some((k, idx));
             }
         }
-        let drag_h = dragging.as_ref().and_then(|d| board.find(d.card).map(|(ci, ki)| Self::card_height(&painter, &board.columns[ci].cards[ki], column_width - PAD * 2.0))).unwrap_or(0.0);
+        let drag_h = dragging
+            .as_ref()
+            .and_then(|d| {
+                board
+                    .find(d.card)
+                    .map(|(ci, ki)| Self::card_height(&painter, &board.columns[ci].cards[ki], column_width - PAD * 2.0))
+            })
+            .unwrap_or(0.0);
 
         // ---- columns
         let mut start_drag: Option<Drag> = None;
@@ -299,8 +311,17 @@ impl<'a> KanbanBoard<'a> {
             let over = col.over_limit();
             let is_target = st.target.is_some_and(|tg| tg.0 == k) && dragging.is_some();
             let tk = ui.ctx().animate_bool_with_time(id.with(("tgt", col.id)), is_target, 0.15);
-            let fill = col_fill.lerp_to_gamma(with_alpha(if over { t.destructive } else { t.accent }, 0.10), tk * 0.6 + if over { 0.25 } else { 0.0 });
-            painter.rect(r, CornerRadius::same(12), fill, Stroke::new(1.0, t.border.lerp_to_gamma(if over { t.destructive } else { t.accent }, tk * 0.7)), StrokeKind::Inside);
+            let fill = col_fill.lerp_to_gamma(
+                with_alpha(if over { t.destructive } else { t.accent }, 0.10),
+                tk * 0.6 + if over { 0.25 } else { 0.0 },
+            );
+            painter.rect(
+                r,
+                CornerRadius::same(12),
+                fill,
+                Stroke::new(1.0, t.border.lerp_to_gamma(if over { t.destructive } else { t.accent }, tk * 0.7)),
+                StrokeKind::Inside,
+            );
             let w = xs[k].1;
             let collapsed_k = ((column_width - w) / (column_width - 48.0)).clamp(0.0, 1.0);
             if collapsed_k > 0.5 {
@@ -311,7 +332,14 @@ impl<'a> KanbanBoard<'a> {
                 }
                 painter.circle_filled(pos2(r.center().x, r.top() + 50.0), 4.0, col.color);
                 let txt = format!("{}  ·  {}", col.title, col.cards.len());
-                glowkit_core::text::paint_rotated(&painter, &txt, pos2(r.center().x, r.top() + 64.0 + txt.len() as f32 * 3.6), qfont(13.0), t.foreground, std::f32::consts::FRAC_PI_2);
+                glowkit_core::text::paint_rotated(
+                    &painter,
+                    &txt,
+                    pos2(r.center().x, r.top() + 64.0 + txt.len() as f32 * 3.6),
+                    qfont(13.0),
+                    t.foreground,
+                    std::f32::consts::FRAC_PI_2,
+                );
                 continue;
             }
             let cp = painter.with_clip_rect(r.intersect(rect));
@@ -354,7 +382,9 @@ impl<'a> KanbanBoard<'a> {
                 }
                 let h = Self::card_height(&cp, card, cw);
                 let target = pos2(r.left() + PAD, y) - origin;
-                let sp = st.springs.entry(card.id).or_insert_with(|| (Spring::new(target.x).with(420.0, 34.0), Spring::new(target.y).with(420.0, 34.0)));
+                let sp = st.springs.entry(card.id).or_insert_with(|| {
+                    (Spring::new(target.x).with(420.0, 34.0), Spring::new(target.y).with(420.0, 34.0))
+                });
                 sp.0.target = target.x;
                 sp.1.target = target.y;
                 sp.0.step(dt);
@@ -370,7 +400,11 @@ impl<'a> KanbanBoard<'a> {
                     continue;
                 }
                 let resp = ui.interact(cr.intersect(r), id.with(("card", card.id)), Sense::click_and_drag());
-                let hov = ui.ctx().animate_bool_with_time(id.with(("ch", card.id)), resp.hovered() && dragging.is_none(), 0.12);
+                let hov = ui.ctx().animate_bool_with_time(
+                    id.with(("ch", card.id)),
+                    resp.hovered() && dragging.is_none(),
+                    0.12,
+                );
                 if resp.hovered() && dragging.is_none() {
                     ui.ctx().set_cursor_icon(CursorIcon::Grab);
                 }
@@ -389,7 +423,14 @@ impl<'a> KanbanBoard<'a> {
                 if *cid == col.id {
                     let ar = Rect::from_min_size(pos2(r.left() + PAD, y), vec2(cw, 64.0));
                     cp.rect(ar, CornerRadius::same(9), card_fill, Stroke::new(1.5, t.accent), StrokeKind::Inside);
-                    let te = ui.put(ar.shrink2(vec2(10.0, 8.0)), TextEdit::multiline(text).frame(egui::Frame::NONE).font(qfont(13.0)).hint_text("Card title… (Enter to add)").desired_rows(2));
+                    let te = ui.put(
+                        ar.shrink2(vec2(10.0, 8.0)),
+                        TextEdit::multiline(text)
+                            .frame(egui::Frame::NONE)
+                            .font(qfont(13.0))
+                            .hint_text("Card title… (Enter to add)")
+                            .desired_rows(2),
+                    );
                     if *focus {
                         te.request_focus();
                         *focus = false;
@@ -404,7 +445,13 @@ impl<'a> KanbanBoard<'a> {
                             let nid = board_next_id(board);
                             let ci = k;
                             // spawn the spring at the input position so it settles in nicely
-                            st.springs.insert(nid, (Spring::new(ar.min.x - origin.x).with(420.0, 34.0), Spring::new(ar.min.y - origin.y + 8.0).with(420.0, 34.0)));
+                            st.springs.insert(
+                                nid,
+                                (
+                                    Spring::new(ar.min.x - origin.x).with(420.0, 34.0),
+                                    Spring::new(ar.min.y - origin.y + 8.0).with(420.0, 34.0),
+                                ),
+                            );
                             pending_add(ui, id, ci, cid, nid, title);
                         }
                     }
@@ -418,8 +465,19 @@ impl<'a> KanbanBoard<'a> {
                     let resp = ui.interact(fr, id.with(("foot", col.id)), Sense::click());
                     let h = ui.ctx().animate_bool_with_time(id.with(("fh", col.id)), resp.hovered(), 0.12);
                     cp.rect_filled(fr, CornerRadius::same(8), with_alpha(t.foreground, 0.05 * h));
-                    common::paint_icon(&cp, Rect::from_center_size(pos2(fr.left() + 16.0, fr.center().y), Vec2::splat(12.0)), Icon::Plus, t.muted_foreground.lerp_to_gamma(t.foreground, h));
-                    cp.text(pos2(fr.left() + 30.0, fr.center().y), Align2::LEFT_CENTER, "Add card", qfont(12.5), t.muted_foreground.lerp_to_gamma(t.foreground, h));
+                    common::paint_icon(
+                        &cp,
+                        Rect::from_center_size(pos2(fr.left() + 16.0, fr.center().y), Vec2::splat(12.0)),
+                        Icon::Plus,
+                        t.muted_foreground.lerp_to_gamma(t.foreground, h),
+                    );
+                    cp.text(
+                        pos2(fr.left() + 30.0, fr.center().y),
+                        Align2::LEFT_CENTER,
+                        "Add card",
+                        qfont(12.5),
+                        t.muted_foreground.lerp_to_gamma(t.foreground, h),
+                    );
                     if resp.on_hover_cursor(CursorIcon::PointingHand).clicked() {
                         start_add = Some(col.id);
                     }
@@ -454,7 +512,10 @@ impl<'a> KanbanBoard<'a> {
                 let card = board.columns[ci].cards[ki].clone();
                 let h = Self::card_height(&painter, &card, d.width);
                 let cr = Rect::from_min_size(d.pos - d.grab, vec2(d.width, h));
-                let lp = ui.ctx().layer_painter(egui::LayerId::new(egui::Order::Tooltip, id.with("drag"))).with_clip_rect(rect.expand(30.0));
+                let lp = ui
+                    .ctx()
+                    .layer_painter(egui::LayerId::new(egui::Order::Tooltip, id.with("drag")))
+                    .with_clip_rect(rect.expand(30.0));
                 paint_card(&lp, &t, &card, cr, card_fill, 1.0, 1.0);
                 if released {
                     if let Some((tc, ti)) = st.target {
@@ -466,7 +527,8 @@ impl<'a> KanbanBoard<'a> {
                     }
                     // the drop animation: start the spring from where the card was released
                     let rel = cr.min - origin;
-                    st.springs.insert(d.card, (Spring::new(rel.x).with(380.0, 30.0), Spring::new(rel.y).with(380.0, 30.0)));
+                    st.springs
+                        .insert(d.card, (Spring::new(rel.x).with(380.0, 30.0), Spring::new(rel.y).with(380.0, 30.0)));
                     st.drag = None;
                     st.target = None;
                     ui.ctx().request_repaint();
@@ -483,7 +545,11 @@ impl<'a> KanbanBoard<'a> {
             let _ = bg;
             let bar_w = rect.width() * rect.width() / total;
             let bx = rect.left() + (rect.width() - bar_w) * (st.scroll / max_scroll);
-            painter.rect_filled(Rect::from_min_size(pos2(bx, rect.bottom() - 4.0), vec2(bar_w, 3.0)), CornerRadius::same(2), with_alpha(t.muted_foreground, 0.35));
+            painter.rect_filled(
+                Rect::from_min_size(pos2(bx, rect.bottom() - 4.0), vec2(bar_w, 3.0)),
+                CornerRadius::same(2),
+                with_alpha(t.muted_foreground, 0.35),
+            );
         }
         changed
     }
@@ -510,11 +576,22 @@ fn paint_placeholder(p: &egui::Painter, t: &Theme, r: Rect) {
 
 fn paint_card(p: &egui::Painter, t: &Theme, c: &Card, r: Rect, fill: Color32, hov: f32, lifted: f32) {
     let shadow_a = if t.dark { 90.0 + 80.0 * lifted } else { 18.0 + 30.0 * lifted };
-    paint::soft_shadow(p, r.translate(vec2(0.0, 1.0 + 6.0 * lifted)), 9.0, 6.0 + 4.0 * hov + 18.0 * lifted, vec2(0.0, 2.0 + 6.0 * lifted), Color32::from_black_alpha(shadow_a as u8));
+    paint::soft_shadow(
+        p,
+        r.translate(vec2(0.0, 1.0 + 6.0 * lifted)),
+        9.0,
+        6.0 + 4.0 * hov + 18.0 * lifted,
+        vec2(0.0, 2.0 + 6.0 * lifted),
+        Color32::from_black_alpha(shadow_a as u8),
+    );
     let border = t.border.lerp_to_gamma(t.muted_foreground, 0.35 * hov).lerp_to_gamma(t.accent, lifted * 0.8);
     p.rect(r, CornerRadius::same(9), fill, Stroke::new(1.0, border), StrokeKind::Inside);
     if let Some(pc) = c.priority {
-        p.rect_filled(Rect::from_min_size(r.min + vec2(0.0, 10.0), vec2(3.0, r.height() - 20.0)), CornerRadius::same(2), pc);
+        p.rect_filled(
+            Rect::from_min_size(r.min + vec2(0.0, 10.0), vec2(3.0, r.height() - 20.0)),
+            CornerRadius::same(2),
+            pc,
+        );
     }
     let mut y = r.top() + 12.0;
     if !c.labels.is_empty() {
@@ -562,7 +639,11 @@ mod tests {
     fn board() -> Board {
         Board {
             columns: vec![
-                Column::new(1, "A", Color32::RED).cards(vec![Card::new(1, "one"), Card::new(2, "two"), Card::new(3, "three")]),
+                Column::new(1, "A", Color32::RED).cards(vec![
+                    Card::new(1, "one"),
+                    Card::new(2, "two"),
+                    Card::new(3, "three"),
+                ]),
                 Column::new(2, "B", Color32::BLUE).wip(1).cards(vec![Card::new(4, "four")]),
             ],
         }

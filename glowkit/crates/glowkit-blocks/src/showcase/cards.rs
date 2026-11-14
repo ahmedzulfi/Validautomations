@@ -1,6 +1,9 @@
 use super::util::{bold_text, galley_fine, idle_time, rounded_grid};
 use egui::epaint::Mesh;
-use egui::{pos2, vec2, Align2, Color32, FontId, Painter, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, FontId, Painter, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, Vec2,
+    Widget,
+};
 use glowkit_core::{anim::smoothstep, color::with_alpha, hex, mix, paint, rng::hash01, Theme};
 use std::f32::consts::TAU;
 
@@ -86,7 +89,10 @@ impl Widget for TextHoverEffect {
         let origin = rect.min + vec2(10.0, 5.0);
         let idle = idle_time(ui, resp.id, resp.hovered());
         let time = glowkit_core::time(ui);
-        let auto = pos2(rect.center().x + rect.width() * 0.42 * (time * 0.7).sin(), rect.center().y + rect.height() * 0.25 * (time * 1.3).cos());
+        let auto = pos2(
+            rect.center().x + rect.width() * 0.42 * (time * 0.7).sin(),
+            rect.center().y + rect.height() * 0.25 * (time * 1.3).cos(),
+        );
         let target = match resp.hover_pos() {
             Some(hp) => hp,
             None if self.autoplay && idle > 0.6 => auto,
@@ -98,17 +104,23 @@ impl Widget for TextHoverEffect {
         if self.autoplay {
             glowkit_core::animate(ui);
         }
-        let colors = if self.colors.is_empty() { vec![hex("#EAB308"), hex("#EF4444"), hex("#3B82F6"), hex("#06B6D4"), hex("#8B5CF6")] } else { self.colors.clone() };
+        let colors = if self.colors.is_empty() {
+            vec![hex("#EAB308"), hex("#EF4444"), hex("#3B82F6"), hex("#06B6D4"), hex("#8B5CF6")]
+        } else {
+            self.colors.clone()
+        };
         let radius = if self.radius > 0.0 { self.radius } else { rect.width() * 0.3 };
         let bg = self.background.unwrap_or(t.card);
         let p = ui.painter();
         let outline = if t.dark { mix(bg, t.foreground, 0.22) } else { mix(bg, t.foreground, 0.28) };
         let stroke_w = (self.size / 90.0).clamp(0.8, 2.2);
         let n_dirs = 12;
-        let offsets: Vec<Vec2> = (0..n_dirs).map(|i| {
-            let a = i as f32 / n_dirs as f32 * TAU;
-            vec2(a.cos(), a.sin()) * stroke_w
-        }).collect();
+        let offsets: Vec<Vec2> = (0..n_dirs)
+            .map(|i| {
+                let a = i as f32 / n_dirs as f32 * TAU;
+                vec2(a.cos(), a.sin()) * stroke_w
+            })
+            .collect();
         for o in &offsets {
             p.galley(origin + *o, gp.clone(), outline);
         }
@@ -170,7 +182,14 @@ pub struct DirectionAwareHover<'a> {
 impl<'a> DirectionAwareHover<'a> {
     /// A card showing a scene painted by `scene(painter, rect)`.
     pub fn new(scene: impl Fn(&Painter, Rect) + 'a) -> Self {
-        Self { scene: Box::new(scene), size: vec2(300.0, 300.0), title: String::new(), subtitle: String::new(), radius: 16.0, autoplay: true }
+        Self {
+            scene: Box::new(scene),
+            size: vec2(300.0, 300.0),
+            title: String::new(),
+            subtitle: String::new(),
+            radius: 16.0,
+            autoplay: true,
+        }
     }
     /// Card size in points.
     pub fn size(mut self, w: f32, h: f32) -> Self {
@@ -260,7 +279,13 @@ impl Widget for DirectionAwareHover<'_> {
         });
         let tp = pos2(ov.min.x + 22.0, ov.max.y - 50.0);
         bold_text(&p, tp, Align2::LEFT_BOTTOM, &self.title, FontId::proportional(20.0), Color32::WHITE);
-        p.text(tp + vec2(0.0, 8.0), Align2::LEFT_TOP, &self.subtitle, FontId::proportional(13.5), Color32::from_white_alpha(200));
+        p.text(
+            tp + vec2(0.0, 8.0),
+            Align2::LEFT_TOP,
+            &self.subtitle,
+            FontId::proportional(13.5),
+            Color32::from_white_alpha(200),
+        );
         resp
     }
 }
@@ -285,7 +310,14 @@ pub struct GlowingStarsCard {
 impl GlowingStarsCard {
     /// A card with a title and description.
     pub fn new(title: impl Into<String>, description: impl Into<String>) -> Self {
-        Self { title: title.into(), description: description.into(), size: vec2(320.0, 260.0), grid: (18, 6), color: None, autoplay: true }
+        Self {
+            title: title.into(),
+            description: description.into(),
+            size: vec2(320.0, 260.0),
+            grid: (18, 6),
+            color: None,
+            autoplay: true,
+        }
     }
     /// Card size.
     pub fn size(mut self, w: f32, h: f32) -> Self {
@@ -346,7 +378,10 @@ impl Widget for GlowingStarsCard {
                     (false, true) => smoothstep(0.0, 0.45, f),
                     (true, false) => 1.0 - smoothstep(0.0, 0.45, f),
                 };
-                let c = pos2(area.min.x + area.width() * (x as f32 + 0.5) / cols as f32, area.min.y + area.height() * (y as f32 + 0.5) / rows as f32);
+                let c = pos2(
+                    area.min.x + area.width() * (x as f32 + 0.5) / cols as f32,
+                    area.min.y + area.height() * (y as f32 + 0.5) / rows as f32,
+                );
                 let col = dim.lerp_to_gamma(glow_c, g);
                 super::util::mesh_dot(&mut m, c, 1.0 + g * 0.8, col);
                 if g > 0.05 {
@@ -359,8 +394,16 @@ impl Widget for GlowingStarsCard {
         }
         p.add(Shape::mesh(m));
         let ty = rect.max.y - 86.0;
-        bold_text(&p, pos2(rect.min.x + 24.0, ty), Align2::LEFT_TOP, &self.title, FontId::proportional(19.0), t.foreground);
-        let desc = p.layout(self.description.clone(), FontId::proportional(13.5), t.muted_foreground, rect.width() - 100.0);
+        bold_text(
+            &p,
+            pos2(rect.min.x + 24.0, ty),
+            Align2::LEFT_TOP,
+            &self.title,
+            FontId::proportional(19.0),
+            t.foreground,
+        );
+        let desc =
+            p.layout(self.description.clone(), FontId::proportional(13.5), t.muted_foreground, rect.width() - 100.0);
         p.galley(pos2(rect.min.x + 24.0, ty + 30.0), desc, t.muted_foreground);
         // arrow button
         let bc = pos2(rect.max.x - 38.0, rect.max.y - 40.0);
@@ -393,7 +436,14 @@ pub struct CanvasRevealCard {
 impl CanvasRevealCard {
     /// A card with a title and a big glyph icon.
     pub fn new(title: impl Into<String>, icon: impl Into<String>) -> Self {
-        Self { title: title.into(), icon: icon.into(), size: vec2(260.0, 340.0), colors: Vec::new(), dot: 3.0, autoplay: true }
+        Self {
+            title: title.into(),
+            icon: icon.into(),
+            size: vec2(260.0, 340.0),
+            colors: Vec::new(),
+            dot: 3.0,
+            autoplay: true,
+        }
     }
     /// Card size.
     pub fn size(mut self, w: f32, h: f32) -> Self {
@@ -431,7 +481,11 @@ impl Widget for CanvasRevealCard {
         let time = glowkit_core::time(ui);
         if hk > 0.01 {
             glowkit_core::animate(ui);
-            let colors = if self.colors.is_empty() { vec![t.chart[0], mix(t.chart[0], t.chart[1], 0.5)] } else { self.colors.clone() };
+            let colors = if self.colors.is_empty() {
+                vec![t.chart[0], mix(t.chart[0], t.chart[1], 0.5)]
+            } else {
+                self.colors.clone()
+            };
             let step = self.dot * 2.3;
             let cols = (rect.width() / step) as usize;
             let rows = (rect.height() / step) as usize;
@@ -458,13 +512,21 @@ impl Widget for CanvasRevealCard {
                     // ring at the wavefront is brighter
                     let edge = 1.0 + 0.8 * (1.0 - ((front - d) / 30.0).abs().min(1.0));
                     let a = (op * reveal * edge).min(1.0);
-                    super::util::mesh_rect(&mut m, Rect::from_center_size(q, Vec2::splat(self.dot)), with_alpha(col, a));
+                    super::util::mesh_rect(
+                        &mut m,
+                        Rect::from_center_size(q, Vec2::splat(self.dot)),
+                        with_alpha(col, a),
+                    );
                 }
             }
             p.add(Shape::mesh(m));
             // fade the top toward the card color for depth
             let top = Rect::from_min_size(rect.min, vec2(rect.width(), rect.height() * 0.45));
-            paint::quad(&p, [top.left_top(), top.right_top(), top.right_bottom(), top.left_bottom()], [with_alpha(bg, 0.85), with_alpha(bg, 0.85), with_alpha(bg, 0.0), with_alpha(bg, 0.0)]);
+            paint::quad(
+                &p,
+                [top.left_top(), top.right_top(), top.right_bottom(), top.left_bottom()],
+                [with_alpha(bg, 0.85), with_alpha(bg, 0.85), with_alpha(bg, 0.0), with_alpha(bg, 0.0)],
+            );
         }
         p.rect_stroke(rect, 0.0, Stroke::new(1.0, t.border), StrokeKind::Inside);
         // corner plus marks
@@ -480,7 +542,14 @@ impl Widget for CanvasRevealCard {
         let title_a = smoothstep(0.3, 1.0, hk);
         if title_a > 0.0 {
             let ty = rect.center().y + 44.0 - title_a * 8.0;
-            bold_text(&p, pos2(rect.center().x, ty), Align2::CENTER_CENTER, &self.title, FontId::proportional(20.0), with_alpha(t.foreground, title_a));
+            bold_text(
+                &p,
+                pos2(rect.center().x, ty),
+                Align2::CENTER_CENTER,
+                &self.title,
+                FontId::proportional(20.0),
+                with_alpha(t.foreground, title_a),
+            );
         }
         resp
     }
@@ -569,10 +638,15 @@ impl Widget for Pin3D {
             let s = persp / (persp - z);
             (pos2(c.x + dx * s, c.y + y * s), s)
         };
-        let outline: Vec<Pos2> = paint::subdivide_closed(&paint::rounded_rect_points(rect, 18.0, 6), 20.0).into_iter().map(|q| proj(q).0).collect();
+        let outline: Vec<Pos2> = paint::subdivide_closed(&paint::rounded_rect_points(rect, 18.0, 6), 20.0)
+            .into_iter()
+            .map(|q| proj(q).0)
+            .collect();
         let bg = if t.dark { hex("#0A0A0F") } else { hex("#FFFFFF") };
         let bg2 = if t.dark { mix(bg, self.colors[1], 0.12) } else { mix(bg, self.colors[1], 0.05) };
-        paint::fill_convex_fn(&p, &outline, 4, |q| bg.lerp_to_gamma(bg2, ((q.y - rect.min.y) / rect.height()).clamp(0.0, 1.0)));
+        paint::fill_convex_fn(&p, &outline, 4, |q| {
+            bg.lerp_to_gamma(bg2, ((q.y - rect.min.y) / rect.height()).clamp(0.0, 1.0))
+        });
         p.add(Shape::closed_line(outline.clone(), Stroke::new(1.0, t.border.lerp_to_gamma(self.colors[0], hk * 0.5))));
         // content, projected
         let (tp, ts) = proj(rect.min + vec2(20.0, 26.0));
@@ -580,7 +654,10 @@ impl Widget for Pin3D {
         let (dp, ds) = proj(rect.min + vec2(20.0, 54.0));
         p.text(dp, Align2::LEFT_TOP, &self.description, FontId::proportional(13.0 * ds), t.muted_foreground);
         let img = Rect::from_min_max(rect.min + vec2(20.0, 86.0), rect.max - vec2(20.0, 20.0));
-        let img_pts: Vec<Pos2> = paint::subdivide_closed(&paint::rounded_rect_points(img, 10.0, 6), 16.0).into_iter().map(|q| proj(q).0).collect();
+        let img_pts: Vec<Pos2> = paint::subdivide_closed(&paint::rounded_rect_points(img, 10.0, 6), 16.0)
+            .into_iter()
+            .map(|q| proj(q).0)
+            .collect();
         let (c0, c1) = (self.colors[0], self.colors[1]);
         paint::fill_convex_fn(&p, &img_pts, 6, |q| {
             let u = ((q.x - img.min.x) / img.width() * 0.6 + (q.y - img.min.y) / img.height() * 0.4).clamp(0.0, 1.0);
@@ -594,8 +671,16 @@ impl Widget for Pin3D {
                 let rr = 10.0 + ph * 90.0;
                 let a = (1.0 - ph) * hk;
                 let squash = 0.32 + 0.5 * (1.0 - hk);
-                p.add(Shape::ellipse_filled(base, vec2(rr, rr * squash), with_alpha(mix(c0, Color32::BLACK, 0.3), a * 0.35)));
-                p.add(Shape::ellipse_stroke(base, vec2(rr, rr * squash), Stroke::new(1.5, with_alpha(mix(c0, Color32::WHITE, 0.3), a))));
+                p.add(Shape::ellipse_filled(
+                    base,
+                    vec2(rr, rr * squash),
+                    with_alpha(mix(c0, Color32::BLACK, 0.3), a * 0.35),
+                ));
+                p.add(Shape::ellipse_stroke(
+                    base,
+                    vec2(rr, rr * squash),
+                    Stroke::new(1.5, with_alpha(mix(c0, Color32::WHITE, 0.3), a)),
+                ));
             }
             let h = 190.0 * hk;
             let top = base - vec2(0.0, h);
@@ -607,11 +692,25 @@ impl Widget for Pin3D {
             // label pill
             let g = p.layout_no_wrap(self.label.clone(), FontId::proportional(13.0), Color32::PLACEHOLDER);
             let pill = Rect::from_center_size(top - vec2(0.0, 16.0), g.size() + vec2(26.0, 12.0));
-            paint::soft_shadow(&p, pill, pill.height() / 2.0, 12.0, vec2(0.0, 4.0), Color32::from_black_alpha((90.0 * hk) as u8));
+            paint::soft_shadow(
+                &p,
+                pill,
+                pill.height() / 2.0,
+                12.0,
+                vec2(0.0, 4.0),
+                Color32::from_black_alpha((90.0 * hk) as u8),
+            );
             p.rect_filled(pill, pill.height() / 2.0, with_alpha(hex("#09090B"), hk));
-            p.rect_stroke(pill, pill.height() / 2.0, Stroke::new(1.0, with_alpha(Color32::WHITE, 0.12 * hk)), StrokeKind::Inside);
+            p.rect_stroke(
+                pill,
+                pill.height() / 2.0,
+                Stroke::new(1.0, with_alpha(Color32::WHITE, 0.12 * hk)),
+                StrokeKind::Inside,
+            );
             p.galley(pill.center() - g.size() / 2.0, g.clone(), with_alpha(Color32::WHITE, hk));
-            let ul: Vec<Pos2> = (0..=16).map(|i| pos2(pill.min.x + 12.0 + (pill.width() - 24.0) * i as f32 / 16.0, pill.max.y - 0.5)).collect();
+            let ul: Vec<Pos2> = (0..=16)
+                .map(|i| pos2(pill.min.x + 12.0 + (pill.width() - 24.0) * i as f32 / 16.0, pill.max.y - 0.5))
+                .collect();
             paint::gradient_polyline(&p, &ul, false, 1.2, |u| with_alpha(c0, hk * (1.0 - (u * 2.0 - 1.0).abs())));
         }
         resp

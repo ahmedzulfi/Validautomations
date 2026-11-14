@@ -1,6 +1,8 @@
 use super::util::{avatar, bold_text, chevron, fill_star_shaped, heart_points, idle_time, rotate};
 use egui::text::{LayoutJob, TextFormat};
-use egui::{pos2, vec2, Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, Vec2, Widget,
+};
 use glowkit_core::{
     anim::{smoothstep, stagger, Spring},
     color::with_alpha,
@@ -120,7 +122,12 @@ impl Widget for AnimatedTooltip<'_> {
         let st = glowkit_core::with_state(
             ui,
             resp.id.with("tip"),
-            || TipState { hovered: None, shown: Spring::new(0.0).with(260.0, 18.0), swing: Spring::new(0.0).with(120.0, 6.0), shift: Spring::new(0.0).with(120.0, 7.0) },
+            || TipState {
+                hovered: None,
+                shown: Spring::new(0.0).with(260.0, 18.0),
+                swing: Spring::new(0.0).with(120.0, 6.0),
+                shift: Spring::new(0.0).with(120.0, 7.0),
+            },
             |s| {
                 if hovered.is_some() && s.hovered != hovered {
                     // pop in again for a new person
@@ -145,7 +152,15 @@ impl Widget for AnimatedTooltip<'_> {
         let p = ui.painter_at(rect.expand2(vec2(120.0, 120.0)));
         let ring = if t.dark { t.card } else { Color32::WHITE };
         let lifts: Vec<f32> = (0..n)
-            .map(|i| glowkit_core::anim::spring(ui, resp.id.with(("lift", i)), if hovered == Some(i) { 1.0 } else { 0.0 }, 300.0, 18.0))
+            .map(|i| {
+                glowkit_core::anim::spring(
+                    ui,
+                    resp.id.with(("lift", i)),
+                    if hovered == Some(i) { 1.0 } else { 0.0 },
+                    300.0,
+                    18.0,
+                )
+            })
             .collect();
         // draw the hovered avatar last
         let mut order: Vec<usize> = (0..n).collect();
@@ -156,7 +171,14 @@ impl Widget for AnimatedTooltip<'_> {
         for &i in &order {
             let c = centers[i] - vec2(0.0, lifts[i] * 4.0);
             let rr = r * (1.0 + lifts[i] * 0.08);
-            paint::soft_shadow(&p, Rect::from_center_size(c + vec2(0.0, 2.0), Vec2::splat(rr * 2.0)), rr, 8.0 + lifts[i] * 8.0, Vec2::ZERO, Color32::from_black_alpha(60));
+            paint::soft_shadow(
+                &p,
+                Rect::from_center_size(c + vec2(0.0, 2.0), Vec2::splat(rr * 2.0)),
+                rr,
+                8.0 + lifts[i] * 8.0,
+                Vec2::ZERO,
+                Color32::from_black_alpha(60),
+            );
             p.circle_filled(c, rr + 2.5, ring);
             avatar(&p, c, rr, self.people[i].colors, &self.people[i].initials());
         }
@@ -176,22 +198,52 @@ impl Widget for AnimatedTooltip<'_> {
                 let alpha = k.clamp(0.0, 1.0);
                 let box_r = Rect::from_center_size(tc, vec2(tw, th) * scale);
                 let pivot = pos2(tc.x, box_r.max.y);
-                let pts: Vec<Pos2> = paint::rounded_rect_points(box_r, 8.0 * scale, 6).into_iter().map(|q| rotate(q, pivot, ang)).collect();
+                let pts: Vec<Pos2> = paint::rounded_rect_points(box_r, 8.0 * scale, 6)
+                    .into_iter()
+                    .map(|q| rotate(q, pivot, ang))
+                    .collect();
                 let bg = if t.dark { hex("#000000") } else { hex("#0A0A0A") };
-                p.add(Shape::convex_polygon(pts, with_alpha(bg, alpha), Stroke::new(1.0, with_alpha(Color32::WHITE, 0.08 * alpha))));
+                p.add(Shape::convex_polygon(
+                    pts,
+                    with_alpha(bg, alpha),
+                    Stroke::new(1.0, with_alpha(Color32::WHITE, 0.08 * alpha)),
+                ));
                 // gradient accents along the bottom edge
                 for (frac, col, yoff) in [(0.6, hex("#10B981"), 0.0), (0.4, hex("#0EA5E9"), 0.0)] {
                     let half = box_r.width() * frac / 2.0;
                     let a = rotate(pos2(tc.x - half, box_r.max.y + yoff), pivot, ang);
                     let b = rotate(pos2(tc.x + half, box_r.max.y + yoff), pivot, ang);
                     let line: Vec<Pos2> = (0..=16).map(|j| a.lerp(b, j as f32 / 16.0)).collect();
-                    paint::gradient_polyline(&p, &line, false, 1.5, |u| with_alpha(col, alpha * (1.0 - (u * 2.0 - 1.0).abs()).powf(0.8)));
+                    paint::gradient_polyline(&p, &line, false, 1.5, |u| {
+                        with_alpha(col, alpha * (1.0 - (u * 2.0 - 1.0).abs()).powf(0.8))
+                    });
                 }
                 let name_c = rotate(pos2(tc.x, tc.y - 8.0 * scale), pivot, ang);
                 let title_c = rotate(pos2(tc.x, tc.y + 10.0 * scale), pivot, ang);
-                glowkit_core::text::paint_rotated(&p, &person.name, name_c, FontId::proportional(14.0 * scale), with_alpha(Color32::WHITE, alpha), ang);
-                glowkit_core::text::paint_rotated(&p, &person.name, name_c + vec2(0.4, 0.0), FontId::proportional(14.0 * scale), with_alpha(Color32::WHITE, alpha), ang);
-                glowkit_core::text::paint_rotated(&p, &person.title, title_c, FontId::proportional(11.5 * scale), with_alpha(hex("#A1A1AA"), alpha), ang);
+                glowkit_core::text::paint_rotated(
+                    &p,
+                    &person.name,
+                    name_c,
+                    FontId::proportional(14.0 * scale),
+                    with_alpha(Color32::WHITE, alpha),
+                    ang,
+                );
+                glowkit_core::text::paint_rotated(
+                    &p,
+                    &person.name,
+                    name_c + vec2(0.4, 0.0),
+                    FontId::proportional(14.0 * scale),
+                    with_alpha(Color32::WHITE, alpha),
+                    ang,
+                );
+                glowkit_core::text::paint_rotated(
+                    &p,
+                    &person.title,
+                    title_c,
+                    FontId::proportional(11.5 * scale),
+                    with_alpha(hex("#A1A1AA"), alpha),
+                    ang,
+                );
             }
         }
         resp
@@ -288,17 +340,33 @@ impl Widget for AnimatedTestimonials<'_> {
         for (_, i) in order {
             let is_active = i == st.active;
             let seed_rot = (glowkit_core::rng::hash01(i as u64 * 31 + 7) - 0.5) * 0.5;
-            let rot = glowkit_core::anim::spring(ui, id.with(("rot", i)), if is_active { 0.0 } else { seed_rot }, 140.0, 16.0);
-            let scale = glowkit_core::anim::spring(ui, id.with(("sc", i)), if is_active { 1.0 } else { 0.94 }, 160.0, 18.0);
-            let hop = if is_active { -(std::f32::consts::PI * (since / 0.55).clamp(0.0, 1.0)).sin() * 30.0 } else { 0.0 };
+            let rot = glowkit_core::anim::spring(
+                ui,
+                id.with(("rot", i)),
+                if is_active { 0.0 } else { seed_rot },
+                140.0,
+                16.0,
+            );
+            let scale =
+                glowkit_core::anim::spring(ui, id.with(("sc", i)), if is_active { 1.0 } else { 0.94 }, 160.0, 18.0);
+            let hop =
+                if is_active { -(std::f32::consts::PI * (since / 0.55).clamp(0.0, 1.0)).sin() * 30.0 } else { 0.0 };
             let c = img_rect.center() + vec2(0.0, hop);
             let r = Rect::from_center_size(c, img_rect.size() * scale);
-            let pts: Vec<Pos2> = paint::rounded_rect_points(r, 24.0 * scale, 8).into_iter().map(|q| rotate(q, c, rot)).collect();
+            let pts: Vec<Pos2> =
+                paint::rounded_rect_points(r, 24.0 * scale, 8).into_iter().map(|q| rotate(q, c, rot)).collect();
             let person = &self.items[i].person;
             let dim = if is_active { 0.0 } else { 0.25 };
             let (a, b) = (mix(person.colors[0], t.background, dim), mix(person.colors[1], t.background, dim));
             if is_active {
-                paint::soft_shadow(&p, r, 24.0, 30.0, vec2(0.0, 14.0), Color32::from_black_alpha(if t.dark { 120 } else { 40 }));
+                paint::soft_shadow(
+                    &p,
+                    r,
+                    24.0,
+                    30.0,
+                    vec2(0.0, 14.0),
+                    Color32::from_black_alpha(if t.dark { 120 } else { 40 }),
+                );
             }
             let lc = rotate(r.min + r.size() * vec2(0.3, 0.25), c, rot);
             let lr = r.width() * 0.7;
@@ -308,8 +376,22 @@ impl Widget for AnimatedTestimonials<'_> {
                 a.lerp_to_gamma(b, u).lerp_to_gamma(Color32::WHITE, hl)
             });
             let ini = person.initials();
-            glowkit_core::text::paint_rotated(&p, &ini, c, FontId::proportional(r.width() * 0.32), Color32::from_white_alpha(if is_active { 235 } else { 140 }), rot);
-            glowkit_core::text::paint_rotated(&p, &ini, c + vec2(1.0, 0.0), FontId::proportional(r.width() * 0.32), Color32::from_white_alpha(if is_active { 235 } else { 140 }), rot);
+            glowkit_core::text::paint_rotated(
+                &p,
+                &ini,
+                c,
+                FontId::proportional(r.width() * 0.32),
+                Color32::from_white_alpha(if is_active { 235 } else { 140 }),
+                rot,
+            );
+            glowkit_core::text::paint_rotated(
+                &p,
+                &ini,
+                c + vec2(1.0, 0.0),
+                FontId::proportional(r.width() * 0.32),
+                Color32::from_white_alpha(if is_active { 235 } else { 140 }),
+                rot,
+            );
         }
         // text column
         let tx = img_rect.max.x + 56.0;
@@ -317,8 +399,21 @@ impl Widget for AnimatedTestimonials<'_> {
         let item = &self.items[st.active];
         let k_head = smoothstep(0.0, 0.35, since);
         let dy = (1.0 - k_head) * 12.0;
-        bold_text(&p, pos2(tx, rect.min.y + 24.0 + dy), Align2::LEFT_TOP, &item.person.name, FontId::proportional(24.0), with_alpha(t.foreground, k_head));
-        p.text(pos2(tx, rect.min.y + 58.0 + dy), Align2::LEFT_TOP, &item.person.title, FontId::proportional(13.5), with_alpha(t.muted_foreground, k_head));
+        bold_text(
+            &p,
+            pos2(tx, rect.min.y + 24.0 + dy),
+            Align2::LEFT_TOP,
+            &item.person.name,
+            FontId::proportional(24.0),
+            with_alpha(t.foreground, k_head),
+        );
+        p.text(
+            pos2(tx, rect.min.y + 58.0 + dy),
+            Align2::LEFT_TOP,
+            &item.person.title,
+            FontId::proportional(13.5),
+            with_alpha(t.muted_foreground, k_head),
+        );
         let font = FontId::proportional(17.0);
         let glyphs = Glyphs::layout(&p, &item.quote, font.clone(), Some(tw));
         let origin = pos2(tx, rect.min.y + 96.0);
@@ -359,7 +454,11 @@ impl Widget for AnimatedTestimonials<'_> {
             let c = pos2(tx + 130.0 + i as f32 * 14.0, by);
             let on = glowkit_core::anim::follow(ui, id.with(("dot", i)), if i == st.active { 1.0 } else { 0.0 }, 10.0);
             let w = 6.0 + on * 12.0;
-            p.rect_filled(Rect::from_center_size(c + vec2(on * 6.0 + if i > st.active { 12.0 } else { 0.0 }, 0.0), vec2(w, 6.0)), 3.0, t.muted_foreground.lerp_to_gamma(t.foreground, on));
+            p.rect_filled(
+                Rect::from_center_size(c + vec2(on * 6.0 + if i > st.active { 12.0 } else { 0.0 }, 0.0), vec2(w, 6.0)),
+                3.0,
+                t.muted_foreground.lerp_to_gamma(t.foreground, on),
+            );
         }
         if let Some(d) = clicked {
             st.active = if d > 0.0 { (st.active + 1) % n } else { (st.active + n - 1) % n };
@@ -480,7 +579,12 @@ impl Widget for TweetCard<'_> {
         let link = if t.dark { hex("#1D9BF0") } else { hex("#1A8CD8") };
         let mut job = LayoutJob::default();
         job.wrap.max_width = inner_w;
-        let fmt = |c: Color32| TextFormat { font_id: FontId::proportional(15.0), color: c, line_height: Some(21.0), ..Default::default() };
+        let fmt = |c: Color32| TextFormat {
+            font_id: FontId::proportional(15.0),
+            color: c,
+            line_height: Some(21.0),
+            ..Default::default()
+        };
         for (i, word) in tw.text.split(' ').enumerate() {
             if i > 0 {
                 job.append(" ", 0.0, fmt(t.foreground));
@@ -490,7 +594,8 @@ impl Widget for TweetCard<'_> {
         }
         let galley = ui.fonts_mut(|f| f.layout_job(job));
         let media_h = if tw.media.is_some() { inner_w * 0.5 } else { 0.0 };
-        let h = pad + 44.0 + 12.0 + galley.size().y + if media_h > 0.0 { 12.0 + media_h } else { 0.0 } + 16.0 + 22.0 + pad;
+        let h =
+            pad + 44.0 + 12.0 + galley.size().y + if media_h > 0.0 { 12.0 + media_h } else { 0.0 } + 16.0 + 22.0 + pad;
         let (rect, resp) = ui.allocate_exact_size(vec2(self.width, h), Sense::hover());
         if !ui.is_rect_visible(rect) {
             return resp;
@@ -499,16 +604,41 @@ impl Widget for TweetCard<'_> {
         let lift = glowkit_core::anim::follow(ui, id.with("lift"), if resp.hovered() { 1.0 } else { 0.0 }, 10.0);
         let rect_l = rect.translate(vec2(0.0, -3.0 * lift));
         let p = ui.painter_at(rect.expand(30.0));
-        paint::soft_shadow(&p, rect_l, 16.0, 16.0 + 16.0 * lift, vec2(0.0, 4.0 + 6.0 * lift), Color32::from_black_alpha(if t.dark { (60.0 + 60.0 * lift) as u8 } else { (14.0 + 24.0 * lift) as u8 }));
+        paint::soft_shadow(
+            &p,
+            rect_l,
+            16.0,
+            16.0 + 16.0 * lift,
+            vec2(0.0, 4.0 + 6.0 * lift),
+            Color32::from_black_alpha(if t.dark { (60.0 + 60.0 * lift) as u8 } else { (14.0 + 24.0 * lift) as u8 }),
+        );
         p.rect_filled(rect_l, 16.0, if t.dark { t.card } else { Color32::WHITE });
-        p.rect_stroke(rect_l, 16.0, Stroke::new(1.0, t.border.lerp_to_gamma(t.muted_foreground, lift * 0.35)), StrokeKind::Inside);
+        p.rect_stroke(
+            rect_l,
+            16.0,
+            Stroke::new(1.0, t.border.lerp_to_gamma(t.muted_foreground, lift * 0.35)),
+            StrokeKind::Inside,
+        );
         let o = rect_l.min + vec2(pad, pad);
-        avatar(&p, o + vec2(22.0, 22.0), 22.0, tw.avatar, &tw.name.chars().next().map(|c| c.to_string()).unwrap_or_default());
-        let nr = bold_text(&p, o + vec2(54.0, 4.0), Align2::LEFT_TOP, &tw.name, FontId::proportional(15.0), t.foreground);
+        avatar(
+            &p,
+            o + vec2(22.0, 22.0),
+            22.0,
+            tw.avatar,
+            &tw.name.chars().next().map(|c| c.to_string()).unwrap_or_default(),
+        );
+        let nr =
+            bold_text(&p, o + vec2(54.0, 4.0), Align2::LEFT_TOP, &tw.name, FontId::proportional(15.0), t.foreground);
         if tw.verified {
             verified_badge(&p, pos2(nr.max.x + 11.0, nr.center().y), 7.5);
         }
-        p.text(o + vec2(54.0, 25.0), Align2::LEFT_TOP, format!("@{} · {}", tw.handle, tw.time), FontId::proportional(13.0), t.muted_foreground);
+        p.text(
+            o + vec2(54.0, 25.0),
+            Align2::LEFT_TOP,
+            format!("@{} · {}", tw.handle, tw.time),
+            FontId::proportional(13.0),
+            t.muted_foreground,
+        );
         // X-like logo
         let lc = pos2(rect_l.max.x - pad - 9.0, o.y + 11.0);
         let s = 6.0;
@@ -521,10 +651,26 @@ impl Widget for TweetCard<'_> {
             y += 12.0;
             let mr = Rect::from_min_size(pos2(o.x, y), vec2(inner_w, media_h));
             paint::gradient_rect(&p, mr, 12.0, 30.0, &[m[0], mix(m[0], m[1], 0.5), m[1]]);
-            paint::glow(&p, mr.center() + vec2(-mr.width() * 0.15, -mr.height() * 0.1), mr.width() * 0.45, Color32::from_white_alpha(40));
+            paint::glow(
+                &p,
+                mr.center() + vec2(-mr.width() * 0.15, -mr.height() * 0.1),
+                mr.width() * 0.45,
+                Color32::from_white_alpha(40),
+            );
             // abstract shapes
-            p.circle_filled(mr.center() + vec2(mr.width() * 0.22, 0.0), mr.height() * 0.22, Color32::from_white_alpha(46));
-            p.rect_filled(Rect::from_center_size(mr.center() - vec2(mr.width() * 0.12, -mr.height() * 0.08), vec2(mr.width() * 0.3, mr.height() * 0.36)), 12.0, Color32::from_white_alpha(36));
+            p.circle_filled(
+                mr.center() + vec2(mr.width() * 0.22, 0.0),
+                mr.height() * 0.22,
+                Color32::from_white_alpha(46),
+            );
+            p.rect_filled(
+                Rect::from_center_size(
+                    mr.center() - vec2(mr.width() * 0.12, -mr.height() * 0.08),
+                    vec2(mr.width() * 0.3, mr.height() * 0.36),
+                ),
+                12.0,
+                Color32::from_white_alpha(36),
+            );
             p.rect_stroke(mr, 12.0, Stroke::new(1.0, with_alpha(t.border, 0.6)), StrokeKind::Inside);
             y += media_h;
         }
@@ -576,7 +722,13 @@ impl Widget for TweetCard<'_> {
             p.add(Shape::closed_line(heart_points(hc, 16.0), Stroke::new(1.4, hv)));
         }
         let likes = tw.likes + like.liked as u32;
-        p.text(c2 + vec2(14.0, 0.0), Align2::LEFT_CENTER, compact(likes), font.clone(), if like.liked { red } else { mc });
+        p.text(
+            c2 + vec2(14.0, 0.0),
+            Align2::LEFT_CENTER,
+            compact(likes),
+            font.clone(),
+            if like.liked { red } else { mc },
+        );
         if lr.hovered() {
             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
         }
@@ -591,4 +743,3 @@ impl Widget for TweetCard<'_> {
         resp
     }
 }
-

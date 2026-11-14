@@ -36,7 +36,15 @@ fn clip_poly(poly: &[V], dir: Vec2, limit: f32, keep_below: bool) -> Vec<V> {
 
 /// Paint a galley filled with diagonal stripes (only the stripes, the gaps stay transparent).
 /// `period` is the stripe spacing in points, `duty` the filled fraction, `phase` shifts them.
-pub(crate) fn striped_galley(painter: &Painter, pos: Pos2, galley: &Arc<Galley>, color: Color32, period: f32, duty: f32, phase: f32) {
+pub(crate) fn striped_galley(
+    painter: &Painter,
+    pos: Pos2,
+    galley: &Arc<Galley>,
+    color: Color32,
+    period: f32,
+    duty: f32,
+    phase: f32,
+) {
     let [tw, th] = painter.fonts(|f| f.font_image_size());
     let norm = vec2(1.0 / tw.max(1) as f32, 1.0 / th.max(1) as f32);
     let dir = vec2(1.0, 1.0).normalized();
@@ -105,7 +113,16 @@ pub struct LineShadowText {
 impl LineShadowText {
     /// Create the effect for `text`.
     pub fn new(text: impl Into<String>) -> Self {
-        Self { text: text.into(), size: 88.0, color: None, shadow: None, offset: None, period: None, speed: 1.0, bold: true }
+        Self {
+            text: text.into(),
+            size: 88.0,
+            color: None,
+            shadow: None,
+            offset: None,
+            period: None,
+            speed: 1.0,
+            bold: true,
+        }
     }
     /// Font size in points.
     pub fn size(mut self, size: f32) -> Self {

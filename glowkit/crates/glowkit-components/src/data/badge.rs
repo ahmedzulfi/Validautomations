@@ -1,5 +1,7 @@
 use crate::inputs::kit::{self, UiIcon};
-use egui::{pos2, vec2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget};
+use egui::{
+    pos2, vec2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget,
+};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
 
@@ -75,7 +77,16 @@ pub struct Badge {
 impl Badge {
     /// A text badge.
     pub fn new(text: impl Into<String>) -> Self {
-        Self { text: text.into(), variant: BadgeVariant::Default, dot: false, icon: None, count: None, pill: false, color: None, size: 12.0 }
+        Self {
+            text: text.into(),
+            variant: BadgeVariant::Default,
+            dot: false,
+            icon: None,
+            count: None,
+            pill: false,
+            color: None,
+            size: 12.0,
+        }
     }
     /// A numeric badge that animates when `n` changes (shows "99+" above 99).
     pub fn count(n: i64) -> Self {
@@ -137,7 +148,13 @@ impl Widget for Badge {
         };
         let g = ui.painter().layout_no_wrap(label.clone(), font.clone(), text_col);
         let h = (self.size + 10.0).round();
-        let lead = if self.dot { 12.0 } else if self.icon.is_some() { self.size + 4.0 } else { 0.0 };
+        let lead = if self.dot {
+            12.0
+        } else if self.icon.is_some() {
+            self.size + 4.0
+        } else {
+            0.0
+        };
         let px = if self.count.is_some() { 6.0 } else { 8.0 };
         let w = (g.size().x + px * 2.0 + lead).max(h);
         let (rect, resp) = ui.allocate_exact_size(vec2(w, h), Sense::hover());
@@ -145,14 +162,19 @@ impl Widget for Badge {
             return resp;
         }
         let painter = ui.painter();
-        let r = if self.pill || self.count.is_some() { CornerRadius::same((h / 2.0) as u8) } else { CornerRadius::same(6) };
+        let r =
+            if self.pill || self.count.is_some() { CornerRadius::same((h / 2.0) as u8) } else { CornerRadius::same(6) };
         painter.rect(rect, r, fill, Stroke::new(1.0, border), StrokeKind::Inside);
         let mut x = rect.center().x - (g.size().x + lead) / 2.0;
         if self.dot {
             painter.circle_filled(pos2(x + 3.0, rect.center().y), 3.0, text_col);
             x += 12.0;
         } else if let Some(i) = self.icon {
-            i.paint(painter, Rect::from_center_size(pos2(x + self.size / 2.0, rect.center().y), vec2(self.size, self.size)), text_col);
+            i.paint(
+                painter,
+                Rect::from_center_size(pos2(x + self.size / 2.0, rect.center().y), vec2(self.size, self.size)),
+                text_col,
+            );
             x += self.size + 4.0;
         }
         match self.count {
@@ -173,9 +195,21 @@ impl Widget for Badge {
                 let dir = if st.shown > st.prev { 1.0 } else { -1.0 };
                 let clip = painter.with_clip_rect(rect.intersect(painter.clip_rect()));
                 let cy = rect.center().y;
-                clip.text(pos2(rect.center().x, cy + dir * h * (1.0 - k)), egui::Align2::CENTER_CENTER, count_text(st.shown), font.clone(), text_col);
+                clip.text(
+                    pos2(rect.center().x, cy + dir * h * (1.0 - k)),
+                    egui::Align2::CENTER_CENTER,
+                    count_text(st.shown),
+                    font.clone(),
+                    text_col,
+                );
                 if k < 1.0 {
-                    clip.text(pos2(rect.center().x, cy - dir * h * k), egui::Align2::CENTER_CENTER, count_text(st.prev), font, with_alpha(text_col, (1.0 - k).clamp(0.0, 1.0)));
+                    clip.text(
+                        pos2(rect.center().x, cy - dir * h * k),
+                        egui::Align2::CENTER_CENTER,
+                        count_text(st.prev),
+                        font,
+                        with_alpha(text_col, (1.0 - k).clamp(0.0, 1.0)),
+                    );
                 }
             }
             None => {
@@ -241,7 +275,13 @@ impl Widget for Chip {
         let font = FontId::proportional(13.0);
         let g = ui.painter().layout_no_wrap(self.text.clone(), font, Color32::PLACEHOLDER);
         let h = 28.0;
-        let lead = if self.avatar.is_some() { 24.0 } else if self.icon.is_some() || self.selected.is_some() { 20.0 } else { 0.0 };
+        let lead = if self.avatar.is_some() {
+            24.0
+        } else if self.icon.is_some() || self.selected.is_some() {
+            20.0
+        } else {
+            0.0
+        };
         let trail = if self.removable { 20.0 } else { 0.0 };
         let w = g.size().x + 22.0 + lead + trail - if self.avatar.is_some() { 6.0 } else { 0.0 };
         let sense = if self.removable && self.selected.is_none() { Sense::hover() } else { Sense::click() };
@@ -250,9 +290,21 @@ impl Widget for Chip {
         let k = kit::anim(ui, resp.id.with("sel"), sel, 0.16);
         let hov = kit::anim(ui, resp.id.with("h"), resp.hovered(), 0.12);
         let tint = self.color.unwrap_or(t.primary);
-        let base_fill = if t.dark { with_alpha(t.secondary, 0.6 + 0.4 * hov) } else { mix(t.background, t.secondary, 0.5 + 0.5 * hov) };
+        let base_fill = if t.dark {
+            with_alpha(t.secondary, 0.6 + 0.4 * hov)
+        } else {
+            mix(t.background, t.secondary, 0.5 + 0.5 * hov)
+        };
         let sel_fill = if self.color.is_some() { with_alpha(tint, if t.dark { 0.2 } else { 0.12 }) } else { t.primary };
-        let sel_text = if self.color.is_some() { if t.dark { mix(tint, Color32::WHITE, 0.3) } else { mix(tint, Color32::BLACK, 0.2) } } else { t.primary_foreground };
+        let sel_text = if self.color.is_some() {
+            if t.dark {
+                mix(tint, Color32::WHITE, 0.3)
+            } else {
+                mix(tint, Color32::BLACK, 0.2)
+            }
+        } else {
+            t.primary_foreground
+        };
         let fill = base_fill.lerp_to_gamma(sel_fill, k);
         let text = t.foreground.lerp_to_gamma(sel_text, k);
         let border = t.border.lerp_to_gamma(if self.color.is_some() { with_alpha(tint, 0.4) } else { t.primary }, k);
@@ -265,7 +317,13 @@ impl Widget for Chip {
             let c = pos2(rect.min.x + 14.0, cy);
             let col = super::avatar::name_color(&t, name);
             painter.circle_filled(c, 10.0, col);
-            painter.text(c, egui::Align2::CENTER_CENTER, super::avatar::initials(name), FontId::proportional(9.0), Color32::WHITE);
+            painter.text(
+                c,
+                egui::Align2::CENTER_CENTER,
+                super::avatar::initials(name),
+                FontId::proportional(9.0),
+                Color32::WHITE,
+            );
             x = rect.min.x + 29.0;
         } else if self.selected.is_some() && self.icon.is_none() {
             // check slides in when selected
@@ -287,7 +345,11 @@ impl Widget for Chip {
             if xresp.hovered() {
                 ui.painter().circle_filled(xr.center(), 9.0, with_alpha(t.muted_foreground, 0.2));
             }
-            UiIcon::X.paint(ui.painter(), xr.shrink(4.0), if xresp.hovered() { t.foreground } else { t.muted_foreground });
+            UiIcon::X.paint(
+                ui.painter(),
+                xr.shrink(4.0),
+                if xresp.hovered() { t.foreground } else { t.muted_foreground },
+            );
             if xresp.clicked() {
                 resp = xresp;
             }
@@ -330,7 +392,11 @@ impl Widget for Kbd {
         let (rect, resp) = ui.allocate_exact_size(vec2((g.size().x + 10.0).max(h), h), Sense::hover());
         let painter = ui.painter();
         let r = CornerRadius::same(5);
-        painter.rect_filled(rect.translate(vec2(0.0, 1.0)), r, if t.dark { mix(t.border, Color32::BLACK, 0.3) } else { t.border });
+        painter.rect_filled(
+            rect.translate(vec2(0.0, 1.0)),
+            r,
+            if t.dark { mix(t.border, Color32::BLACK, 0.3) } else { t.border },
+        );
         painter.rect(rect, r, t.muted, Stroke::new(1.0, t.border), StrokeKind::Inside);
         painter.galley(rect.center() - g.size() / 2.0, g, t.muted_foreground);
         resp
@@ -396,7 +462,8 @@ impl Widget for Separator {
                 let g = ui.painter().layout_no_wrap(l.to_uppercase(), FontId::proportional(11.0), t.muted_foreground);
                 let gx = rect.center().x - g.size().x / 2.0;
                 ui.painter().line_segment([pos2(rect.min.x, y), pos2(gx - 10.0, y)], Stroke::new(1.0, t.border));
-                ui.painter().line_segment([pos2(gx + g.size().x + 10.0, y), pos2(rect.max.x, y)], Stroke::new(1.0, t.border));
+                ui.painter()
+                    .line_segment([pos2(gx + g.size().x + 10.0, y), pos2(rect.max.x, y)], Stroke::new(1.0, t.border));
                 ui.painter().galley(pos2(gx, rect.center().y - g.size().y / 2.0), g, t.muted_foreground);
             }
             None => {

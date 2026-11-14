@@ -181,7 +181,9 @@ fn paint_kind(p: &egui::Painter, kind: SpinnerKind, rect: Rect, col: Color32, ti
             let w = (s * 0.12).max(2.5);
             let stops = if custom { vec![col, col] } else { t.gradient.to_vec() };
             let a0 = time * TAU * 1.1;
-            paint::arc_gradient(p, c, r - w / 2.0, a0, a0 + TAU * 0.8, w, |u| with_alpha(glowkit_core::color::gradient(&stops, u), u.powf(1.3)));
+            paint::arc_gradient(p, c, r - w / 2.0, a0, a0 + TAU * 0.8, w, |u| {
+                with_alpha(glowkit_core::color::gradient(&stops, u), u.powf(1.3))
+            });
             p.circle_filled(polar(c, r - w / 2.0, a0 + TAU * 0.8), w / 2.0, *stops.last().unwrap());
         }
         SpinnerKind::DualRing => {
@@ -254,7 +256,11 @@ fn paint_kind(p: &egui::Painter, kind: SpinnerKind, rect: Rect, col: Color32, ti
                 let k = 0.35 + 0.65 * (0.5 - 0.5 * (ph * TAU).cos());
                 let x = c.x + (i as f32 - (n - 1) as f32 / 2.0) * bw * 1.8;
                 let h = s * 0.85 * k;
-                p.rect_filled(Rect::from_center_size(pos2(x, c.y), vec2(bw, h)), CornerRadius::same((bw / 2.0) as u8), col);
+                p.rect_filled(
+                    Rect::from_center_size(pos2(x, c.y), vec2(bw, h)),
+                    CornerRadius::same((bw / 2.0) as u8),
+                    col,
+                );
             }
         }
         SpinnerKind::Grid => {
@@ -263,11 +269,21 @@ fn paint_kind(p: &egui::Painter, kind: SpinnerKind, rect: Rect, col: Color32, ti
                 for x in 0..3 {
                     let delay = (x + 2 - y) as f32 * 0.1;
                     let ph = (time * 0.85 - delay).rem_euclid(1.0);
-                    let k = if ph < 0.35 { 1.0 - glowkit_core::ease(glowkit_core::Easing::InOutQuad, ph / 0.35) } else if ph < 0.7 { glowkit_core::ease(glowkit_core::Easing::InOutQuad, (ph - 0.35) / 0.35) } else { 1.0 };
+                    let k = if ph < 0.35 {
+                        1.0 - glowkit_core::ease(glowkit_core::Easing::InOutQuad, ph / 0.35)
+                    } else if ph < 0.7 {
+                        glowkit_core::ease(glowkit_core::Easing::InOutQuad, (ph - 0.35) / 0.35)
+                    } else {
+                        1.0
+                    };
                     let center = pos2(rect.min.x + cell * (x as f32 + 0.5), rect.min.y + cell * (y as f32 + 0.5));
                     let sz = cell * 0.82 * k;
                     if sz > 0.5 {
-                        p.rect_filled(Rect::from_center_size(center, vec2(sz, sz)), CornerRadius::same((sz * 0.2) as u8), with_alpha(col, 0.35 + 0.65 * k));
+                        p.rect_filled(
+                            Rect::from_center_size(center, vec2(sz, sz)),
+                            CornerRadius::same((sz * 0.2) as u8),
+                            with_alpha(col, 0.35 + 0.65 * k),
+                        );
                     }
                 }
             }
@@ -319,7 +335,11 @@ fn paint_kind(p: &egui::Painter, kind: SpinnerKind, rect: Rect, col: Color32, ti
             let side = s * 0.68;
             let shade = 0.6 + 0.4 * (sx * sy).abs();
             let fill = col.lerp_to_gamma(if t.dark { Color32::BLACK } else { Color32::WHITE }, 1.0 - shade);
-            p.rect_filled(Rect::from_center_size(c, vec2(side * sx.abs().max(0.04), side * sy.abs().max(0.04))), CornerRadius::same((side * 0.12) as u8), fill);
+            p.rect_filled(
+                Rect::from_center_size(c, vec2(side * sx.abs().max(0.04), side * sy.abs().max(0.04))),
+                CornerRadius::same((side * 0.12) as u8),
+                fill,
+            );
         }
         SpinnerKind::Helix => {
             let n = 8;
@@ -343,7 +363,11 @@ fn paint_kind(p: &egui::Painter, kind: SpinnerKind, rect: Rect, col: Color32, ti
                 let ph = (time * 0.6 + u).fract();
                 let rr = r * (1.0 - ph) * 0.92;
                 let a = ph * TAU * 1.5 + u * TAU;
-                p.circle_filled(polar(c, rr, a), r * 0.05 + r * 0.07 * (1.0 - ph), with_alpha(col, (1.0 - ph) * 0.9 + 0.1));
+                p.circle_filled(
+                    polar(c, rr, a),
+                    r * 0.05 + r * 0.07 * (1.0 - ph),
+                    with_alpha(col, (1.0 - ph) * 0.9 + 0.1),
+                );
             }
         }
     }

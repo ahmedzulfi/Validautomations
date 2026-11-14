@@ -17,7 +17,14 @@ pub enum CloudShape {
 
 impl CloudShape {
     /// The default morph cycle.
-    pub const ALL: [CloudShape; 6] = [CloudShape::Sphere, CloudShape::Torus, CloudShape::Wave, CloudShape::Cube, CloudShape::Helix, CloudShape::Galaxy];
+    pub const ALL: [CloudShape; 6] = [
+        CloudShape::Sphere,
+        CloudShape::Torus,
+        CloudShape::Wave,
+        CloudShape::Cube,
+        CloudShape::Helix,
+        CloudShape::Galaxy,
+    ];
 
     /// Position of particle `i` of `n` on this shape (roughly within a radius of 1.6).
     pub fn point(self, i: usize, n: usize, time: f32) -> Vec3 {
@@ -102,7 +109,16 @@ impl Default for ParticleMorph {
 impl ParticleMorph {
     /// Default: 1600 points cycling through every shape.
     pub fn new() -> Self {
-        Self { count: 1600, shapes: CloudShape::ALL.to_vec(), hold: 2.2, morph: 1.8, colors: None, size: 0.022, height: 380.0, id_salt: None }
+        Self {
+            count: 1600,
+            shapes: CloudShape::ALL.to_vec(),
+            hold: 2.2,
+            morph: 1.8,
+            colors: None,
+            size: 0.022,
+            height: 380.0,
+            id_salt: None,
+        }
     }
     /// Number of particles.
     pub fn count(mut self, n: usize) -> Self {
@@ -186,9 +202,14 @@ impl Widget for ParticleMorph {
                             p += off.normalized() * (0.6 - dist) * 0.9;
                         }
                     }
-                    let tcol = ((p.length() / 1.9) * 0.65 + (p.y / 3.2 + 0.5) * 0.35 + hash01(i as u64) * 0.12).clamp(0.0, 1.0);
+                    let tcol = ((p.length() / 1.9) * 0.65 + (p.y / 3.2 + 0.5) * 0.35 + hash01(i as u64) * 0.12)
+                        .clamp(0.0, 1.0);
                     let c = color::gradient(&stops, tcol);
-                    let col = if dark { crate::additive(c.gamma_multiply(0.95)) } else { color::with_alpha(color::shade(c, -0.08), 0.9) };
+                    let col = if dark {
+                        crate::additive(c.gamma_multiply(0.95))
+                    } else {
+                        color::with_alpha(color::shade(c, -0.08), 0.9)
+                    };
                     scene.point(p, self.size * (0.7 + hash01(i as u64 * 5) * 0.6), col);
                 }
                 // soft core glow
@@ -274,8 +295,14 @@ impl Widget for Galaxy {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
         let core = self.core.unwrap_or(if t.dark { color::hex("#FFE8C2") } else { color::hex("#F59E0B") });
-        let stops = self.colors.clone().unwrap_or_else(|| vec![color::mix(core, t.gradient[1], 0.5), t.gradient[1], t.gradient[0], color::hex("#38BDF8")]);
-        let bg = if t.dark { Background::Radial(color::mix(t.card, stops[2], 0.1), color::mix(t.card, Color32::BLACK, 0.3)) } else { Background::None };
+        let stops = self.colors.clone().unwrap_or_else(|| {
+            vec![color::mix(core, t.gradient[1], 0.5), t.gradient[1], t.gradient[0], color::hex("#38BDF8")]
+        });
+        let bg = if t.dark {
+            Background::Radial(color::mix(t.card, stops[2], 0.1), color::mix(t.card, Color32::BLACK, 0.3))
+        } else {
+            Background::None
+        };
         Viewport3D::new(salt_or(&self.id_salt, "galaxy"))
             .height(self.height)
             .background(bg)
@@ -304,10 +331,18 @@ impl Widget for Galaxy {
                     let off = (h(6) - 0.5) * 0.25;
                     let p = vec3(a.cos() * (r + off), y, a.sin() * (r + off));
                     let tt = (r / 4.2).clamp(0.0, 1.0);
-                    let base = if tt < 0.12 { color::mix(core, stops[0], tt / 0.12) } else { color::gradient(&stops, (tt - 0.12) / 0.88) };
+                    let base = if tt < 0.12 {
+                        color::mix(core, stops[0], tt / 0.12)
+                    } else {
+                        color::gradient(&stops, (tt - 0.12) / 0.88)
+                    };
                     let tw = 0.6 + 0.4 * (time * (1.5 + h(7) * 3.0) + h(8) * TAU).sin();
                     let bright = (0.45 + h(9) * 0.55) * tw;
-                    let col = if dark { crate::additive(base.gamma_multiply(bright)) } else { color::with_alpha(color::shade(base, -0.12), bright * 0.85) };
+                    let col = if dark {
+                        crate::additive(base.gamma_multiply(bright))
+                    } else {
+                        color::with_alpha(color::shade(base, -0.12), bright * 0.85)
+                    };
                     scene.point(p, 0.012 + h(10) * 0.014, col);
                     // nebula dust along arms
                     if i % 23 == 0 && r > 0.6 {
@@ -322,7 +357,11 @@ impl Widget for Galaxy {
                     for i in 0..220 {
                         let h = |k: u64| hash01(i as u64 * 131 + k);
                         let p = Vec3::from_spherical(30.0, h(1) * TAU, (h(2) * 2.0 - 1.0).asin());
-                        let c = if dark { crate::additive(Color32::WHITE.gamma_multiply(0.25 + h(3) * 0.5)) } else { color::with_alpha(t.muted_foreground, 0.35) };
+                        let c = if dark {
+                            crate::additive(Color32::WHITE.gamma_multiply(0.25 + h(3) * 0.5))
+                        } else {
+                            color::with_alpha(t.muted_foreground, 0.35)
+                        };
                         s.point_px(eye + p, 0.6 + h(4) * 0.8, c);
                     }
                 });
@@ -395,8 +434,13 @@ struct WarpState {
 impl Widget for Starfield {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
-        let stops = self.colors.clone().unwrap_or_else(|| vec![Color32::WHITE, t.gradient[0], t.gradient[1], Color32::WHITE]);
-        let bg = if t.dark { Background::Radial(color::mix(t.card, t.gradient[0], 0.15), color::mix(t.card, Color32::BLACK, 0.4)) } else { Background::None };
+        let stops =
+            self.colors.clone().unwrap_or_else(|| vec![Color32::WHITE, t.gradient[0], t.gradient[1], Color32::WHITE]);
+        let bg = if t.dark {
+            Background::Radial(color::mix(t.card, t.gradient[0], 0.15), color::mix(t.card, Color32::BLACK, 0.4))
+        } else {
+            Background::None
+        };
         Viewport3D::new(salt_or(&self.id_salt, "starfield"))
             .height(self.height)
             .background(bg)
@@ -436,7 +480,15 @@ impl Widget for Starfield {
                     };
                     scene.line_world(p, tail, 0.016 + h(6) * 0.02, ch, ct);
                     if h(7) > 0.9 {
-                        scene.glow_point(p, 0.12, if dark { crate::additive(base.gamma_multiply(fade * 0.35)) } else { color::with_alpha(base, fade * 0.3) });
+                        scene.glow_point(
+                            p,
+                            0.12,
+                            if dark {
+                                crate::additive(base.gamma_multiply(fade * 0.35))
+                            } else {
+                                color::with_alpha(base, fade * 0.3)
+                            },
+                        );
                     }
                 }
                 let center = scene.rect().center();

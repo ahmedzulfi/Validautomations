@@ -1,6 +1,9 @@
 use crate::overlays::kit;
 use crate::overlays::LineIcon;
-use egui::{pos2, vec2, Align2, CursorIcon, FontId, Key, LayerId, Modifiers, Order, Rect, Sense, Stroke, TextEdit, Ui, UiBuilder};
+use egui::{
+    pos2, vec2, Align2, CursorIcon, FontId, Key, LayerId, Modifiers, Order, Rect, Sense, Stroke, TextEdit, Ui,
+    UiBuilder,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
@@ -92,7 +95,14 @@ pub struct CommandPalette<'a> {
 impl<'a> CommandPalette<'a> {
     /// A palette controlled by `open`.
     pub fn new(open: &'a mut bool) -> Self {
-        Self { open, groups: Vec::new(), placeholder: "Type a command or search…".into(), within: None, width: 560.0, max_height: 340.0 }
+        Self {
+            open,
+            groups: Vec::new(),
+            placeholder: "Type a command or search…".into(),
+            within: None,
+            width: 560.0,
+            max_height: 340.0,
+        }
     }
     /// Add a titled group of commands.
     pub fn group(mut self, title: impl Into<String>, items: Vec<CommandItem>) -> Self {
@@ -193,7 +203,11 @@ impl<'a> CommandPalette<'a> {
         let bid = id.with("backdrop");
         let bclick = kit::float_layer(&ctx, bid, Order::Foreground, area, clip, 1.0, area.center(), p, |ui| {
             let r = ui.interact(area, bid.with("hit"), Sense::click());
-            ui.painter().rect_filled(area, if self.within.is_some() { t.radius } else { 0.0 }, kit::backdrop_color(&t).gamma_multiply(0.8));
+            ui.painter().rect_filled(
+                area,
+                if self.within.is_some() { t.radius } else { 0.0 },
+                kit::backdrop_color(&t).gamma_multiply(0.8),
+            );
             r.clicked()
         });
         ctx.move_to_top(LayerId::new(Order::Foreground, bid));
@@ -204,120 +218,179 @@ impl<'a> CommandPalette<'a> {
         // layout heights
         let row_h = 38.0;
         let head_h = 28.0;
-        let list_h: f32 = if n == 0 { 64.0 } else { groups.iter().map(|(_, g)| head_h + g.len() as f32 * row_h + 6.0).sum::<f32>() + 6.0 };
+        let list_h: f32 = if n == 0 {
+            64.0
+        } else {
+            groups.iter().map(|(_, g)| head_h + g.len() as f32 * row_h + 6.0).sum::<f32>() + 6.0
+        };
         let list_h = list_h.min(self.max_height);
         let input_h = 50.0;
         let footer_h = 36.0;
         let w = self.width.min(area.width() - 32.0);
         let h = input_h + list_h + footer_h;
-        let rect = Rect::from_min_size(pos2(area.center().x - w / 2.0, area.min.y + (area.height() * 0.14).max(16.0) + (1.0 - p) * -8.0), vec2(w, h));
+        let rect = Rect::from_min_size(
+            pos2(area.center().x - w / 2.0, area.min.y + (area.height() * 0.14).max(16.0) + (1.0 - p) * -8.0),
+            vec2(w, h),
+        );
         let lid = id.with("panel");
         let placeholder = self.placeholder.clone();
-        let res = kit::float_layer(&ctx, lid, Order::Foreground, rect.expand(16.0), clip, 0.96 + 0.04 * pop, rect.center(), p, |ui| {
-            ui.interact(rect, lid.with("block"), Sense::click());
-            let pnt = ui.painter().clone();
-            kit::panel(&pnt, rect, &t, t.radius * 1.1);
-            // search row
-            let sr = Rect::from_min_size(rect.min, vec2(w, input_h));
-            LineIcon::Search.paint(&pnt, Rect::from_center_size(pos2(sr.min.x + 22.0, sr.center().y), vec2(17.0, 17.0)), t.muted_foreground);
-            pnt.line_segment([sr.left_bottom(), sr.right_bottom()], Stroke::new(1.0, t.border));
-            let er = Rect::from_min_max(pos2(sr.min.x + 40.0, sr.center().y - 15.0), pos2(sr.max.x - 60.0, sr.center().y + 15.0));
-            let mut child = ui.new_child(UiBuilder::new().max_rect(er));
-            let te = child.add(
-                TextEdit::singleline(&mut query)
-                    .id(lid.with("input"))
-                    .hint_text(placeholder.as_str())
-                    .frame(egui::Frame::NONE)
-                    .font(FontId::proportional(15.0))
-                    .desired_width(er.width())
-                    .margin(vec2(0.0, 6.0)),
-            );
-            if just_opened || (te.lost_focus() && !ui.input(|i| i.key_pressed(Key::Escape))) {
-                te.request_focus();
-            }
-            if te.changed() {
-                sel = 0;
-            }
-            kit::kbd(&pnt, pos2(sr.max.x - 16.0, sr.center().y), "Esc", &t);
-            // list
-            let lr = Rect::from_min_size(pos2(rect.min.x, sr.max.y), vec2(w, list_h));
-            let lp = pnt.with_clip_rect(lr.intersect(clip));
-            let mut picked = None;
-            if n == 0 {
-                lp.text(lr.center(), Align2::CENTER_CENTER, "No results found.", FontId::proportional(14.0), t.muted_foreground);
-            } else {
-                // keep the selection in view
-                let mut sel_y = 0.0;
-                {
-                    let mut yy = 6.0;
-                    for (_, g) in &groups {
-                        yy += head_h;
-                        for (fi, _) in g {
-                            if *fi == sel {
-                                sel_y = yy;
+        let res = kit::float_layer(
+            &ctx,
+            lid,
+            Order::Foreground,
+            rect.expand(16.0),
+            clip,
+            0.96 + 0.04 * pop,
+            rect.center(),
+            p,
+            |ui| {
+                ui.interact(rect, lid.with("block"), Sense::click());
+                let pnt = ui.painter().clone();
+                kit::panel(&pnt, rect, &t, t.radius * 1.1);
+                // search row
+                let sr = Rect::from_min_size(rect.min, vec2(w, input_h));
+                LineIcon::Search.paint(
+                    &pnt,
+                    Rect::from_center_size(pos2(sr.min.x + 22.0, sr.center().y), vec2(17.0, 17.0)),
+                    t.muted_foreground,
+                );
+                pnt.line_segment([sr.left_bottom(), sr.right_bottom()], Stroke::new(1.0, t.border));
+                let er = Rect::from_min_max(
+                    pos2(sr.min.x + 40.0, sr.center().y - 15.0),
+                    pos2(sr.max.x - 60.0, sr.center().y + 15.0),
+                );
+                let mut child = ui.new_child(UiBuilder::new().max_rect(er));
+                let te = child.add(
+                    TextEdit::singleline(&mut query)
+                        .id(lid.with("input"))
+                        .hint_text(placeholder.as_str())
+                        .frame(egui::Frame::NONE)
+                        .font(FontId::proportional(15.0))
+                        .desired_width(er.width())
+                        .margin(vec2(0.0, 6.0)),
+                );
+                if just_opened || (te.lost_focus() && !ui.input(|i| i.key_pressed(Key::Escape))) {
+                    te.request_focus();
+                }
+                if te.changed() {
+                    sel = 0;
+                }
+                kit::kbd(&pnt, pos2(sr.max.x - 16.0, sr.center().y), "Esc", &t);
+                // list
+                let lr = Rect::from_min_size(pos2(rect.min.x, sr.max.y), vec2(w, list_h));
+                let lp = pnt.with_clip_rect(lr.intersect(clip));
+                let mut picked = None;
+                if n == 0 {
+                    lp.text(
+                        lr.center(),
+                        Align2::CENTER_CENTER,
+                        "No results found.",
+                        FontId::proportional(14.0),
+                        t.muted_foreground,
+                    );
+                } else {
+                    // keep the selection in view
+                    let mut sel_y = 0.0;
+                    {
+                        let mut yy = 6.0;
+                        for (_, g) in &groups {
+                            yy += head_h;
+                            for (fi, _) in g {
+                                if *fi == sel {
+                                    sel_y = yy;
+                                }
+                                yy += row_h;
                             }
-                            yy += row_h;
+                            yy += 6.0;
                         }
-                        yy += 6.0;
+                    }
+                    let mut scroll: f32 = glowkit_core::state(ui, lid.with("scroll"), || 0.0);
+                    if sel_y - scroll > list_h - row_h - 6.0 {
+                        scroll = sel_y - list_h + row_h + 6.0;
+                    }
+                    if sel_y - scroll < head_h {
+                        scroll = (sel_y - head_h).max(0.0);
+                    }
+                    let scroll_s = kit::follow_ctx(&ctx, lid.with("scroll_s"), scroll, 20.0);
+                    glowkit_core::set_state(ui, lid.with("scroll"), scroll);
+                    let mut y = lr.min.y + 6.0 - scroll_s;
+                    let hl_target = lr.min.y + sel_y - scroll_s;
+                    let hl = kit::follow_ctx(&ctx, lid.with("hl"), hl_target, 28.0);
+                    let hr = Rect::from_min_size(pos2(lr.min.x + 6.0, hl), vec2(w - 12.0, row_h));
+                    lp.rect_filled(hr, t.radius * 0.6, kit::row_highlight(&t));
+                    for (title, g) in &groups {
+                        lp.text(
+                            pos2(lr.min.x + 16.0, y + head_h / 2.0 + 2.0),
+                            Align2::LEFT_CENTER,
+                            *title,
+                            FontId::proportional(12.0),
+                            t.muted_foreground,
+                        );
+                        y += head_h;
+                        for (fi, it) in g {
+                            let rr = Rect::from_min_size(pos2(lr.min.x + 6.0, y), vec2(w - 12.0, row_h));
+                            if lr.intersects(rr) {
+                                let resp = ui
+                                    .interact(rr.intersect(lr), lid.with(("row", *fi)), Sense::click())
+                                    .on_hover_cursor(CursorIcon::PointingHand);
+                                if resp.hovered() && ui.input(|i| i.pointer.delta() != egui::Vec2::ZERO) {
+                                    sel = *fi;
+                                }
+                                if resp.clicked() {
+                                    picked = Some(it.label.clone());
+                                }
+                                let on = *fi == sel;
+                                let col = if on { t.foreground } else { t.foreground.gamma_multiply(0.92) };
+                                let mut tx = rr.min.x + 12.0;
+                                if let Some(ic) = it.icon {
+                                    ic.paint(
+                                        &lp,
+                                        Rect::from_center_size(pos2(tx + 8.0, rr.center().y), vec2(16.0, 16.0)),
+                                        if on { t.foreground } else { t.muted_foreground },
+                                    );
+                                    tx += 28.0;
+                                }
+                                lp.text(
+                                    pos2(tx, rr.center().y),
+                                    Align2::LEFT_CENTER,
+                                    &it.label,
+                                    FontId::proportional(14.0),
+                                    col,
+                                );
+                                if let Some(s) = &it.shortcut {
+                                    kit::shortcut_text(&lp, pos2(rr.max.x - 12.0, rr.center().y), s, &t);
+                                }
+                            }
+                            y += row_h;
+                        }
+                        y += 6.0;
                     }
                 }
-                let mut scroll: f32 = glowkit_core::state(ui, lid.with("scroll"), || 0.0);
-                if sel_y - scroll > list_h - row_h - 6.0 {
-                    scroll = sel_y - list_h + row_h + 6.0;
+                // footer
+                let fr = Rect::from_min_max(pos2(rect.min.x, rect.max.y - footer_h), rect.max);
+                pnt.line_segment([fr.left_top(), fr.right_top()], Stroke::new(1.0, t.border));
+                pnt.rect_filled(
+                    fr.shrink(1.0),
+                    egui::CornerRadius { nw: 0, ne: 0, sw: (t.radius * 1.1) as u8, se: (t.radius * 1.1) as u8 },
+                    with_alpha(t.muted, 0.5),
+                );
+                let mut fx = fr.min.x + 14.0;
+                for (k, label) in [("↑↓", "to navigate"), ("↵", "to select"), ("esc", "to close")] {
+                    let kw = pnt.layout_no_wrap(k.to_owned(), FontId::proportional(11.0), t.muted_foreground).size().x
+                        + 10.0;
+                    let kr2 = kit::kbd(&pnt, pos2(fx + kw, fr.center().y), k, &t);
+                    let tr = pnt.text(
+                        pos2(kr2.max.x + 6.0, fr.center().y),
+                        Align2::LEFT_CENTER,
+                        label,
+                        FontId::proportional(12.0),
+                        t.muted_foreground,
+                    );
+                    fx = tr.max.x + 16.0;
                 }
-                if sel_y - scroll < head_h {
-                    scroll = (sel_y - head_h).max(0.0);
-                }
-                let scroll_s = kit::follow_ctx(&ctx, lid.with("scroll_s"), scroll, 20.0);
-                glowkit_core::set_state(ui, lid.with("scroll"), scroll);
-                let mut y = lr.min.y + 6.0 - scroll_s;
-                let hl_target = lr.min.y + sel_y - scroll_s;
-                let hl = kit::follow_ctx(&ctx, lid.with("hl"), hl_target, 28.0);
-                let hr = Rect::from_min_size(pos2(lr.min.x + 6.0, hl), vec2(w - 12.0, row_h));
-                lp.rect_filled(hr, t.radius * 0.6, kit::row_highlight(&t));
-                for (title, g) in &groups {
-                    lp.text(pos2(lr.min.x + 16.0, y + head_h / 2.0 + 2.0), Align2::LEFT_CENTER, *title, FontId::proportional(12.0), t.muted_foreground);
-                    y += head_h;
-                    for (fi, it) in g {
-                        let rr = Rect::from_min_size(pos2(lr.min.x + 6.0, y), vec2(w - 12.0, row_h));
-                        if lr.intersects(rr) {
-                            let resp = ui.interact(rr.intersect(lr), lid.with(("row", *fi)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
-                            if resp.hovered() && ui.input(|i| i.pointer.delta() != egui::Vec2::ZERO) {
-                                sel = *fi;
-                            }
-                            if resp.clicked() {
-                                picked = Some(it.label.clone());
-                            }
-                            let on = *fi == sel;
-                            let col = if on { t.foreground } else { t.foreground.gamma_multiply(0.92) };
-                            let mut tx = rr.min.x + 12.0;
-                            if let Some(ic) = it.icon {
-                                ic.paint(&lp, Rect::from_center_size(pos2(tx + 8.0, rr.center().y), vec2(16.0, 16.0)), if on { t.foreground } else { t.muted_foreground });
-                                tx += 28.0;
-                            }
-                            lp.text(pos2(tx, rr.center().y), Align2::LEFT_CENTER, &it.label, FontId::proportional(14.0), col);
-                            if let Some(s) = &it.shortcut {
-                                kit::shortcut_text(&lp, pos2(rr.max.x - 12.0, rr.center().y), s, &t);
-                            }
-                        }
-                        y += row_h;
-                    }
-                    y += 6.0;
-                }
-            }
-            // footer
-            let fr = Rect::from_min_max(pos2(rect.min.x, rect.max.y - footer_h), rect.max);
-            pnt.line_segment([fr.left_top(), fr.right_top()], Stroke::new(1.0, t.border));
-            pnt.rect_filled(fr.shrink(1.0), egui::CornerRadius { nw: 0, ne: 0, sw: (t.radius * 1.1) as u8, se: (t.radius * 1.1) as u8 }, with_alpha(t.muted, 0.5));
-            let mut fx = fr.min.x + 14.0;
-            for (k, label) in [("↑↓", "to navigate"), ("↵", "to select"), ("esc", "to close")] {
-                let kw = pnt.layout_no_wrap(k.to_owned(), FontId::proportional(11.0), t.muted_foreground).size().x + 10.0;
-                let kr2 = kit::kbd(&pnt, pos2(fx + kw, fr.center().y), k, &t);
-                let tr = pnt.text(pos2(kr2.max.x + 6.0, fr.center().y), Align2::LEFT_CENTER, label, FontId::proportional(12.0), t.muted_foreground);
-                fx = tr.max.x + 16.0;
-            }
-            picked
-        });
+                picked
+            },
+        );
         ctx.move_to_top(LayerId::new(Order::Foreground, lid));
         if let Some(c) = res.inner {
             chosen = Some(c);

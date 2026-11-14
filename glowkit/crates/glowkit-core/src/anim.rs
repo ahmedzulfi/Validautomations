@@ -350,10 +350,15 @@ pub fn spring2(ui: &Ui, id: Id, target: egui::Vec2, stiffness: f32, damping: f32
 /// Smoothly follow `target` exponentially (frame-rate independent). Repaints until converged.
 pub fn follow(ui: &Ui, id: Id, target: f32, speed: f32) -> f32 {
     let dt = crate::dt(ui);
-    let v = crate::with_state(ui, id.with("glowkit_follow"), || target, |v| {
-        *v = approach(*v, target, speed, dt);
-        *v
-    });
+    let v = crate::with_state(
+        ui,
+        id.with("glowkit_follow"),
+        || target,
+        |v| {
+            *v = approach(*v, target, speed, dt);
+            *v
+        },
+    );
     if (v - target).abs() > 1e-3 {
         ui.ctx().request_repaint();
     }

@@ -3,8 +3,8 @@
 
 use egui::epaint::Mesh;
 use egui::{
-    pos2, vec2, Align2, Color32, CornerRadius, FontId, Id, LayerId, Order, Painter, Pos2, Rect, Response, Sense,
-    Shape, Stroke, StrokeKind, Ui, Vec2,
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Id, LayerId, Order, Painter, Pos2, Rect, Response, Sense, Shape,
+    Stroke, StrokeKind, Ui, Vec2,
 };
 use glowkit_core::anim::Spring;
 use glowkit_core::color::{shade, with_alpha};
@@ -430,7 +430,11 @@ pub(crate) fn tween(ui: &Ui, id: Id, targets: &[f32]) -> Vec<f32> {
     let (out, settled) = glowkit_core::with_state(
         ui,
         id.with("glowkit_chart_tween"),
-        || TweenState { from: targets.to_vec(), to: targets.to_vec(), spring: Spring { value: 1.0, target: 1.0, ..Spring::new(1.0) } },
+        || TweenState {
+            from: targets.to_vec(),
+            to: targets.to_vec(),
+            spring: Spring { value: 1.0, target: 1.0, ..Spring::new(1.0) },
+        },
         |s| {
             let cur = |s: &TweenState| -> Vec<f32> {
                 s.from.iter().zip(&s.to).map(|(a, b)| a + (b - a) * s.spring.value).collect()
@@ -443,7 +447,8 @@ pub(crate) fn tween(ui: &Ui, id: Id, targets: &[f32]) -> Vec<f32> {
             } else if s.to.iter().zip(targets).any(|(a, b)| (a - b).abs() > 1e-6 * (1.0 + b.abs())) {
                 s.from = cur(s);
                 s.to = targets.to_vec();
-                s.spring = Spring { value: 0.0, velocity: 0.0, target: 1.0, stiffness: 140.0, damping: 20.0, mass: 1.0 };
+                s.spring =
+                    Spring { value: 0.0, velocity: 0.0, target: 1.0, stiffness: 140.0, damping: 20.0, mass: 1.0 };
             }
             s.spring.step(dt);
             let settled = s.spring.is_settled();
@@ -706,7 +711,12 @@ pub(crate) fn y_grid(
             if v == 0.0 && lo < 0.0 {
                 painter.hline(plot.x_range(), y, Stroke::new(1.0, t.muted_foreground.gamma_multiply(0.45)));
             } else {
-                painter.extend(Shape::dashed_line(&[pos2(plot.left(), y), pos2(plot.right(), y)], Stroke::new(1.0, grid_color(t)), 4.0, 4.0));
+                painter.extend(Shape::dashed_line(
+                    &[pos2(plot.left(), y), pos2(plot.right(), y)],
+                    Stroke::new(1.0, grid_color(t)),
+                    4.0,
+                    4.0,
+                ));
             }
         }
         if let Some((x, right)) = labels {
@@ -718,7 +728,16 @@ pub(crate) fn y_grid(
 
 /// Vertical value grid (for horizontal bar charts and scatter x axes).
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn x_grid(painter: &Painter, t: &Theme, plot: Rect, ticks: &Ticks, lo: f64, hi: f64, grid: bool, labels_y: Option<f32>) {
+pub(crate) fn x_grid(
+    painter: &Painter,
+    t: &Theme,
+    plot: Rect,
+    ticks: &Ticks,
+    lo: f64,
+    hi: f64,
+    grid: bool,
+    labels_y: Option<f32>,
+) {
     let font = axis_font();
     let max_abs = ticks.values.iter().fold(0.0f64, |m, v| m.max(v.abs()));
     let labels: Vec<String> = ticks.values.iter().map(|&v| format_tick(v, ticks.step, max_abs)).collect();
@@ -732,7 +751,12 @@ pub(crate) fn x_grid(painter: &Painter, t: &Theme, plot: Rect, ticks: &Ticks, lo
         let x = crisp(painter, x);
         if grid {
             let col = if v == 0.0 && lo < 0.0 { t.muted_foreground.gamma_multiply(0.45) } else { grid_color(t) };
-            painter.extend(Shape::dashed_line(&[pos2(x, plot.top()), pos2(x, plot.bottom())], Stroke::new(1.0, col), 4.0, 4.0));
+            painter.extend(Shape::dashed_line(
+                &[pos2(x, plot.top()), pos2(x, plot.bottom())],
+                Stroke::new(1.0, col),
+                4.0,
+                4.0,
+            ));
         }
         if let Some(y) = labels_y {
             if k % stride == 0 {
@@ -817,7 +841,12 @@ pub(crate) fn legend(ui: &mut Ui, id: Id, area: Rect, entries: &[LegendEntry], h
                 *h = !*h;
             }
         }
-        let hov = glowkit_core::anim::follow(ui, id.with(("glowkit_legend_hov", i)), if resp.hovered() { 1.0 } else { 0.0 }, 18.0);
+        let hov = glowkit_core::anim::follow(
+            ui,
+            id.with(("glowkit_legend_hov", i)),
+            if resp.hovered() { 1.0 } else { 0.0 },
+            18.0,
+        );
         if resp.hovered() {
             // a hidden entry has nothing to focus on
             if !hidden.get(i).copied().unwrap_or(false) {
@@ -830,11 +859,20 @@ pub(crate) fn legend(ui: &mut Ui, id: Id, area: Rect, entries: &[LegendEntry], h
         }
         let dot = Rect::from_center_size(pos2(x + 5.0, cy), vec2(10.0, 10.0));
         if off {
-            painter.rect_stroke(dot.shrink(0.5), CornerRadius::same(3), Stroke::new(1.5, e.color.gamma_multiply(0.6)), StrokeKind::Inside);
+            painter.rect_stroke(
+                dot.shrink(0.5),
+                CornerRadius::same(3),
+                Stroke::new(1.5, e.color.gamma_multiply(0.6)),
+                StrokeKind::Inside,
+            );
         } else {
             painter.rect_filled(dot, CornerRadius::same(3), e.color);
         }
-        let col = if off { t.muted_foreground.gamma_multiply(0.55) } else { t.muted_foreground.lerp_to_gamma(t.foreground, 0.35 + 0.65 * hov) };
+        let col = if off {
+            t.muted_foreground.gamma_multiply(0.55)
+        } else {
+            t.muted_foreground.lerp_to_gamma(t.foreground, 0.35 + 0.65 * hov)
+        };
         let tr = painter.text(pos2(x + 16.0, cy), Align2::LEFT_CENTER, &e.label, font.clone(), col);
         if off {
             painter.hline(tr.x_range(), cy, Stroke::new(1.0, col));
@@ -873,7 +911,8 @@ pub(crate) fn tooltip(ui: &Ui, id: Id, anchor: Pos2, title: &str, rows: &[TipRow
     let font = FontId::proportional(12.0);
     let pad = vec2(11.0, 9.0);
     let row_h = 19.0;
-    let title_g = (!title.is_empty()).then(|| painter.layout_no_wrap(title.to_owned(), title_font.clone(), t.foreground));
+    let title_g =
+        (!title.is_empty()).then(|| painter.layout_no_wrap(title.to_owned(), title_font.clone(), t.foreground));
     let mut label_w: f32 = 0.0;
     let mut value_w: f32 = 0.0;
     for r in rows {
@@ -894,7 +933,14 @@ pub(crate) fn tooltip(ui: &Ui, id: Id, anchor: Pos2, title: &str, rows: &[TipRow
     let rect = Rect::from_min_size(pos, vec2(w, h));
     let a = alpha.clamp(0.0, 1.0);
     let shadow = if t.dark { Color32::from_black_alpha(140) } else { Color32::from_black_alpha(36) };
-    glowkit_core::paint::soft_shadow(&painter, rect.translate(vec2(0.0, 4.0)), 8.0, 18.0, Vec2::ZERO, shadow.gamma_multiply(a));
+    glowkit_core::paint::soft_shadow(
+        &painter,
+        rect.translate(vec2(0.0, 4.0)),
+        8.0,
+        18.0,
+        Vec2::ZERO,
+        shadow.gamma_multiply(a),
+    );
     painter.rect_filled(rect, CornerRadius::same(8), t.popover.gamma_multiply(a));
     painter.rect_stroke(rect, CornerRadius::same(8), Stroke::new(1.0, t.border.gamma_multiply(a)), StrokeKind::Inside);
     let mut y = rect.top() + pad.y;
@@ -907,11 +953,21 @@ pub(crate) fn tooltip(ui: &Ui, id: Id, anchor: Pos2, title: &str, rows: &[TipRow
         let cy = y + row_h / 2.0 - 1.0;
         let mut x = rect.left() + pad.x;
         if let Some(c) = r.color {
-            painter.rect_filled(Rect::from_center_size(pos2(x + 4.5, cy), vec2(9.0, 9.0)), CornerRadius::same(2), c.gamma_multiply(a));
+            painter.rect_filled(
+                Rect::from_center_size(pos2(x + 4.5, cy), vec2(9.0, 9.0)),
+                CornerRadius::same(2),
+                c.gamma_multiply(a),
+            );
             x += 16.0;
         }
         painter.text(pos2(x, cy), Align2::LEFT_CENTER, &r.label, font.clone(), t.muted_foreground.gamma_multiply(a));
-        painter.text(pos2(rect.right() - pad.x, cy), Align2::RIGHT_CENTER, &r.value, font.clone(), t.foreground.gamma_multiply(a));
+        painter.text(
+            pos2(rect.right() - pad.x, cy),
+            Align2::RIGHT_CENTER,
+            &r.value,
+            font.clone(),
+            t.foreground.gamma_multiply(a),
+        );
         y += row_h;
     }
 }
@@ -953,7 +1009,15 @@ pub(crate) fn curve_points(pts: &[Pos2], curve: Curve) -> Vec<Pos2> {
 
 /// Fill between two point lists of equal length (same x's) with a vertical gradient: alpha
 /// `top_a` at the top of `plot` fading to `bottom_a` at the bottom.
-pub(crate) fn band_fill(painter: &Painter, upper: &[Pos2], lower: &[Pos2], plot: Rect, color: Color32, top_a: f32, bottom_a: f32) {
+pub(crate) fn band_fill(
+    painter: &Painter,
+    upper: &[Pos2],
+    lower: &[Pos2],
+    plot: Rect,
+    color: Color32,
+    top_a: f32,
+    bottom_a: f32,
+) {
     let n = upper.len().min(lower.len());
     if n < 2 {
         return;
@@ -1068,10 +1132,12 @@ pub(crate) fn clip_segment_convex(poly: &[Pos2], a: Pos2, b: Pos2) -> Option<(Po
         return None;
     }
     // orientation
-    let area: f32 = (0..n).map(|i| {
-        let (p, q) = (poly[i], poly[(i + 1) % n]);
-        p.x * q.y - q.x * p.y
-    }).sum();
+    let area: f32 = (0..n)
+        .map(|i| {
+            let (p, q) = (poly[i], poly[(i + 1) % n]);
+            p.x * q.y - q.x * p.y
+        })
+        .sum();
     let sign = if area >= 0.0 { 1.0 } else { -1.0 };
     let d = b - a;
     let (mut t0, mut t1) = (0.0f32, 1.0f32);
@@ -1102,7 +1168,15 @@ pub(crate) fn clip_segment_convex(poly: &[Pos2], a: Pos2, b: Pos2) -> Option<(Po
 }
 
 /// Animated diagonal stripes inside a convex outline (pattern fill).
-pub(crate) fn stripes(painter: &Painter, outline: &[Pos2], bounds: Rect, color: Color32, spacing: f32, width: f32, phase: f32) {
+pub(crate) fn stripes(
+    painter: &Painter,
+    outline: &[Pos2],
+    bounds: Rect,
+    color: Color32,
+    spacing: f32,
+    width: f32,
+    phase: f32,
+) {
     let span = bounds.width() + bounds.height();
     let off = (phase * spacing).rem_euclid(spacing);
     let mut s = -bounds.height() - spacing + off;

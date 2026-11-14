@@ -117,7 +117,8 @@ impl Particles {
     pub fn paint(&self, ui: &Ui, rect: Rect) {
         let Some(f) = self.base.begin(ui, rect, "glowkit_particles") else { return };
         let t = &f.theme;
-        let colors = self.colors.clone().unwrap_or_else(|| vec![t.foreground, t.foreground, t.foreground, t.accent, t.chart[1]]);
+        let colors =
+            self.colors.clone().unwrap_or_else(|| vec![t.foreground, t.foreground, t.foreground, t.accent, t.chart[1]]);
         let size = rect.size();
         let mouse = pointer(ui, rect).map(|p| p - rect.min);
         let (dt, time) = (f.dt, f.time);
@@ -178,7 +179,10 @@ impl Particles {
                     let m = rect.min + m;
                     let d = pts[i].distance(m);
                     if d < maxd * 1.4 {
-                        p.line_segment([pts[i], m], Stroke::new(0.8, t.accent.gamma_multiply((1.0 - d / (maxd * 1.4)) * 0.5)));
+                        p.line_segment(
+                            [pts[i], m],
+                            Stroke::new(0.8, t.accent.gamma_multiply((1.0 - d / (maxd * 1.4)) * 0.5)),
+                        );
                     }
                 }
             }
@@ -401,7 +405,11 @@ impl Snowfall {
     pub fn paint(&self, ui: &Ui, rect: Rect) {
         let Some(f) = self.base.begin(ui, rect, "glowkit_snowfall") else { return };
         let t = &f.theme;
-        let color = self.color.unwrap_or(if t.dark { t.foreground } else { glowkit_core::mix(t.muted_foreground, t.accent, 0.25) });
+        let color = self.color.unwrap_or(if t.dark {
+            t.foreground
+        } else {
+            glowkit_core::mix(t.muted_foreground, t.accent, 0.25)
+        });
         let (w, h) = (rect.width() + 40.0, rect.height() + 40.0);
         let time = f.time;
         let dark = f.dark();
@@ -526,7 +534,12 @@ impl Galaxy {
             painter.circle_filled(p, 0.5 + h01(i, 15) * 0.8, star_c.gamma_multiply(0.15 + 0.4 * tw));
         }
         let cc = lut.sample(0.0).to_color();
-        glow_ellipse(painter, c, vec2(radius * 0.75, radius * 0.75 * self.tilt), light(lut.sample(0.45).to_color(), 0.22, dark));
+        glow_ellipse(
+            painter,
+            c,
+            vec2(radius * 0.75, radius * 0.75 * self.tilt),
+            light(lut.sample(0.45).to_color(), 0.22, dark),
+        );
         glow_ellipse(painter, c, vec2(radius * 0.32, radius * 0.32 * self.tilt), light(cc, 0.55, dark));
         let rot = time * 0.08;
         // soft dust glow along the arms
@@ -536,7 +549,12 @@ impl Galaxy {
                 let a = arm as f32 * TAU / self.arms as f32 + d * self.twist + rot * (1.0 + 0.3 / (d + 0.3));
                 let pos = c + vec2(a.cos() * d * radius, a.sin() * d * radius * self.tilt);
                 let col = lut.sample(d).to_color();
-                glow_ellipse(painter, pos, vec2(radius * 0.22, radius * 0.22 * self.tilt.max(0.35)), light(col, 0.13 * (1.0 - d * 0.6), dark));
+                glow_ellipse(
+                    painter,
+                    pos,
+                    vec2(radius * 0.22, radius * 0.22 * self.tilt.max(0.35)),
+                    light(col, 0.13 * (1.0 - d * 0.6), dark),
+                );
             }
         }
         for i in 0..self.stars as u32 {
@@ -639,9 +657,13 @@ impl WarpSpeed {
     pub fn paint(&self, ui: &Ui, rect: Rect) {
         let Some(f) = self.base.begin(ui, rect, "glowkit_warp_speed") else { return };
         let t = &f.theme;
-        let colors = self.colors.clone().unwrap_or_else(|| vec![t.foreground, t.foreground, t.foreground, t.accent, t.chart[1], t.gradient[1]]);
+        let colors = self
+            .colors
+            .clone()
+            .unwrap_or_else(|| vec![t.foreground, t.foreground, t.foreground, t.accent, t.chart[1], t.gradient[1]]);
         let ncol = colors.len().max(1);
-        let pressed = self.warp.unwrap_or_else(|| pointer(ui, rect).is_some() && ui.input(|i| i.pointer.primary_down()));
+        let pressed =
+            self.warp.unwrap_or_else(|| pointer(ui, rect).is_some() && ui.input(|i| i.pointer.primary_down()));
         let dt = f.dt;
         let count = self.count;
         let speed = self.speed;
@@ -649,7 +671,12 @@ impl WarpSpeed {
             let rng = s.rng.get_or_insert_with(|| Rng::new(99));
             if s.stars.len() != count {
                 s.stars = (0..count)
-                    .map(|_| Star3 { x: rng.range(-1.0, 1.0), y: rng.range(-1.0, 1.0), z: rng.range(0.02, 1.0), c: rng.below(ncol) as u8 })
+                    .map(|_| Star3 {
+                        x: rng.range(-1.0, 1.0),
+                        y: rng.range(-1.0, 1.0),
+                        z: rng.range(0.02, 1.0),
+                        c: rng.below(ncol) as u8,
+                    })
                     .collect();
             }
             let target = if pressed { 1.0 } else { 0.0 };
@@ -658,7 +685,12 @@ impl WarpSpeed {
             for st in &mut s.stars {
                 st.z -= v * dt;
                 if st.z <= 0.02 {
-                    *st = Star3 { x: rng.range(-1.0, 1.0), y: rng.range(-1.0, 1.0), z: rng.range(0.85, 1.0), c: rng.below(ncol) as u8 };
+                    *st = Star3 {
+                        x: rng.range(-1.0, 1.0),
+                        y: rng.range(-1.0, 1.0),
+                        z: rng.range(0.85, 1.0),
+                        c: rng.below(ncol) as u8,
+                    };
                 }
             }
             (s.stars.clone(), s.boost)

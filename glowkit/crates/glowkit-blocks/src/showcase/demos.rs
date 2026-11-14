@@ -21,11 +21,23 @@ pub(crate) fn mock_site(ui: &mut Ui) {
     let p = ui.painter().clone();
     let s = (r.width() / 600.0).clamp(0.35, 1.1);
     // backdrop glow
-    paint::glow(&p, pos2(r.center().x, r.min.y + 40.0 * s), r.width() * 0.6, with_alpha(t.gradient[0], if t.dark { 0.25 } else { 0.12 }));
+    paint::glow(
+        &p,
+        pos2(r.center().x, r.min.y + 40.0 * s),
+        r.width() * 0.6,
+        with_alpha(t.gradient[0], if t.dark { 0.25 } else { 0.12 }),
+    );
     // nav
     let ny = r.min.y + 22.0 * s;
     p.circle_filled(pos2(r.min.x + 22.0 * s, ny), 6.0 * s, t.accent);
-    super::util::bold_text(&p, pos2(r.min.x + 34.0 * s, ny), Align2::LEFT_CENTER, "glowkit", FontId::proportional(13.0 * s), t.foreground);
+    super::util::bold_text(
+        &p,
+        pos2(r.min.x + 34.0 * s, ny),
+        Align2::LEFT_CENTER,
+        "glowkit",
+        FontId::proportional(13.0 * s),
+        t.foreground,
+    );
     if r.width() > 300.0 {
         let mut x = r.max.x - 20.0 * s;
         for l in ["Blog", "Components", "Docs"] {
@@ -38,14 +50,26 @@ pub(crate) fn mock_site(ui: &mut Ui) {
     let chip = Rect::from_center_size(pos2(r.center().x, hy - 30.0 * s), vec2(150.0 * s, 20.0 * s));
     p.rect_filled(chip, 99.0, t.muted);
     p.rect_stroke(chip, 99.0, Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
-    p.text(chip.center(), Align2::CENTER_CENTER, "✨ Introducing glowkit", FontId::proportional(9.5 * s), t.muted_foreground);
+    p.text(
+        chip.center(),
+        Align2::CENTER_CENTER,
+        "✨ Introducing glowkit",
+        FontId::proportional(9.5 * s),
+        t.muted_foreground,
+    );
     let g = p.layout_no_wrap("Ship UIs that glow".into(), FontId::proportional(34.0 * s), Color32::WHITE);
     let gp = pos2(r.center().x - g.size().x / 2.0, hy - 10.0 * s);
     let gr = Rect::from_min_size(gp, g.size());
     let stops = [t.gradient[0], t.gradient[1], t.gradient[2]];
     paint::galley_with(&p, gp + vec2(0.5, 0.0), &g, paint::linear_fn(gr, 0.0, &stops));
     paint::galley_with(&p, gp, &g, paint::linear_fn(gr, 0.0, &stops));
-    p.text(pos2(r.center().x, gr.max.y + 14.0 * s), Align2::CENTER_CENTER, "Animated components for Rust, on every platform.", FontId::proportional(11.5 * s), t.muted_foreground);
+    p.text(
+        pos2(r.center().x, gr.max.y + 14.0 * s),
+        Align2::CENTER_CENTER,
+        "Animated components for Rust, on every platform.",
+        FontId::proportional(11.5 * s),
+        t.muted_foreground,
+    );
     let by = gr.max.y + 42.0 * s;
     let b1 = Rect::from_center_size(pos2(r.center().x - 52.0 * s, by), vec2(96.0 * s, 26.0 * s));
     let b2 = Rect::from_center_size(pos2(r.center().x + 52.0 * s, by), vec2(96.0 * s, 26.0 * s));
@@ -60,14 +84,32 @@ pub(crate) fn mock_site(ui: &mut Ui) {
     let gap = 12.0 * s;
     let cw = (r.width() - 40.0 * s - gap * (n as f32 - 1.0)) / n as f32;
     for i in 0..n {
-        let cr = Rect::from_min_size(pos2(r.min.x + 20.0 * s + i as f32 * (cw + gap), cy), vec2(cw, (r.max.y - cy - 16.0 * s).max(40.0)));
+        let cr = Rect::from_min_size(
+            pos2(r.min.x + 20.0 * s + i as f32 * (cw + gap), cy),
+            vec2(cw, (r.max.y - cy - 16.0 * s).max(40.0)),
+        );
         p.rect_filled(cr, 10.0 * s, t.card);
         p.rect_stroke(cr, 10.0 * s, Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
-        let ir = Rect::from_min_size(cr.min + vec2(10.0, 10.0) * s, vec2(cw - 20.0 * s, (cr.height() * 0.45).min(70.0 * s)));
+        let ir =
+            Rect::from_min_size(cr.min + vec2(10.0, 10.0) * s, vec2(cw - 20.0 * s, (cr.height() * 0.45).min(70.0 * s)));
         let c0 = t.chart[i % 6];
-        paint::gradient_rect(&p, ir, 6.0 * s, 35.0, &[with_alpha(c0, 0.9), with_alpha(mix(c0, t.gradient[1], 0.5), 0.5)]);
-        p.rect_filled(Rect::from_min_size(pos2(ir.min.x, ir.max.y + 10.0 * s), vec2(ir.width() * 0.7, 7.0 * s)), 3.0, with_alpha(t.foreground, 0.6));
-        p.rect_filled(Rect::from_min_size(pos2(ir.min.x, ir.max.y + 22.0 * s), vec2(ir.width() * 0.5, 6.0 * s)), 3.0, with_alpha(t.muted_foreground, 0.5));
+        paint::gradient_rect(
+            &p,
+            ir,
+            6.0 * s,
+            35.0,
+            &[with_alpha(c0, 0.9), with_alpha(mix(c0, t.gradient[1], 0.5), 0.5)],
+        );
+        p.rect_filled(
+            Rect::from_min_size(pos2(ir.min.x, ir.max.y + 10.0 * s), vec2(ir.width() * 0.7, 7.0 * s)),
+            3.0,
+            with_alpha(t.foreground, 0.6),
+        );
+        p.rect_filled(
+            Rect::from_min_size(pos2(ir.min.x, ir.max.y + 22.0 * s), vec2(ir.width() * 0.5, 6.0 * s)),
+            3.0,
+            with_alpha(t.muted_foreground, 0.5),
+        );
     }
 }
 
@@ -83,20 +125,50 @@ pub(crate) fn mock_app(ui: &mut Ui, hue: usize) {
     paint::gradient_rect(&p, hero, 0.0, 90.0, &[c0, c0.lerp_to_gamma(c1, 0.6), t.background]);
     paint::glow(&p, hero.center() - vec2(w * 0.2, 0.0), w * 0.6, with_alpha(Color32::WHITE, 0.15));
     let s = w / 200.0;
-    super::util::bold_text(&p, pos2(r.min.x + 16.0 * s, hero.max.y - 64.0 * s), Align2::LEFT_BOTTOM, "Good morning", FontId::proportional(20.0 * s), t.foreground);
-    p.text(pos2(r.min.x + 16.0 * s, hero.max.y - 44.0 * s), Align2::LEFT_CENTER, "3 new updates", FontId::proportional(11.0 * s), t.muted_foreground);
+    super::util::bold_text(
+        &p,
+        pos2(r.min.x + 16.0 * s, hero.max.y - 64.0 * s),
+        Align2::LEFT_BOTTOM,
+        "Good morning",
+        FontId::proportional(20.0 * s),
+        t.foreground,
+    );
+    p.text(
+        pos2(r.min.x + 16.0 * s, hero.max.y - 44.0 * s),
+        Align2::LEFT_CENTER,
+        "3 new updates",
+        FontId::proportional(11.0 * s),
+        t.muted_foreground,
+    );
     for i in 0..5 {
         let y = hero.max.y - 20.0 * s + i as f32 * 46.0 * s;
         let row = Rect::from_min_size(pos2(r.min.x + 12.0 * s, y), vec2(w - 24.0 * s, 38.0 * s));
         p.rect_filled(row, 9.0 * s, t.card);
         p.rect_stroke(row, 9.0 * s, Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
         let cc = t.chart[(hue + i + 1) % 6];
-        p.rect_filled(Rect::from_center_size(pos2(row.min.x + 20.0 * s, row.center().y), vec2(24.0, 24.0) * s), 6.0 * s, cc);
-        p.rect_filled(Rect::from_min_size(pos2(row.min.x + 40.0 * s, row.center().y - 8.0 * s), vec2(row.width() * (0.55 - i as f32 * 0.04), 6.0 * s)), 3.0, with_alpha(t.foreground, 0.7));
-        p.rect_filled(Rect::from_min_size(pos2(row.min.x + 40.0 * s, row.center().y + 3.0 * s), vec2(row.width() * 0.35, 5.0 * s)), 3.0, with_alpha(t.muted_foreground, 0.5));
+        p.rect_filled(
+            Rect::from_center_size(pos2(row.min.x + 20.0 * s, row.center().y), vec2(24.0, 24.0) * s),
+            6.0 * s,
+            cc,
+        );
+        p.rect_filled(
+            Rect::from_min_size(
+                pos2(row.min.x + 40.0 * s, row.center().y - 8.0 * s),
+                vec2(row.width() * (0.55 - i as f32 * 0.04), 6.0 * s),
+            ),
+            3.0,
+            with_alpha(t.foreground, 0.7),
+        );
+        p.rect_filled(
+            Rect::from_min_size(
+                pos2(row.min.x + 40.0 * s, row.center().y + 3.0 * s),
+                vec2(row.width() * 0.35, 5.0 * s),
+            ),
+            3.0,
+            with_alpha(t.muted_foreground, 0.5),
+        );
     }
 }
-
 
 /// A mountain ridge silhouette filling from a noisy skyline down to the bottom of `rect`.
 fn ridge(p: &egui::Painter, rect: Rect, seed: f32, base: f32, amp: f32, top: Color32, bottom: Color32) {
@@ -125,7 +197,11 @@ fn landscape(p: &egui::Painter, rect: Rect, vivid: bool) {
         for i in 0..40u64 {
             let x = glowkit_core::rng::hash01(i * 3 + 1);
             let y = glowkit_core::rng::hash01(i * 5 + 2) * 0.35;
-            p.circle_filled(pos2(rect.min.x + x * rect.width(), rect.min.y + y * rect.height()), 0.6 + glowkit_core::rng::hash01(i) * 0.9, Color32::from_white_alpha(170));
+            p.circle_filled(
+                pos2(rect.min.x + x * rect.width(), rect.min.y + y * rect.height()),
+                0.6 + glowkit_core::rng::hash01(i) * 0.9,
+                Color32::from_white_alpha(170),
+            );
         }
         let sun = pos2(rect.center().x + rect.width() * 0.12, rect.min.y + rect.height() * 0.62);
         paint::glow(p, sun, rect.height() * 0.7, with_alpha(hex("#FDBA74"), 0.55));
@@ -152,7 +228,14 @@ fn mini_app(ui: &mut Ui, rect: Rect, th: &Theme, dark: &mut bool) {
     let head = Rect::from_min_size(rect.min, vec2(rect.width(), 58.0));
     p.line_segment([head.left_bottom(), head.right_bottom()], Stroke::new(1.0, th.border));
     p.circle_filled(pos2(head.min.x + 26.0, head.center().y), 8.0, th.accent);
-    super::util::bold_text(&p, pos2(head.min.x + 42.0, head.center().y), Align2::LEFT_CENTER, "Acme Analytics", FontId::proportional(15.0), th.foreground);
+    super::util::bold_text(
+        &p,
+        pos2(head.min.x + 42.0, head.center().y),
+        Align2::LEFT_CENTER,
+        "Acme Analytics",
+        FontId::proportional(15.0),
+        th.foreground,
+    );
     let tr = Rect::from_center_size(pos2(head.max.x - 32.0, head.center().y), vec2(38.0, 38.0));
     let area = rect;
     ui.put(tr, ThemeToggler::new(dark).size(38.0).reveal(area).reveal_rounding(14.0));
@@ -160,14 +243,29 @@ fn mini_app(ui: &mut Ui, rect: Rect, th: &Theme, dark: &mut bool) {
     let gap = 14.0;
     let cw = (rect.width() - 40.0 - gap * 2.0) / 3.0;
     for (i, (l, v, d)) in labels.iter().enumerate() {
-        let cr = Rect::from_min_size(pos2(rect.min.x + 20.0 + i as f32 * (cw + gap), head.max.y + 20.0), vec2(cw, 86.0));
+        let cr =
+            Rect::from_min_size(pos2(rect.min.x + 20.0 + i as f32 * (cw + gap), head.max.y + 20.0), vec2(cw, 86.0));
         p.rect_filled(cr, 10.0, th.card);
         p.rect_stroke(cr, 10.0, Stroke::new(1.0, th.border), egui::StrokeKind::Inside);
         p.text(cr.min + vec2(14.0, 14.0), Align2::LEFT_TOP, *l, FontId::proportional(12.0), th.muted_foreground);
-        super::util::bold_text(&p, cr.min + vec2(14.0, 36.0), Align2::LEFT_TOP, v, FontId::proportional(22.0), th.foreground);
-        p.text(pos2(cr.max.x - 14.0, cr.min.y + 14.0), Align2::RIGHT_TOP, *d, FontId::proportional(11.5), if d.starts_with('+') { th.success } else { th.destructive });
+        super::util::bold_text(
+            &p,
+            cr.min + vec2(14.0, 36.0),
+            Align2::LEFT_TOP,
+            v,
+            FontId::proportional(22.0),
+            th.foreground,
+        );
+        p.text(
+            pos2(cr.max.x - 14.0, cr.min.y + 14.0),
+            Align2::RIGHT_TOP,
+            *d,
+            FontId::proportional(11.5),
+            if d.starts_with('+') { th.success } else { th.destructive },
+        );
     }
-    let chart = Rect::from_min_max(pos2(rect.min.x + 20.0, head.max.y + 122.0), pos2(rect.max.x - 20.0, rect.max.y - 18.0));
+    let chart =
+        Rect::from_min_max(pos2(rect.min.x + 20.0, head.max.y + 122.0), pos2(rect.max.x - 20.0, rect.max.y - 18.0));
     let pts: Vec<egui::Pos2> = (0..12)
         .map(|i| {
             let u = i as f32 / 11.0;
@@ -201,13 +299,22 @@ fn article(ui: &mut Ui) {
         ("Shipping", "Add the crate, pick a component, and ship something that glows. That is the whole idea."),
     ];
     for (i, (h, body)) in sections.iter().enumerate() {
-        let tag = egui::RichText::new(format!("  Part {}  ", i + 1)).size(11.0).color(t.accent_foreground).background_color(t.accent);
+        let tag = egui::RichText::new(format!("  Part {}  ", i + 1))
+            .size(11.0)
+            .color(t.accent_foreground)
+            .background_color(t.accent);
         ui.label(tag);
         ui.add_space(2.0);
         ui.label(egui::RichText::new(*h).size(20.0).strong().color(t.foreground));
         ui.label(egui::RichText::new(*body).size(14.0).color(t.muted_foreground));
         let (r, _) = ui.allocate_exact_size(vec2(ui.available_width().min(520.0), 90.0), egui::Sense::hover());
-        paint::gradient_rect(ui.painter(), r, 10.0, 20.0, &[with_alpha(t.chart[i % 6], 0.55), with_alpha(t.chart[(i + 1) % 6], 0.25)]);
+        paint::gradient_rect(
+            ui.painter(),
+            r,
+            10.0,
+            20.0,
+            &[with_alpha(t.chart[i % 6], 0.55), with_alpha(t.chart[(i + 1) % 6], 0.25)],
+        );
         ui.add_space(18.0);
     }
 }
@@ -236,9 +343,17 @@ fn scene(p: &egui::Painter, r: Rect, which: usize) {
             for i in 0..60u64 {
                 let x = glowkit_core::rng::hash01(i * 3 + 1);
                 let y = glowkit_core::rng::hash01(i * 5 + 2) * 0.6;
-                p.circle_filled(pos2(r.min.x + x * r.width(), r.min.y + y * r.height()), 0.5 + glowkit_core::rng::hash01(i) * 1.2, Color32::from_white_alpha(200));
+                p.circle_filled(
+                    pos2(r.min.x + x * r.width(), r.min.y + y * r.height()),
+                    0.5 + glowkit_core::rng::hash01(i) * 1.2,
+                    Color32::from_white_alpha(200),
+                );
             }
-            p.circle_filled(pos2(r.min.x + r.width() * 0.7, r.min.y + r.height() * 0.25), r.height() * 0.07, hex("#E0E7FF"));
+            p.circle_filled(
+                pos2(r.min.x + r.width() * 0.7, r.min.y + r.height() * 0.25),
+                r.height() * 0.07,
+                hex("#E0E7FF"),
+            );
             ridge(p, r, 5.0, 0.72, 0.25, hex("#1E293B"), hex("#0F172A"));
         }
     }
@@ -259,7 +374,12 @@ fn bg_demo(ui: &mut Ui, title: &str, light_text: bool, add: impl FnOnce(&mut Ui)
         let col = if light_text { Color32::WHITE } else { t.foreground };
         let g = p.layout_no_wrap(title.to_owned(), FontId::proportional(40.0), Color32::PLACEHOLDER);
         let pos = rect.center() - g.size() / 2.0;
-        paint::glow_ellipse(p, rect.center(), vec2(g.size().x * 0.7, 50.0), Color32::from_black_alpha(if light_text { 70 } else { 0 }));
+        paint::glow_ellipse(
+            p,
+            rect.center(),
+            vec2(g.size().x * 0.7, 50.0),
+            Color32::from_black_alpha(if light_text { 70 } else { 0 }),
+        );
         p.galley(pos + vec2(0.5, 0.0), g.clone(), col);
         p.galley(pos, g, col);
     }

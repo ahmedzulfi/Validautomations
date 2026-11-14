@@ -1,7 +1,10 @@
 use super::common::{theme_card, CardFace};
 use egui::emath::TSTransform;
 use egui::epaint::Mesh;
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, UiBuilder, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, Ui,
+    UiBuilder, Vec2,
+};
 use glowkit_core::anim::Spring;
 use glowkit_core::color::{gradient, mix, with_alpha};
 use glowkit_core::{paint, Theme};
@@ -48,7 +51,17 @@ pub struct Carousel {
 impl Carousel {
     /// A carousel of `count` items.
     pub fn new(count: usize) -> Self {
-        Self { count, item_size: vec2(320.0, 220.0), gap: 20.0, looping: false, autoplay: None, pause_on_hover: true, dots: true, card: true, salt: 0 }
+        Self {
+            count,
+            item_size: vec2(320.0, 220.0),
+            gap: 20.0,
+            looping: false,
+            autoplay: None,
+            pause_on_hover: true,
+            dots: true,
+            card: true,
+            salt: 0,
+        }
     }
     /// Size of each item.
     pub fn item_size(mut self, s: Vec2) -> Self {
@@ -95,7 +108,8 @@ impl Carousel {
     pub fn show(self, ui: &mut Ui, mut item: impl FnMut(&mut Ui, usize)) -> CarouselResponse {
         let n = self.count;
         let dots_h = if self.dots { 34.0 } else { 0.0 };
-        let (rect, response) = ui.allocate_exact_size(vec2(ui.available_width(), self.item_size.y + 24.0 + dots_h), Sense::click_and_drag());
+        let (rect, response) = ui
+            .allocate_exact_size(vec2(ui.available_width(), self.item_size.y + 24.0 + dots_h), Sense::click_and_drag());
         let id = response.id.with(self.salt);
         if n == 0 {
             return CarouselResponse { response, index: 0 };
@@ -107,7 +121,12 @@ impl Carousel {
         let nf = n as f32;
         let looping = self.looping;
         let wrap = |x: f32| if looping { x.rem_euclid(nf) } else { x };
-        let mut st = glowkit_core::state(ui, id.with("st"), || CarouselState { pos: Spring::new(0.0).with(240.0, 26.0), drag_start: 0.0, dragging: false, last_auto: now });
+        let mut st = glowkit_core::state(ui, id.with("st"), || CarouselState {
+            pos: Spring::new(0.0).with(240.0, 26.0),
+            drag_start: 0.0,
+            dragging: false,
+            last_auto: now,
+        });
         if response.drag_started() {
             st.dragging = true;
             st.drag_start = st.pos.value;
@@ -145,7 +164,13 @@ impl Carousel {
                 } else if now - st.last_auto >= every {
                     st.last_auto = now;
                     let next = st.pos.target + 1.0;
-                    st.pos.target = if looping { next } else if next > nf - 1.0 { 0.0 } else { next };
+                    st.pos.target = if looping {
+                        next
+                    } else if next > nf - 1.0 {
+                        0.0
+                    } else {
+                        next
+                    };
                 }
                 glowkit_core::animate(ui);
             }
@@ -184,7 +209,9 @@ impl Carousel {
             let scale = 1.0 - 0.1 * k;
             let alpha = 1.0 - 0.45 * k;
             let r = Rect::from_center_size(center, self.item_size);
-            let tf = TSTransform::from_translation(center.to_vec2()) * TSTransform::from_scaling(scale) * TSTransform::from_translation(-center.to_vec2());
+            let tf = TSTransform::from_translation(center.to_vec2())
+                * TSTransform::from_scaling(scale)
+                * TSTransform::from_translation(-center.to_vec2());
             ui.with_visual_transform(tf, |ui| {
                 let mut child = ui.new_child(UiBuilder::new().max_rect(r.shrink(20.0)).id_salt(("carousel_item", i)));
                 child.set_clip_rect(clip);
@@ -199,7 +226,15 @@ impl Carousel {
             let y = rect.max.y - dots_h / 2.0;
             let gap = 8.0;
             let widths: Vec<f32> = (0..n)
-                .map(|i| glowkit_core::anim::spring(ui, id.with(("dot", i)), if i == index { 22.0 } else { 8.0 }, 300.0, 24.0))
+                .map(|i| {
+                    glowkit_core::anim::spring(
+                        ui,
+                        id.with(("dot", i)),
+                        if i == index { 22.0 } else { 8.0 },
+                        300.0,
+                        24.0,
+                    )
+                })
                 .collect();
             let total: f32 = widths.iter().sum::<f32>() + gap * (nf - 1.0);
             let mut x = c.x - total / 2.0;
@@ -207,7 +242,11 @@ impl Carousel {
             for (i, w) in widths.iter().enumerate() {
                 let d = Rect::from_min_size(pos2(x, y - 4.0), vec2(*w, 8.0));
                 let on = ((w - 8.0) / 14.0).clamp(0.0, 1.0);
-                painter.rect_filled(d, CornerRadius::same(4), mix(with_alpha(t.muted_foreground, 0.35), t.foreground, on));
+                painter.rect_filled(
+                    d,
+                    CornerRadius::same(4),
+                    mix(with_alpha(t.muted_foreground, 0.35), t.foreground, on),
+                );
                 let hit = ui.interact(d.expand(4.0), id.with(("dot_hit", i)), Sense::click());
                 if hit.clicked() {
                     let mut target = i as f32;
@@ -262,7 +301,15 @@ pub struct RingCarousel<'a> {
 impl<'a> RingCarousel<'a> {
     /// A ring of `faces`.
     pub fn new(faces: &'a [CardFace]) -> Self {
-        Self { faces, card_size: vec2(150.0, 200.0), radius: None, speed: 14.0, perspective: 3.0, tilt: 9.0, height: None }
+        Self {
+            faces,
+            card_size: vec2(150.0, 200.0),
+            radius: None,
+            speed: 14.0,
+            perspective: 3.0,
+            tilt: 9.0,
+            height: None,
+        }
     }
     /// Card size in points.
     pub fn card_size(mut self, s: Vec2) -> Self {
@@ -328,7 +375,8 @@ impl egui::Widget for RingCarousel<'_> {
             return response;
         }
         let t = Theme::of(ui);
-        let radius = self.radius.unwrap_or_else(|| (self.card_size.x * 1.3 * n as f32 / TAU).max(self.card_size.x * 0.9));
+        let radius =
+            self.radius.unwrap_or_else(|| (self.card_size.x * 1.3 * n as f32 / TAU).max(self.card_size.x * 0.9));
         let f = radius * self.perspective;
         let c = rect.center() - vec2(0.0, 10.0);
         let (tilt_s, tilt_c) = self.tilt.to_radians().sin_cos();
@@ -341,8 +389,17 @@ impl egui::Widget for RingCarousel<'_> {
         };
         let painter = ui.painter_at(rect);
         // floor shadow
-        paint::glow_ellipse(&painter, c + vec2(0.0, self.card_size.y * 0.62), vec2(radius * 1.3, 26.0), with_alpha(Color32::BLACK, if t.dark { 0.55 } else { 0.12 }));
-        let outline_local = paint::rounded_rect_points(Rect::from_center_size(Pos2::ZERO, self.card_size), (t.radius * 1.4).min(20.0), 5);
+        paint::glow_ellipse(
+            &painter,
+            c + vec2(0.0, self.card_size.y * 0.62),
+            vec2(radius * 1.3, 26.0),
+            with_alpha(Color32::BLACK, if t.dark { 0.55 } else { 0.12 }),
+        );
+        let outline_local = paint::rounded_rect_points(
+            Rect::from_center_size(Pos2::ZERO, self.card_size),
+            (t.radius * 1.4).min(20.0),
+            5,
+        );
         let mut order: Vec<(f32, usize, f32)> = (0..n)
             .map(|i| {
                 let th = st.angle + i as f32 / n as f32 * TAU;
@@ -378,13 +435,26 @@ impl egui::Widget for RingCarousel<'_> {
             }
             painter.add(Shape::mesh(mesh));
             let rim: Vec<Pos2> = outline_local.iter().map(|l| project(world(*l)).0).collect();
-            painter.add(Shape::closed_line(rim, Stroke::new(1.0, with_alpha(Color32::WHITE, 0.18 * (0.3 + 0.7 * depth)))));
+            painter
+                .add(Shape::closed_line(rim, Stroke::new(1.0, with_alpha(Color32::WHITE, 0.18 * (0.3 + 0.7 * depth)))));
             if facing > 0.55 {
                 let a = ((facing - 0.55) / 0.3).min(1.0) * (1.0 - fog);
                 let (ip, _) = project(world(pos2(0.0, -half.y * 0.15)));
-                painter.text(ip, Align2::CENTER_CENTER, &face.icon, FontId::proportional(self.card_size.y * 0.24 * s), with_alpha(Color32::WHITE, a));
+                painter.text(
+                    ip,
+                    Align2::CENTER_CENTER,
+                    &face.icon,
+                    FontId::proportional(self.card_size.y * 0.24 * s),
+                    with_alpha(Color32::WHITE, a),
+                );
                 let (tp, _) = project(world(pos2(0.0, half.y * 0.5)));
-                painter.text(tp, Align2::CENTER_CENTER, &face.title, FontId::proportional((self.card_size.y * 0.085 * s).max(1.0)), with_alpha(Color32::WHITE, a));
+                painter.text(
+                    tp,
+                    Align2::CENTER_CENTER,
+                    &face.title,
+                    FontId::proportional((self.card_size.y * 0.085 * s).max(1.0)),
+                    with_alpha(Color32::WHITE, a),
+                );
             }
         }
         response

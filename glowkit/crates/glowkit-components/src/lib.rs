@@ -2,17 +2,17 @@
 //!
 //! Modules are re-exported at the crate root, so `glowkit_components::Thing` works for every component.
 
-pub mod inputs;
+pub mod data;
 pub mod feedback;
+pub mod inputs;
 pub mod navigation;
 pub mod overlays;
-pub mod data;
 
-pub use inputs::*;
+pub use data::*;
 pub use feedback::*;
+pub use inputs::*;
 pub use navigation::*;
 pub use overlays::*;
-pub use data::*;
 
 /// Gallery demos for this crate.
 #[cfg(feature = "demos")]

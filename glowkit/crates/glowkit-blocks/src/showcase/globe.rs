@@ -71,21 +71,27 @@ pub(crate) fn update_spin(ui: &Ui, resp: &Response, id: egui::Id, auto: Vec2, pi
     let dt = glowkit_core::dt(ui);
     let drag = resp.drag_delta();
     let dragging = resp.dragged();
-    glowkit_core::with_state(ui, id.with("spin"), || Spin { yaw: 0.0, pitch: pitch0, vel: Vec2::ZERO }, |s| {
-        if dragging {
-            let v = drag * sensitivity / dt.max(1e-3);
-            s.vel = s.vel * 0.5 + v * 0.5;
-            s.yaw += drag.x * sensitivity;
-            s.pitch = (s.pitch + drag.y * sensitivity).clamp(-1.2, 1.2);
-        } else {
-            s.vel *= (-2.5 * dt).exp();
-            s.yaw += (s.vel.x + auto.x) * dt;
-            s.pitch = (s.pitch + s.vel.y * dt).clamp(-1.2, 1.2);
-            // drift back toward the resting tilt
-            s.pitch += (pitch0 - s.pitch) * (1.0 - (-0.8 * dt).exp()) * if s.vel.length() < 0.3 { 1.0 } else { 0.0 };
-        }
-        *s
-    })
+    glowkit_core::with_state(
+        ui,
+        id.with("spin"),
+        || Spin { yaw: 0.0, pitch: pitch0, vel: Vec2::ZERO },
+        |s| {
+            if dragging {
+                let v = drag * sensitivity / dt.max(1e-3);
+                s.vel = s.vel * 0.5 + v * 0.5;
+                s.yaw += drag.x * sensitivity;
+                s.pitch = (s.pitch + drag.y * sensitivity).clamp(-1.2, 1.2);
+            } else {
+                s.vel *= (-2.5 * dt).exp();
+                s.yaw += (s.vel.x + auto.x) * dt;
+                s.pitch = (s.pitch + s.vel.y * dt).clamp(-1.2, 1.2);
+                // drift back toward the resting tilt
+                s.pitch +=
+                    (pitch0 - s.pitch) * (1.0 - (-0.8 * dt).exp()) * if s.vel.length() < 0.3 { 1.0 } else { 0.0 };
+            }
+            *s
+        },
+    )
 }
 
 /// A marker on the [`Globe`], at a latitude / longitude in degrees.
@@ -228,37 +234,47 @@ impl Widget for Globe {
         }
         let land_only = self.land_only;
         let n = self.dots;
-        let lattice: Lattice = glowkit_core::with_state(ui, id.with(("lattice", n, land_only)), || {
-            Arc::new(
-                fibonacci(n)
-                    .into_iter()
-                    .filter_map(|p| {
-                        let v = fbm3(p.x * 1.7 + 3.1, p.y * 1.7 - 1.3, p.z * 1.7 + 0.7, 4);
-                        let polar = p.y.abs() > 0.88;
-                        let land = v > 0.02 && !polar;
-                        if land || !land_only {
-                            Some((p, ((v - 0.02) * 6.0).clamp(0.0, 1.0)))
-                        } else {
-                            None
-                        }
-                    })
-                    .collect(),
-            )
-        }, |l: &mut Lattice| l.clone());
+        let lattice: Lattice = glowkit_core::with_state(
+            ui,
+            id.with(("lattice", n, land_only)),
+            || {
+                Arc::new(
+                    fibonacci(n)
+                        .into_iter()
+                        .filter_map(|p| {
+                            let v = fbm3(p.x * 1.7 + 3.1, p.y * 1.7 - 1.3, p.z * 1.7 + 0.7, 4);
+                            let polar = p.y.abs() > 0.88;
+                            let land = v > 0.02 && !polar;
+                            if land || !land_only {
+                                Some((p, ((v - 0.02) * 6.0).clamp(0.0, 1.0)))
+                            } else {
+                                None
+                            }
+                        })
+                        .collect(),
+                )
+            },
+            |l: &mut Lattice| l.clone(),
+        );
 
         let time = glowkit_core::time(ui);
         let c = rect.center();
         let r = self.radius;
         let p = ui.painter_at(rect.expand(30.0));
         let accent = self.glow.unwrap_or(t.accent);
-        let dot = self.dot_color.unwrap_or(if t.dark { mix(t.foreground, accent, 0.15) } else { mix(t.foreground, accent, 0.25) });
+        let dot = self.dot_color.unwrap_or(if t.dark {
+            mix(t.foreground, accent, 0.15)
+        } else {
+            mix(t.foreground, accent, 0.25)
+        });
         let marker = self.marker_color.unwrap_or(t.accent);
         let arc_cols = self.arc_colors.unwrap_or([t.gradient[0], t.gradient[1]]);
 
         // halo + body
         paint::glow(&p, c, r * 1.45, with_alpha(accent, if t.dark { 0.20 } else { 0.12 }));
         let body_hi = if t.dark { mix(t.background, accent, 0.10) } else { mix(Color32::WHITE, accent, 0.05) };
-        let body_lo = if t.dark { mix(t.background, Color32::BLACK, 0.3) } else { mix(t.background, t.muted_foreground, 0.12) };
+        let body_lo =
+            if t.dark { mix(t.background, Color32::BLACK, 0.3) } else { mix(t.background, t.muted_foreground, 0.12) };
         let light = c + vec2(-r * 0.35, -r * 0.45);
         let pts = paint::circle_points(c, r, 96);
         paint::fill_convex_fn(&p, &pts, 8, |q| {
@@ -290,9 +306,11 @@ impl Widget for Globe {
         }
         p.add(Shape::mesh(m));
 
-        let visible = |v: V3| v.z >= 0.0 || {
-            let d = vec2(v.x, v.y).length();
-            d > 1.0
+        let visible = |v: V3| {
+            v.z >= 0.0 || {
+                let d = vec2(v.x, v.y).length();
+                d > 1.0
+            }
         };
 
         // arcs
@@ -485,7 +503,14 @@ impl Widget for IconCloud {
             let top = mix(ic.color, Color32::WHITE, 0.18);
             let bot = mix(ic.color, Color32::BLACK, 0.18);
             if depth > 0.6 {
-                paint::soft_shadow(&p, r, cr, 10.0, vec2(0.0, 3.0), Color32::from_black_alpha((60.0 * (depth - 0.6) * 2.5) as u8));
+                paint::soft_shadow(
+                    &p,
+                    r,
+                    cr,
+                    10.0,
+                    vec2(0.0, 3.0),
+                    Color32::from_black_alpha((60.0 * (depth - 0.6) * 2.5) as u8),
+                );
             }
             let outline = paint::rounded_rect_points(r, cr, 5);
             paint::fill_convex_fn(&p, &outline, 1, |q| {
@@ -495,7 +520,14 @@ impl Widget for IconCloud {
             });
             let fg = glowkit_core::color::contrast_text(ic.color);
             let fs = s * if ic.glyph.chars().count() > 2 { 0.34 } else { 0.44 };
-            bold_text(&p, r.center(), Align2::CENTER_CENTER, &ic.glyph, FontId::proportional(fs), with_alpha(fg, alpha));
+            bold_text(
+                &p,
+                r.center(),
+                Align2::CENTER_CENTER,
+                &ic.glyph,
+                FontId::proportional(fs),
+                with_alpha(fg, alpha),
+            );
         }
         resp
     }

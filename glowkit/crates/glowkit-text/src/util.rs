@@ -1,7 +1,7 @@
 //! Private helpers shared by the text effects in this crate.
 
-use egui::epaint::{Mesh, TextShape, Vertex};
 use egui::emath::Rot2;
+use egui::epaint::{Mesh, TextShape, Vertex};
 use egui::{pos2, vec2, Color32, FontId, Galley, Id, Painter, Pos2, Ui, Vec2};
 use glowkit_core::text::Glyphs;
 use std::sync::Arc;
@@ -82,7 +82,11 @@ pub(crate) fn paint_galley_mapped(
         if src.is_empty() {
             continue;
         }
-        let mut mesh = Mesh { indices: src.indices.clone(), vertices: Vec::with_capacity(src.vertices.len()), ..Default::default() };
+        let mut mesh = Mesh {
+            indices: src.indices.clone(),
+            vertices: Vec::with_capacity(src.vertices.len()),
+            ..Default::default()
+        };
         for v in &src.vertices {
             let p = map(row.pos.to_vec2() + v.pos.to_vec2());
             mesh.vertices.push(Vertex { pos: p, uv: pos2(v.uv.x * norm.x, v.uv.y * norm.y), color: color_at(p) });
@@ -160,11 +164,16 @@ pub(crate) fn paint_char_in(
 pub(crate) fn ramp(ui: &Ui, id: Id, on: bool, seconds: f32) -> f32 {
     let dt = glowkit_core::dt(ui);
     let target = if on { 1.0 } else { 0.0 };
-    let v = glowkit_core::with_state(ui, id.with("glowkit_ramp"), || target, |v: &mut f32| {
-        let step = dt / seconds.max(1e-3);
-        *v = if *v < target { (*v + step).min(target) } else { (*v - step).max(target) };
-        *v
-    });
+    let v = glowkit_core::with_state(
+        ui,
+        id.with("glowkit_ramp"),
+        || target,
+        |v: &mut f32| {
+            let step = dt / seconds.max(1e-3);
+            *v = if *v < target { (*v + step).min(target) } else { (*v - step).max(target) };
+            *v
+        },
+    );
     if v != target {
         ui.ctx().request_repaint();
     }
@@ -183,7 +192,14 @@ pub(crate) fn bump(t: f32) -> f32 {
 
 /// Fake gaussian blur for a placeholder-colored galley (see [`layout`]): rings of offset copies
 /// at low alpha (more rings for bigger radii). `radius` near 0 paints the text normally.
-pub(crate) fn paint_blurred(painter: &Painter, pos: Pos2, galley: &Arc<Galley>, color: Color32, radius: f32, bold: f32) {
+pub(crate) fn paint_blurred(
+    painter: &Painter,
+    pos: Pos2,
+    galley: &Arc<Galley>,
+    color: Color32,
+    radius: f32,
+    bold: f32,
+) {
     if color.a() == 0 {
         return;
     }
@@ -223,7 +239,11 @@ pub(crate) fn glyphs(painter: &Painter, text: &str, font: FontId, wrap: Option<f
     let mut i = 0;
     while i < n {
         let mut j = i + 1;
-        while j < n && g.glyphs[j].size.x <= 1e-3 && g.glyphs[j].line == g.glyphs[i].line && !g.glyphs[j].ch.is_whitespace() {
+        while j < n
+            && g.glyphs[j].size.x <= 1e-3
+            && g.glyphs[j].line == g.glyphs[i].line
+            && !g.glyphs[j].ch.is_whitespace()
+        {
             j += 1;
         }
         if j > i + 1 {

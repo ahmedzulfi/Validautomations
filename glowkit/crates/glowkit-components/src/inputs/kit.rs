@@ -82,7 +82,15 @@ pub(crate) fn field_fill(t: &Theme) -> Color32 {
 }
 
 /// Paint the chrome of a text-like field (background, border, hover and focus/error ring).
-pub(crate) fn field_chrome(painter: &Painter, rect: Rect, t: &Theme, hover: f32, focus: f32, error: bool, disabled: bool) {
+pub(crate) fn field_chrome(
+    painter: &Painter,
+    rect: Rect,
+    t: &Theme,
+    hover: f32,
+    focus: f32,
+    error: bool,
+    disabled: bool,
+) {
     let r = control_radius(t);
     let mut fill = field_fill(t);
     if disabled {
@@ -90,9 +98,17 @@ pub(crate) fn field_chrome(painter: &Painter, rect: Rect, t: &Theme, hover: f32,
     }
     let base = if hover > 0.0 { t.input.lerp_to_gamma(t.muted_foreground, 0.25 * hover) } else { t.input };
     let accent = if error { t.destructive } else { t.ring };
-    let border = if error { t.destructive.lerp_to_gamma(base, 0.25 * (1.0 - focus)) } else { base.lerp_to_gamma(accent, focus) };
+    let border =
+        if error { t.destructive.lerp_to_gamma(base, 0.25 * (1.0 - focus)) } else { base.lerp_to_gamma(accent, focus) };
     if !t.dark && !disabled {
-        glowkit_core::paint::soft_shadow(painter, rect, r.nw as f32, 2.0, vec2(0.0, 1.0), Color32::from_black_alpha(10));
+        glowkit_core::paint::soft_shadow(
+            painter,
+            rect,
+            r.nw as f32,
+            2.0,
+            vec2(0.0, 1.0),
+            Color32::from_black_alpha(10),
+        );
     }
     painter.rect(rect, r, fill, Stroke::new(1.0, border), StrokeKind::Inside);
     focus_halo(painter, rect, r, accent, if error { focus.max(0.35) } else { focus });
@@ -105,7 +121,14 @@ pub(crate) fn snap(ui: &Ui, v: f32) -> f32 {
 }
 
 /// Paint a single line of text and return its rect.
-pub(crate) fn text_at(painter: &Painter, pos: Pos2, align: egui::Align2, text: &str, size: f32, color: Color32) -> Rect {
+pub(crate) fn text_at(
+    painter: &Painter,
+    pos: Pos2,
+    align: egui::Align2,
+    text: &str,
+    size: f32,
+    color: Color32,
+) -> Rect {
     painter.text(pos, align, text, FontId::proportional(size), color)
 }
 
@@ -242,7 +265,12 @@ impl UiIcon {
             painter.circle_filled(p(x, y), r * k, color);
         };
         let rrect = |x0: f32, y0: f32, x1: f32, y1: f32, r: f32| {
-            painter.rect_stroke(Rect::from_min_max(p(x0, y0), p(x1, y1)), CornerRadius::same((r * k).round() as u8), st, StrokeKind::Middle);
+            painter.rect_stroke(
+                Rect::from_min_max(p(x0, y0), p(x1, y1)),
+                CornerRadius::same((r * k).round() as u8),
+                st,
+                StrokeKind::Middle,
+            );
         };
         let arc = |cx: f32, cy: f32, r: f32, a0: f32, a1: f32| -> Vec<Pos2> {
             let n = 16;
@@ -278,7 +306,11 @@ impl UiIcon {
             }
             UiIcon::Eye | UiIcon::EyeOff => {
                 let mut pts = glowkit_core::paint::quad_bezier(p(2.0, 12.0), p(12.0, 2.5), p(22.0, 12.0), 14);
-                pts.extend(glowkit_core::paint::quad_bezier(p(22.0, 12.0), p(12.0, 21.5), p(2.0, 12.0), 14).into_iter().skip(1));
+                pts.extend(
+                    glowkit_core::paint::quad_bezier(p(22.0, 12.0), p(12.0, 21.5), p(2.0, 12.0), 14)
+                        .into_iter()
+                        .skip(1),
+                );
                 painter.add(Shape::closed_line(pts, st));
                 circle(12.0, 12.0, 3.0);
                 if self == UiIcon::EyeOff {
@@ -438,14 +470,45 @@ impl UiIcon {
                 line(&[(6.0, 18.0), (21.0, 18.0)]);
             }
             UiIcon::File => {
-                closed(&[(14.0, 2.0), (6.0, 2.0), (4.5, 3.5), (4.5, 20.5), (6.0, 22.0), (18.0, 22.0), (19.5, 20.5), (19.5, 7.5)]);
+                closed(&[
+                    (14.0, 2.0),
+                    (6.0, 2.0),
+                    (4.5, 3.5),
+                    (4.5, 20.5),
+                    (6.0, 22.0),
+                    (18.0, 22.0),
+                    (19.5, 20.5),
+                    (19.5, 7.5),
+                ]);
                 line(&[(14.0, 2.0), (14.0, 7.5), (19.5, 7.5)]);
             }
             UiIcon::Folder => {
-                closed(&[(2.5, 5.5), (3.5, 4.0), (9.5, 4.0), (11.5, 7.0), (20.5, 7.0), (21.5, 8.0), (21.5, 19.0), (20.5, 20.0), (3.5, 20.0), (2.5, 19.0)]);
+                closed(&[
+                    (2.5, 5.5),
+                    (3.5, 4.0),
+                    (9.5, 4.0),
+                    (11.5, 7.0),
+                    (20.5, 7.0),
+                    (21.5, 8.0),
+                    (21.5, 19.0),
+                    (20.5, 20.0),
+                    (3.5, 20.0),
+                    (2.5, 19.0),
+                ]);
             }
             UiIcon::FolderOpen => {
-                line(&[(5.0, 20.0), (3.5, 20.0), (2.5, 19.0), (2.5, 5.0), (3.5, 4.0), (9.5, 4.0), (11.5, 7.0), (18.0, 7.0), (19.0, 8.0), (19.0, 10.0)]);
+                line(&[
+                    (5.0, 20.0),
+                    (3.5, 20.0),
+                    (2.5, 19.0),
+                    (2.5, 5.0),
+                    (3.5, 4.0),
+                    (9.5, 4.0),
+                    (11.5, 7.0),
+                    (18.0, 7.0),
+                    (19.0, 8.0),
+                    (19.0, 10.0),
+                ]);
                 closed(&[(5.0, 10.0), (22.0, 10.0), (19.0, 20.0), (2.5, 20.0)]);
             }
             UiIcon::Home => {
@@ -469,7 +532,9 @@ impl UiIcon {
                 dot(12.0, 12.0, 1.7);
                 dot(19.0, 12.0, 1.7);
             }
-            UiIcon::Filter => closed(&[(3.0, 4.0), (21.0, 4.0), (14.0, 12.5), (14.0, 20.0), (10.0, 18.0), (10.0, 12.5)]),
+            UiIcon::Filter => {
+                closed(&[(3.0, 4.0), (21.0, 4.0), (14.0, 12.5), (14.0, 20.0), (10.0, 18.0), (10.0, 12.5)])
+            }
             UiIcon::Clock => {
                 circle(12.0, 12.0, 10.0);
                 line(&[(12.0, 6.0), (12.0, 12.0), (16.0, 14.0)]);
@@ -516,7 +581,10 @@ impl UiIcon {
                 };
                 for c in [p(8.8, 15.2), p(15.2, 8.8)] {
                     let rr = Rect::from_center_size(c, r.size());
-                    let pts: Vec<Pos2> = glowkit_core::paint::rounded_rect_points(rr, 3.25 * k, 6).into_iter().map(|q| rot(q, c)).collect();
+                    let pts: Vec<Pos2> = glowkit_core::paint::rounded_rect_points(rr, 3.25 * k, 6)
+                        .into_iter()
+                        .map(|q| rot(q, c))
+                        .collect();
                     painter.add(Shape::closed_line(pts, st));
                 }
             }

@@ -69,7 +69,11 @@ impl MagicCard {
                 let (ptr, k) = tracked_pointer(ui, ctx, self.ambient, 0.0);
                 let p = ui.painter();
                 card_surface(p, &t, rect, radius, base.background(&t), None);
-                let spot = self.spot_color.unwrap_or(if t.dark { with_alpha(Color32::WHITE, 0.09) } else { with_alpha(t.accent, 0.08) });
+                let spot = self.spot_color.unwrap_or(if t.dark {
+                    with_alpha(Color32::WHITE, 0.09)
+                } else {
+                    with_alpha(t.accent, 0.08)
+                });
                 let size = self.gradient_size;
                 if k > 0.01 {
                     shade_rounded(p, rect, radius, 10.0, |q| spot.gamma_multiply(falloff(q.distance(ptr), size) * k));
@@ -143,10 +147,16 @@ impl SpotlightCard {
                 let p = ui.painter();
                 let bg = base.background.unwrap_or(if t.dark { mix(t.card, t.background, 0.5) } else { t.card });
                 card_surface(p, &t, rect, radius, bg, Some(t.border));
-                let color = self.color.unwrap_or(if t.dark { with_alpha(Color32::WHITE, 0.16) } else { with_alpha(t.accent, 0.12) });
+                let color = self.color.unwrap_or(if t.dark {
+                    with_alpha(Color32::WHITE, 0.16)
+                } else {
+                    with_alpha(t.accent, 0.12)
+                });
                 let r = self.radius_light;
                 if k > 0.01 {
-                    shade_rounded(p, rect.shrink(1.0), radius - 1.0, 10.0, |q| color.gamma_multiply(falloff(q.distance(ptr), r).powf(1.4) * k));
+                    shade_rounded(p, rect.shrink(1.0), radius - 1.0, 10.0, |q| {
+                        color.gamma_multiply(falloff(q.distance(ptr), r).powf(1.4) * k)
+                    });
                     if self.dots {
                         let step = 16.0;
                         let dot = if t.dark { t.gradient[0] } else { t.accent };
@@ -165,7 +175,9 @@ impl SpotlightCard {
                         }
                     }
                     // brighter rim where the light touches the border
-                    util::border_fn(p, rect, radius, 1.0, |q, _| color.gamma_multiply(falloff(q.distance(ptr), r * 0.8) * k * 2.5));
+                    util::border_fn(p, rect, radius, 1.0, |q, _| {
+                        color.gamma_multiply(falloff(q.distance(ptr), r * 0.8) * k * 2.5)
+                    });
                 }
                 Content::default()
             },
@@ -212,7 +224,12 @@ impl GlowingBorderCard {
     pub fn new() -> Self {
         Self {
             base: Base::default(),
-            colors: vec![glowkit_core::hex("#DD7BBB"), glowkit_core::hex("#D79F1E"), glowkit_core::hex("#5A922C"), glowkit_core::hex("#4C7894")],
+            colors: vec![
+                glowkit_core::hex("#DD7BBB"),
+                glowkit_core::hex("#D79F1E"),
+                glowkit_core::hex("#5A922C"),
+                glowkit_core::hex("#4C7894"),
+            ],
             spread: 60.0,
             proximity: 80.0,
             thickness: 2.0,
@@ -249,7 +266,9 @@ impl GlowingBorderCard {
                 let c = rect.center();
                 let time = glowkit_core::time(ui);
                 let dt = glowkit_core::dt(ui);
-                let near = ui.input(|i| i.pointer.hover_pos()).filter(|p| rect.expand(self.proximity).contains(*p) && ui.clip_rect().contains(*p));
+                let near = ui
+                    .input(|i| i.pointer.hover_pos())
+                    .filter(|p| rect.expand(self.proximity).contains(*p) && ui.clip_rect().contains(*p));
                 let (target, active) = match near {
                     Some(p) => {
                         let d = p - c;
@@ -259,23 +278,28 @@ impl GlowingBorderCard {
                     None => (f32::NAN, false),
                 };
                 let key = ctx.id.with("angle");
-                let ang = glowkit_core::with_state(ui, key, || AngleState { angle: if target.is_nan() { 0.0 } else { target }, vel: 0.0 }, |s| {
-                    if !target.is_nan() {
-                        let mut d = (target - s.angle).rem_euclid(TAU);
-                        if d > TAU / 2.0 {
-                            d -= TAU;
+                let ang = glowkit_core::with_state(
+                    ui,
+                    key,
+                    || AngleState { angle: if target.is_nan() { 0.0 } else { target }, vel: 0.0 },
+                    |s| {
+                        if !target.is_nan() {
+                            let mut d = (target - s.angle).rem_euclid(TAU);
+                            if d > TAU / 2.0 {
+                                d -= TAU;
+                            }
+                            let steps = 4;
+                            let h = dt / steps as f32;
+                            for _ in 0..steps {
+                                let f = 120.0 * d - 20.0 * s.vel;
+                                s.vel += f * h;
+                                s.angle += s.vel * h;
+                                d -= s.vel * h;
+                            }
                         }
-                        let steps = 4;
-                        let h = dt / steps as f32;
-                        for _ in 0..steps {
-                            let f = 120.0 * d - 20.0 * s.vel;
-                            s.vel += f * h;
-                            s.angle += s.vel * h;
-                            d -= s.vel * h;
-                        }
-                    }
-                    s.angle
-                });
+                        s.angle
+                    },
+                );
                 let k = glowkit_core::anim::follow(ui, ctx.id.with("on"), if active { 1.0 } else { 0.0 }, 6.0);
                 if active || k > 0.001 {
                     glowkit_core::animate(ui);
@@ -401,10 +425,14 @@ impl EncryptedCard {
                         if (y + lh / 2.0 - ptr.y).abs() > rr {
                             continue;
                         }
-                        let mut rng = Rng::new(ctx.id.value() ^ (row as u64).wrapping_mul(0x9E37_79B9) ^ tick.wrapping_mul(0x85EB_CA6B));
+                        let mut rng = Rng::new(
+                            ctx.id.value() ^ (row as u64).wrapping_mul(0x9E37_79B9) ^ tick.wrapping_mul(0x85EB_CA6B),
+                        );
                         let line: String = (0..cols).map(|_| chars[rng.below(chars.len())]).collect();
                         let g = clip.layout_no_wrap(line, font.clone(), ink);
-                        paint::galley_with(&clip, pos2(rect.min.x + 4.0, y), &g, |q| with_alpha(ink, (mask(q) * 1.3).min(1.0) * 0.9));
+                        paint::galley_with(&clip, pos2(rect.min.x + 4.0, y), &g, |q| {
+                            with_alpha(ink, (mask(q) * 1.3).min(1.0) * 0.9)
+                        });
                     }
                 }
                 if let Some(b) = &self.badge {
@@ -412,7 +440,11 @@ impl EncryptedCard {
                     let g = p.layout_no_wrap(b.clone(), FontId::proportional(22.0), t.foreground);
                     let r = (g.size().x / 2.0 + 22.0).max(44.0);
                     paint::glow(p, c, r * 1.6, with_alpha(if t.dark { Color32::BLACK } else { Color32::WHITE }, 0.6));
-                    p.circle_filled(c, r, if t.dark { with_alpha(t.background, 0.85) } else { with_alpha(Color32::WHITE, 0.9) });
+                    p.circle_filled(
+                        c,
+                        r,
+                        if t.dark { with_alpha(t.background, 0.85) } else { with_alpha(Color32::WHITE, 0.9) },
+                    );
                     p.circle_stroke(c, r, egui::Stroke::new(1.0, t.border));
                     util::galley_centered(p, &g, c, t.foreground);
                 }
@@ -481,7 +513,12 @@ impl PixelCard {
                 if self.ambient {
                     glowkit_core::animate(ui);
                 }
-                let h = glowkit_core::anim::follow(ui, ctx.id.with("h"), if on { 1.0 } else { 0.0 }, if on { 1.8 } else { 3.0 });
+                let h = glowkit_core::anim::follow(
+                    ui,
+                    ctx.id.with("h"),
+                    if on { 1.0 } else { 0.0 },
+                    if on { 1.8 } else { 3.0 },
+                );
                 let p = ui.painter();
                 let bg = base.background.unwrap_or(if t.dark { mix(t.card, t.background, 0.5) } else { t.card });
                 card_surface(p, &t, rect, radius, bg, Some(t.border));
@@ -522,7 +559,8 @@ impl PixelCard {
                         if s < 0.3 {
                             continue;
                         }
-                        let col = colors[(glowkit_core::rng::hash01(seed ^ 0xABCD) * colors.len() as f32) as usize % colors.len()];
+                        let col = colors
+                            [(glowkit_core::rng::hash01(seed ^ 0xABCD) * colors.len() as f32) as usize % colors.len()];
                         let col = col.gamma_multiply((0.3 + 0.5 * k) * if t.dark { 1.0 } else { 0.85 });
                         let idx = mesh.vertices.len() as u32;
                         mesh.colored_vertex(q + vec2(-s, -s), col);
@@ -578,7 +616,15 @@ struct GlareState {
 impl GlareCard {
     /// A glare card.
     pub fn new() -> Self {
-        Self { base: Base::default(), color: None, opacity: 0.45, angle: -45.0, duration: 0.8, band: 0.18, auto_every: None }
+        Self {
+            base: Base::default(),
+            color: None,
+            opacity: 0.45,
+            angle: -45.0,
+            duration: 0.8,
+            band: 0.18,
+            auto_every: None,
+        }
     }
     base_setters!();
     opt_setter!(/// Glare color. Defaults to white.
@@ -613,18 +659,23 @@ impl GlareCard {
                 let time = glowkit_core::time(ui);
                 let hovered = ctx.pointer.is_some();
                 let key = ctx.id.with("glare");
-                let st = glowkit_core::with_state(ui, key, || GlareState { start: -100.0, was: false }, |s| {
-                    if hovered && !s.was {
-                        s.start = time;
-                    }
-                    if let Some(every) = self.auto_every {
-                        if time - s.start > every.max(self.duration + 0.2) {
+                let st = glowkit_core::with_state(
+                    ui,
+                    key,
+                    || GlareState { start: -100.0, was: false },
+                    |s| {
+                        if hovered && !s.was {
                             s.start = time;
                         }
-                    }
-                    s.was = hovered;
-                    *s
-                });
+                        if let Some(every) = self.auto_every {
+                            if time - s.start > every.max(self.duration + 0.2) {
+                                s.start = time;
+                            }
+                        }
+                        s.was = hovered;
+                        *s
+                    },
+                );
                 if self.auto_every.is_some() {
                     glowkit_core::animate(ui);
                 }
@@ -651,11 +702,12 @@ impl GlareCard {
                 if sheen > 0.01 {
                     if let Some(ptr) = ctx.pointer.or(Some(rect.center())) {
                         let r = rect.width().max(rect.height()) * 0.7;
-                        shade_rounded(p, rect, radius, 12.0, |q| with_alpha(col, falloff(q.distance(ptr), r) * 0.12 * sheen));
+                        shade_rounded(p, rect, radius, 12.0, |q| {
+                            with_alpha(col, falloff(q.distance(ptr), r) * 0.12 * sheen)
+                        });
                     }
                 }
             },
         )
     }
 }
-

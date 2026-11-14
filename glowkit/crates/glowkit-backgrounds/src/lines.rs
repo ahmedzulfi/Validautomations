@@ -1,7 +1,7 @@
 //! Line-based backgrounds: sweeping beams, wavy ribbons, noisy line fields, threads and light
 //! columns.
 
-use crate::{background, ghost, h01, light, pointer, radial_mask, soft_ribbon, smoothstep, Base, Lut, Rgb};
+use crate::{background, ghost, h01, light, pointer, radial_mask, smoothstep, soft_ribbon, Base, Lut, Rgb};
 use egui::epaint::{PathShape, PathStroke};
 use egui::{pos2, vec2, Color32, Pos2, Rect, Ui, Vec2};
 use glowkit_core::noise::{fbm3, noise3};
@@ -190,7 +190,8 @@ impl WavyBackground {
     pub fn paint(&self, ui: &Ui, rect: Rect) {
         let Some(f) = self.base.begin(ui, rect, "glowkit_wavy_background") else { return };
         let t = &f.theme;
-        let colors = self.colors.clone().unwrap_or_else(|| vec![t.chart[1], t.chart[5], t.accent, t.gradient[1], t.chart[1]]);
+        let colors =
+            self.colors.clone().unwrap_or_else(|| vec![t.chart[1], t.chart[5], t.accent, t.gradient[1], t.chart[1]]);
         let time = f.time * self.speed * 0.25;
         let cy = rect.center().y;
         let amp = rect.height() * 0.28 * self.amplitude;
@@ -292,7 +293,9 @@ impl Waves {
         let dt = f.dt;
         let time = f.time * self.speed;
         let amp = 22.0 * self.amplitude;
-        let at = |i: usize, j: usize| pos2(rect.min.x - step_x + i as f32 * step_x, rect.min.y - self.gap + j as f32 * self.gap);
+        let at = |i: usize, j: usize| {
+            pos2(rect.min.x - step_x + i as f32 * step_x, rect.min.y - self.gap + j as f32 * self.gap)
+        };
         let offs = glowkit_core::with_state(ui, f.id, WaveField::default, |s| {
             if s.dims != (cols, rows) {
                 s.off = vec![Vec2::ZERO; cols * rows];
@@ -329,7 +332,11 @@ impl Waves {
                 .map(|i| {
                     let p0 = at(i, j);
                     let n = noise3((p0.x - rect.min.x) * 0.004 + time * 0.12, (p0.y - rect.min.y) * 0.006, time * 0.08);
-                    let m = noise3((p0.x - rect.min.x) * 0.002 - time * 0.05, (p0.y - rect.min.y) * 0.003 + 5.0, time * 0.05);
+                    let m = noise3(
+                        (p0.x - rect.min.x) * 0.002 - time * 0.05,
+                        (p0.y - rect.min.y) * 0.003 + 5.0,
+                        time * 0.05,
+                    );
                     p0 + vec2(m * amp * 0.6, n * amp * 1.6) + offs[j * cols + i]
                 })
                 .collect();
@@ -379,7 +386,15 @@ impl Default for Threads {
 impl Threads {
     /// 40 threads.
     pub fn new() -> Self {
-        Self { base: Base::default(), count: 40, color: None, speed: 1.0, amplitude: 1.0, distance: 1.0, interactive: true }
+        Self {
+            base: Base::default(),
+            count: 40,
+            color: None,
+            speed: 1.0,
+            amplitude: 1.0,
+            distance: 1.0,
+            interactive: true,
+        }
     }
     /// Number of threads (default 40, capped at 150).
     pub fn count(mut self, n: usize) -> Self {
@@ -438,7 +453,11 @@ impl Threads {
                     let u = k as f32 / samples as f32;
                     let x = rect.min.x + u * w;
                     let spread = s * h * (0.04 + 0.7 * u.powf(1.2)) * self.distance;
-                    let wave = fbm3(u * 1.8 - time * 0.2, s * 0.9 + time * 0.03, time * 0.08, 3) * h * 0.9 * u.powf(1.1) * self.amplitude;
+                    let wave = fbm3(u * 1.8 - time * 0.2, s * 0.9 + time * 0.03, time * 0.08, 3)
+                        * h
+                        * 0.9
+                        * u.powf(1.1)
+                        * self.amplitude;
                     let ripple = (u * 7.0 + s * 5.0 - time * 1.1).sin() * h * 0.025 * u * self.amplitude;
                     let mut y = cy + spread + wave + ripple;
                     if let Some(m) = pull.pos {
@@ -449,7 +468,9 @@ impl Threads {
                 })
                 .collect();
             let a = 0.18 + 0.4 * (1.0 - (s.abs() * 2.0)).powf(0.7);
-            gradient_polyline(&f.painter, &pts, false, 1.0, |u| color.gamma_multiply(a * (0.35 + 0.65 * smoothstep(0.0, 0.5, u)) * (1.0 - smoothstep(0.9, 1.0, u))));
+            gradient_polyline(&f.painter, &pts, false, 1.0, |u| {
+                color.gamma_multiply(a * (0.35 + 0.65 * smoothstep(0.0, 0.5, u)) * (1.0 - smoothstep(0.9, 1.0, u)))
+            });
         }
     }
 }
@@ -547,7 +568,9 @@ impl Beams {
             let fade = (PI * uv.y).sin().max(0.0).powf(0.5) * (0.7 + 0.3 * h01(idx as i32 as u32, 1));
             let i = (core * tex + halo * (0.5 + 0.5 * tex)) * fade;
             if dark {
-                bg.add(col.scale(i * 0.85)).lerp(Rgb(1.0, 1.0, 1.0), (core * tex * fade - 0.7).max(0.0) * 0.5).to_color()
+                bg.add(col.scale(i * 0.85))
+                    .lerp(Rgb(1.0, 1.0, 1.0), (core * tex * fade - 0.7).max(0.0) * 0.5)
+                    .to_color()
             } else {
                 bg.lerp(col, (i * 0.7).min(1.0)).to_color()
             }

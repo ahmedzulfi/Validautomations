@@ -13,8 +13,8 @@ mod reveal;
 mod shaders;
 mod terminal;
 mod toggles;
-mod vanish;
 mod util;
+mod vanish;
 
 pub use cards::{CanvasRevealCard, DirectionAwareHover, GlowingStarsCard, Pin3D, TextHoverEffect};
 pub use code::{CodeComparison, ScriptCopyBox, StickyBanner};

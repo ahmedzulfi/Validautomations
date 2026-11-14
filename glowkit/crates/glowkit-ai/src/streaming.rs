@@ -197,7 +197,10 @@ impl Widget for StreamingText<'_> {
                     for (dx, dy) in [(-1.6f32, 0.0f32), (1.6, 0.0), (0.0, -1.4), (0.0, 1.4)] {
                         common::paint_galley_fx(ui.painter(), rect.min + vec2(dx, dy), &galley, |i| {
                             let a = alpha_of(i);
-                            Fx { alpha: if a > 0.0 && a < 1.0 { (1.0 - a) * a * 0.9 } else { 0.0 }, ..Default::default() }
+                            Fx {
+                                alpha: if a > 0.0 && a < 1.0 { (1.0 - a) * a * 0.9 } else { 0.0 },
+                                ..Default::default()
+                            }
                         });
                     }
                 }
@@ -213,11 +216,18 @@ impl Widget for StreamingText<'_> {
                     let cr = if visible == 0 {
                         Rect::from_min_size(rect.min, vec2(0.0, self.size * 1.2))
                     } else {
-                        common::char_rects(&galley, visible - 1..visible).last().copied().map(|r| r.translate(rect.min.to_vec2())).unwrap_or(rect)
+                        common::char_rects(&galley, visible - 1..visible)
+                            .last()
+                            .copied()
+                            .map(|r| r.translate(rect.min.to_vec2()))
+                            .unwrap_or(rect)
                     };
                     let time = glowkit_core::time(ui);
                     let blink = 0.55 + 0.45 * (time * 6.0).cos();
-                    let r = Rect::from_min_size(pos2(cr.max.x + 2.0, cr.center().y - self.size * 0.55), vec2(2.0, self.size * 1.1));
+                    let r = Rect::from_min_size(
+                        pos2(cr.max.x + 2.0, cr.center().y - self.size * 0.55),
+                        vec2(2.0, self.size * 1.1),
+                    );
                     ui.painter().rect_filled(r, CornerRadius::same(1), with_alpha(color, blink));
                 }
             }

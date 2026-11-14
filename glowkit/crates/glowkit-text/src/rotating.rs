@@ -128,12 +128,15 @@ impl Widget for RotatingText {
         let cur = cycle % n;
         let prev = (cycle + n - 1) % n;
         let has_prev = cycle > 0;
-        let layout = |i: usize| crate::util::glyphs(&painter, self.words.get(i).map(String::as_str).unwrap_or(""), font.clone(), None);
+        let layout = |i: usize| {
+            crate::util::glyphs(&painter, self.words.get(i).map(String::as_str).unwrap_or(""), font.clone(), None)
+        };
         let g_cur = layout(cur);
         let g_prev = layout(prev);
         let w_cur = g_cur.size.x + bold;
         let w_prev = if has_prev { g_prev.size.x + bold } else { w_cur };
-        let span = self.transition + self.stagger * g_cur.glyphs.len().max(g_prev.glyphs.len()).saturating_sub(1) as f32;
+        let span =
+            self.transition + self.stagger * g_cur.glyphs.len().max(g_prev.glyphs.len()).saturating_sub(1) as f32;
         let wk = ease(Easing::OutCubic, (local / (span * 0.9).max(1e-3)).min(1.0));
         let text_w = w_prev + (w_cur - w_prev) * wk;
         let line_h = g_cur.size.y.max(self.size * 1.2);
@@ -144,7 +147,8 @@ impl Widget for RotatingText {
             return resp;
         }
         let fill = self.pill_color.unwrap_or(t.accent);
-        let color = self.color.unwrap_or(if self.pill { glowkit_core::color::contrast_text(fill) } else { t.foreground });
+        let color =
+            self.color.unwrap_or(if self.pill { glowkit_core::color::contrast_text(fill) } else { t.foreground });
         if self.pill {
             let r = (rect.height() * 0.28).min(t.radius * 1.2);
             paint::soft_shadow(&painter, rect, r, 14.0, vec2(0.0, 4.0), fill.gamma_multiply(0.35));
@@ -152,7 +156,10 @@ impl Widget for RotatingText {
         }
         let inner = rect.shrink2(pad);
         let clip = match self.mode {
-            RotateMode::Slide => Rect::from_min_max(pos2(rect.min.x - bold, inner.min.y - pad.y * 0.5), pos2(rect.max.x + bold, inner.max.y + pad.y * 0.5)),
+            RotateMode::Slide => Rect::from_min_max(
+                pos2(rect.min.x - bold, inner.min.y - pad.y * 0.5),
+                pos2(rect.max.x + bold, inner.max.y + pad.y * 0.5),
+            ),
             RotateMode::Blur => ui.clip_rect(),
         };
         let p = painter.with_clip_rect(clip.intersect(ui.clip_rect()));
@@ -181,11 +188,20 @@ impl Widget for RotatingText {
                     (RotateMode::Blur, true) => {
                         let k = ease(Easing::OutCubic, lin);
                         let off = vec2(0.0, (1.0 - k) * self.size * 0.35);
-                        util::paint_blurred(&p, base + off, &galley, color.gamma_multiply(k), (1.0 - k) * self.size * 0.2, bold);
+                        util::paint_blurred(
+                            &p,
+                            base + off,
+                            &galley,
+                            color.gamma_multiply(k),
+                            (1.0 - k) * self.size * 0.2,
+                            bold,
+                        );
                     }
                     (RotateMode::Blur, false) => {
                         let k = ease(Easing::OutCubic, (local / (self.transition * 0.9)).min(1.0));
-                        let center = inner.center() + (base + vec2(gl.size.x / 2.0, gl.size.y / 2.0) - inner.center()) * (1.0 + k * 0.4) + vec2(k * self.size * 0.6, -k * self.size * 0.9);
+                        let center = inner.center()
+                            + (base + vec2(gl.size.x / 2.0, gl.size.y / 2.0) - inner.center()) * (1.0 + k * 0.4)
+                            + vec2(k * self.size * 0.6, -k * self.size * 0.9);
                         let c = color.gamma_multiply((1.0 - k).powi(2));
                         util::paint_blurred(&p, center - galley.size() / 2.0, &galley, c, k * self.size * 0.25, bold);
                     }

@@ -168,7 +168,14 @@ pub fn paint_ribbon(painter: &Painter, pts: &[(Pos2, f32)], color: Color32) {
 
 /// Convenience: compute and paint a stroke, mapping each point through `map` first
 /// (e.g. world → screen) and scaling the width by `scale`.
-pub fn paint_ink(painter: &Painter, points: &[InkPoint], style: &InkStyle, color: Color32, map: impl Fn(Pos2) -> Pos2, scale: f32) {
+pub fn paint_ink(
+    painter: &Painter,
+    points: &[InkPoint],
+    style: &InkStyle,
+    color: Color32,
+    map: impl Fn(Pos2) -> Pos2,
+    scale: f32,
+) {
     let pts: Vec<(Pos2, f32)> = stroke_radii(points, style).into_iter().map(|(p, r)| (map(p), r * scale)).collect();
     paint_ribbon(painter, &pts, color);
 }

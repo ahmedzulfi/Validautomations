@@ -2,7 +2,10 @@
 
 use crate::common;
 use crate::icons::{paint_icon, Icon};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, Rect, Response, Sense, Stroke, StrokeKind, TextureId, Ui, UiBuilder, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, Rect, Response, Sense, Stroke, StrokeKind, TextureId, Ui, UiBuilder,
+    Widget,
+};
 use glowkit_core::color::{gradient, mix, with_alpha};
 use glowkit_core::noise::fbm3;
 use glowkit_core::{paint, Theme};
@@ -87,76 +90,122 @@ impl<'a> Artifact<'a> {
         let top = ui.cursor().min;
         let cr = t.corner_scaled(1.2);
         let bg = ui.painter().add(egui::Shape::Noop);
-        let resp = ui.scope_builder(UiBuilder::new().max_rect(Rect::from_min_size(top, vec2(width, f32::INFINITY))), |ui| {
-            ui.spacing_mut().item_spacing.y = 0.0;
-            let (hr, _) = ui.allocate_exact_size(vec2(width, 58.0), Sense::hover());
-            let p = ui.painter();
-            p.rect_filled(hr, CornerRadius { nw: cr.nw, ne: cr.ne, sw: 0, se: 0 }, common::raised(&t));
-            p.line_segment([pos2(hr.min.x, hr.max.y), pos2(hr.max.x, hr.max.y)], Stroke::new(1.0, t.border));
-            let ib = Rect::from_center_size(pos2(hr.min.x + 30.0, hr.center().y), vec2(32.0, 32.0));
-            paint::gradient_rect(p, ib, 8.0, 135.0, &[with_alpha(t.gradient[0], 0.9), with_alpha(t.gradient[1], 0.9)]);
-            paint_icon(p, self.icon, ib.shrink(8.0), Color32::WHITE);
-            let tx = ib.max.x + 12.0;
-            let tg = common::galley(ui, self.title, 14.0, t.foreground);
-            let ty = if self.subtitle.is_some() { hr.center().y - tg.size().y + 1.0 } else { hr.center().y - tg.size().y / 2.0 };
-            common::paint_galley_fx(ui.painter(), pos2(tx, ty), &tg, |_| common::Fx { bold: true, ..Default::default() });
-            if let Some(s) = self.subtitle {
-                common::text(ui.painter(), pos2(tx, hr.center().y + 3.0), Align2::LEFT_TOP, s, 12.0, t.muted_foreground);
-            }
-            // actions, right to left
-            let mut x = hr.max.x - 12.0;
-            for (i, (icon, tip)) in self.actions.iter().enumerate().rev() {
-                let r = Rect::from_min_size(pos2(x - 30.0, hr.center().y - 15.0), vec2(30.0, 30.0));
-                let mut child = ui.new_child(UiBuilder::new().max_rect(r));
-                if common::icon_button(&mut child, *icon, 30.0, None, tip).clicked() {
-                    out.action = Some(i);
-                }
-                x -= 32.0;
-            }
-            // segmented tabs
-            if !self.tabs.is_empty() {
-                let gs: Vec<_> = self.tabs.iter().map(|s| common::galley(ui, *s, 12.5, t.foreground)).collect();
-                let tw: f32 = gs.iter().map(|g| g.size().x + 24.0).sum::<f32>() + 6.0;
-                let seg = Rect::from_min_size(pos2(x - 10.0 - tw, hr.center().y - 16.0), vec2(tw, 32.0));
+        let resp =
+            ui.scope_builder(UiBuilder::new().max_rect(Rect::from_min_size(top, vec2(width, f32::INFINITY))), |ui| {
+                ui.spacing_mut().item_spacing.y = 0.0;
+                let (hr, _) = ui.allocate_exact_size(vec2(width, 58.0), Sense::hover());
                 let p = ui.painter();
-                p.rect_filled(seg, CornerRadius::same(9), if t.dark { with_alpha(t.foreground, 0.06) } else { t.muted });
-                let mut sx = seg.min.x + 3.0;
-                let mut rects = Vec::new();
-                for g in &gs {
-                    let r = Rect::from_min_size(pos2(sx, seg.min.y + 3.0), vec2(g.size().x + 24.0, 26.0));
-                    rects.push(r);
-                    sx = r.max.x;
+                p.rect_filled(hr, CornerRadius { nw: cr.nw, ne: cr.ne, sw: 0, se: 0 }, common::raised(&t));
+                p.line_segment([pos2(hr.min.x, hr.max.y), pos2(hr.max.x, hr.max.y)], Stroke::new(1.0, t.border));
+                let ib = Rect::from_center_size(pos2(hr.min.x + 30.0, hr.center().y), vec2(32.0, 32.0));
+                paint::gradient_rect(
+                    p,
+                    ib,
+                    8.0,
+                    135.0,
+                    &[with_alpha(t.gradient[0], 0.9), with_alpha(t.gradient[1], 0.9)],
+                );
+                paint_icon(p, self.icon, ib.shrink(8.0), Color32::WHITE);
+                let tx = ib.max.x + 12.0;
+                let tg = common::galley(ui, self.title, 14.0, t.foreground);
+                let ty = if self.subtitle.is_some() {
+                    hr.center().y - tg.size().y + 1.0
+                } else {
+                    hr.center().y - tg.size().y / 2.0
+                };
+                common::paint_galley_fx(ui.painter(), pos2(tx, ty), &tg, |_| common::Fx {
+                    bold: true,
+                    ..Default::default()
+                });
+                if let Some(s) = self.subtitle {
+                    common::text(
+                        ui.painter(),
+                        pos2(tx, hr.center().y + 3.0),
+                        Align2::LEFT_TOP,
+                        s,
+                        12.0,
+                        t.muted_foreground,
+                    );
                 }
-                tab = tab.min(rects.len() - 1);
-                let target = rects[tab];
-                let ax = glowkit_core::anim::follow(ui, id.with("ax"), target.min.x, 18.0);
-                let aw = glowkit_core::anim::follow(ui, id.with("aw"), target.width(), 18.0);
-                let ar = Rect::from_min_size(pos2(ax, target.min.y), vec2(aw, target.height()));
-                let p = ui.painter();
-                paint::soft_shadow(p, ar, 7.0, 6.0, vec2(0.0, 1.0), Color32::from_black_alpha(if t.dark { 60 } else { 18 }));
-                p.rect_filled(ar, CornerRadius::same(7), if t.dark { t.secondary } else { t.background });
-                for (i, (r, g)) in rects.iter().zip(gs).enumerate() {
-                    let rr = ui.interact(*r, id.with(("tab", i)), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
-                    if rr.clicked() {
-                        tab = i;
+                // actions, right to left
+                let mut x = hr.max.x - 12.0;
+                for (i, (icon, tip)) in self.actions.iter().enumerate().rev() {
+                    let r = Rect::from_min_size(pos2(x - 30.0, hr.center().y - 15.0), vec2(30.0, 30.0));
+                    let mut child = ui.new_child(UiBuilder::new().max_rect(r));
+                    if common::icon_button(&mut child, *icon, 30.0, None, tip).clicked() {
+                        out.action = Some(i);
                     }
-                    let col = if i == tab { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, if rr.hovered() { 0.6 } else { 0.0 }) };
-                    ui.painter().galley(pos2(r.center().x - g.size().x / 2.0, r.center().y - g.size().y / 2.0), g, col);
+                    x -= 32.0;
                 }
-            }
-            // body
-            let avail = ui.available_rect_before_wrap();
-            let inner = Rect::from_min_max(avail.min + vec2(16.0, 16.0), pos2(avail.max.x - 16.0, avail.max.y));
-            ui.scope_builder(UiBuilder::new().max_rect(inner), |ui| {
-                match self.height {
-                    Some(h) => {
-                        egui::ScrollArea::vertical().id_salt(id.with("scroll")).max_height(h).auto_shrink([false, false]).show(ui, |ui| body(ui, tab));
+                // segmented tabs
+                if !self.tabs.is_empty() {
+                    let gs: Vec<_> = self.tabs.iter().map(|s| common::galley(ui, *s, 12.5, t.foreground)).collect();
+                    let tw: f32 = gs.iter().map(|g| g.size().x + 24.0).sum::<f32>() + 6.0;
+                    let seg = Rect::from_min_size(pos2(x - 10.0 - tw, hr.center().y - 16.0), vec2(tw, 32.0));
+                    let p = ui.painter();
+                    p.rect_filled(
+                        seg,
+                        CornerRadius::same(9),
+                        if t.dark { with_alpha(t.foreground, 0.06) } else { t.muted },
+                    );
+                    let mut sx = seg.min.x + 3.0;
+                    let mut rects = Vec::new();
+                    for g in &gs {
+                        let r = Rect::from_min_size(pos2(sx, seg.min.y + 3.0), vec2(g.size().x + 24.0, 26.0));
+                        rects.push(r);
+                        sx = r.max.x;
                     }
-                    None => body(ui, tab),
+                    tab = tab.min(rects.len() - 1);
+                    let target = rects[tab];
+                    let ax = glowkit_core::anim::follow(ui, id.with("ax"), target.min.x, 18.0);
+                    let aw = glowkit_core::anim::follow(ui, id.with("aw"), target.width(), 18.0);
+                    let ar = Rect::from_min_size(pos2(ax, target.min.y), vec2(aw, target.height()));
+                    let p = ui.painter();
+                    paint::soft_shadow(
+                        p,
+                        ar,
+                        7.0,
+                        6.0,
+                        vec2(0.0, 1.0),
+                        Color32::from_black_alpha(if t.dark { 60 } else { 18 }),
+                    );
+                    p.rect_filled(ar, CornerRadius::same(7), if t.dark { t.secondary } else { t.background });
+                    for (i, (r, g)) in rects.iter().zip(gs).enumerate() {
+                        let rr = ui
+                            .interact(*r, id.with(("tab", i)), Sense::click())
+                            .on_hover_cursor(egui::CursorIcon::PointingHand);
+                        if rr.clicked() {
+                            tab = i;
+                        }
+                        let col = if i == tab {
+                            t.foreground
+                        } else {
+                            t.muted_foreground.lerp_to_gamma(t.foreground, if rr.hovered() { 0.6 } else { 0.0 })
+                        };
+                        ui.painter().galley(
+                            pos2(r.center().x - g.size().x / 2.0, r.center().y - g.size().y / 2.0),
+                            g,
+                            col,
+                        );
+                    }
                 }
-                ui.add_space(16.0);
+                // body
+                let avail = ui.available_rect_before_wrap();
+                let inner = Rect::from_min_max(avail.min + vec2(16.0, 16.0), pos2(avail.max.x - 16.0, avail.max.y));
+                ui.scope_builder(UiBuilder::new().max_rect(inner), |ui| {
+                    match self.height {
+                        Some(h) => {
+                            egui::ScrollArea::vertical()
+                                .id_salt(id.with("scroll"))
+                                .max_height(h)
+                                .auto_shrink([false, false])
+                                .show(ui, |ui| body(ui, tab));
+                        }
+                        None => body(ui, tab),
+                    }
+                    ui.add_space(16.0);
+                });
             });
-        });
         glowkit_core::set_state(ui, id.with("tab"), tab);
         let rect = Rect::from_min_size(top, vec2(width, resp.response.rect.height()));
         ui.painter().set(bg, egui::Shape::rect_filled(rect, cr, t.card));
@@ -213,7 +262,15 @@ fn mask_corners(p: &egui::Painter, rect: Rect, r: f32, color: Color32) {
 impl<'a> ImageGen<'a> {
     /// `progress` in 0..1; at 1 the image is shown.
     pub fn new(progress: f32) -> Self {
-        Self { progress: progress.clamp(0.0, 1.0), size: vec2(300.0, 300.0), texture: None, seed: 7, label: "Generating image", colors: None, background: None }
+        Self {
+            progress: progress.clamp(0.0, 1.0),
+            size: vec2(300.0, 300.0),
+            texture: None,
+            seed: 7,
+            label: "Generating image",
+            colors: None,
+            background: None,
+        }
     }
     /// Size of the image.
     pub fn size(mut self, size: egui::Vec2) -> Self {
@@ -283,7 +340,12 @@ impl Widget for ImageGen<'_> {
             let seed = self.seed as f32;
             match self.texture {
                 Some(tex) => {
-                    painter.image(tex, rect, Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)), Color32::WHITE.gamma_multiply(a));
+                    painter.image(
+                        tex,
+                        rect,
+                        Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)),
+                        Color32::WHITE.gamma_multiply(a),
+                    );
                 }
                 None => {
                     // procedural "landscape": sky gradient, sun, layered ridges
@@ -309,7 +371,12 @@ impl Widget for ImageGen<'_> {
         }
         // rounded corners: mask the square image corners with the surrounding color
         mask_corners(ui.painter(), rect, cr.nw as f32, self.background.unwrap_or(t.background));
-        ui.painter().rect_stroke(rect, cr, Stroke::new(1.0, with_alpha(t.border, 1.0 - reveal * 0.5)), StrokeKind::Inside);
+        ui.painter().rect_stroke(
+            rect,
+            cr,
+            Stroke::new(1.0, with_alpha(t.border, 1.0 - reveal * 0.5)),
+            StrokeKind::Inside,
+        );
         if !done || reveal < 1.0 {
             let label = format!("{}  {:.0}%", self.label, self.progress * 100.0);
             let g = common::galley(ui, label, 12.0, t.foreground);
@@ -317,14 +384,30 @@ impl Widget for ImageGen<'_> {
             let p = ui.painter();
             let alpha = 1.0 - reveal;
             p.rect_filled(chip, CornerRadius::same(15), with_alpha(t.popover, 0.85 * alpha));
-            p.rect_stroke(chip, CornerRadius::same(15), Stroke::new(1.0, with_alpha(t.border, alpha)), StrokeKind::Inside);
-            common::spinner(p, pos2(chip.min.x + 16.0, chip.center().y), 5.5, 1.6, with_alpha(t.foreground, alpha), time);
+            p.rect_stroke(
+                chip,
+                CornerRadius::same(15),
+                Stroke::new(1.0, with_alpha(t.border, alpha)),
+                StrokeKind::Inside,
+            );
+            common::spinner(
+                p,
+                pos2(chip.min.x + 16.0, chip.center().y),
+                5.5,
+                1.6,
+                with_alpha(t.foreground, alpha),
+                time,
+            );
             p.galley(pos2(chip.min.x + 28.0, chip.center().y - g.size().y / 2.0), g, with_alpha(t.foreground, alpha));
             // progress line along the bottom
             let pb = Rect::from_min_size(pos2(rect.min.x + 12.0, rect.max.y - 14.0), vec2(rect.width() - 24.0, 3.0));
             p.rect_filled(pb, CornerRadius::same(2), with_alpha(t.foreground, 0.12 * alpha));
             let pw = glowkit_core::anim::follow(ui, resp.id.with("pw"), self.progress, 5.0);
-            p.rect_filled(Rect::from_min_size(pb.min, vec2(pb.width() * pw, 3.0)), CornerRadius::same(2), with_alpha(t.foreground, 0.75 * alpha));
+            p.rect_filled(
+                Rect::from_min_size(pb.min, vec2(pb.width() * pw, 3.0)),
+                CornerRadius::same(2),
+                with_alpha(t.foreground, 0.75 * alpha),
+            );
         }
         resp
     }

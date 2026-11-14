@@ -83,7 +83,8 @@ fn blob(center: Pos2, r: f32, wobble: f32, time: f32, seed: f32, n: usize) -> Ve
         .map(|i| {
             let a = i as f32 / n as f32 * TAU;
             let (s, c) = a.sin_cos();
-            let d = noise3(c * 1.3 + seed, s * 1.3 - seed, time) * 0.7 + noise3(c * 2.6 + seed * 2.0, s * 2.6, time * 1.7) * 0.3;
+            let d = noise3(c * 1.3 + seed, s * 1.3 - seed, time) * 0.7
+                + noise3(c * 2.6 + seed * 2.0, s * 2.6, time * 1.7) * 0.3;
             center + vec2(c, s) * r * (1.0 + d * wobble)
         })
         .collect()
@@ -111,10 +112,15 @@ impl Widget for VoiceOrb {
         let energy = glowkit_core::anim::follow(ui, id.with("eng"), energy_t, 4.0);
         // advance our own phase so speed changes don't jump
         let dt = glowkit_core::dt(ui);
-        let phase = glowkit_core::with_state(ui, id.with("ph"), || 0.0f32, |p| {
-            *p += dt * speed;
-            *p
-        });
+        let phase = glowkit_core::with_state(
+            ui,
+            id.with("ph"),
+            || 0.0f32,
+            |p| {
+                *p += dt * speed;
+                *p
+            },
+        );
         let time = glowkit_core::time(ui);
         let breathe = (time * 1.4).sin() * 0.012;
         let colors = self.colors.unwrap_or(t.gradient);
@@ -122,12 +128,24 @@ impl Widget for VoiceOrb {
         let r = self.size / 2.0 * (scale + breathe);
         let p = ui.painter();
         // halo
-        paint::glow(p, c, r * (1.45 + energy * 0.25), with_alpha(colors[0], if t.dark { 0.20 + energy * 0.18 } else { 0.14 + energy * 0.12 }));
-        paint::glow(p, c + vec2(r * 0.2, r * 0.15), r * 1.25, with_alpha(colors[1], if t.dark { 0.10 + energy * 0.1 } else { 0.08 }));
+        paint::glow(
+            p,
+            c,
+            r * (1.45 + energy * 0.25),
+            with_alpha(colors[0], if t.dark { 0.20 + energy * 0.18 } else { 0.14 + energy * 0.12 }),
+        );
+        paint::glow(
+            p,
+            c + vec2(r * 0.2, r * 0.15),
+            r * 1.25,
+            with_alpha(colors[1], if t.dark { 0.10 + energy * 0.1 } else { 0.08 }),
+        );
         // body: back layer (offset blob) + front layer with swirling conic colors
         let back = blob(c + vec2(r * 0.015, r * 0.02), r * 1.0, wobble * 1.4, phase * 0.8 + 3.0, 4.2, 72);
         let back_cols = [colors[1], colors[2]];
-        paint::fill_convex_fn(p, &back, 4, |q| with_alpha(gradient(&back_cols, ((q.y - c.y) / r * 0.5 + 0.5).clamp(0.0, 1.0)), 0.35));
+        paint::fill_convex_fn(p, &back, 4, |q| {
+            with_alpha(gradient(&back_cols, ((q.y - c.y) / r * 0.5 + 0.5).clamp(0.0, 1.0)), 0.35)
+        });
         let front = blob(c, r, wobble, phase, 0.0, 96);
         let rot = phase * 0.35;
         let hl = c + vec2((phase * 0.9).cos(), (phase * 0.7).sin()) * r * 0.35 - vec2(r * 0.15, r * 0.25);
@@ -146,7 +164,9 @@ impl Widget for VoiceOrb {
         });
         // glassy rim
         let rim: Vec<Pos2> = front.clone();
-        paint::gradient_polyline(p, &rim, true, 1.2, |u| with_alpha(Color32::WHITE, 0.12 + 0.18 * ((u * TAU + phase).sin() * 0.5 + 0.5)));
+        paint::gradient_polyline(p, &rim, true, 1.2, |u| {
+            with_alpha(Color32::WHITE, 0.12 + 0.18 * ((u * TAU + phase).sin() * 0.5 + 0.5))
+        });
         glowkit_core::animate(ui);
         resp
     }
@@ -207,7 +227,11 @@ impl Widget for AudioBars<'_> {
                 (false, Some(c)) => c,
                 _ => t.foreground,
             };
-            p.rect_filled(Rect::from_center_size(pos2(x, rect.center().y), vec2(self.bar_width, h)), CornerRadius::same((self.bar_width / 2.0) as u8), col);
+            p.rect_filled(
+                Rect::from_center_size(pos2(x, rect.center().y), vec2(self.bar_width, h)),
+                CornerRadius::same((self.bar_width / 2.0) as u8),
+                col,
+            );
         }
         resp
     }
@@ -243,7 +267,16 @@ pub struct LiveWaveform {
 impl LiveWaveform {
     /// A waveform fed with the current `amplitude` (0..1).
     pub fn new(amplitude: f32) -> Self {
-        Self { amplitude: amplitude.clamp(0.0, 1.0), active: true, height: 64.0, bar_width: 3.0, gap: 2.0, rate: 24.0, color: None, id_salt: None }
+        Self {
+            amplitude: amplitude.clamp(0.0, 1.0),
+            active: true,
+            height: 64.0,
+            bar_width: 3.0,
+            gap: 2.0,
+            rate: 24.0,
+            color: None,
+            id_salt: None,
+        }
     }
     /// Recording (scrolling) or idle.
     pub fn active(mut self, on: bool) -> Self {
@@ -292,7 +325,11 @@ impl Widget for LiveWaveform {
             id.with("wave"),
             || WaveState {
                 // start with a quiet room-noise history so the strip is never empty
-                samples: if self.active { (0..cap).map(|i| 0.04 + 0.08 * glowkit_core::rng::hash01(i as u64 * 31 + 7)).collect() } else { Vec::new() },
+                samples: if self.active {
+                    (0..cap).map(|i| 0.04 + 0.08 * glowkit_core::rng::hash01(i as u64 * 31 + 7)).collect()
+                } else {
+                    Vec::new()
+                },
                 acc: 0.0,
             },
             |s| {
@@ -301,7 +338,8 @@ impl Widget for LiveWaveform {
                     while s.acc >= 1.0 {
                         s.acc -= 1.0;
                         // slight randomness so constant input still looks alive
-                        let jitter = 0.75 + 0.5 * glowkit_core::rng::hash01(s.samples.len() as u64 * 7919 + (s.acc * 1000.0) as u64);
+                        let jitter = 0.75
+                            + 0.5 * glowkit_core::rng::hash01(s.samples.len() as u64 * 7919 + (s.acc * 1000.0) as u64);
                         s.samples.push((self.amplitude * jitter).clamp(0.0, 1.0));
                     }
                     let excess = s.samples.len().saturating_sub(cap);
@@ -337,7 +375,11 @@ impl Widget for LiveWaveform {
             let age = (x - rect.min.x) / rect.width();
             let fade = (age * 3.0).clamp(0.0, 1.0);
             let h = (v * self.height * 0.92).max(2.0);
-            p.rect_filled(Rect::from_center_size(pos2(x, cy), vec2(self.bar_width, h)), CornerRadius::same((self.bar_width / 2.0) as u8), with_alpha(col, fade * if k == 0 { 1.0 } else { 0.85 }));
+            p.rect_filled(
+                Rect::from_center_size(pos2(x, cy), vec2(self.bar_width, h)),
+                CornerRadius::same((self.bar_width / 2.0) as u8),
+                with_alpha(col, fade * if k == 0 { 1.0 } else { 0.85 }),
+            );
         }
         if self.active || samples.iter().any(|v| *v > 0.01) {
             glowkit_core::animate(ui);
@@ -387,10 +429,17 @@ impl Widget for VoiceButton {
         let (rect, resp) = ui.allocate_exact_size(vec2(self.size + pad * 2.0, self.size + pad * 2.0), Sense::hover());
         let c = rect.center();
         let r = self.size / 2.0;
-        let btn = ui.interact(Rect::from_center_size(c, vec2(self.size, self.size)), resp.id.with("btn"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+        let btn = ui
+            .interact(Rect::from_center_size(c, vec2(self.size, self.size)), resp.id.with("btn"), Sense::click())
+            .on_hover_cursor(egui::CursorIcon::PointingHand);
         let on = common::anim_bool(ui, resp.id.with("on"), self.listening, 0.25);
         let h = common::anim_bool(ui, resp.id.with("h"), btn.hovered(), 0.12);
-        let amp = glowkit_core::anim::follow(ui, resp.id.with("amp"), if self.listening { self.amplitude } else { 0.0 }, 12.0);
+        let amp = glowkit_core::anim::follow(
+            ui,
+            resp.id.with("amp"),
+            if self.listening { self.amplitude } else { 0.0 },
+            12.0,
+        );
         let time = glowkit_core::time(ui);
         let p = ui.painter();
         let accent = t.destructive;

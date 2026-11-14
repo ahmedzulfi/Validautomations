@@ -39,7 +39,11 @@ impl CardAnim {
 fn hash_angle(i: usize) -> f32 {
     let mut r = glowkit_core::Rng::new(i as u64 * 104_729 + 17);
     let mag = r.range(4.0, 9.0);
-    if i % 2 == 0 { mag } else { -mag }
+    if i % 2 == 0 {
+        mag
+    } else {
+        -mag
+    }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -76,7 +80,14 @@ pub struct StackCards<'a> {
 impl<'a> StackCards<'a> {
     /// A draggable stack of `faces` (the first face starts on top).
     pub fn new(faces: &'a [CardFace]) -> Self {
-        Self { faces, card_size: vec2(200.0, 260.0), threshold: 110.0, random_rotation: true, click_to_back: true, autoplay: None }
+        Self {
+            faces,
+            card_size: vec2(200.0, 260.0),
+            threshold: 110.0,
+            random_rotation: true,
+            click_to_back: true,
+            autoplay: None,
+        }
     }
     /// Card size in points.
     pub fn card_size(mut self, s: Vec2) -> Self {
@@ -183,7 +194,13 @@ impl egui::Widget for StackCards<'_> {
             let mut settled = true;
             for (depth_from_bottom, &card) in st.order.iter().enumerate() {
                 let depth = n - 1 - depth_from_bottom;
-                let base_angle = if depth == 0 { 0.0 } else if random { hash_angle(card) } else { depth as f32 * 4.0 };
+                let base_angle = if depth == 0 {
+                    0.0
+                } else if random {
+                    hash_angle(card)
+                } else {
+                    depth as f32 * 4.0
+                };
                 let scale = 1.0 - depth as f32 * 0.04;
                 let off = vec2(hash_angle(card) * depth.min(1) as f32 * 0.8, depth as f32 * -7.0);
                 if depth == 0 && (st.dragging || st.drag != Vec2::ZERO) {
@@ -256,7 +273,14 @@ pub struct CardSwap<'a> {
 impl<'a> CardSwap<'a> {
     /// A cycling stack of `faces`.
     pub fn new(faces: &'a [CardFace]) -> Self {
-        Self { faces, card_size: vec2(300.0, 210.0), distance: vec2(48.0, 40.0), skew: 6.0, interval: 3.2, pause_on_hover: true }
+        Self {
+            faces,
+            card_size: vec2(300.0, 210.0),
+            distance: vec2(48.0, 40.0),
+            skew: 6.0,
+            interval: 3.2,
+            pause_on_hover: true,
+        }
     }
     /// Card size in points.
     pub fn card_size(mut self, s: Vec2) -> Self {
@@ -419,7 +443,16 @@ pub struct BounceCards<'a> {
 impl<'a> BounceCards<'a> {
     /// A fan of `faces`.
     pub fn new(faces: &'a [CardFace]) -> Self {
-        Self { faces, card_size: vec2(150.0, 190.0), spacing: 0.62, push: 70.0, delay: 0.2, stagger: 0.08, trigger: Trigger::OnAppear, autoplay: false }
+        Self {
+            faces,
+            card_size: vec2(150.0, 190.0),
+            spacing: 0.62,
+            push: 70.0,
+            delay: 0.2,
+            stagger: 0.08,
+            trigger: Trigger::OnAppear,
+            autoplay: false,
+        }
     }
     /// Card size in points.
     pub fn card_size(mut self, s: Vec2) -> Self {

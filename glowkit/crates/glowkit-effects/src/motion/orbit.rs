@@ -47,7 +47,13 @@ impl OrbitingCircles {
     }
     /// Add a clockwise ring of `icons` at `radius`, completing a turn every `period` seconds.
     pub fn ring<S: AsRef<str>>(mut self, radius: f32, icons: &[S], period: f32) -> Self {
-        self.rings.push(Ring { radius, icons: icons.iter().map(|s| s.as_ref().to_owned()).collect(), period: period.max(0.5), reverse: false, icon_size: 40.0 });
+        self.rings.push(Ring {
+            radius,
+            icons: icons.iter().map(|s| s.as_ref().to_owned()).collect(),
+            period: period.max(0.5),
+            reverse: false,
+            icon_size: 40.0,
+        });
         self
     }
     /// Add a counter-clockwise ring.
@@ -78,7 +84,14 @@ impl OrbitingCircles {
 }
 
 fn icon_bubble(painter: &egui::Painter, t: &Theme, c: Pos2, size: f32, icon: &str) {
-    paint::soft_shadow(painter, Rect::from_center_size(c, Vec2::splat(size)), size / 2.0, 10.0, vec2(0.0, 3.0), with_alpha(Color32::BLACK, if t.dark { 0.45 } else { 0.12 }));
+    paint::soft_shadow(
+        painter,
+        Rect::from_center_size(c, Vec2::splat(size)),
+        size / 2.0,
+        10.0,
+        vec2(0.0, 3.0),
+        with_alpha(Color32::BLACK, if t.dark { 0.45 } else { 0.12 }),
+    );
     let fill = if t.dark { mix(t.card, t.secondary, 0.5) } else { t.card };
     painter.circle(c, size / 2.0, fill, Stroke::new(1.0, t.border));
     painter.text(c, Align2::CENTER_CENTER, icon, FontId::proportional(size * 0.46), t.foreground);
@@ -92,12 +105,17 @@ impl Widget for OrbitingCircles {
         let id = response.id;
         let dt = glowkit_core::dt(ui);
         let paused = self.paused_on_hover && response.hovered();
-        let clock = glowkit_core::with_state(ui, id.with("clock"), || 0.0f32, |c| {
-            if !paused {
-                *c += dt;
-            }
-            *c
-        });
+        let clock = glowkit_core::with_state(
+            ui,
+            id.with("clock"),
+            || 0.0f32,
+            |c| {
+                if !paused {
+                    *c += dt;
+                }
+                *c
+            },
+        );
         glowkit_core::animate(ui);
         if !ui.is_rect_visible(rect) {
             return response;
@@ -106,7 +124,11 @@ impl Widget for OrbitingCircles {
         let c = rect.center();
         if self.path {
             for r in &self.rings {
-                painter.circle_stroke(c, r.radius, Stroke::new(1.0, with_alpha(t.muted_foreground, if t.dark { 0.22 } else { 0.28 })));
+                painter.circle_stroke(
+                    c,
+                    r.radius,
+                    Stroke::new(1.0, with_alpha(t.muted_foreground, if t.dark { 0.22 } else { 0.28 })),
+                );
             }
         }
         if let Some(label) = &self.center {
@@ -159,7 +181,18 @@ pub struct AnimatedBeam {
 impl AnimatedBeam {
     /// A beam from `from` to `to` (e.g. the centers of two node rects).
     pub fn new(from: Pos2, to: Pos2) -> Self {
-        Self { from, to, curvature: 0.0, reverse: false, duration: 3.0, delay: 0.0, width: 2.0, length: 0.35, colors: None, track: None }
+        Self {
+            from,
+            to,
+            curvature: 0.0,
+            reverse: false,
+            duration: 3.0,
+            delay: 0.0,
+            width: 2.0,
+            length: 0.35,
+            colors: None,
+            track: None,
+        }
     }
     /// Bend the path: offset of the curve's midpoint, perpendicular-ish (negative = up).
     pub fn curvature(mut self, c: f32) -> Self {

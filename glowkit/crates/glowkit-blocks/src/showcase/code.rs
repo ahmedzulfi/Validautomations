@@ -1,6 +1,8 @@
 use super::util::{bold_text, check, idle_time};
 use egui::text::{LayoutJob, TextFormat};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Vec2, Widget,
+};
 use glowkit_core::{anim::smoothstep, color::with_alpha, hex, paint, Theme};
 
 /// Syntax colors for the tiny highlighter: (keyword, string, comment, number, function, type, text).
@@ -13,8 +15,40 @@ fn syntax(t: &Theme) -> [Color32; 7] {
 }
 
 const KEYWORDS: &[&str] = &[
-    "use", "let", "mut", "fn", "pub", "struct", "impl", "for", "in", "if", "else", "match", "return", "move", "self", "Self", "true", "false", "as",
-    "const", "while", "loop", "async", "await", "import", "from", "export", "default", "function", "var", "new", "class", "type", "interface",
+    "use",
+    "let",
+    "mut",
+    "fn",
+    "pub",
+    "struct",
+    "impl",
+    "for",
+    "in",
+    "if",
+    "else",
+    "match",
+    "return",
+    "move",
+    "self",
+    "Self",
+    "true",
+    "false",
+    "as",
+    "const",
+    "while",
+    "loop",
+    "async",
+    "await",
+    "import",
+    "from",
+    "export",
+    "default",
+    "function",
+    "var",
+    "new",
+    "class",
+    "type",
+    "interface",
 ];
 
 /// Highlight one line of code into a layout job.
@@ -71,7 +105,14 @@ fn highlight(line: &str, font: &FontId, colors: &[Color32; 7], alpha: f32) -> La
             continue;
         }
         let mut j = i;
-        while j < chars.len() && !(chars[j].is_alphanumeric() || chars[j] == '_' || chars[j] == '"' || chars[j] == '\'' || chars[j] == '`' || (chars[j] == '/' && chars.get(j + 1) == Some(&'/'))) {
+        while j < chars.len()
+            && !(chars[j].is_alphanumeric()
+                || chars[j] == '_'
+                || chars[j] == '"'
+                || chars[j] == '\''
+                || chars[j] == '`'
+                || (chars[j] == '/' && chars.get(j + 1) == Some(&'/')))
+        {
             j += 1;
         }
         let s: String = chars[i..j.max(i + 1)].iter().collect();
@@ -105,7 +146,11 @@ pub struct ScriptCopyBox {
 impl ScriptCopyBox {
     /// Tabs as `(label, command)` pairs.
     pub fn new(commands: &[(&str, &str)]) -> Self {
-        Self { commands: commands.iter().map(|(a, b)| (a.to_string(), b.to_string())).collect(), width: 460.0, autoplay: false }
+        Self {
+            commands: commands.iter().map(|(a, b)| (a.to_string(), b.to_string())).collect(),
+            width: 460.0,
+            autoplay: false,
+        }
     }
     /// Width in points.
     pub fn width(mut self, w: f32) -> Self {
@@ -136,7 +181,8 @@ impl Widget for ScriptCopyBox {
         let id = resp.id;
         let now = ui.input(|i| i.time);
         let n = self.commands.len().max(1);
-        let mut st: CopyState = glowkit_core::state(ui, id.with("st"), || CopyState { tab: 0, copied_at: -10.0, last_auto: now });
+        let mut st: CopyState =
+            glowkit_core::state(ui, id.with("st"), || CopyState { tab: 0, copied_at: -10.0, last_auto: now });
         let idle = idle_time(ui, id, resp.hovered());
         if self.autoplay && idle > 1.5 {
             glowkit_core::animate(ui);
@@ -155,7 +201,14 @@ impl Widget for ScriptCopyBox {
         }
         let p = ui.painter_at(rect.expand(40.0));
         let bg = if t.dark { hex("#0D0D10") } else { hex("#FAFAFA") };
-        paint::soft_shadow(&p, rect, 12.0, 18.0, vec2(0.0, 6.0), Color32::from_black_alpha(if t.dark { 90 } else { 18 }));
+        paint::soft_shadow(
+            &p,
+            rect,
+            12.0,
+            18.0,
+            vec2(0.0, 6.0),
+            Color32::from_black_alpha(if t.dark { 90 } else { 18 }),
+        );
         p.rect_filled(rect, 12.0, bg);
         p.rect_stroke(rect, 12.0, Stroke::new(1.0, t.border), StrokeKind::Inside);
         // tabs
@@ -185,14 +238,27 @@ impl Widget for ScriptCopyBox {
         p.rect_filled(ind, 7.0, if t.dark { hex("#1F1F24") } else { Color32::WHITE });
         p.rect_stroke(ind, 7.0, Stroke::new(1.0, t.border), StrokeKind::Inside);
         // underline accent on the selected tab
-        p.line_segment([pos2(ind.min.x + 8.0, head.max.y - 0.5), pos2(ind.max.x - 8.0, head.max.y - 0.5)], Stroke::new(2.0, t.accent));
+        p.line_segment(
+            [pos2(ind.min.x + 8.0, head.max.y - 0.5), pos2(ind.max.x - 8.0, head.max.y - 0.5)],
+            Stroke::new(2.0, t.accent),
+        );
         for (i, (label, _)) in self.commands.iter().enumerate() {
             let on = i == st.tab;
-            p.text(tab_rects[i].center(), Align2::CENTER_CENTER, label, font.clone(), if on { t.foreground } else { t.muted_foreground });
+            p.text(
+                tab_rects[i].center(),
+                Align2::CENTER_CENTER,
+                label,
+                font.clone(),
+                if on { t.foreground } else { t.muted_foreground },
+            );
         }
         // traffic-like dots on the right
         for i in 0..3 {
-            p.circle_filled(pos2(head.max.x - 18.0 - i as f32 * 12.0, head.center().y), 3.0, with_alpha(t.muted_foreground, 0.35));
+            p.circle_filled(
+                pos2(head.max.x - 18.0 - i as f32 * 12.0, head.center().y),
+                3.0,
+                with_alpha(t.muted_foreground, 0.35),
+            );
         }
         // command
         let cmd = self.commands.get(st.tab).map(|c| c.1.clone()).unwrap_or_default();
@@ -238,7 +304,13 @@ impl Widget for ScriptCopyBox {
             // bubble
             let bub = Rect::from_center_size(bc - vec2(0.0, 34.0 + 6.0 * k), vec2(64.0, 24.0));
             p.rect_filled(bub, 6.0, with_alpha(t.foreground, k));
-            p.text(bub.center(), Align2::CENTER_CENTER, "Copied!", FontId::proportional(12.0), with_alpha(t.background, k));
+            p.text(
+                bub.center(),
+                Align2::CENTER_CENTER,
+                "Copied!",
+                FontId::proportional(12.0),
+                with_alpha(t.background, k),
+            );
         }
         if b.hovered() {
             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -259,7 +331,9 @@ enum Mark {
 fn parse(code: &str) -> Vec<(String, Mark)> {
     code.lines()
         .map(|l| {
-            for (tag, m) in [("// [!code --]", Mark::Removed), ("// [!code ++]", Mark::Added), ("// [!code focus]", Mark::Focus)] {
+            for (tag, m) in
+                [("// [!code --]", Mark::Removed), ("// [!code ++]", Mark::Added), ("// [!code focus]", Mark::Focus)]
+            {
                 if let Some(s) = l.strip_suffix(tag) {
                     return (s.trim_end().to_owned(), m);
                 }
@@ -325,19 +399,40 @@ impl Widget for CodeComparison {
         }
         let p = ui.painter_at(rect.expand(20.0));
         let bg = if t.dark { hex("#0D0D10") } else { hex("#FFFFFF") };
-        paint::soft_shadow(&p, rect, 12.0, 20.0, vec2(0.0, 6.0), Color32::from_black_alpha(if t.dark { 90 } else { 18 }));
+        paint::soft_shadow(
+            &p,
+            rect,
+            12.0,
+            20.0,
+            vec2(0.0, 6.0),
+            Color32::from_black_alpha(if t.dark { 90 } else { 18 }),
+        );
         p.rect_filled(rect, 12.0, bg);
         let mid = rect.center().x;
         let colors = syntax(&t);
         let font = FontId::monospace(self.font_size);
         let pointer = ui.input(|i| i.pointer.hover_pos());
         for (side, code) in [(0, &before), (1, &after)] {
-            let pane = if side == 0 { Rect::from_min_max(rect.min, pos2(mid, rect.max.y)) } else { Rect::from_min_max(pos2(mid, rect.min.y), rect.max) };
+            let pane = if side == 0 {
+                Rect::from_min_max(rect.min, pos2(mid, rect.max.y))
+            } else {
+                Rect::from_min_max(pos2(mid, rect.min.y), rect.max)
+            };
             let head = Rect::from_min_size(pane.min, vec2(pane.width(), 42.0));
-            let cr = if side == 0 { CornerRadius { nw: 12, ne: 0, sw: 0, se: 0 } } else { CornerRadius { nw: 0, ne: 12, sw: 0, se: 0 } };
+            let cr = if side == 0 {
+                CornerRadius { nw: 12, ne: 0, sw: 0, se: 0 }
+            } else {
+                CornerRadius { nw: 0, ne: 12, sw: 0, se: 0 }
+            };
             p.rect_filled(head, cr, if t.dark { hex("#141418") } else { hex("#F7F7F8") });
             p.line_segment([head.left_bottom(), head.right_bottom()], Stroke::new(1.0, t.border));
-            p.text(pos2(head.min.x + 16.0, head.center().y), Align2::LEFT_CENTER, &self.filename, FontId::proportional(12.5), t.muted_foreground);
+            p.text(
+                pos2(head.min.x + 16.0, head.center().y),
+                Align2::LEFT_CENTER,
+                &self.filename,
+                FontId::proportional(12.5),
+                t.muted_foreground,
+            );
             let (badge, bc) = if side == 0 { ("before", t.destructive) } else { ("after", t.success) };
             let bg_r = Rect::from_min_size(pos2(head.max.x - 16.0 - 54.0, head.center().y - 10.0), vec2(54.0, 20.0));
             p.rect_filled(bg_r, 99.0, with_alpha(bc, 0.14));
@@ -356,13 +451,28 @@ impl Widget for CodeComparison {
                 };
                 if let Some(c) = row_bg {
                     p.rect_filled(row, 0.0, with_alpha(c, 0.12));
-                    p.line_segment([row.left_top() + vec2(1.0, 0.0), row.left_bottom() + vec2(1.0, 0.0)], Stroke::new(2.0, c));
+                    p.line_segment(
+                        [row.left_top() + vec2(1.0, 0.0), row.left_bottom() + vec2(1.0, 0.0)],
+                        Stroke::new(2.0, c),
+                    );
                 }
                 let dim = has_focus && *mark != Mark::Focus;
                 let alpha = if dim { 0.35 + 0.65 * hk } else { 1.0 };
-                p.text(pos2(pane.min.x + 30.0, row.center().y), Align2::RIGHT_CENTER, format!("{}", i + 1), font.clone(), with_alpha(t.muted_foreground, 0.5 * alpha));
+                p.text(
+                    pos2(pane.min.x + 30.0, row.center().y),
+                    Align2::RIGHT_CENTER,
+                    format!("{}", i + 1),
+                    font.clone(),
+                    with_alpha(t.muted_foreground, 0.5 * alpha),
+                );
                 if !sign.is_empty() {
-                    p.text(pos2(pane.min.x + 40.0, row.center().y), Align2::LEFT_CENTER, sign, font.clone(), row_bg.unwrap_or(t.foreground));
+                    p.text(
+                        pos2(pane.min.x + 40.0, row.center().y),
+                        Align2::LEFT_CENTER,
+                        sign,
+                        font.clone(),
+                        row_bg.unwrap_or(t.foreground),
+                    );
                 }
                 let job = highlight(line, &font, &colors, 1.0);
                 let g = ui.fonts_mut(|f| f.layout_job(job));
@@ -371,7 +481,11 @@ impl Widget for CodeComparison {
                     let blur = (1.0 - hk) * 1.6;
                     // dimmed + blurred, colors kept
                     for (dx, dy) in [(-blur, 0.0), (blur, 0.0), (0.0, -blur), (0.0, blur)] {
-                        p.galley_with_override_text_color(pos + vec2(dx, dy), g.clone(), with_alpha(t.muted_foreground, 0.12 * (1.0 - hk)));
+                        p.galley_with_override_text_color(
+                            pos + vec2(dx, dy),
+                            g.clone(),
+                            with_alpha(t.muted_foreground, 0.12 * (1.0 - hk)),
+                        );
                     }
                     let job = highlight(line, &font, &colors, alpha);
                     let g2 = ui.fonts_mut(|f| f.layout_job(job));
@@ -447,11 +561,17 @@ impl Widget for StickyBanner<'_> {
         let time = glowkit_core::time(ui);
         glowkit_core::animate(ui);
         // flowing gradient
-        paint::shader_grid(&p, full, 24, 1, |uv| with_alpha(glowkit_core::color::gradient_cyclic(&stops, uv.x * 0.6 - time * 0.08), k));
+        paint::shader_grid(&p, full, 24, 1, |uv| {
+            with_alpha(glowkit_core::color::gradient_cyclic(&stops, uv.x * 0.6 - time * 0.08), k)
+        });
         paint::glow_ellipse(&p, full.center(), vec2(w * 0.4, self.height), with_alpha(Color32::WHITE, 0.12 * k));
         let ink = Color32::WHITE;
         let g = p.layout_no_wrap(self.text.clone(), FontId::proportional(14.0), Color32::PLACEHOLDER);
-        let lg = p.layout_no_wrap(if self.link.is_empty() { String::new() } else { format!("{} →", self.link) }, FontId::proportional(14.0), Color32::PLACEHOLDER);
+        let lg = p.layout_no_wrap(
+            if self.link.is_empty() { String::new() } else { format!("{} →", self.link) },
+            FontId::proportional(14.0),
+            Color32::PLACEHOLDER,
+        );
         let total = g.size().x + if self.link.is_empty() { 0.0 } else { 14.0 + lg.size().x };
         let x0 = full.center().x - total / 2.0;
         let ty = full.center().y - g.size().y / 2.0;
@@ -463,7 +583,10 @@ impl Widget for StickyBanner<'_> {
             let l = ui.interact(lr, id.with("link"), Sense::click());
             let lift = if l.hovered() { 2.0 } else { 0.0 };
             p.galley(pos2(lx + lift, ty), lg.clone(), with_alpha(ink, k));
-            p.line_segment([pos2(lx, lr.max.y), pos2(lr.max.x + lift, lr.max.y)], Stroke::new(1.0, with_alpha(ink, 0.7 * k)));
+            p.line_segment(
+                [pos2(lx, lr.max.y), pos2(lr.max.x + lift, lr.max.y)],
+                Stroke::new(1.0, with_alpha(ink, 0.7 * k)),
+            );
             if l.hovered() {
                 ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
             }

@@ -39,9 +39,13 @@ impl Placement {
 
 fn raw_place(anchor: Rect, size: Vec2, p: Placement, gap: f32) -> Rect {
     match p {
-        Placement::Top => Rect::from_min_size(pos2(anchor.center().x - size.x / 2.0, anchor.min.y - gap - size.y), size),
+        Placement::Top => {
+            Rect::from_min_size(pos2(anchor.center().x - size.x / 2.0, anchor.min.y - gap - size.y), size)
+        }
         Placement::Bottom => Rect::from_min_size(pos2(anchor.center().x - size.x / 2.0, anchor.max.y + gap), size),
-        Placement::Left => Rect::from_min_size(pos2(anchor.min.x - gap - size.x, anchor.center().y - size.y / 2.0), size),
+        Placement::Left => {
+            Rect::from_min_size(pos2(anchor.min.x - gap - size.x, anchor.center().y - size.y / 2.0), size)
+        }
         Placement::Right => Rect::from_min_size(pos2(anchor.max.x + gap, anchor.center().y - size.y / 2.0), size),
     }
 }
@@ -65,7 +69,15 @@ pub(crate) fn place(anchor: Rect, size: Vec2, p: Placement, gap: f32, bounds: Re
 }
 
 /// Paint the arrow of a floating panel pointing at `anchor`.
-fn panel_arrow(painter: &egui::Painter, panel: Rect, anchor: Rect, used: Placement, fill: egui::Color32, border: egui::Color32, size: f32) {
+fn panel_arrow(
+    painter: &egui::Painter,
+    panel: Rect,
+    anchor: Rect,
+    used: Placement,
+    fill: egui::Color32,
+    border: egui::Color32,
+    size: f32,
+) {
     let d = used.dir();
     let tip = match used {
         Placement::Top => pos2(anchor.center().x.clamp(panel.min.x + 14.0, panel.max.x - 14.0), panel.max.y + size),
@@ -206,7 +218,14 @@ impl Tooltip {
         let anchor = response.rect;
         kit::float_layer(ctx, id, Order::Tooltip, rect.expand(8.0), bounds, 0.92 + 0.08 * p, origin, p, |ui| {
             let pnt = ui.painter();
-            glowkit_core::paint::soft_shadow(pnt, rect, 6.0, 10.0, vec2(0.0, 3.0), egui::Color32::from_black_alpha(if t.dark { 90 } else { 40 }));
+            glowkit_core::paint::soft_shadow(
+                pnt,
+                rect,
+                6.0,
+                10.0,
+                vec2(0.0, 3.0),
+                egui::Color32::from_black_alpha(if t.dark { 90 } else { 40 }),
+            );
             pnt.rect_filled(rect, 6.0, t.primary);
             if arrow {
                 panel_arrow(pnt, rect, anchor, used, t.primary, t.primary, 5.0);
@@ -299,7 +318,8 @@ impl Popover {
         let id = tid.with("glowkit_popover");
         let last_rect: Option<Rect> = ctx.data_mut(|d| d.get_temp(id.with("rect")));
         if open && !trigger.clicked() {
-            let (pressed, pos, esc) = ctx.input(|i| (i.pointer.any_pressed(), i.pointer.interact_pos(), i.key_pressed(egui::Key::Escape)));
+            let (pressed, pos, esc) =
+                ctx.input(|i| (i.pointer.any_pressed(), i.pointer.interact_pos(), i.key_pressed(egui::Key::Escape)));
             if esc {
                 open = false;
             }
@@ -322,7 +342,8 @@ impl Popover {
             Some(w) => w.expand(30.0),
             None => bounds,
         };
-        let (r, rect) = anchored_card(&ctx, id, trigger.rect, p, pop, self.placement, self.width, self.arrow, bounds, clip, add);
+        let (r, rect) =
+            anchored_card(&ctx, id, trigger.rect, p, pop, self.placement, self.width, self.arrow, bounds, clip, add);
         ctx.data_mut(|d| d.insert_temp(id.with("rect"), rect));
         Some(r)
     }
@@ -356,7 +377,14 @@ impl Default for HoverCard {
 impl HoverCard {
     /// A bottom-placed hover card, 320 points wide.
     pub fn new() -> Self {
-        Self { placement: Placement::Bottom, width: 320.0, open_delay: 0.5, close_delay: 0.25, within: None, force_open: false }
+        Self {
+            placement: Placement::Bottom,
+            width: 320.0,
+            open_delay: 0.5,
+            close_delay: 0.25,
+            within: None,
+            force_open: false,
+        }
     }
     /// Preferred side.
     pub fn placement(mut self, placement: Placement) -> Self {
@@ -395,7 +423,9 @@ impl HoverCard {
         let now = ctx.input(|i| i.time);
         let card_rect: Option<Rect> = ctx.data_mut(|d| d.get_temp(id.with("rect")));
         let pointer = ctx.pointer_hover_pos();
-        let over = trigger.hovered() || (pointer.is_some_and(|p| card_rect.is_some_and(|r| r.expand(4.0).contains(p))) && ctx.data_mut(|d| d.get_temp::<bool>(id.with("open")).unwrap_or(false)));
+        let over = trigger.hovered()
+            || (pointer.is_some_and(|p| card_rect.is_some_and(|r| r.expand(4.0).contains(p)))
+                && ctx.data_mut(|d| d.get_temp::<bool>(id.with("open")).unwrap_or(false)));
         let (mut since, mut left, mut open) = ctx.data_mut(|d| {
             (
                 d.get_temp::<Option<f64>>(id.with("since")).flatten(),
@@ -443,9 +473,9 @@ impl HoverCard {
             Some(w) => w.expand(30.0),
             None => bounds,
         };
-        let (r, rect) = anchored_card(&ctx, id, trigger.rect, p, pop, self.placement, self.width, false, bounds, clip, add);
+        let (r, rect) =
+            anchored_card(&ctx, id, trigger.rect, p, pop, self.placement, self.width, false, bounds, clip, add);
         ctx.data_mut(|d| d.insert_temp(id.with("rect"), rect));
         Some(r)
     }
 }
-

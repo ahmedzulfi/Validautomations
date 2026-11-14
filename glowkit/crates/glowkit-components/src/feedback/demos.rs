@@ -8,9 +8,23 @@ use glowkit_core::Theme;
 fn spinner_cell(ui: &mut Ui, kind: SpinnerKind, size: f32) {
     let t = Theme::of(ui);
     let (rect, _) = ui.allocate_exact_size(vec2(96.0, 92.0), egui::Sense::hover());
-    ui.painter().rect(rect, egui::CornerRadius::same(10), if t.dark { t.background } else { t.muted }, egui::Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
-    Spinner::new(kind).size(size).paint(ui, egui::Rect::from_center_size(rect.center() - vec2(0.0, 10.0), vec2(size, size)));
-    ui.painter().text(egui::pos2(rect.center().x, rect.max.y - 14.0), egui::Align2::CENTER_CENTER, kind.name(), egui::FontId::proportional(11.5), t.muted_foreground);
+    ui.painter().rect(
+        rect,
+        egui::CornerRadius::same(10),
+        if t.dark { t.background } else { t.muted },
+        egui::Stroke::new(1.0, t.border),
+        egui::StrokeKind::Inside,
+    );
+    Spinner::new(kind)
+        .size(size)
+        .paint(ui, egui::Rect::from_center_size(rect.center() - vec2(0.0, 10.0), vec2(size, size)));
+    ui.painter().text(
+        egui::pos2(rect.center().x, rect.max.y - 14.0),
+        egui::Align2::CENTER_CENTER,
+        kind.name(),
+        egui::FontId::proportional(11.5),
+        t.muted_foreground,
+    );
 }
 
 pub fn all() -> Vec<Demo> {

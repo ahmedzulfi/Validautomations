@@ -4,7 +4,7 @@ use crate::*;
 use egui::{pos2, vec2, Align2, Color32, FontId, Id, Pos2, Rect, Sense, Stroke, StrokeKind, Ui, UiBuilder, Vec2};
 use glowkit_core::color::{self, with_alpha};
 use glowkit_core::demo::{Category::MotionEngine as C, Demo};
-use glowkit_core::{paint, state, set_state, Rng, Theme};
+use glowkit_core::{paint, set_state, state, Rng, Theme};
 use std::f32::consts::TAU;
 
 // ---------------------------------------------------------------------------------------------
@@ -39,7 +39,14 @@ fn caption(ui: &Ui, pos: Pos2, align: Align2, text: &str) {
 
 /// A card-like rounded rect with a soft shadow.
 fn card(painter: &egui::Painter, t: &Theme, rect: Rect, radius: f32) {
-    paint::soft_shadow(painter, rect.translate(vec2(0.0, 4.0)), radius, 16.0, Vec2::ZERO, Color32::from_black_alpha(if t.dark { 110 } else { 28 }));
+    paint::soft_shadow(
+        painter,
+        rect.translate(vec2(0.0, 4.0)),
+        radius,
+        16.0,
+        Vec2::ZERO,
+        Color32::from_black_alpha(if t.dark { 110 } else { 28 }),
+    );
     painter.rect_filled(rect, radius, t.card);
     painter.rect_stroke(rect, radius, t.border_stroke(), StrokeKind::Inside);
 }
@@ -322,7 +329,12 @@ fn spring_playground(ui: &mut Ui) {
         ui.add(egui::Slider::new(&mut s.d, 1.0..=60.0).text("damping").max_decimals(1));
         ui.add(egui::Slider::new(&mut s.m, 0.2..=4.0).text("mass").max_decimals(2));
         ui.separator();
-        for (name, k, d, m) in [("Bouncy", 280.0, 9.0, 1.0), ("Snappy", 420.0, 34.0, 1.0), ("Gentle", 90.0, 19.0, 1.0), ("Heavy", 160.0, 14.0, 3.0)] {
+        for (name, k, d, m) in [
+            ("Bouncy", 280.0, 9.0, 1.0),
+            ("Snappy", 420.0, 34.0, 1.0),
+            ("Gentle", 90.0, 19.0, 1.0),
+            ("Heavy", 160.0, 14.0, 3.0),
+        ] {
             if ui.button(name).clicked() {
                 (s.k, s.d, s.m) = (k, d, m);
             }
@@ -378,7 +390,14 @@ fn spring_playground(ui: &mut Ui) {
     // ball, stretched a little along its velocity
     let speed = vel.length();
     paint::glow(&p, pos, 46.0 + speed * 0.02, with_alpha(t.gradient[0], if t.dark { 0.35 } else { 0.2 }));
-    paint::soft_shadow(&p, Rect::from_center_size(pos + vec2(0.0, 26.0), vec2(36.0, 6.0)), 3.0, 10.0, Vec2::ZERO, Color32::from_black_alpha(if t.dark { 120 } else { 40 }));
+    paint::soft_shadow(
+        &p,
+        Rect::from_center_size(pos + vec2(0.0, 26.0), vec2(36.0, 6.0)),
+        3.0,
+        10.0,
+        Vec2::ZERO,
+        Color32::from_black_alpha(if t.dark { 120 } else { 40 }),
+    );
     paint::gradient_circle(&p, pos, 20.0, &[color::shade(t.gradient[1], 0.12), t.gradient[0]]);
     p.circle_filled(pos - vec2(6.0, 7.0), 5.0, with_alpha(Color32::WHITE, 0.35));
     caption(ui, area.left_top() - vec2(10.0, 18.0), Align2::LEFT_TOP, "hover to steer the target");
@@ -386,7 +405,8 @@ fn spring_playground(ui: &mut Ui) {
     // step response chart
     p.line_segment([pos2(split, rect.min.y + 16.0), pos2(split, rect.max.y - 16.0)], Stroke::new(1.0, t.border));
     caption(ui, chart.left_top() - vec2(0.0, 22.0), Align2::LEFT_TOP, "step response (2 s)");
-    let mut sp = glowkit_core::Spring { value: 0.0, velocity: 0.0, target: 1.0, stiffness: s.k, damping: s.d, mass: s.m };
+    let mut sp =
+        glowkit_core::Spring { value: 0.0, velocity: 0.0, target: 1.0, stiffness: s.k, damping: s.d, mass: s.m };
     let n = 120;
     let mut max_v: f32 = 1.0;
     let vals: Vec<f32> = (0..=n)
@@ -399,12 +419,20 @@ fn spring_playground(ui: &mut Ui) {
         })
         .collect();
     let max_v = max_v.min(2.2);
-    let map = |i: usize, v: f32| pos2(chart.min.x + chart.width() * i as f32 / n as f32, chart.max.y - chart.height() * (v / max_v).clamp(-0.2, 1.0));
+    let map = |i: usize, v: f32| {
+        pos2(
+            chart.min.x + chart.width() * i as f32 / n as f32,
+            chart.max.y - chart.height() * (v / max_v).clamp(-0.2, 1.0),
+        )
+    };
     let one = map(0, 1.0).y;
     p.line_segment([pos2(chart.min.x, chart.max.y), pos2(chart.max.x, chart.max.y)], Stroke::new(1.0, t.border));
     let mut x = chart.min.x;
     while x < chart.max.x {
-        p.line_segment([pos2(x, one), pos2((x + 4.0).min(chart.max.x), one)], Stroke::new(1.0, with_alpha(t.muted_foreground, 0.5)));
+        p.line_segment(
+            [pos2(x, one), pos2((x + 4.0).min(chart.max.x), one)],
+            Stroke::new(1.0, with_alpha(t.muted_foreground, 0.5)),
+        );
         x += 8.0;
     }
     let pts: Vec<Pos2> = vals.iter().enumerate().map(|(i, v)| map(i, *v)).collect();
@@ -416,7 +444,13 @@ fn spring_playground(ui: &mut Ui) {
     p.circle_filled(pts[idx], 5.0, t.foreground);
     p.circle_filled(pts[idx], 2.5, t.gradient[1]);
     let zeta = s.d / (2.0 * (s.k * s.m).sqrt());
-    let label = if zeta < 0.999 { format!("ζ = {zeta:.2}  underdamped") } else if zeta < 1.05 { format!("ζ = {zeta:.2}  critical") } else { format!("ζ = {zeta:.2}  overdamped") };
+    let label = if zeta < 0.999 {
+        format!("ζ = {zeta:.2}  underdamped")
+    } else if zeta < 1.05 {
+        format!("ζ = {zeta:.2}  critical")
+    } else {
+        format!("ζ = {zeta:.2}  overdamped")
+    };
     caption(ui, chart.left_bottom() + vec2(0.0, 10.0), Align2::LEFT_TOP, &label);
     ui.ctx().request_repaint();
 }
@@ -453,7 +487,10 @@ fn easing_visualizer(ui: &mut Ui) {
     let prog = ((time % cycle) / 1.7).min(1.0);
     for (i, (e, name)) in list.iter().enumerate() {
         let (r, c) = (i / cols, i % cols);
-        let cell = Rect::from_min_size(pos2(rect.min.x + c as f32 * (cw + gap), rect.min.y + r as f32 * (ch + gap)), vec2(cw, ch));
+        let cell = Rect::from_min_size(
+            pos2(rect.min.x + c as f32 * (cw + gap), rect.min.y + r as f32 * (ch + gap)),
+            vec2(cw, ch),
+        );
         p.rect_filled(cell, t.corner(), t.muted);
         p.rect_stroke(cell, t.corner(), t.border_stroke(), StrokeKind::Inside);
         let plot = Rect::from_min_max(cell.min + vec2(14.0, 30.0), cell.max - vec2(30.0, 14.0));
@@ -461,12 +498,17 @@ fn easing_visualizer(ui: &mut Ui) {
         // plot frame (with room for overshoot)
         let y_of = |v: f32| plot.max.y - (v * 0.72 + 0.14) * plot.height();
         for v in [0.0, 1.0] {
-            p.line_segment([pos2(plot.min.x, y_of(v)), pos2(plot.max.x, y_of(v))], Stroke::new(1.0, with_alpha(t.border, 0.9)));
+            p.line_segment(
+                [pos2(plot.min.x, y_of(v)), pos2(plot.max.x, y_of(v))],
+                Stroke::new(1.0, with_alpha(t.border, 0.9)),
+            );
         }
-        let pts: Vec<Pos2> = (0..=48).map(|k| {
-            let x = k as f32 / 48.0;
-            pos2(plot.min.x + x * plot.width(), y_of(e.apply(x)))
-        }).collect();
+        let pts: Vec<Pos2> = (0..=48)
+            .map(|k| {
+                let x = k as f32 / 48.0;
+                pos2(plot.min.x + x * plot.width(), y_of(e.apply(x)))
+            })
+            .collect();
         let col = t.chart[i % t.chart.len()];
         paint::gradient_polyline(&p, &pts, false, 2.0, |k| with_alpha(col, 0.35 + 0.65 * k));
         let v = e.apply(prog);
@@ -496,18 +538,35 @@ fn keyframes_demo(ui: &mut Ui) {
         .duration(1.1)
         .repeat(Repeat::Infinite)
         .play(ui, id.with("y"));
-    let squash: Vec2 = Keyframes::new([(0.0, vec2(1.3, 0.72)), (0.1, vec2(0.92, 1.1)), (0.5, vec2(1.0, 1.0)), (0.9, vec2(0.95, 1.08)), (1.0, vec2(1.3, 0.72))])
-        .ease(Easing::OutQuad)
-        .duration(1.1)
+    let squash: Vec2 = Keyframes::new([
+        (0.0, vec2(1.3, 0.72)),
+        (0.1, vec2(0.92, 1.1)),
+        (0.5, vec2(1.0, 1.0)),
+        (0.9, vec2(0.95, 1.08)),
+        (1.0, vec2(1.3, 0.72)),
+    ])
+    .ease(Easing::OutQuad)
+    .duration(1.1)
+    .repeat(Repeat::Infinite)
+    .play(ui, id.with("sq"));
+    let hue: Color32 = Keyframes::evenly([t.chart[0], t.chart[1], t.chart[2], t.chart[0]])
+        .ease(Easing::Linear)
+        .duration(3.3)
         .repeat(Repeat::Infinite)
-        .play(ui, id.with("sq"));
-    let hue: Color32 = Keyframes::evenly([t.chart[0], t.chart[1], t.chart[2], t.chart[0]]).ease(Easing::Linear).duration(3.3).repeat(Repeat::Infinite).play(ui, id.with("hue"));
+        .play(ui, id.with("hue"));
     let floor = left.max.y - 52.0;
     let r = 26.0;
     let c = pos2(left.center().x, floor - r * squash.y + y);
     let h = (-y / 150.0).clamp(0.0, 1.0);
-    p.add(egui::Shape::ellipse_filled(pos2(c.x, floor + 3.0), vec2(30.0 - 12.0 * h, 5.0 - 2.0 * h), Color32::from_black_alpha(if t.dark { 140 } else { 45 })));
-    p.line_segment([pos2(left.min.x + 40.0, floor + 3.0), pos2(left.max.x - 40.0, floor + 3.0)], Stroke::new(1.0, t.border));
+    p.add(egui::Shape::ellipse_filled(
+        pos2(c.x, floor + 3.0),
+        vec2(30.0 - 12.0 * h, 5.0 - 2.0 * h),
+        Color32::from_black_alpha(if t.dark { 140 } else { 45 }),
+    ));
+    p.line_segment(
+        [pos2(left.min.x + 40.0, floor + 3.0), pos2(left.max.x - 40.0, floor + 3.0)],
+        Stroke::new(1.0, t.border),
+    );
     paint::glow(&p, c, 70.0, with_alpha(hue, 0.25));
     p.add(egui::Shape::ellipse_filled(c, vec2(r * squash.x, r * squash.y), hue));
     p.add(egui::Shape::ellipse_filled(c - vec2(8.0, 9.0) * squash, vec2(7.0, 5.0), with_alpha(Color32::WHITE, 0.35)));
@@ -515,15 +574,24 @@ fn keyframes_demo(ui: &mut Ui) {
 
     // repeat types side by side
     let right = Rect::from_min_max(pos2(left.max.x, rect.min.y), rect.max).shrink2(vec2(36.0, 44.0));
-    p.line_segment([pos2(left.max.x, rect.min.y + 20.0), pos2(left.max.x, rect.max.y - 20.0)], Stroke::new(1.0, t.border));
+    p.line_segment(
+        [pos2(left.max.x, rect.min.y + 20.0), pos2(left.max.x, rect.max.y - 20.0)],
+        Stroke::new(1.0, t.border),
+    );
     let frames = [(0.0, 0.0_f32), (0.35, 0.75), (1.0, 1.0)];
-    let rows: [(&str, RepeatType); 3] = [("loop", RepeatType::Loop), ("yoyo", RepeatType::Yoyo), ("mirror", RepeatType::Mirror)];
+    let rows: [(&str, RepeatType); 3] =
+        [("loop", RepeatType::Loop), ("yoyo", RepeatType::Yoyo), ("mirror", RepeatType::Mirror)];
     for (i, (name, rt)) in rows.iter().enumerate() {
         let yy = right.min.y + 18.0 + i as f32 * (right.height() - 36.0) / 2.0;
         let x0 = right.min.x + 70.0;
         let x1 = right.max.x - 10.0;
         // sample one iteration ahead so the repeat types already differ on the first run
-        let kf = Keyframes::new(frames).ease_segments([Easing::OutCubic, Easing::InOutSine]).duration(1.4).repeat(Repeat::Infinite).repeat_type(*rt).repeat_delay(0.35);
+        let kf = Keyframes::new(frames)
+            .ease_segments([Easing::OutCubic, Easing::InOutSine])
+            .duration(1.4)
+            .repeat(Repeat::Infinite)
+            .repeat_type(*rt)
+            .repeat_delay(0.35);
         let k: f32 = kf.sample(glowkit_core::Clock::elapsed(ui, id.with("rows")) + 1.75);
         let col = t.chart[(i + 3) % t.chart.len()];
         p.text(pos2(right.min.x, yy), Align2::LEFT_CENTER, *name, FontId::monospace(12.0), t.foreground);
@@ -537,7 +605,12 @@ fn keyframes_demo(ui: &mut Ui) {
         p.circle_filled(pos2(x, yy), 11.0, with_alpha(col, 0.25));
         p.circle_filled(pos2(x, yy), 7.0, col);
     }
-    caption(ui, pos2(right.center().x, rect.max.y - 26.0), Align2::CENTER_TOP, "same keyframes, three repeat types (dots = stops)");
+    caption(
+        ui,
+        pos2(right.center().x, rect.max.y - 26.0),
+        Align2::CENTER_TOP,
+        "same keyframes, three repeat types (dots = stops)",
+    );
     glowkit_core::animate(ui);
 }
 
@@ -600,7 +673,8 @@ fn timeline_demo(ui: &mut Ui) {
     let cy = rect.center().y - 10.0;
     // square: slides in, then rotates
     let sq_c = pos2(cx + slide * (cx - rect.min.x + 60.0), cy);
-    let sq = egui::epaint::RectShape::filled(Rect::from_center_size(sq_c, Vec2::splat(74.0)), 16, t.chart[0]).with_angle(rot.to_radians());
+    let sq = egui::epaint::RectShape::filled(Rect::from_center_size(sq_c, Vec2::splat(74.0)), 16, t.chart[0])
+        .with_angle(rot.to_radians());
     paint::glow(&p, sq_c, 80.0, with_alpha(t.chart[0], 0.25));
     p.add(sq);
     // circle: pops in and orbits the square
@@ -613,13 +687,31 @@ fn timeline_demo(ui: &mut Ui) {
     // title fades & rises, bar fills
     let tx = rect.min.x + rect.width() * 0.55;
     let col = with_alpha(t.foreground, title);
-    p.text(pos2(tx, cy - 26.0 + (1.0 - title) * 14.0), Align2::LEFT_CENTER, "Sequenced with a timeline", FontId::proportional(24.0), col);
-    p.text(pos2(tx, cy + 6.0 + (1.0 - title) * 14.0), Align2::LEFT_CENTER, "labels · overlaps · reverse · scrub", FontId::proportional(14.0), with_alpha(t.muted_foreground, title));
+    p.text(
+        pos2(tx, cy - 26.0 + (1.0 - title) * 14.0),
+        Align2::LEFT_CENTER,
+        "Sequenced with a timeline",
+        FontId::proportional(24.0),
+        col,
+    );
+    p.text(
+        pos2(tx, cy + 6.0 + (1.0 - title) * 14.0),
+        Align2::LEFT_CENTER,
+        "labels · overlaps · reverse · scrub",
+        FontId::proportional(14.0),
+        with_alpha(t.muted_foreground, title),
+    );
     let track = Rect::from_min_size(pos2(tx, cy + 36.0), vec2((rect.max.x - tx - 40.0).max(60.0), 8.0));
     p.rect_filled(track, 4, t.border);
     let grad = t.gradient;
     if bar > 0.01 {
-        paint::gradient_rect(&p, Rect::from_min_size(track.min, vec2(track.width() * bar, track.height())), 4.0, 0.0, &grad);
+        paint::gradient_rect(
+            &p,
+            Rect::from_min_size(track.min, vec2(track.width() * bar, track.height())),
+            4.0,
+            0.0,
+            &grad,
+        );
     }
     ui.add_space(10.0);
     let mut pb2 = pb;
@@ -666,7 +758,11 @@ fn motion_box_demo(ui: &mut Ui) {
         ("✦", "Hover tilt", "rotate + scale", Props::new().scale(1.05).rotate(-4.0), Props::new().scale(0.95)),
         ("∿", "Animate", "springs between targets", Props::IDENTITY, Props::IDENTITY),
     ];
-    let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_size(start, vec2(total, 160.0))).layout(egui::Layout::left_to_right(egui::Align::Min)));
+    let mut child = ui.new_child(
+        UiBuilder::new()
+            .max_rect(Rect::from_min_size(start, vec2(total, 160.0)))
+            .layout(egui::Layout::left_to_right(egui::Align::Min)),
+    );
     child.spacing_mut().item_spacing.x = gap;
     for (i, (icon, title, sub, hover, tap)) in cards.iter().enumerate() {
         let bid = id.with(i);
@@ -676,7 +772,13 @@ fn motion_box_demo(ui: &mut Ui) {
         }
         let mut b = MotionBox::new(bid).initial(initial).transition(Transition::BOUNCY.delay(0.08 * i as f32 + 0.1));
         if i == 3 {
-            b = b.animate(if breathe { Props::new().y(-14.0).rotate(6.0).scale(1.04) } else { Props::new().y(10.0).rotate(-6.0) }).transition(Transition::spring(160.0, 9.0));
+            b = b
+                .animate(if breathe {
+                    Props::new().y(-14.0).rotate(6.0).scale(1.04)
+                } else {
+                    Props::new().y(10.0).rotate(-6.0)
+                })
+                .transition(Transition::spring(160.0, 9.0));
         }
         if *hover != Props::IDENTITY {
             b = b.while_hover(*hover);
@@ -735,7 +837,8 @@ fn stagger_demo(ui: &mut Ui) {
     let list_rect = Rect::from_min_size(rect.min + vec2(28.0, 26.0), vec2((rect.width() * 0.45).min(360.0), 250.0));
     let mut lui = ui.new_child(UiBuilder::new().max_rect(list_rect).layout(egui::Layout::top_down(egui::Align::Min)));
     lui.spacing_mut().item_spacing.y = 8.0;
-    let names = ["Inbox zero, finally", "Design review at 3pm", "Deploy finished", "New comment on PR #42", "Coffee with Sam"];
+    let names =
+        ["Inbox zero, finally", "Design review at 3pm", "Deploy finished", "New comment on PR #42", "Coffee with Sam"];
     MotionGroup::new(id.with("list"), Variants::fade(vec2(-36.0, 0.0)))
         .initial("hidden")
         .animate(variant)
@@ -750,8 +853,18 @@ fn stagger_demo(ui: &mut Ui) {
                     card(p, &t, r, 12.0);
                     let col = t.chart[i % t.chart.len()];
                     p.circle_filled(r.left_center() + vec2(22.0, 0.0), 11.0, with_alpha(col, 0.9));
-                    p.text(r.left_center() + vec2(42.0, 0.0), Align2::LEFT_CENTER, *name, FontId::proportional(13.5), t.foreground);
-                    p.rect_filled(Rect::from_min_size(r.right_center() + vec2(-58.0, -4.0), vec2(40.0, 8.0)), 4, t.muted);
+                    p.text(
+                        r.left_center() + vec2(42.0, 0.0),
+                        Align2::LEFT_CENTER,
+                        *name,
+                        FontId::proportional(13.5),
+                        t.foreground,
+                    );
+                    p.rect_filled(
+                        Rect::from_min_size(r.right_center() + vec2(-58.0, -4.0), vec2(40.0, 8.0)),
+                        4,
+                        t.muted,
+                    );
                 });
             }
         });
@@ -761,10 +874,15 @@ fn stagger_demo(ui: &mut Ui) {
     let grid_rect = Rect::from_min_max(pos2(gx, rect.min.y + 26.0), rect.max - vec2(24.0, 20.0));
     let cols = 5;
     let rows = 3;
-    let cell = ((grid_rect.width() - 10.0 * (cols - 1) as f32) / cols as f32).min((grid_rect.height() - 10.0 * (rows - 1) as f32) / rows as f32).max(20.0);
+    let cell = ((grid_rect.width() - 10.0 * (cols - 1) as f32) / cols as f32)
+        .min((grid_rect.height() - 10.0 * (rows - 1) as f32) / rows as f32)
+        .max(20.0);
     let gw = cell * cols as f32 + 10.0 * (cols - 1) as f32;
-    let grid_rect = Rect::from_min_size(pos2(grid_rect.center().x - gw / 2.0, grid_rect.min.y), vec2(gw, grid_rect.height()));
-    let tiles = Variants::new().with("hidden", Props::new().opacity(0.0).scale(0.3).rotate(-30.0)).with("visible", Props::IDENTITY);
+    let grid_rect =
+        Rect::from_min_size(pos2(grid_rect.center().x - gw / 2.0, grid_rect.min.y), vec2(gw, grid_rect.height()));
+    let tiles = Variants::new()
+        .with("hidden", Props::new().opacity(0.0).scale(0.3).rotate(-30.0))
+        .with("visible", Props::IDENTITY);
     let mut gui = ui.new_child(UiBuilder::new().max_rect(grid_rect).layout(egui::Layout::top_down(egui::Align::Min)));
     gui.spacing_mut().item_spacing = vec2(10.0, 10.0);
     MotionGroup::new(id.with("grid"), tiles)
@@ -866,7 +984,13 @@ fn presence_demo(ui: &mut Ui) {
     if s.auto && now > s.next_op {
         s.next_op = now + 1.1;
         let n = s.chips.len();
-        let op = if n <= 2 { 0 } else if n >= 6 { 1 } else { s.rng.below(3) };
+        let op = if n <= 2 {
+            0
+        } else if n >= 6 {
+            1
+        } else {
+            s.rng.below(3)
+        };
         match op {
             0 => {
                 let at = s.rng.below(n + 1);
@@ -891,7 +1015,10 @@ fn presence_demo(ui: &mut Ui) {
 
     // keyed list
     let lw = (half - 60.0).min(320.0);
-    let list_rect = Rect::from_min_size(pos2(rect.min.x + half / 2.0 - lw / 2.0, rect.min.y + 34.0), vec2(lw, rect.height() - 40.0));
+    let list_rect = Rect::from_min_size(
+        pos2(rect.min.x + half / 2.0 - lw / 2.0, rect.min.y + 34.0),
+        vec2(lw, rect.height() - 40.0),
+    );
     caption(ui, list_rect.left_top() - vec2(0.0, 22.0), Align2::LEFT_TOP, "PresenceList: add · remove · reorder");
     let mut lui = ui.new_child(UiBuilder::new().max_rect(list_rect).layout(egui::Layout::top_down(egui::Align::Min)));
     lui.spacing_mut().item_spacing.y = 6.0;
@@ -899,47 +1026,89 @@ fn presence_demo(ui: &mut Ui) {
     PresenceList::new(id.with("chips"))
         .initial(Props::new().opacity(0.0).x(-40.0).scale(0.9))
         .exit(Props::new().opacity(0.0).scale(0.7))
-        .show(&mut lui, &s.chips, |c| c.id, |ui, c| {
-            let (r, _) = ui.allocate_exact_size(vec2(lw, 38.0), Sense::hover());
-            let p = ui.painter();
-            card(p, &t, r, 10.0);
-            let col = t.chart[c.color % t.chart.len()];
-            p.rect_filled(Rect::from_min_size(r.min + vec2(10.0, 10.0), vec2(18.0, 18.0)), 6, col);
-            p.text(r.left_center() + vec2(40.0, 0.0), Align2::LEFT_CENTER, names[c.id as usize % names.len()], FontId::proportional(13.5), t.foreground);
-            p.text(r.right_center() - vec2(12.0, 0.0), Align2::RIGHT_CENTER, format!("#{}", c.id), FontId::monospace(11.0), t.muted_foreground);
-        });
+        .show(
+            &mut lui,
+            &s.chips,
+            |c| c.id,
+            |ui, c| {
+                let (r, _) = ui.allocate_exact_size(vec2(lw, 38.0), Sense::hover());
+                let p = ui.painter();
+                card(p, &t, r, 10.0);
+                let col = t.chart[c.color % t.chart.len()];
+                p.rect_filled(Rect::from_min_size(r.min + vec2(10.0, 10.0), vec2(18.0, 18.0)), 6, col);
+                p.text(
+                    r.left_center() + vec2(40.0, 0.0),
+                    Align2::LEFT_CENTER,
+                    names[c.id as usize % names.len()],
+                    FontId::proportional(13.5),
+                    t.foreground,
+                );
+                p.text(
+                    r.right_center() - vec2(12.0, 0.0),
+                    Align2::RIGHT_CENTER,
+                    format!("#{}", c.id),
+                    FontId::monospace(11.0),
+                    t.muted_foreground,
+                );
+            },
+        );
 
     // toasts
     let p = ui.painter_at(rect);
-    p.line_segment([pos2(rect.center().x, rect.min.y + 20.0), pos2(rect.center().x, rect.max.y - 20.0)], Stroke::new(1.0, t.border));
+    p.line_segment(
+        [pos2(rect.center().x, rect.min.y + 20.0), pos2(rect.center().x, rect.max.y - 20.0)],
+        Stroke::new(1.0, t.border),
+    );
     let tw = (half - 60.0).min(300.0);
-    let toast_rect = Rect::from_min_size(pos2(rect.center().x + half / 2.0 - tw / 2.0, rect.min.y + 34.0), vec2(tw, rect.height() - 40.0));
+    let toast_rect = Rect::from_min_size(
+        pos2(rect.center().x + half / 2.0 - tw / 2.0, rect.min.y + 34.0),
+        vec2(tw, rect.height() - 40.0),
+    );
     caption(ui, toast_rect.left_top() - vec2(0.0, 22.0), Align2::LEFT_TOP, "Toasts that exit before unmounting");
     let mut tui = ui.new_child(UiBuilder::new().max_rect(toast_rect).layout(egui::Layout::top_down(egui::Align::Min)));
     tui.spacing_mut().item_spacing.y = 8.0;
-    let kinds = [("✔", "Changes saved", "Your profile is up to date", t.success), ("⬆", "Upload complete", "3 files · 12.4 MB", t.info), ("⚠", "Storage almost full", "92% of 50 GB used", t.warning)];
+    let kinds = [
+        ("✔", "Changes saved", "Your profile is up to date", t.success),
+        ("⬆", "Upload complete", "3 files · 12.4 MB", t.info),
+        ("⚠", "Storage almost full", "92% of 50 GB used", t.warning),
+    ];
     let mut toasts = s.toasts.clone();
     toasts.reverse(); // newest on top
     PresenceList::new(id.with("toasts"))
         .initial(Props::new().opacity(0.0).y(-24.0).scale(0.92))
         .exit(Props::new().opacity(0.0).x(80.0))
         .exit_transition(Transition::tween(0.3).ease(Easing::InCubic))
-        .show(&mut tui, &toasts, |x| x.id, |ui, x| {
-            let (r, _) = ui.allocate_exact_size(vec2(tw, 58.0), Sense::hover());
-            let (icon, title, sub, col) = kinds[x.kind];
-            let p = ui.painter();
-            paint::soft_shadow(p, r.translate(vec2(0.0, 6.0)), 12.0, 18.0, Vec2::ZERO, Color32::from_black_alpha(if t.dark { 120 } else { 30 }));
-            p.rect_filled(r, 12, t.popover);
-            p.rect_stroke(r, 12, t.border_stroke(), StrokeKind::Inside);
-            p.circle_filled(r.left_center() + vec2(24.0, 0.0), 13.0, with_alpha(col, 0.16));
-            p.text(r.left_center() + vec2(24.0, 0.0), Align2::CENTER_CENTER, icon, FontId::proportional(13.0), col);
-            p.text(r.min + vec2(48.0, 12.0), Align2::LEFT_TOP, title, FontId::proportional(13.5), t.foreground);
-            p.text(r.min + vec2(48.0, 31.0), Align2::LEFT_TOP, sub, FontId::proportional(11.5), t.muted_foreground);
-            // life bar
-            let life = ((ui.input(|i| i.time) - x.born) / 3.6).clamp(0.0, 1.0) as f32;
-            let bar = Rect::from_min_size(pos2(r.min.x + 12.0, r.max.y - 4.0), vec2((r.width() - 24.0) * (1.0 - life), 2.0));
-            p.rect_filled(bar, 1, with_alpha(col, 0.6));
-        });
+        .show(
+            &mut tui,
+            &toasts,
+            |x| x.id,
+            |ui, x| {
+                let (r, _) = ui.allocate_exact_size(vec2(tw, 58.0), Sense::hover());
+                let (icon, title, sub, col) = kinds[x.kind];
+                let p = ui.painter();
+                paint::soft_shadow(
+                    p,
+                    r.translate(vec2(0.0, 6.0)),
+                    12.0,
+                    18.0,
+                    Vec2::ZERO,
+                    Color32::from_black_alpha(if t.dark { 120 } else { 30 }),
+                );
+                p.rect_filled(r, 12, t.popover);
+                p.rect_stroke(r, 12, t.border_stroke(), StrokeKind::Inside);
+                p.circle_filled(r.left_center() + vec2(24.0, 0.0), 13.0, with_alpha(col, 0.16));
+                p.text(r.left_center() + vec2(24.0, 0.0), Align2::CENTER_CENTER, icon, FontId::proportional(13.0), col);
+                p.text(r.min + vec2(48.0, 12.0), Align2::LEFT_TOP, title, FontId::proportional(13.5), t.foreground);
+                p.text(r.min + vec2(48.0, 31.0), Align2::LEFT_TOP, sub, FontId::proportional(11.5), t.muted_foreground);
+                // life bar
+                let life = ((ui.input(|i| i.time) - x.born) / 3.6).clamp(0.0, 1.0) as f32;
+                let bar = Rect::from_min_size(
+                    pos2(r.min.x + 12.0, r.max.y - 4.0),
+                    vec2((r.width() - 24.0) * (1.0 - life), 2.0),
+                );
+                p.rect_filled(bar, 1, with_alpha(col, 0.6));
+            },
+        );
     set_state(ui, id, s);
 }
 
@@ -960,7 +1129,14 @@ fn layout_demo(ui: &mut Ui) {
     let t = Theme::of(ui);
     let id = ui.scope_id().with("layout_demo");
     let now = ui.input(|i| i.time);
-    let mut s: LayoutDemo = state(ui, id, || LayoutDemo { order: (0..8).collect(), grid: true, auto: true, next: now + 1.2, step: 0, rng: Rng::new(4) });
+    let mut s: LayoutDemo = state(ui, id, || LayoutDemo {
+        order: (0..8).collect(),
+        grid: true,
+        auto: true,
+        next: now + 1.2,
+        step: 0,
+        rng: Rng::new(4),
+    });
     toolbar(ui, |ui| {
         if ui.add(egui::Button::selectable(s.grid, "▦ Grid")).clicked() {
             s.grid = true;
@@ -1008,31 +1184,74 @@ fn layout_demo(ui: &mut Ui) {
                 let gap = 14.0;
                 let cw = (inner.width() - gap * (cols - 1) as f32) / cols as f32;
                 let ch = (inner.height() - gap) / 2.0;
-                Rect::from_min_size(inner.min + vec2((slot % cols) as f32 * (cw + gap), (slot / cols) as f32 * (ch + gap)), vec2(cw, ch))
+                Rect::from_min_size(
+                    inner.min + vec2((slot % cols) as f32 * (cw + gap), (slot / cols) as f32 * (ch + gap)),
+                    vec2(cw, ch),
+                )
             } else {
                 let gap = 6.0;
                 let rh = (inner.height() - gap * 7.0) / 8.0;
                 let w = inner.width().min(520.0);
-                Rect::from_min_size(pos2(inner.center().x - w / 2.0, inner.min.y + slot as f32 * (rh + gap)), vec2(w, rh))
+                Rect::from_min_size(
+                    pos2(inner.center().x - w / 2.0, inner.min.y + slot as f32 * (rh + gap)),
+                    vec2(w, rh),
+                )
             };
             layout.item_at(ui, item, target, |ui| {
                 let r = ui.max_rect();
                 let p = ui.painter();
                 let col = t.chart[item % t.chart.len()];
                 let rad = (r.height() * 0.18).clamp(6.0, 16.0);
-                paint::soft_shadow(p, r.translate(vec2(0.0, 3.0)), rad, 12.0, Vec2::ZERO, Color32::from_black_alpha(if t.dark { 90 } else { 22 }));
+                paint::soft_shadow(
+                    p,
+                    r.translate(vec2(0.0, 3.0)),
+                    rad,
+                    12.0,
+                    Vec2::ZERO,
+                    Color32::from_black_alpha(if t.dark { 90 } else { 22 }),
+                );
                 paint::gradient_rect(p, r, rad, 135.0, &[with_alpha(col, 0.95), color::shade(col, -0.12)]);
                 // content adapts to the animated rect: icon grows with the card
                 let tall = (r.height() / 110.0).clamp(0.0, 1.0);
                 let icon_size = 14.0 + 22.0 * tall;
                 let ink = color::contrast_text(col);
                 if tall > 0.5 {
-                    p.text(r.center() - vec2(0.0, 10.0), Align2::CENTER_CENTER, icons[item], FontId::proportional(icon_size), with_alpha(ink, 0.95));
-                    p.text(r.center() + vec2(0.0, icon_size * 0.6 + 4.0), Align2::CENTER_CENTER, names[item], FontId::proportional(13.0), ink);
+                    p.text(
+                        r.center() - vec2(0.0, 10.0),
+                        Align2::CENTER_CENTER,
+                        icons[item],
+                        FontId::proportional(icon_size),
+                        with_alpha(ink, 0.95),
+                    );
+                    p.text(
+                        r.center() + vec2(0.0, icon_size * 0.6 + 4.0),
+                        Align2::CENTER_CENTER,
+                        names[item],
+                        FontId::proportional(13.0),
+                        ink,
+                    );
                 } else {
-                    p.text(r.left_center() + vec2(14.0, 0.0), Align2::LEFT_CENTER, icons[item], FontId::proportional(icon_size), ink);
-                    p.text(r.left_center() + vec2(40.0, 0.0), Align2::LEFT_CENTER, names[item], FontId::proportional(13.0), ink);
-                    p.text(r.right_center() - vec2(14.0, 0.0), Align2::RIGHT_CENTER, format!("#{item}"), FontId::monospace(11.0), with_alpha(ink, 0.8));
+                    p.text(
+                        r.left_center() + vec2(14.0, 0.0),
+                        Align2::LEFT_CENTER,
+                        icons[item],
+                        FontId::proportional(icon_size),
+                        ink,
+                    );
+                    p.text(
+                        r.left_center() + vec2(40.0, 0.0),
+                        Align2::LEFT_CENTER,
+                        names[item],
+                        FontId::proportional(13.0),
+                        ink,
+                    );
+                    p.text(
+                        r.right_center() - vec2(14.0, 0.0),
+                        Align2::RIGHT_CENTER,
+                        format!("#{item}"),
+                        FontId::monospace(11.0),
+                        with_alpha(ink, 0.8),
+                    );
                 }
             });
         }
@@ -1068,7 +1287,12 @@ fn shared_element_demo(ui: &mut Ui) {
         ui.label(egui::RichText::new("click an album to open it, click again to close").color(t.muted_foreground));
     });
     let (rect, _) = stage(ui, 330.0);
-    let albums = [("Midnight Drive", "Neon Coast", 0usize), ("Paper Moons", "Lumen", 2), ("Low Tide", "Harbor Lights", 1), ("Static Bloom", "Vela", 3)];
+    let albums = [
+        ("Midnight Drive", "Neon Coast", 0usize),
+        ("Paper Moons", "Lumen", 2),
+        ("Low Tide", "Harbor Lights", 1),
+        ("Static Bloom", "Vela", 3),
+    ];
     let inner = rect.shrink(22.0);
     let thumbs_w = (inner.width() * 0.42).min(330.0);
     let cell = ((thumbs_w - 14.0) / 2.0).min((inner.height() - 14.0) / 2.0);
@@ -1078,7 +1302,12 @@ fn shared_element_demo(ui: &mut Ui) {
     {
         let p = ui.painter_at(rect);
         let hint = with_alpha(t.muted_foreground, 1.0 - open_k);
-        p.rect_stroke(detail, t.corner_scaled(1.6), Stroke::new(1.0, with_alpha(t.border, 1.0 - open_k * 0.7)), StrokeKind::Inside);
+        p.rect_stroke(
+            detail,
+            t.corner_scaled(1.6),
+            Stroke::new(1.0, with_alpha(t.border, 1.0 - open_k * 0.7)),
+            StrokeKind::Inside,
+        );
         p.text(detail.center(), Align2::CENTER_CENTER, "Pick an album", FontId::proportional(15.0), hint);
     }
     let mut clicked = None;
@@ -1090,15 +1319,31 @@ fn shared_element_demo(ui: &mut Ui) {
                 let side = detail.height().min(detail.width() * 0.5);
                 Rect::from_min_size(detail.min, Vec2::splat(side))
             } else {
-                Rect::from_min_size(inner.min + vec2((i % 2) as f32 * (cell + 14.0), (i / 2) as f32 * (cell + 14.0)), Vec2::splat(cell))
+                Rect::from_min_size(
+                    inner.min + vec2((i % 2) as f32 * (cell + 14.0), (i / 2) as f32 * (cell + 14.0)),
+                    Vec2::splat(cell),
+                )
             };
             let resp = layout.item_at(ui, ("album", i), target, |ui| {
                 let r = ui.max_rect();
                 let p = ui.painter();
                 let base = t.chart[*ci % t.chart.len()];
                 let rad = (r.width() * 0.08).clamp(8.0, 20.0);
-                paint::soft_shadow(p, r.translate(vec2(0.0, 6.0)), rad, 20.0, Vec2::ZERO, Color32::from_black_alpha(if t.dark { 120 } else { 35 }));
-                paint::gradient_rect(p, r, rad, 135.0, &[base, color::mix(base, t.gradient[1], 0.5), color::shade(base, -0.2)]);
+                paint::soft_shadow(
+                    p,
+                    r.translate(vec2(0.0, 6.0)),
+                    rad,
+                    20.0,
+                    Vec2::ZERO,
+                    Color32::from_black_alpha(if t.dark { 120 } else { 35 }),
+                );
+                paint::gradient_rect(
+                    p,
+                    r,
+                    rad,
+                    135.0,
+                    &[base, color::mix(base, t.gradient[1], 0.5), color::shade(base, -0.2)],
+                );
                 // concentric "vinyl" rings scale with the cover
                 let c = r.center();
                 for k in 1..5 {
@@ -1106,7 +1351,13 @@ fn shared_element_demo(ui: &mut Ui) {
                 }
                 p.circle_filled(c, r.width() * 0.06, with_alpha(Color32::WHITE, 0.85));
                 let ink = color::contrast_text(base);
-                p.text(r.left_bottom() + vec2(10.0, -10.0), Align2::LEFT_BOTTOM, *title, FontId::proportional((r.width() * 0.075).clamp(11.0, 20.0)), ink);
+                p.text(
+                    r.left_bottom() + vec2(10.0, -10.0),
+                    Align2::LEFT_BOTTOM,
+                    *title,
+                    FontId::proportional((r.width() * 0.075).clamp(11.0, 20.0)),
+                    ink,
+                );
             });
             if resp.clicked() {
                 clicked = Some(i);
@@ -1121,12 +1372,30 @@ fn shared_element_demo(ui: &mut Ui) {
                 let p = ui.painter_at(rect);
                 let a = open_k;
                 let dy = (1.0 - a) * 12.0;
-                p.text(pos2(tx, detail.min.y + 18.0 + dy), Align2::LEFT_TOP, *title, FontId::proportional(24.0), with_alpha(t.foreground, a));
-                p.text(pos2(tx, detail.min.y + 52.0 + dy), Align2::LEFT_TOP, *artist, FontId::proportional(15.0), with_alpha(t.muted_foreground, a));
+                p.text(
+                    pos2(tx, detail.min.y + 18.0 + dy),
+                    Align2::LEFT_TOP,
+                    *title,
+                    FontId::proportional(24.0),
+                    with_alpha(t.foreground, a),
+                );
+                p.text(
+                    pos2(tx, detail.min.y + 52.0 + dy),
+                    Align2::LEFT_TOP,
+                    *artist,
+                    FontId::proportional(15.0),
+                    with_alpha(t.muted_foreground, a),
+                );
                 for (k, track) in ["Intro", "Afterglow", "Signals", "Long Way Home"].iter().enumerate() {
                     let y = detail.min.y + 96.0 + k as f32 * 30.0 + dy * (1.0 + k as f32 * 0.5);
                     let aa = (a * 1.6 - k as f32 * 0.15).clamp(0.0, 1.0);
-                    p.text(pos2(tx, y), Align2::LEFT_TOP, format!("{:02}   {track}", k + 1), FontId::proportional(13.5), with_alpha(t.foreground, aa * 0.9));
+                    p.text(
+                        pos2(tx, y),
+                        Align2::LEFT_TOP,
+                        format!("{:02}   {track}", k + 1),
+                        FontId::proportional(13.5),
+                        with_alpha(t.foreground, aa * 0.9),
+                    );
                 }
             }
         }
@@ -1157,7 +1426,8 @@ fn drag_demo(ui: &mut Ui) {
     let idle = idle_for(ui, id, rect);
     let third = rect.width() / 3.0;
     let zone_a = Rect::from_min_size(rect.min, vec2(third * 1.3, rect.height())).shrink(18.0);
-    let zone_b = Rect::from_min_max(pos2(zone_a.max.x + 18.0, rect.min.y), pos2(rect.max.x, rect.center().y)).shrink(18.0);
+    let zone_b =
+        Rect::from_min_max(pos2(zone_a.max.x + 18.0, rect.min.y), pos2(rect.max.x, rect.center().y)).shrink(18.0);
     let zone_c = Rect::from_min_max(pos2(zone_a.max.x + 18.0, rect.center().y), rect.max).shrink(18.0);
     let p = ui.painter_at(rect);
     for z in [zone_a, zone_b, zone_c] {
@@ -1175,7 +1445,12 @@ fn drag_demo(ui: &mut Ui) {
         let a_off = vec2(s.rng.range(-0.42, 0.42) * zone_a.width(), s.rng.range(-0.36, 0.36) * zone_a.height());
         Draggable::animate_to(ui, ida, a_off, Transition::spring(120.0, 9.0));
         let snaps = [-1.0, 0.0, 1.0];
-        Draggable::animate_to(ui, idb, vec2(snaps[(s.step % 3) as usize] * zone_b.width() * 0.32, 0.0), Transition::spring(380.0, 26.0));
+        Draggable::animate_to(
+            ui,
+            idb,
+            vec2(snaps[(s.step % 3) as usize] * zone_b.width() * 0.32, 0.0),
+            Transition::spring(380.0, 26.0),
+        );
         let pull = if s.step % 2 == 0 { vec2(s.rng.range(-80.0, 80.0), s.rng.range(-26.0, 26.0)) } else { Vec2::ZERO };
         Draggable::animate_to(ui, idc, pull, Transition::spring(240.0, 12.0));
     }
@@ -1223,10 +1498,17 @@ fn drag_demo(ui: &mut Ui) {
     let k = (rb.offset.x / (zone_b.width() * 0.32)).clamp(-1.0, 1.0);
     let labels = ["Low", "Mid", "High"];
     let idx = (k.round() as i32 + 1) as usize;
-    caption(ui, pos2(track.center().x, track.max.y + 8.0), Align2::CENTER_TOP, &format!("{}  ·  offset {:+.0}", labels[idx], rb.offset.x));
+    caption(
+        ui,
+        pos2(track.center().x, track.max.y + 8.0),
+        Align2::CENTER_TOP,
+        &format!("{}  ·  offset {:+.0}", labels[idx], rb.offset.x),
+    );
 
     // (c) rubber card that snaps home
-    let mut c_ui = ui.new_child(UiBuilder::new().max_rect(Rect::from_center_size(zone_c.center() + vec2(0.0, 8.0), vec2(170.0, 64.0))));
+    let mut c_ui = ui.new_child(
+        UiBuilder::new().max_rect(Rect::from_center_size(zone_c.center() + vec2(0.0, 8.0), vec2(170.0, 64.0))),
+    );
     let rc = Draggable::new(idc)
         .snap_to_origin(true)
         .elastic(0.5)
@@ -1236,8 +1518,20 @@ fn drag_demo(ui: &mut Ui) {
             let (r, _) = ui.allocate_exact_size(vec2(170.0, 64.0), Sense::hover());
             let p = ui.painter();
             card(p, &t, r, 14.0);
-            p.text(r.center() - vec2(0.0, 8.0), Align2::CENTER_CENTER, "pull me", FontId::proportional(14.0), t.foreground);
-            p.text(r.center() + vec2(0.0, 12.0), Align2::CENTER_CENTER, "I spring back", FontId::proportional(11.0), t.muted_foreground);
+            p.text(
+                r.center() - vec2(0.0, 8.0),
+                Align2::CENTER_CENTER,
+                "pull me",
+                FontId::proportional(14.0),
+                t.foreground,
+            );
+            p.text(
+                r.center() + vec2(0.0, 12.0),
+                Align2::CENTER_CENTER,
+                "I spring back",
+                FontId::proportional(11.0),
+                t.muted_foreground,
+            );
         });
     // a rubber band from home to the card
     let home = zone_c.center() + vec2(0.0, 8.0);
@@ -1297,28 +1591,58 @@ fn reorder_demo(ui: &mut Ui) {
     let w = (rect.width() - 60.0).min(420.0);
     let list = Rect::from_min_size(pos2(rect.center().x - w / 2.0, rect.min.y + 26.0), vec2(w, rect.height() - 40.0));
     let mut lui = ui.new_child(UiBuilder::new().max_rect(list).layout(egui::Layout::top_down(egui::Align::Min)));
-    Reorder::new(id.with("list")).item_height(50.0).gap(9.0).show(&mut lui, &mut s.tasks, |x| x.id, |ui, task, st| {
-        let r = ui.max_rect();
-        let p = ui.painter();
-        let lift = if st.dragging { 1.0 } else { 0.0 };
-        paint::soft_shadow(p, r.translate(vec2(0.0, 3.0 + 8.0 * lift)), 12.0, 12.0 + 18.0 * lift, Vec2::ZERO, Color32::from_black_alpha(if t.dark { 100 + (80.0 * lift) as u8 } else { 22 + (30.0 * lift) as u8 }));
-        p.rect_filled(r, 12, t.card);
-        p.rect_stroke(r, 12, Stroke::new(1.0, if st.dragging { t.accent } else { t.border }), StrokeKind::Inside);
-        let col = t.chart[task.id as usize % t.chart.len()];
-        let ic = Rect::from_center_size(r.left_center() + vec2(28.0, 0.0), Vec2::splat(32.0));
-        p.rect_filled(ic, 9, with_alpha(col, 0.16));
-        p.text(ic.center(), Align2::CENTER_CENTER, task.icon, FontId::proportional(15.0), col);
-        p.text(r.left_center() + vec2(56.0, -8.0), Align2::LEFT_CENTER, task.title, FontId::proportional(14.0), t.foreground);
-        p.text(r.left_center() + vec2(56.0, 10.0), Align2::LEFT_CENTER, task.sub, FontId::proportional(11.5), t.muted_foreground);
-        // grip
-        let g = r.right_center() - vec2(22.0, 0.0);
-        for dx in [-3.0, 3.0] {
-            for dy in [-6.0, 0.0, 6.0] {
-                p.circle_filled(g + vec2(dx, dy), 1.6, t.muted_foreground);
+    Reorder::new(id.with("list")).item_height(50.0).gap(9.0).show(
+        &mut lui,
+        &mut s.tasks,
+        |x| x.id,
+        |ui, task, st| {
+            let r = ui.max_rect();
+            let p = ui.painter();
+            let lift = if st.dragging { 1.0 } else { 0.0 };
+            paint::soft_shadow(
+                p,
+                r.translate(vec2(0.0, 3.0 + 8.0 * lift)),
+                12.0,
+                12.0 + 18.0 * lift,
+                Vec2::ZERO,
+                Color32::from_black_alpha(if t.dark { 100 + (80.0 * lift) as u8 } else { 22 + (30.0 * lift) as u8 }),
+            );
+            p.rect_filled(r, 12, t.card);
+            p.rect_stroke(r, 12, Stroke::new(1.0, if st.dragging { t.accent } else { t.border }), StrokeKind::Inside);
+            let col = t.chart[task.id as usize % t.chart.len()];
+            let ic = Rect::from_center_size(r.left_center() + vec2(28.0, 0.0), Vec2::splat(32.0));
+            p.rect_filled(ic, 9, with_alpha(col, 0.16));
+            p.text(ic.center(), Align2::CENTER_CENTER, task.icon, FontId::proportional(15.0), col);
+            p.text(
+                r.left_center() + vec2(56.0, -8.0),
+                Align2::LEFT_CENTER,
+                task.title,
+                FontId::proportional(14.0),
+                t.foreground,
+            );
+            p.text(
+                r.left_center() + vec2(56.0, 10.0),
+                Align2::LEFT_CENTER,
+                task.sub,
+                FontId::proportional(11.5),
+                t.muted_foreground,
+            );
+            // grip
+            let g = r.right_center() - vec2(22.0, 0.0);
+            for dx in [-3.0, 3.0] {
+                for dy in [-6.0, 0.0, 6.0] {
+                    p.circle_filled(g + vec2(dx, dy), 1.6, t.muted_foreground);
+                }
             }
-        }
-        p.text(r.right_center() - vec2(44.0, 0.0), Align2::RIGHT_CENTER, format!("{}", st.index + 1), FontId::monospace(11.0), t.muted_foreground);
-    });
+            p.text(
+                r.right_center() - vec2(44.0, 0.0),
+                Align2::RIGHT_CENTER,
+                format!("{}", st.index + 1),
+                FontId::monospace(11.0),
+                t.muted_foreground,
+            );
+        },
+    );
     set_state(ui, id, s);
 }
 
@@ -1348,7 +1672,11 @@ fn scroll_demo(ui: &mut Ui) {
         sa = sa.vertical_scroll_offset(o);
         ui.ctx().request_repaint();
     }
-    let frame = egui::Frame::new().fill(t.muted).corner_radius(t.corner()).stroke(t.border_stroke()).inner_margin(egui::Margin::same(0));
+    let frame = egui::Frame::new()
+        .fill(t.muted)
+        .corner_radius(t.corner())
+        .stroke(t.border_stroke())
+        .inner_margin(egui::Margin::same(0));
     let out = frame
         .show(ui, |ui| {
             sa.show(ui, |ui| {
@@ -1363,25 +1691,45 @@ fn scroll_demo(ui: &mut Ui) {
                 let sun = pos2(hero.min.x + w * 0.72, hero.min.y + 96.0 + parallax(scroll, 0.85));
                 paint::glow(&p, sun, 120.0, with_alpha(t.gradient[2], if t.dark { 0.35 } else { 0.3 }));
                 p.circle_filled(sun, 30.0, color::mix(t.gradient[2], t.gradient[1], 0.25));
-                let ridges: [(f32, f32, f32, f32); 3] = [(0.65, 150.0, 0.004, 0.45), (0.38, 190.0, 0.007, 0.7), (0.12, 232.0, 0.011, 1.0)];
+                let ridges: [(f32, f32, f32, f32); 3] =
+                    [(0.65, 150.0, 0.004, 0.45), (0.38, 190.0, 0.007, 0.7), (0.12, 232.0, 0.011, 1.0)];
                 for (li, (factor, base, freq, strength)) in ridges.iter().enumerate() {
                     let off = parallax(scroll, *factor);
                     let pts: Vec<Pos2> = (0..=60)
                         .map(|k| {
                             let x = hero.min.x + w * k as f32 / 60.0;
                             let u = x * freq + li as f32 * 1.7;
-                            let y = hero.min.y + base + off - 34.0 * (u.sin() * 0.6 + (u * 2.3).sin() * 0.3 + (u * 5.1).sin() * 0.1) * (1.0 + li as f32 * 0.2);
+                            let y = hero.min.y + base + off
+                                - 34.0
+                                    * (u.sin() * 0.6 + (u * 2.3).sin() * 0.3 + (u * 5.1).sin() * 0.1)
+                                    * (1.0 + li as f32 * 0.2);
                             pos2(x, y)
                         })
                         .collect();
-                    let col = color::mix(t.muted, color::mix(t.gradient[0], t.gradient[1], li as f32 * 0.4), *strength * if t.dark { 0.55 } else { 0.45 });
+                    let col = color::mix(
+                        t.muted,
+                        color::mix(t.gradient[0], t.gradient[1], li as f32 * 0.4),
+                        *strength * if t.dark { 0.55 } else { 0.45 },
+                    );
                     paint::area_fill(&p, &pts, hero.max.y + 2.0, col, color::shade(col, -0.04));
                 }
                 let fade: f32 = transform(scroll, &[0.0, 200.0], &[1.0, 0.0]);
                 let ty = hero.min.y + 92.0 + parallax(scroll, 0.5);
                 let tc: Color32 = transform(scroll, &[0.0, 200.0], &[t.foreground, t.accent]);
-                p.text(pos2(hero.min.x + 40.0, ty), Align2::LEFT_CENTER, "Scroll-linked motion", FontId::proportional(32.0), with_alpha(tc, fade));
-                p.text(pos2(hero.min.x + 40.0, ty + 34.0), Align2::LEFT_CENTER, "parallax · transform() · whileInView", FontId::proportional(15.0), with_alpha(t.muted_foreground, fade));
+                p.text(
+                    pos2(hero.min.x + 40.0, ty),
+                    Align2::LEFT_CENTER,
+                    "Scroll-linked motion",
+                    FontId::proportional(32.0),
+                    with_alpha(tc, fade),
+                );
+                p.text(
+                    pos2(hero.min.x + 40.0, ty + 34.0),
+                    Align2::LEFT_CENTER,
+                    "parallax · transform() · whileInView",
+                    FontId::proportional(15.0),
+                    with_alpha(t.muted_foreground, fade),
+                );
                 // cards animate in when they scroll into view
                 ui.add_space(10.0);
                 let feats = [
@@ -1400,16 +1748,38 @@ fn scroll_demo(ui: &mut Ui) {
                     let target = if seen { Props::IDENTITY } else { Props::new().opacity(0.0).x(side).scale(0.94) };
                     ui.horizontal(|ui| {
                         ui.add_space(24.0);
-                        MotionBox::new(cid).initial(Props::new().opacity(0.0).x(side)).animate(target).transition(Transition::spring(200.0, 22.0)).show(ui, |ui| {
-                            let (r, _) = ui.allocate_exact_size(vec2(w - 48.0, 76.0), Sense::hover());
-                            let p = ui.painter();
-                            card(p, &t, r, 14.0);
-                            let col = t.chart[i % t.chart.len()];
-                            p.circle_filled(r.left_center() + vec2(34.0, 0.0), 18.0, with_alpha(col, 0.2));
-                            p.text(r.left_center() + vec2(34.0, 0.0), Align2::CENTER_CENTER, format!("{}", i + 1), FontId::proportional(15.0), col);
-                            p.text(r.left_center() + vec2(66.0, -10.0), Align2::LEFT_CENTER, *title, FontId::proportional(16.0), t.foreground);
-                            p.text(r.left_center() + vec2(66.0, 12.0), Align2::LEFT_CENTER, *sub, FontId::proportional(12.5), t.muted_foreground);
-                        });
+                        MotionBox::new(cid)
+                            .initial(Props::new().opacity(0.0).x(side))
+                            .animate(target)
+                            .transition(Transition::spring(200.0, 22.0))
+                            .show(ui, |ui| {
+                                let (r, _) = ui.allocate_exact_size(vec2(w - 48.0, 76.0), Sense::hover());
+                                let p = ui.painter();
+                                card(p, &t, r, 14.0);
+                                let col = t.chart[i % t.chart.len()];
+                                p.circle_filled(r.left_center() + vec2(34.0, 0.0), 18.0, with_alpha(col, 0.2));
+                                p.text(
+                                    r.left_center() + vec2(34.0, 0.0),
+                                    Align2::CENTER_CENTER,
+                                    format!("{}", i + 1),
+                                    FontId::proportional(15.0),
+                                    col,
+                                );
+                                p.text(
+                                    r.left_center() + vec2(66.0, -10.0),
+                                    Align2::LEFT_CENTER,
+                                    *title,
+                                    FontId::proportional(16.0),
+                                    t.foreground,
+                                );
+                                p.text(
+                                    r.left_center() + vec2(66.0, 12.0),
+                                    Align2::LEFT_CENTER,
+                                    *sub,
+                                    FontId::proportional(12.5),
+                                    t.muted_foreground,
+                                );
+                            });
                     });
                 }
                 ui.add_space(40.0);
@@ -1425,12 +1795,24 @@ fn scroll_demo(ui: &mut Ui) {
     p.rect_filled(track, 3, t.border);
     let grad = t.gradient;
     if prog > 0.005 {
-        paint::gradient_rect(p, Rect::from_min_size(track.min, vec2(track.width() * prog, track.height())), 3.0, 0.0, &grad);
+        paint::gradient_rect(
+            p,
+            Rect::from_min_size(track.min, vec2(track.width() * prog, track.height())),
+            3.0,
+            0.0,
+            &grad,
+        );
     }
     let ring_c = pos2(bar_rect.max.x - 50.0, track.center().y);
     let ang: f32 = transform(prog, &[0.0, 1.0], &[0.0_f32, TAU]);
     paint::arc(p, ring_c, 8.0, -TAU / 4.0, -TAU / 4.0 + ang.max(0.01), 2.5, t.accent);
-    p.text(pos2(bar_rect.max.x, track.center().y), Align2::RIGHT_CENTER, format!("{:>3.0}%", prog * 100.0), FontId::monospace(11.5), t.muted_foreground);
+    p.text(
+        pos2(bar_rect.max.x, track.center().y),
+        Align2::RIGHT_CENTER,
+        format!("{:>3.0}%", prog * 100.0),
+        FontId::monospace(11.5),
+        t.muted_foreground,
+    );
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -1438,7 +1820,8 @@ fn scroll_demo(ui: &mut Ui) {
 
 fn arrow(painter: &egui::Painter, pos: Pos2, angle: f32, size: f32, color: Color32) {
     let rot = egui::emath::Rot2::from_angle(angle);
-    let pts = [vec2(size, 0.0), vec2(-size * 0.7, size * 0.62), vec2(-size * 0.35, 0.0), vec2(-size * 0.7, -size * 0.62)];
+    let pts =
+        [vec2(size, 0.0), vec2(-size * 0.7, size * 0.62), vec2(-size * 0.35, 0.0), vec2(-size * 0.7, -size * 0.62)];
     let pts: Vec<Pos2> = pts.iter().map(|v| pos + rot * *v).collect();
     painter.add(egui::Shape::convex_polygon(vec![pts[0], pts[1], pts[2]], color, Stroke::NONE));
     painter.add(egui::Shape::convex_polygon(vec![pts[0], pts[2], pts[3]], color, Stroke::NONE));
@@ -1464,10 +1847,15 @@ fn motion_path_demo(ui: &mut Ui) {
         .collect();
     let path = MotionPath::smooth(&ctrl, true);
     let dt = glowkit_core::dt(ui);
-    let prog = glowkit_core::with_state(ui, id.with("prog"), || 0.0_f32, |p| {
-        *p = (*p + dt * speed * 0.12) % 1.0;
-        *p
-    });
+    let prog = glowkit_core::with_state(
+        ui,
+        id.with("prog"),
+        || 0.0_f32,
+        |p| {
+            *p = (*p + dt * speed * 0.12) % 1.0;
+            *p
+        },
+    );
     let p = ui.painter_at(rect);
     // faint dashed path
     let pts = path.points();
@@ -1487,7 +1875,9 @@ fn motion_path_demo(ui: &mut Ui) {
     let (a, b) = (prog - tail, prog);
     let draw_seg = |from: f32, to: f32, base: f32| {
         if to > from {
-            path.paint_range(&p, from, to, 5.0, |k| with_alpha(col, ((base + k * (to - from)) / tail).clamp(0.0, 1.0) * 0.8));
+            path.paint_range(&p, from, to, 5.0, |k| {
+                with_alpha(col, ((base + k * (to - from)) / tail).clamp(0.0, 1.0) * 0.8)
+            });
         }
     };
     if a < 0.0 {
@@ -1500,7 +1890,12 @@ fn motion_path_demo(ui: &mut Ui) {
     paint::glow(&p, head.pos, 46.0, with_alpha(col, 0.35));
     arrow(&p, head.pos, head.angle, 16.0, t.foreground);
     // readout
-    caption(ui, rect.left_bottom() + vec2(16.0, -14.0), Align2::LEFT_BOTTOM, &format!("t = {:.2}   angle = {:>4.0}°   length = {:.0} pt", prog, head.angle.to_degrees(), path.length()));
+    caption(
+        ui,
+        rect.left_bottom() + vec2(16.0, -14.0),
+        Align2::LEFT_BOTTOM,
+        &format!("t = {:.2}   angle = {:>4.0}°   length = {:.0} pt", prog, head.angle.to_degrees(), path.length()),
+    );
     glowkit_core::animate(ui);
 }
 
@@ -1517,59 +1912,106 @@ fn path_drawing_demo(ui: &mut Ui) {
     let p = ui.painter_at(rect);
     // both tracks share one clock, started a little into the cycle so the paths are mid-stroke
     let clock = glowkit_core::Clock::elapsed(ui, id.with("clock")) + 1.0;
-    let draw: f32 = Keyframes::new([(0.0, 0.0_f32), (0.45, 1.0), (0.75, 1.0), (1.0, 1.0)]).ease_segments([Easing::InOutCubic, Easing::Linear, Easing::Linear]).duration(3.2).repeat(Repeat::Infinite).sample(clock);
-    let erase: f32 = Keyframes::new([(0.0, 0.0_f32), (0.75, 0.0), (1.0, 1.0)]).ease_segments([Easing::Linear, Easing::InOutCubic]).duration(3.2).repeat(Repeat::Infinite).sample(clock);
+    let draw: f32 = Keyframes::new([(0.0, 0.0_f32), (0.45, 1.0), (0.75, 1.0), (1.0, 1.0)])
+        .ease_segments([Easing::InOutCubic, Easing::Linear, Easing::Linear])
+        .duration(3.2)
+        .repeat(Repeat::Infinite)
+        .sample(clock);
+    let erase: f32 = Keyframes::new([(0.0, 0.0_f32), (0.75, 0.0), (1.0, 1.0)])
+        .ease_segments([Easing::Linear, Easing::InOutCubic])
+        .duration(3.2)
+        .repeat(Repeat::Infinite)
+        .sample(clock);
     glowkit_core::animate(ui);
     let labels = ["checkmark", "signature", "star", "chart"];
     for i in 0..n {
-        let cell = Rect::from_min_size(pos2(rect.min.x + 16.0 + i as f32 * (cw + gap), rect.min.y + 20.0), vec2(cw, rect.height() - 60.0));
+        let cell = Rect::from_min_size(
+            pos2(rect.min.x + 16.0 + i as f32 * (cw + gap), rect.min.y + 20.0),
+            vec2(cw, rect.height() - 60.0),
+        );
         p.rect_filled(cell, t.corner(), t.card);
         p.rect_stroke(cell, t.corner(), t.border_stroke(), StrokeKind::Inside);
         let c = cell.center();
         let s = cell.width().min(cell.height()) * 0.36;
         let path = match i {
             0 => {
-                let mut pts: Vec<Pos2> = (0..=60).map(|k| {
-                    let a = -TAU * 0.3 + k as f32 / 60.0 * TAU * 0.98;
-                    c + vec2(a.cos(), a.sin()) * s
-                }).collect();
+                let mut pts: Vec<Pos2> = (0..=60)
+                    .map(|k| {
+                        let a = -TAU * 0.3 + k as f32 / 60.0 * TAU * 0.98;
+                        c + vec2(a.cos(), a.sin()) * s
+                    })
+                    .collect();
                 pts.extend([c + vec2(-s * 0.45, 0.0), c + vec2(-s * 0.1, s * 0.35), c + vec2(s * 0.5, -s * 0.35)]);
                 MotionPath::new(pts, false)
             }
             1 => {
-                let ctrl: Vec<Pos2> = [(-1.0, 0.3), (-0.75, -0.5), (-0.55, 0.45), (-0.3, -0.1), (-0.1, 0.35), (0.05, -0.55), (0.2, 0.4), (0.45, -0.2), (0.6, 0.3), (0.8, -0.35), (1.0, 0.1)]
-                    .iter()
-                    .map(|(x, y)| c + vec2(*x * s * 1.2, *y * s))
-                    .collect();
+                let ctrl: Vec<Pos2> = [
+                    (-1.0, 0.3),
+                    (-0.75, -0.5),
+                    (-0.55, 0.45),
+                    (-0.3, -0.1),
+                    (-0.1, 0.35),
+                    (0.05, -0.55),
+                    (0.2, 0.4),
+                    (0.45, -0.2),
+                    (0.6, 0.3),
+                    (0.8, -0.35),
+                    (1.0, 0.1),
+                ]
+                .iter()
+                .map(|(x, y)| c + vec2(*x * s * 1.2, *y * s))
+                .collect();
                 MotionPath::smooth(&ctrl, false)
             }
             2 => {
-                let pts: Vec<Pos2> = (0..10).map(|k| {
-                    let a = k as f32 / 10.0 * TAU - TAU / 4.0;
-                    let r = if k % 2 == 0 { s } else { s * 0.45 };
-                    c + vec2(a.cos(), a.sin()) * r
-                }).collect();
+                let pts: Vec<Pos2> = (0..10)
+                    .map(|k| {
+                        let a = k as f32 / 10.0 * TAU - TAU / 4.0;
+                        let r = if k % 2 == 0 { s } else { s * 0.45 };
+                        c + vec2(a.cos(), a.sin()) * r
+                    })
+                    .collect();
                 MotionPath::new(pts, true)
             }
             _ => {
                 let vals = [0.2, 0.5, 0.35, 0.7, 0.55, 0.9, 0.75, 1.0];
-                let pts: Vec<Pos2> = vals.iter().enumerate().map(|(k, v)| pos2(cell.min.x + 20.0 + k as f32 * (cell.width() - 40.0) / 7.0, cell.max.y - 24.0 - v * (cell.height() - 60.0))).collect();
+                let pts: Vec<Pos2> = vals
+                    .iter()
+                    .enumerate()
+                    .map(|(k, v)| {
+                        pos2(
+                            cell.min.x + 20.0 + k as f32 * (cell.width() - 40.0) / 7.0,
+                            cell.max.y - 24.0 - v * (cell.height() - 60.0),
+                        )
+                    })
+                    .collect();
                 MotionPath::new(paint::monotone(&pts, 10), false)
             }
         };
         // ghost
         let ghost = path.points().to_vec();
-        p.add(egui::Shape::line(ghost, Stroke::new(1.0, with_alpha(t.muted_foreground, if t.dark { 0.2 } else { 0.3 }))));
+        p.add(egui::Shape::line(
+            ghost,
+            Stroke::new(1.0, with_alpha(t.muted_foreground, if t.dark { 0.2 } else { 0.3 })),
+        ));
         let stops = [t.chart[i % t.chart.len()], t.gradient[(i + 1) % 3]];
         let local_draw = (draw * 1.15 - i as f32 * 0.05).clamp(0.0, 1.0);
         let local_erase = (erase * 1.15 - i as f32 * 0.05).clamp(0.0, 1.0);
-        path.paint_range(&p, local_erase, local_draw, 4.0, |k| color::gradient(&stops, local_erase + k * (local_draw - local_erase)));
+        path.paint_range(&p, local_erase, local_draw, 4.0, |k| {
+            color::gradient(&stops, local_erase + k * (local_draw - local_erase))
+        });
         if local_draw > local_erase + 0.002 && local_draw < 0.999 {
             let tip = path.point_at(local_draw);
             paint::glow(&p, tip, 22.0, with_alpha(stops[1], 0.6));
             p.circle_filled(tip, 3.5, Color32::WHITE);
         }
-        p.text(pos2(cell.center().x, cell.max.y + 12.0), Align2::CENTER_TOP, labels[i], FontId::monospace(11.0), t.muted_foreground);
+        p.text(
+            pos2(cell.center().x, cell.max.y + 12.0),
+            Align2::CENTER_TOP,
+            labels[i],
+            FontId::monospace(11.0),
+            t.muted_foreground,
+        );
     }
 }
 
@@ -1595,7 +2037,11 @@ fn lanyard_demo(ui: &mut Ui) {
         let mut x = bar.min.x;
         while x < bar.max.x {
             let w = rng.range(1.0, 3.5);
-            p.rect_filled(Rect::from_min_size(pos2(x, bar.min.y), vec2(w, bar.height())), 0, with_alpha(t.foreground, 0.75));
+            p.rect_filled(
+                Rect::from_min_size(pos2(x, bar.min.y), vec2(w, bar.height())),
+                0,
+                with_alpha(t.foreground, 0.75),
+            );
             x += w + rng.range(1.5, 3.0);
         }
     });
@@ -1608,20 +2054,51 @@ fn lanyard_demo(ui: &mut Ui) {
 fn morph_demo(ui: &mut Ui) {
     let t = Theme::of(ui);
     let (rect, _) = stage(ui, 320.0);
-    let mut big = ui.new_child(UiBuilder::new().max_rect(Rect::from_center_size(pos2(rect.min.x + rect.width() * 0.34, rect.center().y), Vec2::splat(240.0))));
+    let mut big =
+        ui.new_child(UiBuilder::new().max_rect(Rect::from_center_size(
+            pos2(rect.min.x + rect.width() * 0.34, rect.center().y),
+            Vec2::splat(240.0),
+        )));
     big.add(MorphShape::new().size(240.0));
     // small variants
     let sets: [(&[ShapeKind], [Color32; 2], f32); 3] = [
-        (&[ShapeKind::Polygon(3), ShapeKind::Polygon(4), ShapeKind::Polygon(5), ShapeKind::Polygon(6), ShapeKind::Circle], [t.chart[1], t.chart[5]], 0.3),
-        (&[ShapeKind::Star(4), ShapeKind::Star(5), ShapeKind::Star(6), ShapeKind::Star(8)], [t.chart[3], t.chart[2]], 0.7),
-        (&[ShapeKind::Blob(1), ShapeKind::Blob(2), ShapeKind::Blob(5), ShapeKind::Blob(9)], [t.chart[4], t.chart[1]], 1.1),
+        (
+            &[
+                ShapeKind::Polygon(3),
+                ShapeKind::Polygon(4),
+                ShapeKind::Polygon(5),
+                ShapeKind::Polygon(6),
+                ShapeKind::Circle,
+            ],
+            [t.chart[1], t.chart[5]],
+            0.3,
+        ),
+        (
+            &[ShapeKind::Star(4), ShapeKind::Star(5), ShapeKind::Star(6), ShapeKind::Star(8)],
+            [t.chart[3], t.chart[2]],
+            0.7,
+        ),
+        (
+            &[ShapeKind::Blob(1), ShapeKind::Blob(2), ShapeKind::Blob(5), ShapeKind::Blob(9)],
+            [t.chart[4], t.chart[1]],
+            1.1,
+        ),
     ];
     let names = ["polygons", "stars", "blobs"];
     let col_x = rect.min.x + rect.width() * 0.68;
     for (i, (shapes, cols, phase)) in sets.iter().enumerate() {
         let c = pos2(col_x + (i as f32 - 1.0) * 120.0, rect.center().y - 20.0);
         let mut cu = ui.new_child(UiBuilder::new().max_rect(Rect::from_center_size(c, Vec2::splat(100.0))));
-        cu.add(MorphShape::new().shapes(shapes).size(100.0).colors(cols).phase(*phase).hold(0.5).duration(0.7).easing(Easing::OutBack));
+        cu.add(
+            MorphShape::new()
+                .shapes(shapes)
+                .size(100.0)
+                .colors(cols)
+                .phase(*phase)
+                .hold(0.5)
+                .duration(0.7)
+                .easing(Easing::OutBack),
+        );
         caption(ui, c + vec2(0.0, 64.0), Align2::CENTER_TOP, names[i]);
     }
 }
@@ -1666,7 +2143,10 @@ fn spring_chain_demo(ui: &mut Ui) {
     for i in (0..n - 1).rev() {
         let k = i as f32 / (n - 1) as f32;
         let w = 16.0 * (1.0 - k) + 2.0;
-        p.line_segment([pts[i], pts[i + 1]], Stroke::new(w, with_alpha(color::gradient(&grad, k), 0.9 * (1.0 - k) + 0.1)));
+        p.line_segment(
+            [pts[i], pts[i + 1]],
+            Stroke::new(w, with_alpha(color::gradient(&grad, k), 0.9 * (1.0 - k) + 0.1)),
+        );
         p.circle_filled(pts[i], w / 2.0, with_alpha(color::gradient(&grad, k), 0.9 * (1.0 - k) + 0.1));
     }
     // dots: each one chases the one in front

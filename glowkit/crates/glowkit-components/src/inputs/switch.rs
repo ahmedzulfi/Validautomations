@@ -1,15 +1,31 @@
 use super::kit::{self, ControlSize};
-use egui::{pos2, vec2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget};
+use egui::{
+    pos2, vec2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget,
+};
 use glowkit_core::anim::spring;
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
 /// Lay out `[control] label / description` and return (control rect, full response).
-fn labeled(ui: &mut Ui, control: egui::Vec2, label: &Option<String>, desc: &Option<String>, gap: f32, enabled: bool) -> (Rect, Response) {
+fn labeled(
+    ui: &mut Ui,
+    control: egui::Vec2,
+    label: &Option<String>,
+    desc: &Option<String>,
+    gap: f32,
+    enabled: bool,
+) -> (Rect, Response) {
     let t = Theme::of(ui);
     let font = FontId::proportional(14.0);
     let lg = label.as_ref().map(|l| ui.painter().layout_no_wrap(l.clone(), font, t.foreground));
-    let dg = desc.as_ref().map(|d| ui.painter().layout(d.clone(), FontId::proportional(12.5), t.muted_foreground, (ui.available_width() - control.x - gap).max(120.0)));
+    let dg = desc.as_ref().map(|d| {
+        ui.painter().layout(
+            d.clone(),
+            FontId::proportional(12.5),
+            t.muted_foreground,
+            (ui.available_width() - control.x - gap).max(120.0),
+        )
+    });
     let tw = lg.as_ref().map(|g| g.size().x).unwrap_or(0.0).max(dg.as_ref().map(|g| g.size().x).unwrap_or(0.0));
     let th = lg.as_ref().map(|g| g.size().y).unwrap_or(0.0) + dg.as_ref().map(|g| g.size().y + 3.0).unwrap_or(0.0);
     let w = control.x + if tw > 0.0 { gap + tw } else { 0.0 };
@@ -106,7 +122,11 @@ impl Widget for Switch<'_> {
         let hover = kit::anim(ui, id.with("h"), resp.hovered(), 0.12);
         let alpha = if self.disabled { 0.5 } else { 1.0 };
         let on_col = self.color.unwrap_or(t.primary);
-        let off_col = if t.dark { t.input.lerp_to_gamma(t.muted_foreground, 0.15 + 0.1 * hover) } else { t.input.lerp_to_gamma(t.muted_foreground, 0.1 * hover) };
+        let off_col = if t.dark {
+            t.input.lerp_to_gamma(t.muted_foreground, 0.15 + 0.1 * hover)
+        } else {
+            t.input.lerp_to_gamma(t.muted_foreground, 0.1 * hover)
+        };
         let painter = ui.painter();
         let r = CornerRadius::same((h / 2.0) as u8);
         painter.rect_filled(track, r, off_col.lerp_to_gamma(on_col, col_k).gamma_multiply(alpha));
@@ -121,7 +141,14 @@ impl Widget for Switch<'_> {
         } else {
             t.background
         };
-        glowkit_core::paint::soft_shadow(painter, thumb, d / 2.0, 3.0, vec2(0.0, 1.0), Color32::from_black_alpha(if t.dark { 50 } else { 40 }));
+        glowkit_core::paint::soft_shadow(
+            painter,
+            thumb,
+            d / 2.0,
+            3.0,
+            vec2(0.0, 1.0),
+            Color32::from_black_alpha(if t.dark { 50 } else { 40 }),
+        );
         painter.rect_filled(thumb, CornerRadius::same((d / 2.0) as u8), thumb_col.gamma_multiply(alpha));
         kit::focus_halo(painter, track, r, t.ring, kit::anim(ui, id.with("f"), resp.has_focus(), 0.15));
         resp
@@ -186,7 +213,16 @@ impl<'a> Checkbox<'a> {
 
 /// Paint a checkbox box at `rect` (shared with tables).
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn paint_checkbox(ui: &Ui, id: egui::Id, rect: Rect, checked: bool, indeterminate: bool, hover: bool, color: Option<Color32>, alpha: f32) {
+pub(crate) fn paint_checkbox(
+    ui: &Ui,
+    id: egui::Id,
+    rect: Rect,
+    checked: bool,
+    indeterminate: bool,
+    hover: bool,
+    color: Option<Color32>,
+    alpha: f32,
+) {
     let t = Theme::of(ui);
     let on = checked || indeterminate;
     let k = kit::anim(ui, id.with("fill"), on, 0.14);
@@ -197,7 +233,8 @@ pub(crate) fn paint_checkbox(ui: &Ui, id: egui::Id, rect: Rect, checked: bool, i
     let fg = if color.is_some() { Color32::WHITE } else { t.primary_foreground };
     let painter = ui.painter();
     let r = CornerRadius::same(((rect.width() * 0.25).round()) as u8);
-    let border = t.input.lerp_to_gamma(t.muted_foreground, 0.35 * h + if t.dark { 0.15 } else { 0.1 }).lerp_to_gamma(fill_on, k);
+    let border =
+        t.input.lerp_to_gamma(t.muted_foreground, 0.35 * h + if t.dark { 0.15 } else { 0.1 }).lerp_to_gamma(fill_on, k);
     let bg = kit::field_fill(&t).lerp_to_gamma(fill_on, k);
     if !t.dark {
         glowkit_core::paint::soft_shadow(painter, rect, 4.0, 2.0, vec2(0.0, 1.0), Color32::from_black_alpha(10));
@@ -208,7 +245,10 @@ pub(crate) fn paint_checkbox(ui: &Ui, id: egui::Id, rect: Rect, checked: bool, i
     if dash > 0.0 {
         let c = rect.center();
         let hw = rect.width() * 0.28 * dash;
-        painter.line_segment([pos2(c.x - hw, c.y), pos2(c.x + hw, c.y)], Stroke::new((rect.width() / 8.0).max(1.6), fg.gamma_multiply(alpha)));
+        painter.line_segment(
+            [pos2(c.x - hw, c.y), pos2(c.x + hw, c.y)],
+            Stroke::new((rect.width() / 8.0).max(1.6), fg.gamma_multiply(alpha)),
+        );
     }
 }
 
@@ -224,9 +264,24 @@ impl Widget for Checkbox<'_> {
             let pressed = resp.is_pointer_button_down_on();
             let sc = spring(ui, resp.id.with("press"), if pressed { 0.88 } else { 1.0 }, 600.0, 20.0);
             let bx = Rect::from_center_size(bx.center(), bx.size() * sc);
-            paint_checkbox(ui, resp.id, bx, *self.checked, self.indeterminate && !resp.clicked(), resp.hovered(), self.color, if self.disabled { 0.5 } else { 1.0 });
+            paint_checkbox(
+                ui,
+                resp.id,
+                bx,
+                *self.checked,
+                self.indeterminate && !resp.clicked(),
+                resp.hovered(),
+                self.color,
+                if self.disabled { 0.5 } else { 1.0 },
+            );
             let t = Theme::of(ui);
-            kit::focus_halo(ui.painter(), bx, CornerRadius::same(4), t.ring, kit::anim(ui, resp.id.with("f"), resp.has_focus(), 0.15));
+            kit::focus_halo(
+                ui.painter(),
+                bx,
+                CornerRadius::same(4),
+                t.ring,
+                kit::anim(ui, resp.id.with("f"), resp.has_focus(), 0.15),
+            );
         }
         resp
     }
@@ -275,7 +330,13 @@ pub struct RadioGroup<'a> {
 impl<'a> RadioGroup<'a> {
     /// A radio group bound to the selected index.
     pub fn new<O: Into<RadioOption>>(selected: &'a mut usize, options: impl IntoIterator<Item = O>) -> Self {
-        Self { selected, options: options.into_iter().map(Into::into).collect(), horizontal: false, cards: false, card_width: 220.0 }
+        Self {
+            selected,
+            options: options.into_iter().map(Into::into).collect(),
+            horizontal: false,
+            cards: false,
+            card_width: 220.0,
+        }
     }
     /// Lay options out in a row.
     pub fn horizontal(mut self, h: bool) -> Self {
@@ -300,7 +361,10 @@ fn paint_radio(ui: &Ui, id: egui::Id, c: egui::Pos2, selected: bool, hover: bool
     let dot = spring(ui, id.with("dot"), if selected { 1.0 } else { 0.0 }, 520.0, 18.0);
     let h = kit::anim(ui, id.with("h"), hover, 0.12);
     let painter = ui.painter();
-    let border = t.input.lerp_to_gamma(t.muted_foreground, 0.35 * h + if t.dark { 0.15 } else { 0.1 }).lerp_to_gamma(t.primary, k);
+    let border = t
+        .input
+        .lerp_to_gamma(t.muted_foreground, 0.35 * h + if t.dark { 0.15 } else { 0.1 })
+        .lerp_to_gamma(t.primary, k);
     painter.circle(c, 8.0, kit::field_fill(&t), Stroke::new(1.0, border));
     if dot > 0.01 {
         painter.circle_filled(c, 4.0 * dot.max(0.0), t.primary);
@@ -311,16 +375,29 @@ impl Widget for RadioGroup<'_> {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
         let mut changed = false;
-        let layout = if self.horizontal { egui::Layout::left_to_right(egui::Align::Min) } else { egui::Layout::top_down(egui::Align::Min) };
+        let layout = if self.horizontal {
+            egui::Layout::left_to_right(egui::Align::Min)
+        } else {
+            egui::Layout::top_down(egui::Align::Min)
+        };
         let mut inner = ui.with_layout(layout, |ui| {
-            ui.spacing_mut().item_spacing = if self.cards { vec2(10.0, 10.0) } else if self.horizontal { vec2(20.0, 10.0) } else { vec2(10.0, 12.0) };
+            ui.spacing_mut().item_spacing = if self.cards {
+                vec2(10.0, 10.0)
+            } else if self.horizontal {
+                vec2(20.0, 10.0)
+            } else {
+                vec2(10.0, 12.0)
+            };
             for (i, opt) in self.options.iter().enumerate() {
                 let sel = *self.selected == i;
                 if self.cards {
                     let pad = 14.0;
                     let tw = self.card_width - pad * 2.0 - 26.0;
                     let lg = ui.painter().layout(opt.label.clone(), FontId::proportional(14.0), t.foreground, tw);
-                    let dg = opt.description.as_ref().map(|d| ui.painter().layout(d.clone(), FontId::proportional(12.5), t.muted_foreground, tw));
+                    let dg = opt
+                        .description
+                        .as_ref()
+                        .map(|d| ui.painter().layout(d.clone(), FontId::proportional(12.5), t.muted_foreground, tw));
                     let h = pad * 2.0 + lg.size().y + dg.as_ref().map(|g| g.size().y + 3.0).unwrap_or(0.0);
                     let (rect, resp) = ui.allocate_exact_size(vec2(self.card_width, h), Sense::click());
                     let resp = resp.on_hover_cursor(CursorIcon::PointingHand);
@@ -332,15 +409,23 @@ impl Widget for RadioGroup<'_> {
                     let hov = kit::anim(ui, resp.id.with("hov"), resp.hovered(), 0.12);
                     let r = kit::control_radius(&t);
                     let border = t.input.lerp_to_gamma(t.muted_foreground, 0.2 * hov).lerp_to_gamma(t.primary, k);
-                    let fill = kit::field_fill(&t).lerp_to_gamma(with_alpha(t.primary, if t.dark { 0.06 } else { 0.03 }), k);
+                    let fill =
+                        kit::field_fill(&t).lerp_to_gamma(with_alpha(t.primary, if t.dark { 0.06 } else { 0.03 }), k);
                     ui.painter().rect(rect, r, fill, Stroke::new(1.0, border), StrokeKind::Inside);
                     ui.painter().galley(rect.min + vec2(pad, pad), lg.clone(), t.foreground);
                     if let Some(g) = dg {
                         ui.painter().galley(rect.min + vec2(pad, pad + lg.size().y + 3.0), g, t.muted_foreground);
                     }
-                    paint_radio(ui, resp.id, pos2(rect.max.x - pad - 8.0, rect.min.y + pad + lg.size().y / 2.0), *self.selected == i, resp.hovered());
+                    paint_radio(
+                        ui,
+                        resp.id,
+                        pos2(rect.max.x - pad - 8.0, rect.min.y + pad + lg.size().y / 2.0),
+                        *self.selected == i,
+                        resp.hovered(),
+                    );
                 } else {
-                    let (c, resp) = labeled(ui, vec2(16.0, 16.0), &Some(opt.label.clone()), &opt.description, 9.0, true);
+                    let (c, resp) =
+                        labeled(ui, vec2(16.0, 16.0), &Some(opt.label.clone()), &opt.description, 9.0, true);
                     if resp.clicked() && !sel {
                         *self.selected = i;
                         changed = true;

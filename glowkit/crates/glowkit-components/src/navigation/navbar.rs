@@ -1,6 +1,8 @@
 use crate::overlays::kit::{self, Btn};
 use crate::overlays::LineIcon;
-use egui::{pos2, vec2, Align2, Color32, CursorIcon, FontId, Id, Painter, Rect, Response, Sense, Stroke, StrokeKind, Ui};
+use egui::{
+    pos2, vec2, Align2, Color32, CursorIcon, FontId, Id, Painter, Rect, Response, Sense, Stroke, StrokeKind, Ui,
+};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{paint, Theme};
 
@@ -24,7 +26,19 @@ fn brand_mark(p: &Painter, t: &Theme, center: egui::Pos2, size: f32) {
 /// Paint a row of links with a hover pill that glides to the hovered link and a small active
 /// underline. Returns the clicked index.
 #[allow(clippy::too_many_arguments)]
-fn link_row(ui: &mut Ui, p: &Painter, id: Id, links: &[String], icons: Option<&[LineIcon]>, active: usize, x: f32, cy: f32, h: f32, font: f32, underline: bool) -> (Option<usize>, f32) {
+fn link_row(
+    ui: &mut Ui,
+    p: &Painter,
+    id: Id,
+    links: &[String],
+    icons: Option<&[LineIcon]>,
+    active: usize,
+    x: f32,
+    cy: f32,
+    h: f32,
+    font: f32,
+    underline: bool,
+) -> (Option<usize>, f32) {
     let t = Theme::of(ui);
     let fid = FontId::proportional(font);
     let mut rects = Vec::with_capacity(links.len());
@@ -105,7 +119,14 @@ pub struct Navbar<'a> {
 impl<'a> Navbar<'a> {
     /// A navbar with the given links; `active` is the current page.
     pub fn new(active: &'a mut usize, links: &[&str]) -> Self {
-        Self { active, links: links.iter().map(|s| s.to_string()).collect(), brand: None, actions: Vec::new(), height: 60.0, border: true }
+        Self {
+            active,
+            links: links.iter().map(|s| s.to_string()).collect(),
+            brand: None,
+            actions: Vec::new(),
+            height: 60.0,
+            border: true,
+        }
     }
     /// Brand name (with a gradient logo mark).
     pub fn brand(mut self, name: impl Into<String>) -> Self {
@@ -154,7 +175,8 @@ impl<'a> Navbar<'a> {
             let primary = i + 1 == self.actions.len();
             let w = kit::button_width(ui, a, 13.5);
             let br = Rect::from_min_max(pos2(rx - w, cy - 17.0), pos2(rx, cy + 17.0));
-            if kit::button_at(ui, br, id.with(("act", i)), a, if primary { Btn::Primary } else { Btn::Ghost }).clicked() {
+            if kit::button_at(ui, br, id.with(("act", i)), a, if primary { Btn::Primary } else { Btn::Ghost }).clicked()
+            {
                 out.action_clicked = Some(i);
             }
             rx -= w + 8.0;
@@ -229,8 +251,15 @@ impl<'a> FloatingNavbar<'a> {
         let font = FontId::proportional(13.5);
         let labels: Vec<String> = self.items.iter().map(|(_, s)| s.clone()).collect();
         let icons: Vec<LineIcon> = self.items.iter().map(|(i, _)| *i).collect();
-        let links_w: f32 = labels.iter().map(|l| ui.painter().layout_no_wrap(l.clone(), font.clone(), Color32::WHITE).size().x + 20.0 + 26.0 + 2.0).sum();
-        let cta_w = self.cta.as_ref().map(|c| ui.painter().layout_no_wrap(c.clone(), font.clone(), Color32::WHITE).size().x + 36.0 + 10.0).unwrap_or(0.0);
+        let links_w: f32 = labels
+            .iter()
+            .map(|l| ui.painter().layout_no_wrap(l.clone(), font.clone(), Color32::WHITE).size().x + 20.0 + 26.0 + 2.0)
+            .sum();
+        let cta_w = self
+            .cta
+            .as_ref()
+            .map(|c| ui.painter().layout_no_wrap(c.clone(), font.clone(), Color32::WHITE).size().x + 36.0 + 10.0)
+            .unwrap_or(0.0);
         let w = links_w + cta_w + 16.0;
         let h = 50.0;
         let top = area.min.y + 18.0 - (1.0 - v) * 90.0;
@@ -242,14 +271,29 @@ impl<'a> FloatingNavbar<'a> {
         p.rect_filled(rect, h / 2.0, fill);
         p.rect_stroke(rect, h / 2.0, Stroke::new(1.0, t.border), StrokeKind::Inside);
         ui.interact(rect, id.with("block"), Sense::hover());
-        let (clicked, _) = link_row(ui, &p, id, &labels, Some(&icons), *self.active, rect.min.x + 8.0, rect.center().y, 34.0, 13.5, false);
+        let (clicked, _) = link_row(
+            ui,
+            &p,
+            id,
+            &labels,
+            Some(&icons),
+            *self.active,
+            rect.min.x + 8.0,
+            rect.center().y,
+            34.0,
+            13.5,
+            false,
+        );
         let mut out = None;
         if let Some(c) = clicked {
             *self.active = c;
             out = Some(c);
         }
         if let Some(c) = &self.cta {
-            let br = Rect::from_min_max(pos2(rect.max.x - 8.0 - (cta_w - 10.0), rect.center().y - 17.0), pos2(rect.max.x - 8.0, rect.center().y + 17.0));
+            let br = Rect::from_min_max(
+                pos2(rect.max.x - 8.0 - (cta_w - 10.0), rect.center().y - 17.0),
+                pos2(rect.max.x - 8.0, rect.center().y + 17.0),
+            );
             let resp = ui.interact(br, id.with("cta"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
             let hv = kit::hover_anim(ui, id.with("cta"), resp.hovered());
             p.rect_filled(br, 17.0, with_alpha(t.foreground, 0.04 + 0.05 * hv));
@@ -257,9 +301,13 @@ impl<'a> FloatingNavbar<'a> {
             // glowing gradient line along the bottom edge
             let ly = br.max.y - 0.5;
             let lw = br.width() * (0.5 + 0.2 * hv);
-            paint::gradient_polyline(&p, &[pos2(br.center().x - lw / 2.0, ly), pos2(br.center().x + lw / 2.0, ly)], false, 1.2, |u| {
-                with_alpha(t.accent, (1.0 - (u * 2.0 - 1.0).abs()).powf(0.7))
-            });
+            paint::gradient_polyline(
+                &p,
+                &[pos2(br.center().x - lw / 2.0, ly), pos2(br.center().x + lw / 2.0, ly)],
+                false,
+                1.2,
+                |u| with_alpha(t.accent, (1.0 - (u * 2.0 - 1.0).abs()).powf(0.7)),
+            );
             p.text(br.center(), Align2::CENTER_CENTER, c, font.clone(), t.foreground);
             if resp.clicked() {
                 out = Some(self.items.len());
@@ -294,7 +342,14 @@ pub struct ResizableNavbar<'a> {
 impl<'a> ResizableNavbar<'a> {
     /// A resizable navbar with the given links.
     pub fn new(active: &'a mut usize, links: &[&str]) -> Self {
-        Self { active, links: links.iter().map(|s| s.to_string()).collect(), brand: "Brand".into(), cta: None, threshold: 40.0, shrunk_width: 680.0 }
+        Self {
+            active,
+            links: links.iter().map(|s| s.to_string()).collect(),
+            brand: "Brand".into(),
+            cta: None,
+            threshold: 40.0,
+            shrunk_width: 680.0,
+        }
     }
     /// Brand name.
     pub fn brand(mut self, name: impl Into<String>) -> Self {
@@ -321,7 +376,13 @@ impl<'a> ResizableNavbar<'a> {
     pub fn show(self, ui: &mut Ui, area: Rect, scroll_y: f32) -> Option<usize> {
         let t = Theme::of(ui);
         let id = ui.scope_id().with("glowkit_resizable_nav");
-        let s = glowkit_core::anim::spring(ui, id.with("s"), if scroll_y > self.threshold { 1.0 } else { 0.0 }, 220.0, 24.0);
+        let s = glowkit_core::anim::spring(
+            ui,
+            id.with("s"),
+            if scroll_y > self.threshold { 1.0 } else { 0.0 },
+            220.0,
+            24.0,
+        );
         let sc = s.clamp(0.0, 1.0);
         let full = area.width();
         let w = full + (self.shrunk_width.min(full - 24.0) - full) * s;
@@ -347,7 +408,8 @@ impl<'a> ResizableNavbar<'a> {
         let br = p.text(pos2(x + 36.0, cy), Align2::LEFT_CENTER, &self.brand, FontId::proportional(15.5), t.foreground);
         // center the links
         let fid = FontId::proportional(13.5);
-        let links_w: f32 = self.links.iter().map(|l| p.layout_no_wrap(l.clone(), fid.clone(), Color32::WHITE).size().x + 28.0).sum();
+        let links_w: f32 =
+            self.links.iter().map(|l| p.layout_no_wrap(l.clone(), fid.clone(), Color32::WHITE).size().x + 28.0).sum();
         let lx = (rect.center().x - links_w / 2.0).max(br.max.x + 16.0);
         let (clicked, _) = link_row(ui, &p, id, &self.links, None, *self.active, lx, cy, 34.0, 13.5, false);
         let mut out = None;

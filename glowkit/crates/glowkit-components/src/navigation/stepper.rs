@@ -25,7 +25,12 @@ pub struct Stepper<'a> {
 impl<'a> Stepper<'a> {
     /// Steps as `(title, description)`; `current` is the active index (`steps.len()` = all done).
     pub fn new(current: &'a mut usize, steps: &[(&str, &str)]) -> Self {
-        Self { current, steps: steps.iter().map(|(a, b)| (a.to_string(), b.to_string())).collect(), vertical: false, clickable: true }
+        Self {
+            current,
+            steps: steps.iter().map(|(a, b)| (a.to_string(), b.to_string())).collect(),
+            vertical: false,
+            clickable: true,
+        }
     }
     /// Lay the steps out top-to-bottom.
     pub fn vertical(mut self, yes: bool) -> Self {
@@ -44,7 +49,11 @@ impl Widget for Stepper<'_> {
         let t = Theme::of(ui);
         let n = self.steps.len().max(1);
         let id = ui.scope_id().with(("glowkit_stepper", &self.steps));
-        let size = if self.vertical { vec2(ui.available_width().min(360.0), n as f32 * 74.0) } else { vec2(ui.available_width(), 86.0) };
+        let size = if self.vertical {
+            vec2(ui.available_width().min(360.0), n as f32 * 74.0)
+        } else {
+            vec2(ui.available_width(), 86.0)
+        };
         let (rect, mut resp) = ui.allocate_exact_size(size, Sense::hover());
         let cur = (*self.current).min(n);
         let prog = glowkit_core::anim::spring(ui, id.with("prog"), cur as f32, 160.0, 24.0);
@@ -64,7 +73,11 @@ impl Widget for Stepper<'_> {
         // connectors
         for i in 0..n.saturating_sub(1) {
             let (a, b) = (centers[i], centers[i + 1]);
-            let (a, b) = if self.vertical { (a + vec2(0.0, r + 6.0), b - vec2(0.0, r + 6.0)) } else { (a + vec2(r + 8.0, 0.0), b - vec2(r + 8.0, 0.0)) };
+            let (a, b) = if self.vertical {
+                (a + vec2(0.0, r + 6.0), b - vec2(0.0, r + 6.0))
+            } else {
+                (a + vec2(r + 8.0, 0.0), b - vec2(r + 8.0, 0.0))
+            };
             p.line_segment([a, b], Stroke::new(2.0, t.border));
             let f = (prog - i as f32).clamp(0.0, 1.0);
             if f > 0.0 {
@@ -106,10 +119,22 @@ impl Widget for Stepper<'_> {
             let tcol = if active || done { t.foreground } else { t.muted_foreground };
             if self.vertical {
                 p.text(pos2(c.x + r + 14.0, c.y - 8.0), Align2::LEFT_CENTER, title, FontId::proportional(14.0), tcol);
-                p.text(pos2(c.x + r + 14.0, c.y + 10.0), Align2::LEFT_CENTER, desc, FontId::proportional(12.5), t.muted_foreground);
+                p.text(
+                    pos2(c.x + r + 14.0, c.y + 10.0),
+                    Align2::LEFT_CENTER,
+                    desc,
+                    FontId::proportional(12.5),
+                    t.muted_foreground,
+                );
             } else {
                 p.text(pos2(c.x, c.y + r + 16.0), Align2::CENTER_CENTER, title, FontId::proportional(13.5), tcol);
-                p.text(pos2(c.x, c.y + r + 34.0), Align2::CENTER_CENTER, desc, FontId::proportional(12.0), t.muted_foreground);
+                p.text(
+                    pos2(c.x, c.y + r + 34.0),
+                    Align2::CENTER_CENTER,
+                    desc,
+                    FontId::proportional(12.0),
+                    t.muted_foreground,
+                );
             }
         }
         if let Some(c) = new_cur {

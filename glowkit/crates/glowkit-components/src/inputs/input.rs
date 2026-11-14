@@ -1,7 +1,10 @@
 use super::field::{FieldDescription, FieldError, FieldLabel};
 use super::kit::{self, control_radius, ControlSize, UiIcon};
 use egui::emath::Numeric;
-use egui::{pos2, vec2, Align, Color32, CornerRadius, CursorIcon, FontId, Id, Layout, Rect, Response, RichText, Sense, Shape, Stroke, StrokeKind, TextEdit, Ui, UiBuilder, Widget};
+use egui::{
+    pos2, vec2, Align, Color32, CornerRadius, CursorIcon, FontId, Id, Layout, Rect, Response, RichText, Sense, Shape,
+    Stroke, StrokeKind, TextEdit, Ui, UiBuilder, Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
@@ -45,7 +48,11 @@ fn icon_button(ui: &mut Ui, id: Id, center: egui::Pos2, icon: UiIcon, size: f32,
     if h > 0.0 {
         ui.painter().rect_filled(r, CornerRadius::same(5), with_alpha(t.muted_foreground, 0.12 * h));
     }
-    icon.paint(ui.painter(), Rect::from_center_size(center, vec2(size, size)), t.muted_foreground.lerp_to_gamma(t.foreground, h));
+    icon.paint(
+        ui.painter(),
+        Rect::from_center_size(center, vec2(size, size)),
+        t.muted_foreground.lerp_to_gamma(t.foreground, h),
+    );
     resp
 }
 
@@ -344,7 +351,14 @@ impl Input<'_> {
             }
         }
         if let Some(s) = &self.suffix {
-            let r = kit::text_at(ui.painter(), pos2(if any_right { xr - 4.0 } else { rect.max.x - pad }, cy), egui::Align2::RIGHT_CENTER, s, fs, muted);
+            let r = kit::text_at(
+                ui.painter(),
+                pos2(if any_right { xr - 4.0 } else { rect.max.x - pad }, cy),
+                egui::Align2::RIGHT_CENTER,
+                s,
+                fs,
+                muted,
+            );
             xr = r.min.x - 6.0;
         } else if !any_right {
             xr = rect.max.x - pad;
@@ -366,7 +380,9 @@ impl Input<'_> {
             te = te.char_limit(n);
         }
         let mut resp = ui
-            .scope_builder(UiBuilder::new().max_rect(text_rect).layout(Layout::left_to_right(Align::Center)), |ui| ui.add(te))
+            .scope_builder(UiBuilder::new().max_rect(text_rect).layout(Layout::left_to_right(Align::Center)), |ui| {
+                ui.add(te)
+            })
             .inner;
         if cleared {
             resp.mark_changed();
@@ -429,7 +445,16 @@ pub struct Textarea<'a> {
 impl<'a> Textarea<'a> {
     /// A text area editing `text`.
     pub fn new(text: &'a mut String) -> Self {
-        Self { text, placeholder: String::new(), decor: Decor::default(), rows: 3, max_len: None, width: None, disabled: false, id_salt: None }
+        Self {
+            text,
+            placeholder: String::new(),
+            decor: Decor::default(),
+            rows: 3,
+            max_len: None,
+            width: None,
+            disabled: false,
+            id_salt: None,
+        }
     }
     /// Placeholder shown while empty.
     pub fn placeholder(mut self, p: impl Into<String>) -> Self {
@@ -509,7 +534,9 @@ impl Widget for Textarea<'_> {
                 .margin(egui::Margin::ZERO)
                 .font(FontId::proportional(14.0))
                 .text_color(t.foreground)
-                .hint_text(RichText::new(self.placeholder.clone()).color(with_alpha(t.muted_foreground, 0.85)).size(14.0))
+                .hint_text(
+                    RichText::new(self.placeholder.clone()).color(with_alpha(t.muted_foreground, 0.85)).size(14.0),
+                )
                 .desired_rows(self.rows)
                 .desired_width(width - 24.0)
                 .interactive(!self.disabled);
@@ -536,16 +563,34 @@ impl Widget for Textarea<'_> {
                 let (row, _) = ui.allocate_exact_size(vec2(width, 16.0), Sense::hover());
                 let n = text.chars().count();
                 let near = n as f32 / max as f32;
-                let col = if near >= 1.0 { t.destructive } else if near > 0.9 { t.warning } else { t.muted_foreground };
+                let col = if near >= 1.0 {
+                    t.destructive
+                } else if near > 0.9 {
+                    t.warning
+                } else {
+                    t.muted_foreground
+                };
                 let p = ui.painter();
-                let cr = p.text(row.right_center(), egui::Align2::RIGHT_CENTER, format!("{n}/{max}"), FontId::proportional(12.0), col);
+                let cr = p.text(
+                    row.right_center(),
+                    egui::Align2::RIGHT_CENTER,
+                    format!("{n}/{max}"),
+                    FontId::proportional(12.0),
+                    col,
+                );
                 let (msg, mcol) = match (&decor.error, &decor.description) {
                     (Some(e), _) => (Some(e.clone()), t.destructive),
                     (None, Some(d)) => (Some(d.clone()), t.muted_foreground),
                     _ => (None, t.muted_foreground),
                 };
                 if let Some(m) = msg {
-                    p.with_clip_rect(Rect::from_min_max(row.min, pos2(cr.min.x - 8.0, row.max.y))).text(row.left_center(), egui::Align2::LEFT_CENTER, m, FontId::proportional(12.5), mcol);
+                    p.with_clip_rect(Rect::from_min_max(row.min, pos2(cr.min.x - 8.0, row.max.y))).text(
+                        row.left_center(),
+                        egui::Align2::LEFT_CENTER,
+                        m,
+                        FontId::proportional(12.5),
+                        mcol,
+                    );
                 }
             } else {
                 decor.bottom(ui);
@@ -557,7 +602,15 @@ impl Widget for Textarea<'_> {
 }
 
 /// Field chrome shapes, so they can be inserted beneath already-painted content.
-fn chrome_shapes(rect: Rect, t: &Theme, hover: f32, focus: f32, error: bool, disabled: bool, r: CornerRadius) -> Vec<Shape> {
+fn chrome_shapes(
+    rect: Rect,
+    t: &Theme,
+    hover: f32,
+    focus: f32,
+    error: bool,
+    disabled: bool,
+    r: CornerRadius,
+) -> Vec<Shape> {
     let mut fill = kit::field_fill(t);
     if disabled {
         fill = if t.dark { with_alpha(t.input, 0.15) } else { t.muted };
@@ -567,12 +620,24 @@ fn chrome_shapes(rect: Rect, t: &Theme, hover: f32, focus: f32, error: bool, dis
     let border = if error { t.destructive } else { base.lerp_to_gamma(accent, focus) };
     let mut shapes: Vec<Shape> = Vec::new();
     if !t.dark && !disabled {
-        shapes.push(egui::epaint::Shadow { offset: [0, 1], blur: 2, spread: 0, color: Color32::from_black_alpha(10) }.as_shape(rect, r).into());
+        shapes.push(
+            egui::epaint::Shadow { offset: [0, 1], blur: 2, spread: 0, color: Color32::from_black_alpha(10) }
+                .as_shape(rect, r)
+                .into(),
+        );
     }
     shapes.push(egui::epaint::RectShape::new(rect, r, fill, Stroke::new(1.0, border), StrokeKind::Inside).into());
     let k = if error { focus.max(0.4) } else { focus };
     if k > 0.01 {
-        shapes.push(egui::epaint::RectShape::stroke(rect, r, Stroke::new(1.0 + 2.0 * k, with_alpha(accent, 0.32 * k)), StrokeKind::Outside).into());
+        shapes.push(
+            egui::epaint::RectShape::stroke(
+                rect,
+                r,
+                Stroke::new(1.0 + 2.0 * k, with_alpha(accent, 0.32 * k)),
+                StrokeKind::Outside,
+            )
+            .into(),
+        );
     }
     shapes
 }
@@ -704,7 +769,15 @@ impl<N: Numeric> NumberInput<'_, N> {
         let (rect, mut resp) = ui.allocate_exact_size(vec2(self.width, h), Sense::hover());
         let now = ui.input(|i| i.time);
         let cur = self.value.to_f64();
-        let mut st: NumState = glowkit_core::state(ui, id, || NumState { editing: false, buf: String::new(), prev: String::new(), shown: cur, dir: 0.0, changed_at: -10.0, edit_started: 0.0 });
+        let mut st: NumState = glowkit_core::state(ui, id, || NumState {
+            editing: false,
+            buf: String::new(),
+            prev: String::new(),
+            shown: cur,
+            dir: 0.0,
+            changed_at: -10.0,
+            edit_started: 0.0,
+        });
         let focused = ui.memory(|m| m.has_focus(te_id));
         let hover = kit::anim(ui, id.with("h"), ui.rect_contains_pointer(rect), 0.12);
         let focus = kit::anim(ui, id.with("f"), focused, 0.16);
@@ -713,20 +786,30 @@ impl<N: Numeric> NumberInput<'_, N> {
         let minus_r = Rect::from_min_size(rect.min, vec2(bw, h));
         let plus_r = Rect::from_min_size(pos2(rect.max.x - bw, rect.min.y), vec2(bw, h));
         let mut new = cur;
-        for (r, icon, delta, key) in [(minus_r, UiIcon::Minus, -self.step, "m"), (plus_r, UiIcon::Plus, self.step, "p")] {
+        for (r, icon, delta, key) in [(minus_r, UiIcon::Minus, -self.step, "m"), (plus_r, UiIcon::Plus, self.step, "p")]
+        {
             let enabled = if delta < 0.0 { cur > self.min } else { cur < self.max };
             let b = ui.interact(r.shrink(1.0), id.with(key), if enabled { Sense::click() } else { Sense::hover() });
             let b = if enabled { b.on_hover_cursor(CursorIcon::PointingHand) } else { b };
             let bh = kit::anim(ui, id.with((key, "h")), b.hovered() && enabled, 0.1);
             let corner = control_radius(&t).nw.saturating_sub(1);
-            let c = if delta < 0.0 { CornerRadius { nw: corner, sw: corner, ne: 0, se: 0 } } else { CornerRadius { nw: 0, sw: 0, ne: corner, se: corner } };
+            let c = if delta < 0.0 {
+                CornerRadius { nw: corner, sw: corner, ne: 0, se: 0 }
+            } else {
+                CornerRadius { nw: 0, sw: 0, ne: corner, se: corner }
+            };
             if bh > 0.0 {
                 ui.painter().rect_filled(r.shrink(1.0), c, with_alpha(t.muted_foreground, 0.1 * bh));
             }
-            let col = if enabled { t.muted_foreground.lerp_to_gamma(t.foreground, bh) } else { with_alpha(t.muted_foreground, 0.35) };
+            let col = if enabled {
+                t.muted_foreground.lerp_to_gamma(t.foreground, bh)
+            } else {
+                with_alpha(t.muted_foreground, 0.35)
+            };
             icon.paint(ui.painter(), Rect::from_center_size(r.center(), vec2(15.0, 15.0)), col);
             let x = if delta < 0.0 { r.max.x - 0.5 } else { r.min.x + 0.5 };
-            ui.painter().line_segment([pos2(x, rect.min.y + 1.0), pos2(x, rect.max.y - 1.0)], Stroke::new(1.0, t.input));
+            ui.painter()
+                .line_segment([pos2(x, rect.min.y + 1.0), pos2(x, rect.max.y - 1.0)], Stroke::new(1.0, t.input));
             if b.clicked() {
                 new = (cur + delta).clamp(self.min, self.max);
             }
@@ -742,7 +825,12 @@ impl<N: Numeric> NumberInput<'_, N> {
                 .text_color(t.foreground)
                 .align(egui::Align2::CENTER_CENTER)
                 .desired_width(mid.width() - 8.0);
-            let r = ui.scope_builder(UiBuilder::new().max_rect(mid.shrink2(vec2(4.0, 0.0))).layout(Layout::left_to_right(Align::Center)), |ui| ui.add(te)).inner;
+            let r = ui
+                .scope_builder(
+                    UiBuilder::new().max_rect(mid.shrink2(vec2(4.0, 0.0))).layout(Layout::left_to_right(Align::Center)),
+                    |ui| ui.add(te),
+                )
+                .inner;
             if r.lost_focus() || (!r.has_focus() && now - st.edit_started > 0.3) {
                 let digits: String = st.buf.chars().filter(|c| c.is_ascii_digit() || *c == '.' || *c == '-').collect();
                 if let Ok(v) = digits.parse::<f64>() {
@@ -765,9 +853,21 @@ impl<N: Numeric> NumberInput<'_, N> {
             let painter = ui.painter().with_clip_rect(mid);
             let off = 12.0 * st.dir;
             let cur_s = self.fmt(cur);
-            painter.text(mid.center() + vec2(0.0, off * (1.0 - k)), egui::Align2::CENTER_CENTER, &cur_s, FontId::proportional(fs), with_alpha(t.foreground, k.max(0.0)));
+            painter.text(
+                mid.center() + vec2(0.0, off * (1.0 - k)),
+                egui::Align2::CENTER_CENTER,
+                &cur_s,
+                FontId::proportional(fs),
+                with_alpha(t.foreground, k.max(0.0)),
+            );
             if k < 1.0 {
-                painter.text(mid.center() - vec2(0.0, off * k), egui::Align2::CENTER_CENTER, &st.prev, FontId::proportional(fs), with_alpha(t.foreground, 1.0 - k));
+                painter.text(
+                    mid.center() - vec2(0.0, off * k),
+                    egui::Align2::CENTER_CENTER,
+                    &st.prev,
+                    FontId::proportional(fs),
+                    with_alpha(t.foreground, 1.0 - k),
+                );
             }
         }
         if (new - cur).abs() > 1e-12 {

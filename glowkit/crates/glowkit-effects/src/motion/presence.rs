@@ -25,7 +25,11 @@ pub enum PresenceEffect {
 impl PresenceEffect {
     fn transform(self, p: f32, distance: f32, center: egui::Pos2) -> TSTransform {
         let q = 1.0 - p;
-        let scale_about = |s: f32| TSTransform::from_translation(center.to_vec2()) * TSTransform::from_scaling(s) * TSTransform::from_translation(-center.to_vec2());
+        let scale_about = |s: f32| {
+            TSTransform::from_translation(center.to_vec2())
+                * TSTransform::from_scaling(s)
+                * TSTransform::from_translation(-center.to_vec2())
+        };
         match self {
             PresenceEffect::Fade => TSTransform::IDENTITY,
             PresenceEffect::Scale => scale_about(0.9 + 0.1 * p),
@@ -63,7 +67,15 @@ pub struct SpringPresence {
 impl SpringPresence {
     /// Present the content while `visible` is true.
     pub fn new(visible: bool) -> Self {
-        Self { visible, effect: PresenceEffect::SlideUp, distance: 16.0, stiffness: 260.0, damping: 24.0, animate_height: true, salt: 0 }
+        Self {
+            visible,
+            effect: PresenceEffect::SlideUp,
+            distance: 16.0,
+            stiffness: 260.0,
+            damping: 24.0,
+            animate_height: true,
+            salt: 0,
+        }
     }
     /// Enter / exit effect.
     pub fn effect(mut self, e: PresenceEffect) -> Self {
@@ -96,7 +108,11 @@ impl SpringPresence {
     pub fn show<R>(self, ui: &mut Ui, add_contents: impl FnOnce(&mut Ui) -> R) -> Option<R> {
         let id = ui.scope_id().with(("presence", self.salt));
         let target = if self.visible { 1.0 } else { 0.0 };
-        let (st, dm) = if self.effect == PresenceEffect::Pop { (self.stiffness * 1.3, self.damping * 0.6) } else { (self.stiffness, self.damping) };
+        let (st, dm) = if self.effect == PresenceEffect::Pop {
+            (self.stiffness * 1.3, self.damping * 0.6)
+        } else {
+            (self.stiffness, self.damping)
+        };
         let p = glowkit_core::anim::spring(ui, id.with("p"), target, st, dm);
         if !self.visible && p < 0.002 {
             return None;
@@ -111,7 +127,11 @@ impl SpringPresence {
         let mut out = None;
         let mut new_h = measured;
         ui.with_visual_transform(tf, |ui| {
-            let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_size(rect.min, vec2(width, 10_000.0))).id_salt("presence_body"));
+            let mut child = ui.new_child(
+                UiBuilder::new()
+                    .max_rect(Rect::from_min_size(rect.min, vec2(width, 10_000.0)))
+                    .id_salt("presence_body"),
+            );
             if self.animate_height {
                 let clip = Rect::from_min_size(rect.min - vec2(40.0, 40.0), vec2(width + 80.0, height + 80.0));
                 child.set_clip_rect(clip.intersect(ui.clip_rect()));
@@ -184,7 +204,8 @@ impl TransitionPanel {
     pub fn show(self, ui: &mut Ui, mut panel: impl FnMut(&mut Ui, usize)) {
         let id = ui.scope_id().with(("transition_panel", self.salt));
         let now = glowkit_core::time(ui);
-        let mut anim: PanelAnim = glowkit_core::state(ui, id.with("anim"), || PanelAnim { from: self.active, to: self.active, t0: -10.0 });
+        let mut anim: PanelAnim =
+            glowkit_core::state(ui, id.with("anim"), || PanelAnim { from: self.active, to: self.active, t0: -10.0 });
         if anim.to != self.active {
             anim = PanelAnim { from: anim.to, to: self.active, t0: now };
             glowkit_core::set_state(ui, id.with("anim"), anim);
@@ -228,7 +249,11 @@ impl TransitionPanel {
                 effect.transform(prog, self.distance, c)
             };
             ui.with_visual_transform(tf, |ui| {
-                let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_size(rect.min, vec2(width, 10_000.0))).id_salt(("panel", index)));
+                let mut child = ui.new_child(
+                    UiBuilder::new()
+                        .max_rect(Rect::from_min_size(rect.min, vec2(width, 10_000.0)))
+                        .id_salt(("panel", index)),
+                );
                 child.set_clip_rect(clip);
                 child.multiply_opacity(prog.clamp(0.0, 1.0));
                 panel(&mut child, index);

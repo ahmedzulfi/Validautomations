@@ -35,7 +35,18 @@ pub struct InfiniteScroll {
 impl InfiniteScroll {
     /// A wrapping list of `count` items.
     pub fn new(count: usize) -> Self {
-        Self { count, item_height: 72.0, gap: 12.0, height: 360.0, width: None, speed: 0.0, pause_on_hover: true, fade: 70.0, fade_color: None, salt: 0 }
+        Self {
+            count,
+            item_height: 72.0,
+            gap: 12.0,
+            height: 360.0,
+            width: None,
+            speed: 0.0,
+            pause_on_hover: true,
+            fade: 70.0,
+            fade_color: None,
+            salt: 0,
+        }
     }
     /// Height of every item.
     pub fn item_height(mut self, h: f32) -> Self {
@@ -98,7 +109,8 @@ impl InfiniteScroll {
         let period = step * self.count as f32;
         let hovered = response.hovered();
         let scroll = if hovered { ui.input(|i| i.smooth_scroll_delta().y) } else { 0.0 };
-        let factor = glowkit_core::anim::follow(ui, id.with("f"), if self.pause_on_hover && hovered { 0.0 } else { 1.0 }, 4.0);
+        let factor =
+            glowkit_core::anim::follow(ui, id.with("f"), if self.pause_on_hover && hovered { 0.0 } else { 1.0 }, 4.0);
         let mut st: ScrollState = glowkit_core::state(ui, id.with("st"), ScrollState::default);
         if response.dragged() {
             let dy = response.drag_delta().y;
@@ -176,7 +188,16 @@ pub struct Masonry<'a> {
 impl<'a> Masonry<'a> {
     /// A grid with one tile per entry of `heights` (tile heights in points).
     pub fn new(heights: &'a [f32]) -> Self {
-        Self { heights, order: None, columns: None, min_column_width: 170.0, gap: 14.0, stagger: 0.05, hover_scale: 1.03, salt: 0 }
+        Self {
+            heights,
+            order: None,
+            columns: None,
+            min_column_width: 170.0,
+            gap: 14.0,
+            stagger: 0.05,
+            hover_scale: 1.03,
+            salt: 0,
+        }
     }
     /// Display order (a permutation of tile indices). Changing it animates the reflow.
     pub fn order(mut self, order: &'a [usize]) -> Self {
@@ -218,7 +239,10 @@ impl<'a> Masonry<'a> {
     pub fn show(self, ui: &mut Ui, mut tile: impl FnMut(&mut Ui, usize, Rect)) -> Response {
         let n = self.heights.len();
         let width = ui.available_width();
-        let cols = self.columns.unwrap_or(((width + self.gap) / (self.min_column_width + self.gap)).floor().max(1.0) as usize).max(1);
+        let cols = self
+            .columns
+            .unwrap_or(((width + self.gap) / (self.min_column_width + self.gap)).floor().max(1.0) as usize)
+            .max(1);
         let col_w = (width - self.gap * (cols as f32 - 1.0)) / cols as f32;
         let default_order: Vec<usize> = (0..n).collect();
         let order = self.order.filter(|o| o.len() == n).unwrap_or(&default_order);
@@ -282,11 +306,22 @@ impl<'a> Masonry<'a> {
             if appear <= 0.0 {
                 continue;
             }
-            let r = Rect::from_min_size(rect.min + vec2(tl.x.value, tl.y.value + (1.0 - appear) * 60.0), vec2(tl.w.value, self.heights[i]));
+            let r = Rect::from_min_size(
+                rect.min + vec2(tl.x.value, tl.y.value + (1.0 - appear) * 60.0),
+                vec2(tl.w.value, self.heights[i]),
+            );
             let hov = pointer.map(|p| r.contains(p)).unwrap_or(false);
-            let s = glowkit_core::anim::spring(ui, id.with(("hs", i)), if hov { self.hover_scale } else { 1.0 }, 300.0, 20.0);
+            let s = glowkit_core::anim::spring(
+                ui,
+                id.with(("hs", i)),
+                if hov { self.hover_scale } else { 1.0 },
+                300.0,
+                20.0,
+            );
             let c = r.center();
-            let tf = TSTransform::from_translation(c.to_vec2()) * TSTransform::from_scaling(s) * TSTransform::from_translation(-c.to_vec2());
+            let tf = TSTransform::from_translation(c.to_vec2())
+                * TSTransform::from_scaling(s)
+                * TSTransform::from_translation(-c.to_vec2());
             ui.with_visual_transform(tf, |ui| {
                 let mut child = ui.new_child(UiBuilder::new().max_rect(r).id_salt(("masonry_tile", i)));
                 child.multiply_opacity(appear);

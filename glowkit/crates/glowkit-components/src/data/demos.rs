@@ -34,23 +34,34 @@ fn users() -> Vec<Vec<TableCell>> {
 }
 
 fn files() -> Vec<TreeNode> {
-    vec![
-        TreeNode::branch(
-            "glowkit",
-            vec![
-                TreeNode::branch(
-                    "crates",
-                    vec![
-                        TreeNode::branch("glowkit-core", vec![TreeNode::leaf("theme.rs").detail("6 KB"), TreeNode::leaf("anim.rs").detail("12 KB"), TreeNode::leaf("paint.rs").detail("21 KB")]),
-                        TreeNode::branch("glowkit-components", vec![TreeNode::leaf("lib.rs").detail("1 KB"), TreeNode::branch("inputs", vec![TreeNode::leaf("button.rs"), TreeNode::leaf("switch.rs")])]),
-                    ],
-                ),
-                TreeNode::branch("apps", vec![TreeNode::leaf("gallery").icon(UiIcon::Grid)]),
-                TreeNode::leaf("Cargo.toml").icon(UiIcon::Settings).detail("2 KB"),
-                TreeNode::leaf("README.md").detail("8 KB"),
-            ],
-        ),
-    ]
+    vec![TreeNode::branch(
+        "glowkit",
+        vec![
+            TreeNode::branch(
+                "crates",
+                vec![
+                    TreeNode::branch(
+                        "glowkit-core",
+                        vec![
+                            TreeNode::leaf("theme.rs").detail("6 KB"),
+                            TreeNode::leaf("anim.rs").detail("12 KB"),
+                            TreeNode::leaf("paint.rs").detail("21 KB"),
+                        ],
+                    ),
+                    TreeNode::branch(
+                        "glowkit-components",
+                        vec![
+                            TreeNode::leaf("lib.rs").detail("1 KB"),
+                            TreeNode::branch("inputs", vec![TreeNode::leaf("button.rs"), TreeNode::leaf("switch.rs")]),
+                        ],
+                    ),
+                ],
+            ),
+            TreeNode::branch("apps", vec![TreeNode::leaf("gallery").icon(UiIcon::Grid)]),
+            TreeNode::leaf("Cargo.toml").icon(UiIcon::Settings).detail("2 KB"),
+            TreeNode::leaf("README.md").detail("8 KB"),
+        ],
+    )]
 }
 
 const CODE: &str = r#"use glowkit::prelude::*;

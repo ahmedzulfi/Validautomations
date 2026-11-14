@@ -44,15 +44,31 @@ impl Widget for FieldLabel {
         let t = Theme::of(ui);
         let painter = ui.painter();
         let g = painter.layout_no_wrap(self.text.clone(), egui::FontId::proportional(self.size), t.foreground);
-        let w = if self.hint.is_some() { ui.available_width() } else { g.size().x + if self.required { 10.0 } else { 0.0 } };
+        let w = if self.hint.is_some() {
+            ui.available_width()
+        } else {
+            g.size().x + if self.required { 10.0 } else { 0.0 }
+        };
         let (rect, resp) = ui.allocate_exact_size(vec2(w, g.size().y), Sense::hover());
         let painter = ui.painter();
         painter.galley(rect.min, g.clone(), t.foreground);
         if self.required {
-            painter.text(rect.min + vec2(g.size().x + 3.0, 0.0), egui::Align2::LEFT_TOP, "*", egui::FontId::proportional(self.size), t.destructive);
+            painter.text(
+                rect.min + vec2(g.size().x + 3.0, 0.0),
+                egui::Align2::LEFT_TOP,
+                "*",
+                egui::FontId::proportional(self.size),
+                t.destructive,
+            );
         }
         if let Some(h) = self.hint {
-            painter.text(rect.right_center(), egui::Align2::RIGHT_CENTER, h, egui::FontId::proportional(self.size - 1.0), t.muted_foreground);
+            painter.text(
+                rect.right_center(),
+                egui::Align2::RIGHT_CENTER,
+                h,
+                egui::FontId::proportional(self.size - 1.0),
+                t.muted_foreground,
+            );
         }
         resp
     }
@@ -104,9 +120,18 @@ impl FieldError {
 impl Widget for FieldError {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
-        let g = ui.painter().layout(self.text, egui::FontId::proportional(12.5), t.destructive, ui.available_width() - 18.0);
+        let g = ui.painter().layout(
+            self.text,
+            egui::FontId::proportional(12.5),
+            t.destructive,
+            ui.available_width() - 18.0,
+        );
         let (rect, resp) = ui.allocate_exact_size(vec2(g.size().x + 18.0, g.size().y.max(14.0)), Sense::hover());
-        UiIcon::AlertCircle.paint(ui.painter(), egui::Rect::from_min_size(rect.min + vec2(0.0, 1.0), vec2(13.0, 13.0)), t.destructive);
+        UiIcon::AlertCircle.paint(
+            ui.painter(),
+            egui::Rect::from_min_size(rect.min + vec2(0.0, 1.0), vec2(13.0, 13.0)),
+            t.destructive,
+        );
         ui.painter().galley(rect.min + vec2(18.0, 0.0), g, t.destructive);
         resp
     }

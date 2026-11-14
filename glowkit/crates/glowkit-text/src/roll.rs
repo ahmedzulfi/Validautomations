@@ -112,7 +112,8 @@ impl Widget for TextRoll {
         let color = self.color.unwrap_or(t.foreground);
         let roll = self.roll_color.unwrap_or(t.accent);
         let line_h = glyphs.size.y / glyphs.galley.rows.len().max(1) as f32;
-        let clip = Rect::from_min_max(pos2(rect.min.x - bold, rect.min.y), pos2(rect.max.x + bold, rect.max.y)).intersect(ui.clip_rect());
+        let clip = Rect::from_min_max(pos2(rect.min.x - bold, rect.min.y), pos2(rect.max.x + bold, rect.max.y))
+            .intersect(ui.clip_rect());
         let painter = ui.painter().with_clip_rect(clip);
         let mid = (n as f32 - 1.0) / 2.0;
         for g in &glyphs.glyphs {
@@ -124,10 +125,22 @@ impl Widget for TextRoll {
             let gal = util::layout_char(&painter, g.ch, &font);
             let base = rect.min + g.offset;
             if p < 1.0 {
-                util::paint_galley(&painter, base - vec2(0.0, p * line_h), &gal, color.gamma_multiply(1.0 - p * 0.6), bold);
+                util::paint_galley(
+                    &painter,
+                    base - vec2(0.0, p * line_h),
+                    &gal,
+                    color.gamma_multiply(1.0 - p * 0.6),
+                    bold,
+                );
             }
             if p > 0.0 {
-                util::paint_galley(&painter, base + vec2(0.0, (1.0 - p) * line_h), &gal, roll.gamma_multiply(0.4 + 0.6 * p), bold);
+                util::paint_galley(
+                    &painter,
+                    base + vec2(0.0, (1.0 - p) * line_h),
+                    &gal,
+                    roll.gamma_multiply(0.4 + 0.6 * p),
+                    bold,
+                );
             }
         }
         resp

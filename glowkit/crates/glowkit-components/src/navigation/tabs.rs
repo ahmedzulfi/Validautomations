@@ -85,7 +85,11 @@ impl Widget for Tabs<'_> {
             .labels
             .iter()
             .zip(&self.icons)
-            .map(|(l, i)| ui.painter().layout_no_wrap(l.clone(), font.clone(), Color32::WHITE).size().x + pad_x * 2.0 + if i.is_some() { 22.0 } else { 0.0 })
+            .map(|(l, i)| {
+                ui.painter().layout_no_wrap(l.clone(), font.clone(), Color32::WHITE).size().x
+                    + pad_x * 2.0
+                    + if i.is_some() { 22.0 } else { 0.0 }
+            })
             .collect();
         let inset = if self.style == TabsStyle::Segmented { 4.0 } else { 0.0 };
         let natural: f32 = widths.iter().sum::<f32>() + inset * 2.0;
@@ -127,7 +131,14 @@ impl Widget for Tabs<'_> {
             TabsStyle::Segmented => {
                 p.rect_filled(rect, r, t.muted);
                 let thumb = Rect::from_min_size(pos2(ix, rect.min.y + inset), vec2(iw, self.height - inset * 2.0));
-                paint::soft_shadow(p, thumb, r - 2.0, 6.0, vec2(0.0, 1.0), Color32::from_black_alpha(if t.dark { 70 } else { 22 }));
+                paint::soft_shadow(
+                    p,
+                    thumb,
+                    r - 2.0,
+                    6.0,
+                    vec2(0.0, 1.0),
+                    Color32::from_black_alpha(if t.dark { 70 } else { 22 }),
+                );
                 let thumb_fill = if t.dark { mix(t.background, t.foreground, 0.06) } else { t.background };
                 p.rect_filled(thumb, r - 2.0, thumb_fill);
                 if t.dark {
@@ -135,7 +146,10 @@ impl Widget for Tabs<'_> {
                 }
             }
             TabsStyle::Underline => {
-                p.line_segment([rect.left_bottom() - vec2(0.0, 0.5), rect.right_bottom() - vec2(0.0, 0.5)], Stroke::new(1.0, t.border));
+                p.line_segment(
+                    [rect.left_bottom() - vec2(0.0, 0.5), rect.right_bottom() - vec2(0.0, 0.5)],
+                    Stroke::new(1.0, t.border),
+                );
                 let bar = Rect::from_min_size(pos2(ix + 6.0, rect.max.y - 2.0), vec2((iw - 12.0).max(4.0), 2.0));
                 p.rect_filled(bar, 1.0, accent);
             }

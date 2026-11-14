@@ -21,7 +21,10 @@ pub(crate) fn cat_frame(rect: Rect, base: &Base, y_w: f32, y2_w: Option<f32>, le
     let left = if base.y_axis { y_w + 12.0 } else { 4.0 };
     let right = y2_w.map(|w| w + 12.0).unwrap_or(8.0);
     let bottom = if base.x_axis { 24.0 } else { 6.0 } + if legend { LEGEND_H } else { 0.0 };
-    let plot = Rect::from_min_max(pos2(rect.left() + left + x_pad, rect.top() + 8.0), pos2(rect.right() - right - x_pad, rect.bottom() - bottom));
+    let plot = Rect::from_min_max(
+        pos2(rect.left() + left + x_pad, rect.top() + 8.0),
+        pos2(rect.right() - right - x_pad, rect.bottom() - bottom),
+    );
     CatFrame {
         plot,
         x_label_y: plot.bottom() + 8.0,
@@ -55,11 +58,20 @@ pub(crate) fn labels_vec<S: AsRef<str>>(labels: &[S]) -> Vec<String> {
 }
 
 /// Shared hover logic for category charts: returns `(index, crosshair_x, alpha)`.
-pub(crate) fn cat_hover(ui: &Ui, id: Id, resp: &Response, plot: Rect, n: usize, band: bool) -> (Option<usize>, f32, f32) {
+pub(crate) fn cat_hover(
+    ui: &Ui,
+    id: Id,
+    resp: &Response,
+    plot: Rect,
+    n: usize,
+    band: bool,
+) -> (Option<usize>, f32, f32) {
     let pos = resp.hover_pos().filter(|p| plot.expand2(vec2(8.0, 4.0)).contains(*p));
     let idx = pos.map(|p| cat_index(plot, n, p.x, band));
     let alpha = glowkit_core::anim::follow(ui, id.with("hover_alpha"), if idx.is_some() { 1.0 } else { 0.0 }, 16.0);
-    let target = idx.map(|i| cat_x(plot, n, i, band)).unwrap_or_else(|| glowkit_core::state(ui, id.with("hover_last_x"), || plot.center().x));
+    let target = idx
+        .map(|i| cat_x(plot, n, i, band))
+        .unwrap_or_else(|| glowkit_core::state(ui, id.with("hover_last_x"), || plot.center().x));
     if idx.is_some() {
         glowkit_core::set_state(ui, id.with("hover_last_x"), target);
     }
@@ -193,7 +205,12 @@ impl Widget for LineChart<'_> {
         let frame_guess = cat_frame(rect, &self.base, 0.0, None, legend_on, 0.0);
         let mut focus = None;
         if legend_on {
-            let entries: Vec<LegendEntry> = self.series.iter().enumerate().map(|(i, s)| LegendEntry { label: s.name.clone(), color: s.color.unwrap_or_else(|| palette(&t, i)) }).collect();
+            let entries: Vec<LegendEntry> = self
+                .series
+                .iter()
+                .enumerate()
+                .map(|(i, s)| LegendEntry { label: s.name.clone(), color: s.color.unwrap_or_else(|| palette(&t, i)) })
+                .collect();
             let before = hidden.clone();
             focus = legend(ui, id, frame_guess.legend.unwrap(), &entries, &mut hidden);
             if before != hidden {
@@ -205,7 +222,14 @@ impl Widget for LineChart<'_> {
         }
         let any_visible = hidden.iter().any(|h| !h);
         let (lo, hi) = self.y_range.unwrap_or_else(|| {
-            data_range(self.series.iter().enumerate().filter(|(i, _)| !any_visible || !hidden[*i]).flat_map(|(_, s)| s.values.iter()), self.include_zero)
+            data_range(
+                self.series
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, _)| !any_visible || !hidden[*i])
+                    .flat_map(|(_, s)| s.values.iter()),
+                self.include_zero,
+            )
         });
         let ticks = nice_ticks(lo, hi, tick_count(frame_guess.plot.height(), 46.0));
         let (dlo, dhi) = if self.y_range.is_some() { (lo, hi) } else { (ticks.min, ticks.max) };
@@ -222,17 +246,30 @@ impl Widget for LineChart<'_> {
         let y_w = y_label_width(&painter, &ticks, &fmt_tick);
         let fr = cat_frame(rect, &self.base, y_w, None, legend_on, 10.0);
         let plot = fr.plot;
-        let grid_plot = Rect::from_min_max(pos2(plot.left() - 10.0, plot.top()), pos2(plot.right() + 10.0, plot.bottom()));
-        y_grid(&painter, &t, grid_plot, &ticks, alo, ahi, self.base.grid, self.base.y_axis.then_some((fr.y_label_x, false)), &fmt_tick);
+        let grid_plot =
+            Rect::from_min_max(pos2(plot.left() - 10.0, plot.top()), pos2(plot.right() + 10.0, plot.bottom()));
+        y_grid(
+            &painter,
+            &t,
+            grid_plot,
+            &ticks,
+            alo,
+            ahi,
+            self.base.grid,
+            self.base.y_axis.then_some((fr.y_label_x, false)),
+            &fmt_tick,
+        );
         if self.base.x_axis {
             x_labels(&painter, &t, plot, &self.labels, n, false, fr.x_label_y);
         }
 
         let e = entry_time(ui, id, self.base.animate, 1.4);
         let reveal = ease(Easing::InOutCubic, e / 1.25);
-        let clip = Rect::from_min_max(rect.min, pos2(grid_plot.left() + (grid_plot.width() + 12.0) * reveal, rect.bottom()));
+        let clip =
+            Rect::from_min_max(rect.min, pos2(grid_plot.left() + (grid_plot.width() + 12.0) * reveal, rect.bottom()));
         let lp = painter.with_clip_rect(clip.intersect(rect));
-        let (hover, hx, halpha) = if self.base.tooltip { cat_hover(ui, id, &resp, plot, n, false) } else { (None, 0.0, 0.0) };
+        let (hover, hx, halpha) =
+            if self.base.tooltip { cat_hover(ui, id, &resp, plot, n, false) } else { (None, 0.0, 0.0) };
         if halpha > 0.01 {
             crosshair_v(&painter, &t, hx, plot.top(), plot.bottom(), halpha);
         }
@@ -240,7 +277,8 @@ impl Widget for LineChart<'_> {
         for (si, s) in self.series.iter().enumerate() {
             let vis = cur[k * n + si];
             let color = s.color.unwrap_or_else(|| palette(&t, si));
-            let pts: Vec<egui::Pos2> = (0..n).map(|i| pos2(cat_x(plot, n, i, false), val_y(plot, alo, ahi, cur[si * n + i] as f64))).collect();
+            let pts: Vec<egui::Pos2> =
+                (0..n).map(|i| pos2(cat_x(plot, n, i, false), val_y(plot, alo, ahi, cur[si * n + i] as f64))).collect();
             pts_all.push((pts.clone(), color, vis));
             if vis < 0.01 {
                 continue;
@@ -251,13 +289,16 @@ impl Widget for LineChart<'_> {
             };
             let a = vis * dim;
             let line = curve_points(&pts, self.curve);
-            let style = self.series_styles.iter().rev().find(|(i, _)| *i == si).map(|(_, st)| *st).unwrap_or(self.style);
+            let style =
+                self.series_styles.iter().rev().find(|(i, _)| *i == si).map(|(_, st)| *st).unwrap_or(self.style);
             if self.glow {
                 line_glow(&lp, &line, self.line_width, color, a);
             }
             if self.gradient_stroke && style == LineStyle::Solid {
                 let c2 = palette(&t, si + 1);
-                glowkit_core::paint::gradient_polyline(&lp, &line, false, self.line_width + 0.4, |u| mix(color, c2, u).gamma_multiply(a));
+                glowkit_core::paint::gradient_polyline(&lp, &line, false, self.line_width + 0.4, |u| {
+                    mix(color, c2, u).gamma_multiply(a)
+                });
             } else {
                 stroke_line(&lp, &line, self.line_width, color.gamma_multiply(a), style);
             }
@@ -277,7 +318,11 @@ impl Widget for LineChart<'_> {
                 }
                 let y = pts[i].y;
                 active_dot(&painter, &t, pos2(hx, y), *color, halpha * vis);
-                rows.push(TipRow::new(Some(*color), s.name.clone(), (self.base.format)(s.values.get(i).copied().unwrap_or(0.0))));
+                rows.push(TipRow::new(
+                    Some(*color),
+                    s.name.clone(),
+                    (self.base.format)(s.values.get(i).copied().unwrap_or(0.0)),
+                ));
             }
             let title = self.labels.get(i).cloned().unwrap_or_default();
             let py = resp.hover_pos().map(|p| p.y).unwrap_or(plot.center().y);
@@ -398,7 +443,12 @@ impl Widget for AreaChart<'_> {
         let frame_guess = cat_frame(rect, &self.base, 0.0, None, legend_on, 0.0);
         let mut focus = None;
         if legend_on {
-            let entries: Vec<LegendEntry> = self.series.iter().enumerate().map(|(i, s)| LegendEntry { label: s.name.clone(), color: s.color.unwrap_or_else(|| palette(&t, i)) }).collect();
+            let entries: Vec<LegendEntry> = self
+                .series
+                .iter()
+                .enumerate()
+                .map(|(i, s)| LegendEntry { label: s.name.clone(), color: s.color.unwrap_or_else(|| palette(&t, i)) })
+                .collect();
             let before = hidden.clone();
             focus = legend(ui, id, frame_guess.legend.unwrap(), &entries, &mut hidden);
             if before != hidden {
@@ -408,13 +458,23 @@ impl Widget for AreaChart<'_> {
         if n == 0 || !ui.is_rect_visible(rect) {
             return resp;
         }
-        let raw: Vec<Vec<f64>> = self.series.iter().map(|s| (0..n).map(|i| s.values.get(i).copied().unwrap_or(0.0)).collect()).collect();
+        let raw: Vec<Vec<f64>> =
+            self.series.iter().map(|s| (0..n).map(|i| s.values.get(i).copied().unwrap_or(0.0)).collect()).collect();
         let vis_target: Vec<f64> = hidden.iter().map(|h| if *h { 0.0 } else { 1.0 }).collect();
         let target_stack = stack(&raw, &vis_target, self.stacking);
         let (lo, hi) = if self.stacking == Stacking::Expanded {
             (0.0, 1.0)
         } else {
-            data_range(target_stack.iter().enumerate().filter(|(i, _)| !hidden[*i]).flat_map(|(_, r)| r.iter().flat_map(|b| [b.0, b.1])).collect::<Vec<_>>().iter(), true)
+            data_range(
+                target_stack
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, _)| !hidden[*i])
+                    .flat_map(|(_, r)| r.iter().flat_map(|b| [b.0, b.1]))
+                    .collect::<Vec<_>>()
+                    .iter(),
+                true,
+            )
         };
         let ticks = nice_ticks(lo, hi, tick_count(frame_guess.plot.height(), 46.0));
         let mut targets: Vec<f32> = raw.iter().flat_map(|r| r.iter().map(|v| *v as f32)).collect();
@@ -434,19 +494,36 @@ impl Widget for AreaChart<'_> {
         let y_w = y_label_width(&painter, &ticks, &fmt_tick);
         let fr = cat_frame(rect, &self.base, y_w, None, legend_on, 0.0);
         let plot = fr.plot;
-        y_grid(&painter, &t, plot, &ticks, alo, ahi, self.base.grid, self.base.y_axis.then_some((fr.y_label_x, false)), &fmt_tick);
+        y_grid(
+            &painter,
+            &t,
+            plot,
+            &ticks,
+            alo,
+            ahi,
+            self.base.grid,
+            self.base.y_axis.then_some((fr.y_label_x, false)),
+            &fmt_tick,
+        );
         if self.base.x_axis {
             x_labels(&painter, &t, plot, &self.labels, n, false, fr.x_label_y);
         }
-        let (hover, hx, halpha) = if self.base.tooltip { cat_hover(ui, id, &resp, plot, n, false) } else { (None, 0.0, 0.0) };
+        let (hover, hx, halpha) =
+            if self.base.tooltip { cat_hover(ui, id, &resp, plot, n, false) } else { (None, 0.0, 0.0) };
         let lp = painter.with_clip_rect(plot.expand2(vec2(12.0, 8.0)).intersect(rect));
         let stacked = self.stacking != Stacking::None;
-        let (top_a, bot_a) = if stacked { (self.fill_top.max(0.5), self.fill_bottom.max(0.12)) } else { (self.fill_top, self.fill_bottom) };
+        let (top_a, bot_a) = if stacked {
+            (self.fill_top.max(0.5), self.fill_bottom.max(0.12))
+        } else {
+            (self.fill_top, self.fill_bottom)
+        };
         let mut uppers = Vec::with_capacity(k);
         for si in 0..k {
             let color = self.series[si].color.unwrap_or_else(|| palette(&t, si));
-            let up: Vec<egui::Pos2> = (0..n).map(|i| pos2(cat_x(plot, n, i, false), val_y(plot, alo, ahi, bands[si][i].1))).collect();
-            let lowp: Vec<egui::Pos2> = (0..n).map(|i| pos2(cat_x(plot, n, i, false), val_y(plot, alo, ahi, bands[si][i].0))).collect();
+            let up: Vec<egui::Pos2> =
+                (0..n).map(|i| pos2(cat_x(plot, n, i, false), val_y(plot, alo, ahi, bands[si][i].1))).collect();
+            let lowp: Vec<egui::Pos2> =
+                (0..n).map(|i| pos2(cat_x(plot, n, i, false), val_y(plot, alo, ahi, bands[si][i].0))).collect();
             uppers.push((up.clone(), color));
             let v = vis[si] as f32;
             if v < 0.01 {
@@ -486,7 +563,15 @@ impl Widget for AreaChart<'_> {
                 let (up, color) = &uppers[si];
                 active_dot(&painter, &t, pos2(hx, up[i].y), *color, halpha);
                 let v = raw[si][i];
-                let value = if pct { format!("{}  ·  {}", (self.base.format)(v), format_percent(if total > 0.0 { v / total } else { 0.0 })) } else { (self.base.format)(v) };
+                let value = if pct {
+                    format!(
+                        "{}  ·  {}",
+                        (self.base.format)(v),
+                        format_percent(if total > 0.0 { v / total } else { 0.0 })
+                    )
+                } else {
+                    (self.base.format)(v)
+                };
                 rows.push(TipRow::new(Some(*color), self.series[si].name.clone(), value));
             }
             if stacked && rows.len() > 1 {

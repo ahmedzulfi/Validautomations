@@ -1,5 +1,8 @@
 use crate::inputs::kit::{self, UiIcon};
-use egui::{pos2, vec2, Align, CornerRadius, CursorIcon, FontId, Id, Layout, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, UiBuilder, Widget};
+use egui::{
+    pos2, vec2, Align, CornerRadius, CursorIcon, FontId, Id, Layout, Rect, Response, Sense, Shape, Stroke, StrokeKind,
+    Ui, UiBuilder, Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 use std::f32::consts::PI;
@@ -15,7 +18,11 @@ pub(crate) fn reveal<R>(ui: &mut Ui, id: Id, open: bool, add: impl FnOnce(&mut U
     }
     let w = ui.available_width();
     let top = ui.cursor().min;
-    let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_size(top + vec2(0.0, -6.0 * (1.0 - k)), vec2(w, f32::INFINITY))).layout(Layout::top_down(Align::Min)));
+    let mut child = ui.new_child(
+        UiBuilder::new()
+            .max_rect(Rect::from_min_size(top + vec2(0.0, -6.0 * (1.0 - k)), vec2(w, f32::INFINITY)))
+            .layout(Layout::top_down(Align::Min)),
+    );
     let full: f32 = glowkit_core::state(ui, id.with("reveal_h"), || 0.0);
     let clip_h = if raw >= 1.0 { f32::INFINITY } else { full * k };
     child.set_clip_rect(Rect::from_min_size(top, vec2(w, clip_h)).intersect(ui.clip_rect()));
@@ -28,9 +35,13 @@ pub(crate) fn reveal<R>(ui: &mut Ui, id: Id, open: bool, add: impl FnOnce(&mut U
 }
 
 fn chevron(ui: &Ui, center: egui::Pos2, angle: f32, size: f32, color: egui::Color32) {
-    let rot = |v: egui::Vec2| center + vec2(v.x * angle.cos() - v.y * angle.sin(), v.x * angle.sin() + v.y * angle.cos());
+    let rot =
+        |v: egui::Vec2| center + vec2(v.x * angle.cos() - v.y * angle.sin(), v.x * angle.sin() + v.y * angle.cos());
     let s = size / 2.0;
-    ui.painter().add(Shape::line(vec![rot(vec2(-s, -s * 0.5)), rot(vec2(0.0, s * 0.5)), rot(vec2(s, -s * 0.5))], Stroke::new(1.5, color)));
+    ui.painter().add(Shape::line(
+        vec![rot(vec2(-s, -s * 0.5)), rot(vec2(0.0, s * 0.5)), rot(vec2(s, -s * 0.5))],
+        Stroke::new(1.5, color),
+    ));
 }
 
 /// Vertically stacked sections that expand with an animated height, a rotating chevron and
@@ -57,7 +68,14 @@ pub struct Accordion<'a> {
 impl<'a> Accordion<'a> {
     /// An accordion; `id_salt` keeps its open state.
     pub fn new(id_salt: impl std::hash::Hash + std::fmt::Debug) -> Self {
-        Self { id: Id::unique(id_salt), items: Vec::new(), multiple: false, default_open: Some(0), width: None, card: false }
+        Self {
+            id: Id::unique(id_salt),
+            items: Vec::new(),
+            multiple: false,
+            default_open: Some(0),
+            width: None,
+            card: false,
+        }
     }
     /// Add a section with custom content.
     pub fn item(mut self, title: impl Into<String>, content: impl FnOnce(&mut Ui) + 'a) -> Self {
@@ -118,31 +136,61 @@ impl<'a> Accordion<'a> {
                     }
                     open[i] = new;
                 }
-                let k = glowkit_core::ease(glowkit_core::Easing::InOutCubic, kit::anim(ui, id.with(("chev", i)), open[i], 0.26));
+                let k = glowkit_core::ease(
+                    glowkit_core::Easing::InOutCubic,
+                    kit::anim(ui, id.with(("chev", i)), open[i], 0.26),
+                );
                 let hov = kit::anim(ui, id.with(("h", i)), resp.hovered(), 0.12);
                 let p = ui.painter();
-                let tr = p.text(pos2(row.min.x + pad, row.center().y), egui::Align2::LEFT_CENTER, &title, FontId::proportional(14.5), t.foreground);
+                let tr = p.text(
+                    pos2(row.min.x + pad, row.center().y),
+                    egui::Align2::LEFT_CENTER,
+                    &title,
+                    FontId::proportional(14.5),
+                    t.foreground,
+                );
                 if hov > 0.0 {
-                    p.line_segment([pos2(tr.min.x, tr.max.y), pos2(tr.min.x + tr.width() * hov, tr.max.y)], Stroke::new(1.0, with_alpha(t.foreground, 0.6)));
+                    p.line_segment(
+                        [pos2(tr.min.x, tr.max.y), pos2(tr.min.x + tr.width() * hov, tr.max.y)],
+                        Stroke::new(1.0, with_alpha(t.foreground, 0.6)),
+                    );
                 }
-                chevron(ui, pos2(row.max.x - pad - 8.0, row.center().y), PI * k, 9.0, t.muted_foreground.lerp_to_gamma(t.foreground, hov));
-                egui::Frame::NONE.inner_margin(egui::Margin { left: pad as i8, right: pad as i8, top: 0, bottom: 0 }).show(ui, |ui| {
-                    ui.set_width(iw);
-                    reveal(ui, id.with(("body", i)), open[i], |ui| {
+                chevron(
+                    ui,
+                    pos2(row.max.x - pad - 8.0, row.center().y),
+                    PI * k,
+                    9.0,
+                    t.muted_foreground.lerp_to_gamma(t.foreground, hov),
+                );
+                egui::Frame::NONE
+                    .inner_margin(egui::Margin { left: pad as i8, right: pad as i8, top: 0, bottom: 0 })
+                    .show(ui, |ui| {
                         ui.set_width(iw);
-                        content(ui);
-                        ui.add_space(16.0);
+                        reveal(ui, id.with(("body", i)), open[i], |ui| {
+                            ui.set_width(iw);
+                            content(ui);
+                            ui.add_space(16.0);
+                        });
                     });
-                });
                 if i + 1 < n {
                     let y = kit::snap(ui, ui.cursor().min.y) + 0.5;
-                    ui.painter().line_segment([pos2(row.min.x + pad, y), pos2(row.max.x - pad, y)], Stroke::new(1.0, t.border));
+                    ui.painter()
+                        .line_segment([pos2(row.min.x + pad, y), pos2(row.max.x - pad, y)], Stroke::new(1.0, t.border));
                 }
             }
         });
         glowkit_core::set_state(ui, id, open);
         if self.card {
-            ui.painter().set(bg, egui::epaint::RectShape::new(inner.response.rect, t.corner(), t.card, t.border_stroke(), StrokeKind::Inside));
+            ui.painter().set(
+                bg,
+                egui::epaint::RectShape::new(
+                    inner.response.rect,
+                    t.corner(),
+                    t.card,
+                    t.border_stroke(),
+                    StrokeKind::Inside,
+                ),
+            );
         }
         inner.response
     }
@@ -195,7 +243,13 @@ impl Collapsible {
         ui.allocate_ui_with_layout(vec2(w, 0.0), Layout::top_down(Align::Min), |ui| {
             ui.set_width(w);
             let (row, _) = ui.allocate_exact_size(vec2(w, 36.0), Sense::hover());
-            ui.painter().text(pos2(row.min.x + 4.0, row.center().y), egui::Align2::LEFT_CENTER, &self.title, FontId::proportional(14.0), t.foreground);
+            ui.painter().text(
+                pos2(row.min.x + 4.0, row.center().y),
+                egui::Align2::LEFT_CENTER,
+                &self.title,
+                FontId::proportional(14.0),
+                t.foreground,
+            );
             let br = Rect::from_center_size(pos2(row.max.x - 16.0, row.center().y), vec2(32.0, 32.0));
             let b = ui.interact(br, id.with("btn"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
             let h = kit::anim(ui, id.with("h"), b.hovered(), 0.12);
@@ -326,7 +380,11 @@ fn tree_rows(ui: &mut Ui, cx: &mut TreeCtx<'_>, nodes: &[TreeNode], depth: usize
         let r = CornerRadius::same(6);
         if sel > 0.0 {
             p.rect_filled(row, r, with_alpha(if t.dark { t.secondary } else { t.muted }, sel));
-            p.rect_filled(Rect::from_min_size(row.min + vec2(0.0, 7.0), vec2(2.5, (ROW_H - 14.0) * sel)), CornerRadius::same(1), t.accent);
+            p.rect_filled(
+                Rect::from_min_size(row.min + vec2(0.0, 7.0), vec2(2.5, (ROW_H - 14.0) * sel)),
+                CornerRadius::same(1),
+                t.accent,
+            );
         } else if hov > 0.0 {
             p.rect_filled(row, r, with_alpha(if t.dark { t.secondary } else { t.muted }, 0.6 * hov));
         }
@@ -342,12 +400,32 @@ fn tree_rows(ui: &mut Ui, cx: &mut TreeCtx<'_>, nodes: &[TreeNode], depth: usize
             let k = glowkit_core::ease(glowkit_core::Easing::OutCubic, kit::anim(ui, nid.with("chev"), open, 0.2));
             chevron(ui, pos2(x0 + 7.0, cy), -PI / 2.0 + PI / 2.0 * k, 8.0, t.muted_foreground);
         }
-        let icon = node.icon.unwrap_or(if is_branch { if open { UiIcon::FolderOpen } else { UiIcon::Folder } } else { UiIcon::File });
+        let icon = node.icon.unwrap_or(if is_branch {
+            if open {
+                UiIcon::FolderOpen
+            } else {
+                UiIcon::Folder
+            }
+        } else {
+            UiIcon::File
+        });
         let icol = if is_branch { t.accent } else { t.muted_foreground };
         icon.paint(p, Rect::from_center_size(pos2(x0 + 26.0, cy), vec2(15.0, 15.0)), icol);
-        p.text(pos2(x0 + 40.0, cy), egui::Align2::LEFT_CENTER, &node.label, FontId::proportional(13.5), if selected { t.foreground } else { t.foreground.lerp_to_gamma(t.muted_foreground, 0.15) });
+        p.text(
+            pos2(x0 + 40.0, cy),
+            egui::Align2::LEFT_CENTER,
+            &node.label,
+            FontId::proportional(13.5),
+            if selected { t.foreground } else { t.foreground.lerp_to_gamma(t.muted_foreground, 0.15) },
+        );
         if let Some(d) = &node.detail {
-            p.text(pos2(row.max.x - 10.0, cy), egui::Align2::RIGHT_CENTER, d, FontId::proportional(12.0), t.muted_foreground);
+            p.text(
+                pos2(row.max.x - 10.0, cy),
+                egui::Align2::RIGHT_CENTER,
+                d,
+                FontId::proportional(12.0),
+                t.muted_foreground,
+            );
         }
         if is_branch {
             let children = &node.children;
@@ -364,7 +442,14 @@ impl Widget for TreeView<'_> {
         let w = self.width.unwrap_or_else(|| ui.available_width().min(320.0));
         let id = ui.next_auto_id();
         ui.skip_ahead_auto_ids(1);
-        let mut cx = TreeCtx { id, w, open_depth: self.open_depth, guides: self.guides, selected: self.selected, changed: false };
+        let mut cx = TreeCtx {
+            id,
+            w,
+            open_depth: self.open_depth,
+            guides: self.guides,
+            selected: self.selected,
+            changed: false,
+        };
         let mut inner = ui.allocate_ui_with_layout(vec2(w, 0.0), Layout::top_down(Align::Min), |ui| {
             ui.spacing_mut().item_spacing.y = 0.0;
             tree_rows(ui, &mut cx, self.nodes, 0, "");

@@ -14,18 +14,29 @@ pub(crate) fn bold_text(p: &Painter, pos: Pos2, anchor: Align2, text: &str, font
 /// Seconds since the widget was last interacted with (`active` = hovered / dragged / focused).
 pub(crate) fn idle_time(ui: &Ui, id: Id, active: bool) -> f32 {
     let now = ui.input(|i| i.time);
-    let last = glowkit_core::with_state(ui, id.with("gk_idle"), || now - 100.0, |v| {
-        if active {
-            *v = now;
-        }
-        *v
-    });
+    let last = glowkit_core::with_state(
+        ui,
+        id.with("gk_idle"),
+        || now - 100.0,
+        |v| {
+            if active {
+                *v = now;
+            }
+            *v
+        },
+    );
     (now - last) as f32
 }
 
 /// Add an anti-aliased filled circle (octagon-ish fan with a feather ring) to a mesh.
 pub(crate) fn mesh_dot(m: &mut Mesh, c: Pos2, r: f32, color: Color32) {
-    let n = if r < 2.5 { 8 } else if r < 6.0 { 14 } else { 24 };
+    let n = if r < 2.5 {
+        8
+    } else if r < 6.0 {
+        14
+    } else {
+        24
+    };
     let base = m.vertices.len() as u32;
     m.colored_vertex(c, color);
     let inner = (r - 0.5).max(0.1);
@@ -242,8 +253,14 @@ pub(crate) fn rounded_grid(p: &Painter, rect: Rect, radius: f32, cell: f32, f: i
     m.reserve_vertices((cols + 1) * (rows + 1));
     for y in 0..=rows {
         for x in 0..=cols {
-            let mut q = pos2(rect.min.x + rect.width() * x as f32 / cols as f32, rect.min.y + rect.height() * y as f32 / rows as f32);
-            let c = pos2(q.x.clamp(rect.min.x + radius, rect.max.x - radius), q.y.clamp(rect.min.y + radius, rect.max.y - radius));
+            let mut q = pos2(
+                rect.min.x + rect.width() * x as f32 / cols as f32,
+                rect.min.y + rect.height() * y as f32 / rows as f32,
+            );
+            let c = pos2(
+                q.x.clamp(rect.min.x + radius, rect.max.x - radius),
+                q.y.clamp(rect.min.y + radius, rect.max.y - radius),
+            );
             let d = q - c;
             if d.length() > radius {
                 q = c + d.normalized() * radius;
@@ -261,4 +278,3 @@ pub(crate) fn rounded_grid(p: &Painter, rect: Rect, radius: f32, cell: f32, f: i
     }
     p.add(Shape::mesh(m));
 }
-

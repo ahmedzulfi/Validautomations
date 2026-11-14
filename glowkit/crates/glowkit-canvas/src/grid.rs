@@ -2,7 +2,10 @@
 //! selection, inline editing, column resize, TSV copy / paste).
 
 use crate::common::{self, qfont, qmono};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, Event, Key, Rect, Sense, Stroke, StrokeKind, TextEdit, Ui, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, Event, Key, Rect, Sense, Stroke, StrokeKind, TextEdit, Ui,
+    Vec2,
+};
 use glowkit_core::{color::with_alpha, Theme};
 
 /// How a column renders its cells.
@@ -127,7 +130,8 @@ pub fn parse_number(s: &str) -> Option<f64> {
 /// Format with thousands separators.
 pub fn group_thousands(v: f64, decimals: usize) -> String {
     let s = format!("{:.*}", decimals, v.abs());
-    let (int, frac) = s.split_once('.').map(|(a, b)| (a.to_owned(), format!(".{b}"))).unwrap_or((s.clone(), String::new()));
+    let (int, frac) =
+        s.split_once('.').map(|(a, b)| (a.to_owned(), format!(".{b}"))).unwrap_or((s.clone(), String::new()));
     let mut out = String::new();
     for (i, ch) in int.chars().enumerate() {
         if i > 0 && (int.len() - i) % 3 == 0 {
@@ -155,7 +159,15 @@ pub struct GridState {
 
 impl Default for GridState {
     fn default() -> Self {
-        Self { anchor: (0, 0), cursor: (0, 0), scroll: Vec2::ZERO, editing: None, resizing: None, selecting: false, scroll_drag: None }
+        Self {
+            anchor: (0, 0),
+            cursor: (0, 0),
+            scroll: Vec2::ZERO,
+            editing: None,
+            resizing: None,
+            selecting: false,
+            scroll_drag: None,
+        }
     }
 }
 
@@ -227,13 +239,17 @@ impl<'a> DataGrid<'a> {
         let frozen = frozen.min(ncols);
         let painter = ui.painter_at(rect);
         painter.rect(rect, CornerRadius::same(10), t.card, Stroke::new(1.0, t.border), StrokeKind::Inside);
-        let body = Rect::from_min_max(pos2(rect.left() + GUTTER, rect.top() + HEAD_H), pos2(rect.right() - 10.0, rect.bottom() - STATUS - 10.0));
+        let body = Rect::from_min_max(
+            pos2(rect.left() + GUTTER, rect.top() + HEAD_H),
+            pos2(rect.right() - 10.0, rect.bottom() - STATUS - 10.0),
+        );
         let frozen_w: f32 = data.columns[..frozen].iter().map(|c| c.width).sum();
         let scroll_area = Rect::from_min_max(pos2(body.left() + frozen_w, body.top()), body.max);
         let total_w: f32 = data.columns[frozen..].iter().map(|c| c.width).sum();
         let total_h = nrows as f32 * row_h;
         let max_scroll = vec2((total_w - scroll_area.width()).max(0.0), (total_h - body.height()).max(0.0));
-        let resp = ui.interact(Rect::from_min_max(rect.min, pos2(rect.right(), body.bottom())), id, Sense::click_and_drag());
+        let resp =
+            ui.interact(Rect::from_min_max(rect.min, pos2(rect.right(), body.bottom())), id, Sense::click_and_drag());
         if resp.clicked() || resp.drag_started() {
             resp.request_focus();
         }
@@ -272,7 +288,8 @@ impl<'a> DataGrid<'a> {
             if r.double_clicked() {
                 // auto-fit to content of the first rows
                 let font = qfont(12.5);
-                let mut w = painter.layout_no_wrap(data.columns[c].name.clone(), font.clone(), Color32::WHITE).size().x + 34.0;
+                let mut w =
+                    painter.layout_no_wrap(data.columns[c].name.clone(), font.clone(), Color32::WHITE).size().x + 34.0;
                 for row in data.rows.iter().take(300) {
                     if let Some(v) = row.get(c) {
                         w = w.max(painter.layout_no_wrap(v.clone(), font.clone(), Color32::WHITE).size().x + 24.0);
@@ -378,7 +395,8 @@ impl<'a> DataGrid<'a> {
                             _ => (0, 0),
                         };
                         if *key == Key::F2 {
-                            st.editing = Some((st.cursor.0, st.cursor.1, data.cell(st.cursor.0, st.cursor.1).to_owned(), true));
+                            st.editing =
+                                Some((st.cursor.0, st.cursor.1, data.cell(st.cursor.0, st.cursor.1).to_owned(), true));
                         }
                         if matches!(key, Key::Delete | Key::Backspace) {
                             for r in sel.r0..=sel.r1 {
@@ -396,7 +414,9 @@ impl<'a> DataGrid<'a> {
                             let r = (st.cursor.0 as i64 + dr).clamp(0, nrows as i64 - 1) as usize;
                             let c = (st.cursor.1 as i64 + dc).clamp(0, ncols as i64 - 1) as usize;
                             st.cursor = (r, c);
-                            if !(modifiers.shift && matches!(key, Key::ArrowUp | Key::ArrowDown | Key::ArrowLeft | Key::ArrowRight)) {
+                            if !(modifiers.shift
+                                && matches!(key, Key::ArrowUp | Key::ArrowDown | Key::ArrowLeft | Key::ArrowRight))
+                            {
                                 st.anchor = st.cursor;
                             }
                             moved = true;
@@ -456,7 +476,11 @@ impl<'a> DataGrid<'a> {
         let hover_row = pointer.filter(|p| body.contains(*p)).and_then(|p| geo.cell_at(p)).map(|c| c.0);
         for pass in 0..2 {
             // pass 0: scrolling columns, pass 1: frozen columns on top
-            let clip = if pass == 0 { scroll_area } else { Rect::from_min_max(body.min, pos2(scroll_area.left(), body.bottom())) };
+            let clip = if pass == 0 {
+                scroll_area
+            } else {
+                Rect::from_min_max(body.min, pos2(scroll_area.left(), body.bottom()))
+            };
             let p = painter.with_clip_rect(clip);
             let cols: Vec<usize> = if pass == 0 { (frozen..ncols).collect() } else { (0..frozen).collect() };
             if pass == 1 {
@@ -487,7 +511,10 @@ impl<'a> DataGrid<'a> {
                     paint_cell(&p, &t, data.columns[c].kind, data.cell(r, c), cr);
                     p.line_segment([cr.right_top(), cr.right_bottom()], Stroke::new(1.0, with_alpha(t.border, 0.5)));
                 }
-                p.line_segment([row_rect.left_bottom(), row_rect.right_bottom()], Stroke::new(1.0, with_alpha(t.border, 0.5)));
+                p.line_segment(
+                    [row_rect.left_bottom(), row_rect.right_bottom()],
+                    Stroke::new(1.0, with_alpha(t.border, 0.5)),
+                );
             }
             if pass == 1 && frozen > 0 {
                 // shadow on the frozen edge when scrolled horizontally
@@ -496,10 +523,16 @@ impl<'a> DataGrid<'a> {
                     let x = scroll_area.left();
                     for i in 0..8 {
                         let a = (1.0 - i as f32 / 8.0) * 0.12 * k;
-                        painter.line_segment([pos2(x + i as f32, body.top()), pos2(x + i as f32, body.bottom())], Stroke::new(1.0, Color32::from_black_alpha((a * 255.0) as u8)));
+                        painter.line_segment(
+                            [pos2(x + i as f32, body.top()), pos2(x + i as f32, body.bottom())],
+                            Stroke::new(1.0, Color32::from_black_alpha((a * 255.0) as u8)),
+                        );
                     }
                 }
-                painter.line_segment([pos2(scroll_area.left(), body.top()), pos2(scroll_area.left(), body.bottom())], Stroke::new(1.0, t.border));
+                painter.line_segment(
+                    [pos2(scroll_area.left(), body.top()), pos2(scroll_area.left(), body.bottom())],
+                    Stroke::new(1.0, t.border),
+                );
             }
         }
         // selection outline + active cell + fill handle
@@ -513,14 +546,32 @@ impl<'a> DataGrid<'a> {
         sp.rect_stroke(rr, CornerRadius::same(2), Stroke::new(1.5, t.accent), StrokeKind::Middle);
         let ac = range_rect(CellRange::new(st.cursor, st.cursor));
         sp.rect_stroke(ac.shrink(1.0), CornerRadius::same(2), Stroke::new(2.0, t.accent), StrokeKind::Inside);
-        sp.rect(Rect::from_center_size(rr.right_bottom(), Vec2::splat(7.0)), CornerRadius::same(1), t.accent, Stroke::new(1.5, t.card), StrokeKind::Outside);
+        sp.rect(
+            Rect::from_center_size(rr.right_bottom(), Vec2::splat(7.0)),
+            CornerRadius::same(1),
+            t.accent,
+            Stroke::new(1.5, t.card),
+            StrokeKind::Outside,
+        );
 
         // ---- editing
         if let Some((r, c, mut text, focus)) = st.editing.take() {
             let cr = range_rect(CellRange::new((r, c), (r, c)));
             if body.intersects(cr) {
-                painter.rect(cr.expand(1.0), CornerRadius::same(2), t.popover, Stroke::new(2.0, t.accent), StrokeKind::Inside);
-                let te = ui.put(cr.shrink2(vec2(8.0, 0.0)), TextEdit::singleline(&mut text).frame(egui::Frame::NONE).font(qfont(12.5)).align(Align2::LEFT_CENTER));
+                painter.rect(
+                    cr.expand(1.0),
+                    CornerRadius::same(2),
+                    t.popover,
+                    Stroke::new(2.0, t.accent),
+                    StrokeKind::Inside,
+                );
+                let te = ui.put(
+                    cr.shrink2(vec2(8.0, 0.0)),
+                    TextEdit::singleline(&mut text)
+                        .frame(egui::Frame::NONE)
+                        .font(qfont(12.5))
+                        .align(Align2::LEFT_CENTER),
+                );
                 if focus {
                     te.request_focus();
                     if let Some(mut s) = TextEdit::load_state(ui.ctx(), te.id) {
@@ -529,7 +580,9 @@ impl<'a> DataGrid<'a> {
                         s.store(ui.ctx(), te.id);
                     }
                 }
-                let (enter, tab, esc, shift) = ui.input(|i| (i.key_pressed(Key::Enter), i.key_pressed(Key::Tab), i.key_pressed(Key::Escape), i.modifiers.shift));
+                let (enter, tab, esc, shift) = ui.input(|i| {
+                    (i.key_pressed(Key::Enter), i.key_pressed(Key::Tab), i.key_pressed(Key::Escape), i.modifiers.shift)
+                });
                 if esc {
                     resp.request_focus();
                 } else if enter || tab || (te.lost_focus() && !focus) {
@@ -555,9 +608,14 @@ impl<'a> DataGrid<'a> {
         // ---- header + gutter (frozen)
         let header = Rect::from_min_max(rect.min, pos2(rect.right(), rect.top() + HEAD_H));
         painter.rect_filled(header.shrink(1.0), CornerRadius { nw: 9, ne: 9, sw: 0, se: 0 }, t.muted);
-        painter.line_segment([pos2(rect.left(), body.top()), pos2(rect.right(), body.top())], Stroke::new(1.0, t.border));
+        painter
+            .line_segment([pos2(rect.left(), body.top()), pos2(rect.right(), body.top())], Stroke::new(1.0, t.border));
         for pass in 0..2 {
-            let clip = if pass == 0 { Rect::from_min_max(pos2(scroll_area.left(), header.top()), pos2(body.right(), header.bottom())) } else { Rect::from_min_max(pos2(body.left(), header.top()), pos2(scroll_area.left(), header.bottom())) };
+            let clip = if pass == 0 {
+                Rect::from_min_max(pos2(scroll_area.left(), header.top()), pos2(body.right(), header.bottom()))
+            } else {
+                Rect::from_min_max(pos2(body.left(), header.top()), pos2(scroll_area.left(), header.bottom()))
+            };
             let hp = painter.with_clip_rect(clip);
             let cols: Vec<usize> = if pass == 0 { (frozen..ncols).collect() } else { (0..frozen).collect() };
             for c in cols {
@@ -572,18 +630,40 @@ impl<'a> DataGrid<'a> {
                 let right = matches!(col.kind, CellKind::Number | CellKind::Currency | CellKind::Percent);
                 let label = common::elide(&hp, &col.name, qfont(12.0), w - 20.0);
                 if right {
-                    hp.text(pos2(hr.right() - 10.0, hr.center().y), Align2::RIGHT_CENTER, label, qfont(12.0), t.muted_foreground);
+                    hp.text(
+                        pos2(hr.right() - 10.0, hr.center().y),
+                        Align2::RIGHT_CENTER,
+                        label,
+                        qfont(12.0),
+                        t.muted_foreground,
+                    );
                 } else {
-                    hp.text(pos2(hr.left() + 10.0, hr.center().y), Align2::LEFT_CENTER, label, qfont(12.0), t.muted_foreground);
+                    hp.text(
+                        pos2(hr.left() + 10.0, hr.center().y),
+                        Align2::LEFT_CENTER,
+                        label,
+                        qfont(12.0),
+                        t.muted_foreground,
+                    );
                 }
                 let bh = border_hover == Some(c) || st.resizing.is_some_and(|r| r.0 == c);
-                hp.line_segment([hr.right_top() + vec2(0.0, if bh { 4.0 } else { 9.0 }), hr.right_bottom() - vec2(0.0, if bh { 4.0 } else { 9.0 })], Stroke::new(if bh { 2.5 } else { 1.0 }, if bh { t.accent } else { t.border }));
+                hp.line_segment(
+                    [
+                        hr.right_top() + vec2(0.0, if bh { 4.0 } else { 9.0 }),
+                        hr.right_bottom() - vec2(0.0, if bh { 4.0 } else { 9.0 }),
+                    ],
+                    Stroke::new(if bh { 2.5 } else { 1.0 }, if bh { t.accent } else { t.border }),
+                );
             }
         }
         // gutter
         let gutter = Rect::from_min_max(pos2(rect.left(), body.top()), pos2(body.left(), body.bottom()));
         let gp = painter.with_clip_rect(gutter);
-        gp.rect_filled(gutter, CornerRadius::ZERO, if t.dark { with_alpha(t.muted, 0.6) } else { with_alpha(t.muted, 0.7) });
+        gp.rect_filled(
+            gutter,
+            CornerRadius::ZERO,
+            if t.dark { with_alpha(t.muted, 0.6) } else { with_alpha(t.muted, 0.7) },
+        );
         for r in first..last {
             let y = geo.row_y(r);
             let in_sel = r >= sel.r0 && r <= sel.r1;
@@ -592,14 +672,38 @@ impl<'a> DataGrid<'a> {
                 gp.rect_filled(rr, CornerRadius::ZERO, with_alpha(t.accent, 0.12));
                 gp.line_segment([rr.right_top(), rr.right_bottom()], Stroke::new(2.0, t.accent));
             }
-            gp.text(pos2(rr.right() - 10.0, rr.center().y), Align2::RIGHT_CENTER, (r + 1).to_string(), qmono(10.5), if in_sel { t.foreground } else { t.muted_foreground });
+            gp.text(
+                pos2(rr.right() - 10.0, rr.center().y),
+                Align2::RIGHT_CENTER,
+                (r + 1).to_string(),
+                qmono(10.5),
+                if in_sel { t.foreground } else { t.muted_foreground },
+            );
         }
-        painter.line_segment([gutter.right_top() - vec2(0.0, HEAD_H), gutter.right_bottom()], Stroke::new(1.0, t.border));
+        painter
+            .line_segment([gutter.right_top() - vec2(0.0, HEAD_H), gutter.right_bottom()], Stroke::new(1.0, t.border));
 
         // ---- scrollbars
         let bars = [
-            (false, Rect::from_min_max(pos2(scroll_area.left(), body.bottom() + 2.0), pos2(body.right(), body.bottom() + 8.0)), scroll_area.width(), total_w, st.scroll.x, max_scroll.x),
-            (true, Rect::from_min_max(pos2(body.right() + 2.0, body.top()), pos2(body.right() + 8.0, body.bottom())), body.height(), total_h, st.scroll.y, max_scroll.y),
+            (
+                false,
+                Rect::from_min_max(
+                    pos2(scroll_area.left(), body.bottom() + 2.0),
+                    pos2(body.right(), body.bottom() + 8.0),
+                ),
+                scroll_area.width(),
+                total_w,
+                st.scroll.x,
+                max_scroll.x,
+            ),
+            (
+                true,
+                Rect::from_min_max(pos2(body.right() + 2.0, body.top()), pos2(body.right() + 8.0, body.bottom())),
+                body.height(),
+                total_h,
+                st.scroll.y,
+                max_scroll.y,
+            ),
         ];
         for (vertical, track, view, total, pos, maxs) in bars {
             if maxs <= 0.0 {
@@ -608,12 +712,17 @@ impl<'a> DataGrid<'a> {
             let len = if vertical { track.height() } else { track.width() };
             let thumb_len = (len * view / total).max(28.0);
             let off = (len - thumb_len) * pos / maxs;
-            let thumb = if vertical { Rect::from_min_size(pos2(track.left(), track.top() + off), vec2(track.width(), thumb_len)) } else { Rect::from_min_size(pos2(track.left() + off, track.top()), vec2(thumb_len, track.height())) };
+            let thumb = if vertical {
+                Rect::from_min_size(pos2(track.left(), track.top() + off), vec2(track.width(), thumb_len))
+            } else {
+                Rect::from_min_size(pos2(track.left() + off, track.top()), vec2(thumb_len, track.height()))
+            };
             let r = ui.interact(thumb.expand(2.0), id.with(("sb", vertical)), Sense::drag());
             let h = ui.ctx().animate_bool_with_time(id.with(("sbh", vertical)), r.hovered() || r.dragged(), 0.12);
             painter.rect_filled(thumb, CornerRadius::same(3), with_alpha(t.muted_foreground, 0.3 + 0.35 * h));
             if r.drag_started() {
-                st.scroll_drag = Some((vertical, pointer.map(|p| if vertical { p.y } else { p.x }).unwrap_or(0.0), pos));
+                st.scroll_drag =
+                    Some((vertical, pointer.map(|p| if vertical { p.y } else { p.x }).unwrap_or(0.0), pos));
             }
             if let (Some((v, p0, s0)), Some(p)) = (st.scroll_drag, pointer) {
                 if v == vertical && r.dragged() {
@@ -644,8 +753,18 @@ impl<'a> DataGrid<'a> {
             }
             s
         };
-        let addr = if sel.count() == 1 { format!("{}{}", col_letter(sel.c0), sel.r0 + 1) } else { format!("{}{}:{}{}", col_letter(sel.c0), sel.r0 + 1, col_letter(sel.c1), sel.r1 + 1) };
-        painter.text(pos2(status.left() + 14.0, status.center().y), Align2::LEFT_CENTER, addr, qmono(11.0), t.foreground);
+        let addr = if sel.count() == 1 {
+            format!("{}{}", col_letter(sel.c0), sel.r0 + 1)
+        } else {
+            format!("{}{}:{}{}", col_letter(sel.c0), sel.r0 + 1, col_letter(sel.c1), sel.r1 + 1)
+        };
+        painter.text(
+            pos2(status.left() + 14.0, status.center().y),
+            Align2::LEFT_CENTER,
+            addr,
+            qmono(11.0),
+            t.foreground,
+        );
         let mut sum = 0.0;
         let mut n = 0usize;
         if sel.count() <= 200_000 {
@@ -660,10 +779,36 @@ impl<'a> DataGrid<'a> {
                 }
             }
         }
-        let info = if n > 1 { format!("Sum {}   ·   Avg {}   ·   Count {}", group_thousands(sum, 2), group_thousands(sum / n as f64, 2), n) } else { format!("{} rows  ·  {} columns  ·  {} visible", group_thousands(nrows as f64, 0), ncols, last.saturating_sub(first)) };
-        painter.text(pos2(status.right() - 14.0, status.center().y), Align2::RIGHT_CENTER, info, qfont(11.5), t.muted_foreground);
+        let info = if n > 1 {
+            format!(
+                "Sum {}   ·   Avg {}   ·   Count {}",
+                group_thousands(sum, 2),
+                group_thousands(sum / n as f64, 2),
+                n
+            )
+        } else {
+            format!(
+                "{} rows  ·  {} columns  ·  {} visible",
+                group_thousands(nrows as f64, 0),
+                ncols,
+                last.saturating_sub(first)
+            )
+        };
+        painter.text(
+            pos2(status.right() - 14.0, status.center().y),
+            Align2::RIGHT_CENTER,
+            info,
+            qfont(11.5),
+            t.muted_foreground,
+        );
         if focused {
-            painter.text(pos2(status.left() + 110.0, status.center().y), Align2::LEFT_CENTER, "Type to edit · Enter/Tab to move · Shift+arrows to extend · Ctrl+C / Ctrl+V", qfont(11.0), with_alpha(t.muted_foreground, 0.7));
+            painter.text(
+                pos2(status.left() + 110.0, status.center().y),
+                Align2::LEFT_CENTER,
+                "Type to edit · Enter/Tab to move · Shift+arrows to extend · Ctrl+C / Ctrl+V",
+                qfont(11.0),
+                with_alpha(t.muted_foreground, 0.7),
+            );
         }
         changed
     }
@@ -681,7 +826,15 @@ struct Geo {
 
 impl Geo {
     fn new(data: &GridData, st: &GridState, body: Rect, scroll_area: Rect, frozen: usize, row_h: f32) -> Self {
-        Self { widths: data.columns.iter().map(|c| c.width).collect(), frozen, body, scroll_left: scroll_area.left(), scroll: st.scroll, row_h, nrows: data.rows.len() }
+        Self {
+            widths: data.columns.iter().map(|c| c.width).collect(),
+            frozen,
+            body,
+            scroll_left: scroll_area.left(),
+            scroll: st.scroll,
+            row_h,
+            nrows: data.rows.len(),
+        }
     }
     fn col_x(&self, c: usize) -> f32 {
         if c < self.frozen {
@@ -697,7 +850,8 @@ impl Geo {
         if self.nrows == 0 || self.widths.is_empty() {
             return None;
         }
-        let r = ((p.y - self.body.top() + self.scroll.y) / self.row_h).floor().clamp(0.0, (self.nrows - 1) as f32) as usize;
+        let r =
+            ((p.y - self.body.top() + self.scroll.y) / self.row_h).floor().clamp(0.0, (self.nrows - 1) as f32) as usize;
         let n = self.widths.len();
         let mut c = n - 1;
         for k in 0..n {
@@ -732,7 +886,13 @@ fn paint_cell(p: &egui::Painter, t: &Theme, kind: CellKind, v: &str, r: Rect) {
     let w = r.width() - 20.0;
     match kind {
         CellKind::Text => {
-            p.text(pos2(r.left() + 10.0, r.center().y), Align2::LEFT_CENTER, common::elide(p, v, font.clone(), w), font, t.foreground);
+            p.text(
+                pos2(r.left() + 10.0, r.center().y),
+                Align2::LEFT_CENTER,
+                common::elide(p, v, font.clone(), w),
+                font,
+                t.foreground,
+            );
         }
         CellKind::Mono => {
             p.text(pos2(r.left() + 10.0, r.center().y), Align2::LEFT_CENTER, v, qmono(11.5), t.muted_foreground);
@@ -744,17 +904,36 @@ fn paint_cell(p: &egui::Painter, t: &Theme, kind: CellKind, v: &str, r: Rect) {
                 None => v.to_owned(),
             };
             let neg = parse_number(v).is_some_and(|n| n < 0.0);
-            p.text(pos2(r.right() - 10.0, r.center().y), Align2::RIGHT_CENTER, txt, qmono(12.0), if neg { t.destructive } else { t.foreground });
+            p.text(
+                pos2(r.right() - 10.0, r.center().y),
+                Align2::RIGHT_CENTER,
+                txt,
+                qmono(12.0),
+                if neg { t.destructive } else { t.foreground },
+            );
         }
         CellKind::Percent => {
             let n = parse_number(v).unwrap_or(0.0) as f32;
-            let bar = Rect::from_min_size(pos2(r.left() + 10.0, r.center().y - 3.0), vec2((r.width() - 64.0).max(10.0), 6.0));
+            let bar =
+                Rect::from_min_size(pos2(r.left() + 10.0, r.center().y - 3.0), vec2((r.width() - 64.0).max(10.0), 6.0));
             p.rect_filled(bar, CornerRadius::same(3), with_alpha(t.foreground, 0.08));
             let mut fill = bar;
             fill.set_width(bar.width() * (n / 100.0).clamp(0.0, 1.0));
-            let col = if n >= 80.0 { t.success } else if n >= 40.0 { t.chart[1] } else { t.warning };
+            let col = if n >= 80.0 {
+                t.success
+            } else if n >= 40.0 {
+                t.chart[1]
+            } else {
+                t.warning
+            };
             p.rect_filled(fill, CornerRadius::same(3), col);
-            p.text(pos2(r.right() - 10.0, r.center().y), Align2::RIGHT_CENTER, format!("{n:.0}%"), qmono(11.5), t.muted_foreground);
+            p.text(
+                pos2(r.right() - 10.0, r.center().y),
+                Align2::RIGHT_CENTER,
+                format!("{n:.0}%"),
+                qmono(11.5),
+                t.muted_foreground,
+            );
         }
         CellKind::Status => {
             if v.is_empty() {
@@ -782,7 +961,11 @@ mod tests {
 
     fn data() -> GridData {
         GridData {
-            columns: vec![GridColumn::new("a", 50.0, CellKind::Text), GridColumn::new("b", 50.0, CellKind::Number), GridColumn::new("c", 50.0, CellKind::Number)],
+            columns: vec![
+                GridColumn::new("a", 50.0, CellKind::Text),
+                GridColumn::new("b", 50.0, CellKind::Number),
+                GridColumn::new("c", 50.0, CellKind::Number),
+            ],
             rows: (0..5).map(|r| vec![format!("r{r}"), format!("{}", r * 10), format!("{}", r)]).collect(),
         }
     }

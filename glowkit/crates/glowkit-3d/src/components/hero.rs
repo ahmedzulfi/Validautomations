@@ -25,7 +25,14 @@ pub struct FloatingShapes {
 impl FloatingShapes {
     /// A hero with a headline and a subtitle (either may be empty).
     pub fn new(title: impl Into<String>, subtitle: impl Into<String>) -> Self {
-        Self { title: title.into(), subtitle: subtitle.into(), colors: None, title_color: None, height: 380.0, id_salt: None }
+        Self {
+            title: title.into(),
+            subtitle: subtitle.into(),
+            colors: None,
+            title_color: None,
+            height: 380.0,
+            id_salt: None,
+        }
     }
     /// Brand gradient for the shapes (defaults to the theme gradient).
     pub fn colors(mut self, c: [Color32; 3]) -> Self {
@@ -66,10 +73,14 @@ impl Widget for FloatingShapes {
             .show(ui, |scene, ctx| {
                 let time = ctx.time;
                 let target = ctx.pointer_ndc.unwrap_or(egui::vec2((time * 0.3).sin() * 0.4, (time * 0.23).cos() * 0.3));
-                let par = ctx.state("parallax", || egui::Vec2::ZERO, |p| {
-                    *p += (target - *p) * (1.0 - (-3.0 * ctx.dt).exp());
-                    *p
-                });
+                let par = ctx.state(
+                    "parallax",
+                    || egui::Vec2::ZERO,
+                    |p| {
+                        *p += (target - *p) * (1.0 - (-3.0 * ctx.dt).exp());
+                        *p
+                    },
+                );
                 let dist = 9.0;
                 let fov = 38.0f32;
                 scene.set_camera(Camera::looking_at(vec3(par.x * 0.9, par.y * 0.6, dist), Vec3::ZERO).fov_degrees(fov));
@@ -80,7 +91,11 @@ impl Widget for FloatingShapes {
                 let shades = |i: usize| -> [Color32; 3] {
                     let a = g[i % 3];
                     let b = g[(i + 1) % 3];
-                    [color::shade(color::mix(a, b, 0.2), -0.28), color::mix(a, b, 0.35), color::mix(color::mix(a, b, 0.6), Color32::WHITE, 0.45)]
+                    [
+                        color::shade(color::mix(a, b, 0.2), -0.28),
+                        color::mix(a, b, 0.35),
+                        color::mix(color::mix(a, b, 0.6), Color32::WHITE, 0.45),
+                    ]
                 };
                 struct S {
                     mesh: &'static str,
@@ -114,10 +129,18 @@ impl Widget for FloatingShapes {
                     });
                     let bob = (time * 0.9 + s.phase).sin() * 0.16;
                     let p = vec3(sx(s.x), sy(s.y) + bob, s.z);
-                    let q = Quat::from_axis_angle(vec3(0.3, 1.0, 0.2), time * s.speed + s.phase) * Quat::from_axis_angle(Vec3::X, s.phase);
-                    let mut mat = Material::matcap(shades(i)).shininess(22.0).specular(0.8).rim(0.3).rim_color(color::mix(g[(i + 2) % 3], Color32::WHITE, 0.5));
+                    let q = Quat::from_axis_angle(vec3(0.3, 1.0, 0.2), time * s.speed + s.phase)
+                        * Quat::from_axis_angle(Vec3::X, s.phase);
+                    let mut mat = Material::matcap(shades(i))
+                        .shininess(22.0)
+                        .specular(0.8)
+                        .rim(0.3)
+                        .rim_color(color::mix(g[(i + 2) % 3], Color32::WHITE, 0.5));
                     if matches!(s.mesh, "ico" | "octa" | "dodeca") {
-                        mat = Material::flat(color::mix(g[i % 3], g[(i + 1) % 3], 0.4)).specular(0.6).shininess(30.0).rim(0.25);
+                        mat = Material::flat(color::mix(g[i % 3], g[(i + 1) % 3], 0.4))
+                            .specular(0.6)
+                            .shininess(30.0)
+                            .rim(0.25);
                     }
                     if s.mesh == "cone" {
                         mat.shading = Shading::Toon { bands: 3 };
@@ -128,13 +151,31 @@ impl Widget for FloatingShapes {
                 let tc = self.title_color.unwrap_or(t.foreground);
                 let title_h = (half_h * 0.3).min(half_w * 2.4 / self.title.chars().count().max(4) as f32);
                 if !self.title.is_empty() {
-                    scene.text(&self.title, vec3(0.0, title_h * 0.35, 0.0), Vec3::X, Vec3::Y, title_h, tc, Align2::CENTER_CENTER);
+                    scene.text(
+                        &self.title,
+                        vec3(0.0, title_h * 0.35, 0.0),
+                        Vec3::X,
+                        Vec3::Y,
+                        title_h,
+                        tc,
+                        Align2::CENTER_CENTER,
+                    );
                 }
                 if !self.subtitle.is_empty() {
-                    scene.text(&self.subtitle, vec3(0.0, -title_h * 0.62, 0.0), Vec3::X, Vec3::Y, title_h * 0.36, t.muted_foreground, Align2::CENTER_CENTER);
+                    scene.text(
+                        &self.subtitle,
+                        vec3(0.0, -title_h * 0.62, 0.0),
+                        Vec3::X,
+                        Vec3::Y,
+                        title_h * 0.36,
+                        t.muted_foreground,
+                        Align2::CENTER_CENTER,
+                    );
                 }
                 // soft glow behind the headline
-                scene.underlay(|s| s.glow_point(vec3(0.0, 0.0, -3.0), half_h * 1.2, glow_c(&t, g[1], if t.dark { 0.12 } else { 0.1 })));
+                scene.underlay(|s| {
+                    s.glow_point(vec3(0.0, 0.0, -3.0), half_h * 1.2, glow_c(&t, g[1], if t.dark { 0.12 } else { 0.1 }))
+                });
             })
             .response
     }
@@ -201,7 +242,11 @@ impl Widget for GlowKnot {
         let t = Theme::of(ui);
         let dark = t.dark;
         let stops = self.colors.clone().unwrap_or_else(|| t.gradient.to_vec());
-        let bg = if dark { Background::Radial(color::mix(t.card, stops[0], 0.1), color::mix(t.card, Color32::BLACK, 0.3)) } else { Background::None };
+        let bg = if dark {
+            Background::Radial(color::mix(t.card, stops[0], 0.1), color::mix(t.card, Color32::BLACK, 0.3))
+        } else {
+            Background::None
+        };
         Viewport3D::new(salt_or(&self.id_salt, "glow-knot"))
             .height(self.height)
             .background(bg)
@@ -211,7 +256,8 @@ impl Widget for GlowKnot {
                 let time = ctx.time;
                 let (p, q) = (self.p, self.q);
                 let n = 260;
-                let rot = Quat::from_axis_angle(Vec3::X, 0.45 + (time * 0.3).sin() * 0.2) * Quat::from_axis_angle(Vec3::Y, time * 0.25);
+                let rot = Quat::from_axis_angle(Vec3::X, 0.45 + (time * 0.3).sin() * 0.2)
+                    * Quat::from_axis_angle(Vec3::Y, time * 0.25);
                 let path: Vec<Vec3> = (0..n)
                     .map(|i| {
                         let u = i as f32 / n as f32 * TAU;
@@ -232,8 +278,20 @@ impl Widget for GlowKnot {
                     let u = i as f32 / n as f32;
                     let c = col(u);
                     if dark {
-                        scene.line_world(a, b, 0.22, crate::additive(c.gamma_multiply(0.07)), crate::additive(c.gamma_multiply(0.07)));
-                        scene.line_world(a, b, 0.08, crate::additive(c.gamma_multiply(0.3)), crate::additive(c.gamma_multiply(0.3)));
+                        scene.line_world(
+                            a,
+                            b,
+                            0.22,
+                            crate::additive(c.gamma_multiply(0.07)),
+                            crate::additive(c.gamma_multiply(0.07)),
+                        );
+                        scene.line_world(
+                            a,
+                            b,
+                            0.08,
+                            crate::additive(c.gamma_multiply(0.3)),
+                            crate::additive(c.gamma_multiply(0.3)),
+                        );
                         let core = color::mix(c, Color32::WHITE, 0.55);
                         scene.line_world(a, b, 0.025, crate::additive(core), crate::additive(core));
                     } else {
@@ -251,10 +309,16 @@ impl Widget for GlowKnot {
                     for tail in 0..14 {
                         let j = (i + n - tail) % n;
                         let f = 1.0 - tail as f32 / 14.0;
-                        scene.glow_point(path[j], 0.12 * f + 0.04, glow_c(&t, color::mix(c, Color32::WHITE, 0.5), 0.5 * f));
+                        scene.glow_point(
+                            path[j],
+                            0.12 * f + 0.04,
+                            glow_c(&t, color::mix(c, Color32::WHITE, 0.5), 0.5 * f),
+                        );
                     }
                 }
-                scene.underlay(|s| s.glow_point(Vec3::ZERO, 2.6, glow_c(&t, stops[1 % stops.len()], if dark { 0.12 } else { 0.06 })));
+                scene.underlay(|s| {
+                    s.glow_point(Vec3::ZERO, 2.6, glow_c(&t, stops[1 % stops.len()], if dark { 0.12 } else { 0.06 }))
+                });
             })
             .response
     }

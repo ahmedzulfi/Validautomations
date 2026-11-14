@@ -67,7 +67,16 @@ pub struct CardHoverEffect {
 impl CardHoverEffect {
     /// A grid of `count` cards.
     pub fn new(count: usize) -> Self {
-        Self { count, columns: 3, gap: 16.0, padding: 20.0, min_height: 120.0, radius: None, highlight: None, ambient: false }
+        Self {
+            count,
+            columns: 3,
+            gap: 16.0,
+            padding: 20.0,
+            min_height: 120.0,
+            radius: None,
+            highlight: None,
+            ambient: false,
+        }
     }
     setter!(/// Number of columns.
         columns: usize);
@@ -114,7 +123,11 @@ impl CardHoverEffect {
             let max = glowkit_core::anim::spring2(ui, id.with("max"), tr.max.to_vec2(), k.0, k.1);
             if vis > 0.01 {
                 let hr = Rect::from_min_max(min.to_pos2(), max.to_pos2());
-                let hc = self.highlight.unwrap_or(if t.dark { mix(t.muted, t.foreground, 0.06) } else { mix(t.muted, t.foreground, 0.03) });
+                let hc = self.highlight.unwrap_or(if t.dark {
+                    mix(t.muted, t.foreground, 0.06)
+                } else {
+                    mix(t.muted, t.foreground, 0.03)
+                });
                 ui.painter().rect_filled(hr, cr(radius + self.gap * 0.45), hc.gamma_multiply(vis));
             }
         }
@@ -125,9 +138,16 @@ impl CardHoverEffect {
             let k = glowkit_core::anim::follow(ui, id.with(("on", i)), if on { 1.0 } else { 0.0 }, 10.0);
             let fill = with_alpha(if t.dark { mix(t.background, t.card, 0.5) } else { t.card }, 0.85);
             p.rect_filled(*cell, cr(radius), fill);
-            p.rect_stroke(*cell, cr(radius), egui::Stroke::new(1.0, t.border.lerp_to_gamma(mix(t.border, t.foreground, 0.25), k)), egui::StrokeKind::Inside);
+            p.rect_stroke(
+                *cell,
+                cr(radius),
+                egui::Stroke::new(1.0, t.border.lerp_to_gamma(mix(t.border, t.foreground, 0.25), k)),
+                egui::StrokeKind::Inside,
+            );
             let inner = cell.shrink(self.padding);
-            let mut child = ui.new_child(UiBuilder::new().id_salt(id.with(("cell", i))).max_rect(inner).layout(Layout::top_down(Align::Min)));
+            let mut child = ui.new_child(
+                UiBuilder::new().id_salt(id.with(("cell", i))).max_rect(inner).layout(Layout::top_down(Align::Min)),
+            );
             child.set_clip_rect(cell.intersect(ui.clip_rect()));
             add(&mut child, i);
             tallest = tallest.max(child.min_rect().height() + self.padding * 2.0);
@@ -206,10 +226,19 @@ impl FocusCards {
             let f = glowkit_core::anim::follow(ui, id.with(("focus", i)), if focused { 1.0 } else { 0.0 }, 8.0);
             let body = cell.shrink2(cell.size() * 0.02 * k);
             let p = ui.painter();
-            paint::soft_shadow(p, body, radius, 16.0 + 18.0 * f, vec2(0.0, 6.0 + 8.0 * f), with_alpha(Color32::BLACK, if t.dark { 0.3 + 0.2 * f } else { 0.06 + 0.08 * f }));
+            paint::soft_shadow(
+                p,
+                body,
+                radius,
+                16.0 + 18.0 * f,
+                vec2(0.0, 6.0 + 8.0 * f),
+                with_alpha(Color32::BLACK, if t.dark { 0.3 + 0.2 * f } else { 0.06 + 0.08 * f }),
+            );
             p.rect_filled(body, cr(radius), t.card);
             let inner = body.shrink(self.padding);
-            let mut child = ui.new_child(UiBuilder::new().id_salt(id.with(("cell", i))).max_rect(inner).layout(Layout::top_down(Align::Min)));
+            let mut child = ui.new_child(
+                UiBuilder::new().id_salt(id.with(("cell", i))).max_rect(inner).layout(Layout::top_down(Align::Min)),
+            );
             child.set_clip_rect(body.intersect(ui.clip_rect()));
             add(&mut child, i, focused);
             tallest = tallest.max(child.min_rect().height() + self.padding * 2.0);
@@ -217,9 +246,21 @@ impl FocusCards {
             if k > 0.01 {
                 let veil = with_alpha(t.background, self.dim * k);
                 ui.painter().rect_filled(body, cr(radius), veil);
-                paint::soft_shadow(ui.painter(), body.shrink(6.0), radius, 18.0, egui::Vec2::ZERO, with_alpha(t.background, 0.25 * k));
+                paint::soft_shadow(
+                    ui.painter(),
+                    body.shrink(6.0),
+                    radius,
+                    18.0,
+                    egui::Vec2::ZERO,
+                    with_alpha(t.background, 0.25 * k),
+                );
             }
-            ui.painter().rect_stroke(body, cr(radius), egui::Stroke::new(1.0, t.border.lerp_to_gamma(with_alpha(t.foreground, 0.4), f)), egui::StrokeKind::Inside);
+            ui.painter().rect_stroke(
+                body,
+                cr(radius),
+                egui::Stroke::new(1.0, t.border.lerp_to_gamma(with_alpha(t.foreground, 0.4), f)),
+                egui::StrokeKind::Inside,
+            );
         }
         store_height(ui, id, tallest, self.min_height);
         resp

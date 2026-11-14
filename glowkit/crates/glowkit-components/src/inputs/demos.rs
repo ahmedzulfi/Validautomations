@@ -4,7 +4,12 @@ use glowkit_core::demo::{Category::Inputs as C, Demo};
 use glowkit_core::Theme;
 
 /// Run `f` with persistent demo state stored under `key`.
-pub(crate) fn with<T: Clone + Send + Sync + 'static>(ui: &mut Ui, key: &str, init: impl FnOnce() -> T, f: impl FnOnce(&mut Ui, &mut T)) {
+pub(crate) fn with<T: Clone + Send + Sync + 'static>(
+    ui: &mut Ui,
+    key: &str,
+    init: impl FnOnce() -> T,
+    f: impl FnOnce(&mut Ui, &mut T),
+) {
     let id = ui.scope_id().with(key);
     let mut v = glowkit_core::state(ui, id, init);
     f(ui, &mut v);
@@ -37,10 +42,15 @@ pub(crate) fn center(ui: &mut Ui, w: f32, f: impl FnOnce(&mut Ui)) {
 /// A card-like panel for composing demos.
 pub(crate) fn panel(ui: &mut Ui, w: f32, f: impl FnOnce(&mut Ui)) {
     let t = Theme::of(ui);
-    egui::Frame::new().fill(t.card).stroke(t.border_stroke()).corner_radius(t.corner()).inner_margin(egui::Margin::same(20)).show(ui, |ui| {
-        ui.set_width(w - 40.0);
-        ui.vertical(f);
-    });
+    egui::Frame::new()
+        .fill(t.card)
+        .stroke(t.border_stroke())
+        .corner_radius(t.corner())
+        .inner_margin(egui::Margin::same(20))
+        .show(ui, |ui| {
+            ui.set_width(w - 40.0);
+            ui.vertical(f);
+        });
 }
 
 pub(crate) fn title(ui: &mut Ui, title: &str, desc: &str) {

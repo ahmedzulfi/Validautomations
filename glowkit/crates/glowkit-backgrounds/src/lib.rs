@@ -40,13 +40,13 @@ mod sky;
 pub use aurora::{Aurora, GradientBlobs, MeshGradient};
 pub use glyphs::{LetterGlitch, MatrixRain};
 pub use grain::GrainNoise;
+pub use grids::Direction;
 pub use grids::{BackgroundBoxes, DotGrid, FlickeringGrid, GridPattern, HexGrid, RetroGrid, SquaresGrid};
 pub use light::{Lamp, Lightning, Orb, Ripple, Spotlight, SpotlightOrigin};
 pub use lines::{BackgroundBeams, Beams, Threads, Waves, WavyBackground};
 pub use particles::{Galaxy, Particles, Snowfall, Vortex, WarpSpeed};
 pub use shaders::{Iridescence, LiquidMetal, Plasma, Silk, Swirl};
 pub use sky::{Meteors, ShootingStars, StarField};
-pub use grids::Direction;
 
 #[cfg(feature = "demos")]
 mod demos;

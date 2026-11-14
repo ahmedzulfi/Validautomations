@@ -1,5 +1,8 @@
 use super::util::{bold_text, corner_mask, rounded_ring};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Painter, Pos2, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Painter, Pos2, Rect, Response, Sense, Stroke, StrokeKind, Ui,
+    UiBuilder, Vec2,
+};
 use glowkit_core::{color::with_alpha, hex, mix, paint, Theme};
 
 /// Run `add` in a child `Ui` whose max rect and clip rect are `screen`.
@@ -78,7 +81,14 @@ impl SafariWindow {
         let p = ui.painter().clone();
         let chrome = if t.dark { hex("#1E1E22") } else { hex("#F1F1F3") };
         let border = if t.dark { hex("#34343A") } else { hex("#D9D9DE") };
-        paint::soft_shadow(&p, rect, r, 30.0, vec2(0.0, 14.0), Color32::from_black_alpha(if t.dark { 140 } else { 40 }));
+        paint::soft_shadow(
+            &p,
+            rect,
+            r,
+            30.0,
+            vec2(0.0, 14.0),
+            Color32::from_black_alpha(if t.dark { 140 } else { 40 }),
+        );
         p.rect_filled(rect, r, chrome);
         let bar_h = 44.0;
         let bar = Rect::from_min_size(rect.min, vec2(rect.width(), bar_h));
@@ -93,7 +103,13 @@ impl SafariWindow {
         p.line_segment([pos2(sb.min.x + 5.5, sb.min.y), pos2(sb.min.x + 5.5, sb.max.y)], Stroke::new(1.3, icon));
         // back / forward
         super::util::chevron(&p, pos2(bar.min.x + 133.0, bar.center().y), 9.0, vec2(-1.0, 0.0), st);
-        super::util::chevron(&p, pos2(bar.min.x + 155.0, bar.center().y), 9.0, vec2(1.0, 0.0), Stroke::new(1.6, with_alpha(icon, 0.45)));
+        super::util::chevron(
+            &p,
+            pos2(bar.min.x + 155.0, bar.center().y),
+            9.0,
+            vec2(1.0, 0.0),
+            Stroke::new(1.6, with_alpha(icon, 0.45)),
+        );
         // address bar
         let aw = (rect.width() * 0.46).clamp(160.0, 420.0);
         let addr = Rect::from_center_size(bar.center(), vec2(aw, 28.0));
@@ -115,7 +131,12 @@ impl SafariWindow {
         p.line_segment([pc - vec2(6.0, 0.0), pc + vec2(6.0, 0.0)], st);
         p.line_segment([pc - vec2(0.0, 6.0), pc + vec2(0.0, 6.0)], st);
         let sc = pos2(rx - 64.0, bar.center().y);
-        p.rect_stroke(Rect::from_center_size(sc + vec2(0.0, 2.5), vec2(11.0, 9.0)), 2.0, Stroke::new(1.3, icon), StrokeKind::Middle);
+        p.rect_stroke(
+            Rect::from_center_size(sc + vec2(0.0, 2.5), vec2(11.0, 9.0)),
+            2.0,
+            Stroke::new(1.3, icon),
+            StrokeKind::Middle,
+        );
         p.line_segment([sc + vec2(0.0, 2.0), sc - vec2(0.0, 7.0)], Stroke::new(1.3, icon));
         super::util::chevron(&p, sc - vec2(0.0, 5.5), 6.0, vec2(0.0, -1.0), Stroke::new(1.3, icon));
 
@@ -123,7 +144,13 @@ impl SafariWindow {
         p.line_segment([page.left_top(), page.right_top()], Stroke::new(1.0, border));
         let page_inner = Rect::from_min_max(page.min + vec2(0.0, 1.0), page.max);
         let rr = r as u8;
-        screen_ui(ui, page_inner, CornerRadius { nw: 0, ne: 0, sw: rr, se: rr }, self.page_bg.unwrap_or(t.background), add);
+        screen_ui(
+            ui,
+            page_inner,
+            CornerRadius { nw: 0, ne: 0, sw: rr, se: rr },
+            self.page_bg.unwrap_or(t.background),
+            add,
+        );
         p.rect_stroke(rect, r, Stroke::new(1.0, border), StrokeKind::Inside);
         resp
     }
@@ -167,7 +194,14 @@ impl Default for PhoneFrame {
 impl PhoneFrame {
     /// A phone with the default (island) style.
     pub fn new() -> Self {
-        Self { width: 220.0, style: PhoneStyle::Island, frame: None, screen_bg: None, status_color: None, status_bar: true }
+        Self {
+            width: 220.0,
+            style: PhoneStyle::Island,
+            frame: None,
+            screen_bg: None,
+            status_color: None,
+            status_bar: true,
+        }
     }
     /// Outer width in points (height follows the phone's aspect ratio).
     pub fn width(mut self, w: f32) -> Self {
@@ -215,13 +249,28 @@ impl PhoneFrame {
         let frame = self.frame.unwrap_or(if t.dark { hex("#3A3A40") } else { hex("#B8B8C0") });
         let bezel_w = w * 0.035;
         let frame_w = (w * 0.016).max(2.0);
-        paint::soft_shadow(&p, body, r_out, 40.0, vec2(0.0, 18.0), Color32::from_black_alpha(if t.dark { 150 } else { 60 }));
+        paint::soft_shadow(
+            &p,
+            body,
+            r_out,
+            40.0,
+            vec2(0.0, 18.0),
+            Color32::from_black_alpha(if t.dark { 150 } else { 60 }),
+        );
         // side buttons
         let btn = mix(frame, Color32::BLACK, 0.15);
         for (y, len) in [(0.18, 0.05), (0.26, 0.09), (0.37, 0.09)] {
-            p.rect_filled(Rect::from_min_size(pos2(body.min.x - 2.5, body.min.y + h * y), vec2(4.0, h * len)), 1.5, btn);
+            p.rect_filled(
+                Rect::from_min_size(pos2(body.min.x - 2.5, body.min.y + h * y), vec2(4.0, h * len)),
+                1.5,
+                btn,
+            );
         }
-        p.rect_filled(Rect::from_min_size(pos2(body.max.x - 1.5, body.min.y + h * 0.28), vec2(4.0, h * 0.13)), 1.5, btn);
+        p.rect_filled(
+            Rect::from_min_size(pos2(body.max.x - 1.5, body.min.y + h * 0.28), vec2(4.0, h * 0.13)),
+            1.5,
+            btn,
+        );
         // metal frame with a vertical sheen
         let outline = paint::rounded_rect_points(body, r_out, 16);
         let hi = mix(frame, Color32::WHITE, 0.35);
@@ -252,20 +301,41 @@ impl PhoneFrame {
         }
         if self.status_bar {
             let fs = (w * 0.058).max(9.0);
-            bold_text(&p, pos2(screen.min.x + w * 0.16, top_y), Align2::CENTER_CENTER, "9:41", FontId::proportional(fs), sc);
+            bold_text(
+                &p,
+                pos2(screen.min.x + w * 0.16, top_y),
+                Align2::CENTER_CENTER,
+                "9:41",
+                FontId::proportional(fs),
+                sc,
+            );
             // signal bars
             let bx = screen.max.x - w * 0.27;
             for i in 0..4 {
                 let bh = fs * (0.3 + 0.18 * i as f32);
-                p.rect_filled(Rect::from_min_max(pos2(bx + i as f32 * fs * 0.3, top_y + fs * 0.35 - bh), pos2(bx + i as f32 * fs * 0.3 + fs * 0.2, top_y + fs * 0.35)), 0.8, sc);
+                p.rect_filled(
+                    Rect::from_min_max(
+                        pos2(bx + i as f32 * fs * 0.3, top_y + fs * 0.35 - bh),
+                        pos2(bx + i as f32 * fs * 0.3 + fs * 0.2, top_y + fs * 0.35),
+                    ),
+                    0.8,
+                    sc,
+                );
             }
             // battery
             let bat = Rect::from_min_size(pos2(screen.max.x - w * 0.14, top_y - fs * 0.32), vec2(fs * 1.5, fs * 0.66));
             p.rect_stroke(bat, 2.5, Stroke::new(1.0, with_alpha(sc, 0.5)), StrokeKind::Inside);
             p.rect_filled(bat.shrink(1.8), 1.5, sc);
-            p.rect_filled(Rect::from_min_size(pos2(bat.max.x + 1.0, bat.center().y - 2.0), vec2(1.5, 4.0)), 1.0, with_alpha(sc, 0.5));
+            p.rect_filled(
+                Rect::from_min_size(pos2(bat.max.x + 1.0, bat.center().y - 2.0), vec2(1.5, 4.0)),
+                1.0,
+                with_alpha(sc, 0.5),
+            );
             // home indicator
-            let hb = Rect::from_center_size(pos2(screen.center().x, screen.max.y - w * 0.035), vec2(w * 0.36, (w * 0.016).max(3.0)));
+            let hb = Rect::from_center_size(
+                pos2(screen.center().x, screen.max.y - w * 0.035),
+                vec2(w * 0.36, (w * 0.016).max(3.0)),
+            );
             p.rect_filled(hb, CornerRadius::same(99), with_alpha(sc, 0.85));
         }
         // glass edge
@@ -358,11 +428,20 @@ impl LaptopFrame {
             let k = ((q.y - base.min.y) / base.height()).clamp(0.0, 1.0);
             hi.lerp_to_gamma(lo, k)
         });
-        p.line_segment([base.left_top() + vec2(4.0, 0.5), base.right_top() + vec2(-4.0, 0.5)], Stroke::new(1.0, with_alpha(Color32::WHITE, 0.5)));
-        let notch = Rect::from_center_size(pos2(base.center().x, base.min.y + base_h * 0.22), vec2(w * 0.17, base_h * 0.44));
+        p.line_segment(
+            [base.left_top() + vec2(4.0, 0.5), base.right_top() + vec2(-4.0, 0.5)],
+            Stroke::new(1.0, with_alpha(Color32::WHITE, 0.5)),
+        );
+        let notch =
+            Rect::from_center_size(pos2(base.center().x, base.min.y + base_h * 0.22), vec2(w * 0.17, base_h * 0.44));
         p.rect_filled(notch, CornerRadius { nw: 0, ne: 0, sw: 6, se: 6 }, lo);
         // floor shadow
-        paint::glow_ellipse(&p, pos2(base.center().x, base.max.y + 3.0), vec2(rect.width() * 0.5, 6.0), Color32::from_black_alpha(if t.dark { 120 } else { 40 }));
+        paint::glow_ellipse(
+            &p,
+            pos2(base.center().x, base.max.y + 3.0),
+            vec2(rect.width() * 0.5, 6.0),
+            Color32::from_black_alpha(if t.dark { 120 } else { 40 }),
+        );
         resp
     }
 }

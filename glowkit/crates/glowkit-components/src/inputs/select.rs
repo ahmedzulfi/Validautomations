@@ -1,6 +1,9 @@
 use super::field::FieldLabel;
 use super::kit::{self, control_radius, ControlSize, UiIcon};
-use egui::{pos2, vec2, Align, Color32, CornerRadius, CursorIcon, FontId, Id, Layout, Rect, Response, RichText, Sense, Shape, Stroke, TextEdit, Ui, Widget};
+use egui::{
+    pos2, vec2, Align, Color32, CornerRadius, CursorIcon, FontId, Id, Layout, Rect, Response, RichText, Sense, Shape,
+    Stroke, TextEdit, Ui, Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 use std::f32::consts::PI;
@@ -152,7 +155,10 @@ pub struct Combobox;
 impl Combobox {
     /// A [`Select`] with search enabled.
     #[allow(clippy::new_ret_no_self)]
-    pub fn new<O: Into<SelectOption>>(selected: &mut Option<usize>, options: impl IntoIterator<Item = O>) -> Select<'_> {
+    pub fn new<O: Into<SelectOption>>(
+        selected: &mut Option<usize>,
+        options: impl IntoIterator<Item = O>,
+    ) -> Select<'_> {
         Select::new(selected, options).searchable(true).placeholder("Search…")
     }
 }
@@ -199,7 +205,11 @@ impl Widget for Select<'_> {
             let inner = rect.shrink2(vec2(12.0, 0.0));
             let mut x = inner.min.x;
             if let Some(i) = self.icon {
-                i.paint(ui.painter(), Rect::from_center_size(pos2(x + 8.0, rect.center().y), vec2(16.0, 16.0)), t.muted_foreground);
+                i.paint(
+                    ui.painter(),
+                    Rect::from_center_size(pos2(x + 8.0, rect.center().y), vec2(16.0, 16.0)),
+                    t.muted_foreground,
+                );
                 x += 24.0;
             }
             let content = Rect::from_min_max(pos2(x, rect.min.y), pos2(inner.max.x - 22.0, rect.max.y));
@@ -213,7 +223,13 @@ impl Widget for Select<'_> {
                         paint_option_content(&sub, content, opt, t.foreground, fs);
                     }
                     None => {
-                        clip.text(content.left_center(), egui::Align2::LEFT_CENTER, &self.placeholder, FontId::proportional(fs), t.muted_foreground);
+                        clip.text(
+                            content.left_center(),
+                            egui::Align2::LEFT_CENTER,
+                            &self.placeholder,
+                            FontId::proportional(fs),
+                            t.muted_foreground,
+                        );
                     }
                 }
             }
@@ -222,7 +238,10 @@ impl Widget for Select<'_> {
             let c = pos2(inner.max.x - 7.0, rect.center().y);
             let ang = PI * k;
             let rot = |p: egui::Vec2| c + vec2(p.x * ang.cos() - p.y * ang.sin(), p.x * ang.sin() + p.y * ang.cos());
-            ui.painter().add(Shape::line(vec![rot(vec2(-4.0, -2.0)), rot(vec2(0.0, 2.0)), rot(vec2(4.0, -2.0))], Stroke::new(1.4, t.muted_foreground)));
+            ui.painter().add(Shape::line(
+                vec![rot(vec2(-4.0, -2.0)), rot(vec2(0.0, 2.0)), rot(vec2(4.0, -2.0))],
+                Stroke::new(1.4, t.muted_foreground),
+            ));
 
             let sid = popup_id.with("state");
             let mut st: SelState = glowkit_core::state(ui, sid, SelState::default);
@@ -241,7 +260,12 @@ impl Widget for Select<'_> {
                         .stroke(t.border_stroke())
                         .corner_radius(control_radius(&t))
                         .inner_margin(egui::Margin::same(4))
-                        .shadow(egui::epaint::Shadow { offset: [0, 6], blur: 18, spread: 0, color: Color32::from_black_alpha(if t.dark { 90 } else { 28 }) }),
+                        .shadow(egui::epaint::Shadow {
+                            offset: [0, 6],
+                            blur: 18,
+                            spread: 0,
+                            color: Color32::from_black_alpha(if t.dark { 90 } else { 28 }),
+                        }),
                 );
             let shown = popup.show(|ui| {
                 ui.set_min_width(width - 8.0);
@@ -251,25 +275,34 @@ impl Widget for Select<'_> {
                     st.highlight = self.selected.unwrap_or(0);
                 }
                 let q = st.query.to_lowercase();
-                let visible: Vec<usize> = (0..self.options.len()).filter(|&i| q.is_empty() || self.options[i].label.to_lowercase().contains(&q)).collect();
+                let visible: Vec<usize> = (0..self.options.len())
+                    .filter(|&i| q.is_empty() || self.options[i].label.to_lowercase().contains(&q))
+                    .collect();
                 if self.searchable {
                     let (sr, _) = ui.allocate_exact_size(vec2(width - 8.0, 34.0), Sense::hover());
-                    UiIcon::Search.paint(ui.painter(), Rect::from_center_size(pos2(sr.min.x + 16.0, sr.center().y), vec2(15.0, 15.0)), t.muted_foreground);
+                    UiIcon::Search.paint(
+                        ui.painter(),
+                        Rect::from_center_size(pos2(sr.min.x + 16.0, sr.center().y), vec2(15.0, 15.0)),
+                        t.muted_foreground,
+                    );
                     let te_rect = Rect::from_min_max(pos2(sr.min.x + 32.0, sr.min.y), pos2(sr.max.x - 8.0, sr.max.y));
                     let te_id = popup_id.with("q");
                     let r = ui
-                        .scope_builder(egui::UiBuilder::new().max_rect(te_rect).layout(Layout::left_to_right(Align::Center)), |ui| {
-                            ui.add(
-                                TextEdit::singleline(&mut st.query)
-                                    .id(te_id)
-                                    .frame(egui::Frame::NONE)
-                                    .margin(egui::Margin::ZERO)
-                                    .font(FontId::proportional(14.0))
-                                    .hint_text(RichText::new("Search…").color(t.muted_foreground))
-                                    .desired_width(te_rect.width())
-                                    .align(egui::Align2::LEFT_CENTER),
-                            )
-                        })
+                        .scope_builder(
+                            egui::UiBuilder::new().max_rect(te_rect).layout(Layout::left_to_right(Align::Center)),
+                            |ui| {
+                                ui.add(
+                                    TextEdit::singleline(&mut st.query)
+                                        .id(te_id)
+                                        .frame(egui::Frame::NONE)
+                                        .margin(egui::Margin::ZERO)
+                                        .font(FontId::proportional(14.0))
+                                        .hint_text(RichText::new("Search…").color(t.muted_foreground))
+                                        .desired_width(te_rect.width())
+                                        .align(egui::Align2::LEFT_CENTER),
+                                )
+                            },
+                        )
                         .inner;
                     if !st.was_open {
                         r.request_focus();
@@ -277,11 +310,20 @@ impl Widget for Select<'_> {
                     if r.changed() {
                         st.highlight = 0;
                     }
-                    ui.painter().line_segment([pos2(sr.min.x - 4.0, sr.max.y), pos2(sr.max.x + 4.0, sr.max.y)], t.border_stroke());
+                    ui.painter().line_segment(
+                        [pos2(sr.min.x - 4.0, sr.max.y), pos2(sr.max.x + 4.0, sr.max.y)],
+                        t.border_stroke(),
+                    );
                     ui.add_space(4.0);
                 }
                 // keyboard navigation
-                let (down, up, enter) = ui.input(|i| (i.key_pressed(egui::Key::ArrowDown), i.key_pressed(egui::Key::ArrowUp), i.key_pressed(egui::Key::Enter)));
+                let (down, up, enter) = ui.input(|i| {
+                    (
+                        i.key_pressed(egui::Key::ArrowDown),
+                        i.key_pressed(egui::Key::ArrowUp),
+                        i.key_pressed(egui::Key::Enter),
+                    )
+                });
                 if !visible.is_empty() {
                     let pos = visible.iter().position(|&i| i == st.highlight).unwrap_or(0);
                     if down {
@@ -299,7 +341,13 @@ impl Widget for Select<'_> {
                 }
                 if visible.is_empty() {
                     let (r, _) = ui.allocate_exact_size(vec2(width - 8.0, 56.0), Sense::hover());
-                    ui.painter().text(r.center(), egui::Align2::CENTER_CENTER, "No results found.", FontId::proportional(13.5), t.muted_foreground);
+                    ui.painter().text(
+                        r.center(),
+                        egui::Align2::CENTER_CENTER,
+                        "No results found.",
+                        FontId::proportional(13.5),
+                        t.muted_foreground,
+                    );
                 }
                 egui::ScrollArea::vertical().max_height(self.max_height).auto_shrink([false, true]).show(ui, |ui| {
                     for &i in &visible {
@@ -312,17 +360,31 @@ impl Widget for Select<'_> {
                         let hl = kit::anim(ui, popup_id.with(("hl", i)), st.highlight == i, 0.08);
                         if hl > 0.0 {
                             let c = if t.dark { t.secondary } else { t.muted };
-                            ui.painter().rect_filled(r, CornerRadius::same(control_radius(&t).nw.saturating_sub(3)), with_alpha(c, hl));
+                            ui.painter().rect_filled(
+                                r,
+                                CornerRadius::same(control_radius(&t).nw.saturating_sub(3)),
+                                with_alpha(c, hl),
+                            );
                         }
                         let content = r.shrink2(vec2(8.0, 0.0));
                         paint_option_content(ui, content, opt, t.foreground, 14.0);
                         let mut right = content.max.x;
                         if *self.selected == Some(i) {
-                            UiIcon::Check.paint(ui.painter(), Rect::from_center_size(pos2(right - 8.0, r.center().y), vec2(15.0, 15.0)), t.foreground);
+                            UiIcon::Check.paint(
+                                ui.painter(),
+                                Rect::from_center_size(pos2(right - 8.0, r.center().y), vec2(15.0, 15.0)),
+                                t.foreground,
+                            );
                             right -= 24.0;
                         }
                         if let Some(d) = &opt.detail {
-                            ui.painter().text(pos2(right, r.center().y), egui::Align2::RIGHT_CENTER, d, FontId::proportional(12.5), t.muted_foreground);
+                            ui.painter().text(
+                                pos2(right, r.center().y),
+                                egui::Align2::RIGHT_CENTER,
+                                d,
+                                FontId::proportional(12.5),
+                                t.muted_foreground,
+                            );
                         }
                         if row.clicked() {
                             *self.selected = Some(i);

@@ -189,7 +189,8 @@ impl Parser<'_> {
             }
             Some(c) if c == b'-' || c.is_ascii_digit() => {
                 let start = self.i;
-                while self.i < self.s.len() && matches!(self.s[self.i], b'-' | b'+' | b'.' | b'e' | b'E' | b'0'..=b'9') {
+                while self.i < self.s.len() && matches!(self.s[self.i], b'-' | b'+' | b'.' | b'e' | b'E' | b'0'..=b'9')
+                {
                     self.i += 1;
                 }
                 let txt = std::str::from_utf8(&self.s[start..self.i]).map_err(|e| e.to_string())?;
@@ -216,7 +217,8 @@ impl Parser<'_> {
                         b'r' => out.push(b'\r'),
                         b't' => out.push(b'\t'),
                         b'u' => {
-                            let h = std::str::from_utf8(self.s.get(self.i..self.i + 4).ok_or("bad \\u")?).map_err(|e| e.to_string())?;
+                            let h = std::str::from_utf8(self.s.get(self.i..self.i + 4).ok_or("bad \\u")?)
+                                .map_err(|e| e.to_string())?;
                             let cp = u32::from_str_radix(h, 16).map_err(|e| e.to_string())?;
                             self.i += 4;
                             let ch = char::from_u32(cp).unwrap_or('\u{fffd}');

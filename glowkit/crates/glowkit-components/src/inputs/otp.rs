@@ -1,5 +1,8 @@
 use super::kit::{self, control_radius};
-use egui::{pos2, vec2, Align, Color32, CursorIcon, FontId, Layout, Rect, Response, Sense, Stroke, StrokeKind, TextEdit, Ui, UiBuilder, Widget};
+use egui::{
+    pos2, vec2, Align, Color32, CursorIcon, FontId, Layout, Rect, Response, Sense, Stroke, StrokeKind, TextEdit, Ui,
+    UiBuilder, Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
@@ -29,7 +32,16 @@ pub struct OtpInput<'a> {
 impl<'a> OtpInput<'a> {
     /// An OTP field editing `code`.
     pub fn new(code: &'a mut String) -> Self {
-        Self { code, length: 6, separator: None, digits_only: true, masked: false, error: false, box_size: vec2(40.0, 44.0), joined: false }
+        Self {
+            code,
+            length: 6,
+            separator: None,
+            digits_only: true,
+            masked: false,
+            error: false,
+            box_size: vec2(40.0, 44.0),
+            joined: false,
+        }
     }
     /// Number of characters (default 6).
     pub fn length(mut self, n: usize) -> Self {
@@ -81,7 +93,11 @@ impl Widget for OtpInput<'_> {
         // a clipped-away TextEdit captures typing, paste and backspace
         let before = self.code.clone();
         let te_resp = {
-            let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_size(rect.min, vec2(1.0, 1.0))).layout(Layout::left_to_right(Align::Min)));
+            let mut child = ui.new_child(
+                UiBuilder::new()
+                    .max_rect(Rect::from_min_size(rect.min, vec2(1.0, 1.0)))
+                    .layout(Layout::left_to_right(Align::Min)),
+            );
             child.set_clip_rect(Rect::NOTHING);
             child.add(TextEdit::singleline(&mut *self.code).id(te_id).desired_width(1.0).char_limit(n * 2))
         };
@@ -127,19 +143,36 @@ impl Widget for OtpInput<'_> {
             let act = kit::anim(ui, resp.id.with(("act", i)), is_active, 0.14);
             let corner = if self.joined {
                 let rr = r.nw;
-                egui::CornerRadius { nw: if i == 0 { rr } else { 0 }, sw: if i == 0 { rr } else { 0 }, ne: if i + 1 == n { rr } else { 0 }, se: if i + 1 == n { rr } else { 0 } }
+                egui::CornerRadius {
+                    nw: if i == 0 { rr } else { 0 },
+                    sw: if i == 0 { rr } else { 0 },
+                    ne: if i + 1 == n { rr } else { 0 },
+                    se: if i + 1 == n { rr } else { 0 },
+                }
             } else {
                 r
             };
             let accent = if self.error { t.destructive } else { t.ring };
             let base = if self.error { with_alpha(t.destructive, 0.7) } else { t.input };
             if !t.dark && !self.joined {
-                glowkit_core::paint::soft_shadow(painter, br, r.nw as f32, 2.0, vec2(0.0, 1.0), Color32::from_black_alpha(10));
+                glowkit_core::paint::soft_shadow(
+                    painter,
+                    br,
+                    r.nw as f32,
+                    2.0,
+                    vec2(0.0, 1.0),
+                    Color32::from_black_alpha(10),
+                );
             }
             painter.rect(br, corner, kit::field_fill(&t), Stroke::new(1.0, base), StrokeKind::Inside);
             if act > 0.0 {
                 painter.rect_stroke(br, corner, Stroke::new(1.0, with_alpha(accent, act)), StrokeKind::Inside);
-                painter.rect_stroke(br, corner, Stroke::new(1.0 + 2.0 * act, with_alpha(accent, 0.3 * act)), StrokeKind::Outside);
+                painter.rect_stroke(
+                    br,
+                    corner,
+                    Stroke::new(1.0 + 2.0 * act, with_alpha(accent, 0.3 * act)),
+                    StrokeKind::Outside,
+                );
             }
             if filled {
                 let s = 1.0 + 0.18 * (pop * std::f32::consts::PI).sin();
@@ -147,7 +180,13 @@ impl Widget for OtpInput<'_> {
                 if self.masked {
                     painter.circle_filled(br.center(), 4.5 * s, t.foreground);
                 } else {
-                    painter.text(br.center(), egui::Align2::CENTER_CENTER, ch, FontId::proportional(18.0 * s), t.foreground);
+                    painter.text(
+                        br.center(),
+                        egui::Align2::CENTER_CENTER,
+                        ch,
+                        FontId::proportional(18.0 * s),
+                        t.foreground,
+                    );
                 }
             } else if is_active && (time * 2.0).fract() < 0.55 {
                 let c = br.center();

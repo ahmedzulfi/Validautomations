@@ -44,7 +44,15 @@ pub struct GooeyNav<'a> {
 impl<'a> GooeyNav<'a> {
     /// A gooey nav over `labels` editing the `selected` index.
     pub fn new<S: AsRef<str>>(selected: &'a mut usize, labels: &[S]) -> Self {
-        Self { selected, labels: labels.iter().map(|s| s.as_ref().to_owned()).collect(), particles: 12, colors: None, pill: None, duration: 0.9, autoplay: None }
+        Self {
+            selected,
+            labels: labels.iter().map(|s| s.as_ref().to_owned()).collect(),
+            particles: 12,
+            colors: None,
+            pill: None,
+            duration: 0.9,
+            autoplay: None,
+        }
     }
     /// Particles per burst.
     pub fn particles(mut self, n: usize) -> Self {
@@ -80,7 +88,11 @@ impl Widget for GooeyNav<'_> {
         let font = FontId::proportional(15.0);
         let h = 42.0;
         let pad_x = 20.0;
-        let widths: Vec<f32> = self.labels.iter().map(|l| ui.painter().layout_no_wrap(l.clone(), font.clone(), Color32::WHITE).size().x + pad_x * 2.0).collect();
+        let widths: Vec<f32> = self
+            .labels
+            .iter()
+            .map(|l| ui.painter().layout_no_wrap(l.clone(), font.clone(), Color32::WHITE).size().x + pad_x * 2.0)
+            .collect();
         let total: f32 = widths.iter().sum();
         let margin = 70.0;
         let (rect, mut response) = ui.allocate_exact_size(vec2(total + margin * 2.0, h + margin * 2.0), Sense::click());
@@ -157,7 +169,11 @@ impl Widget for GooeyNav<'_> {
         let painter = ui.painter_at(rect);
         let pill_col = self.pill.unwrap_or(t.foreground);
         // pill "pops" when it lands
-        let pop = if active { 1.0 + 0.08 * (age / self.duration * PI).sin().max(0.0) * (1.0 - age / self.duration).max(0.0) } else { 1.0 };
+        let pop = if active {
+            1.0 + 0.08 * (age / self.duration * PI).sin().max(0.0) * (1.0 - age / self.duration).max(0.0)
+        } else {
+            1.0
+        };
         let pill_draw = Rect::from_center_size(pill.center(), pill.size() * pop);
         if active {
             ui.ctx().request_repaint();
@@ -206,7 +222,13 @@ impl Widget for GooeyNav<'_> {
         for (i, it) in items.iter().enumerate() {
             let overlap = (pill.max.x.min(it.max.x) - pill.min.x.max(it.min.x)).max(0.0) / it.width();
             let base = if hovered == Some(i) { t.foreground } else { t.muted_foreground };
-            painter.text(it.center(), Align2::CENTER_CENTER, &self.labels[i], font.clone(), mix(base, on_col, overlap.clamp(0.0, 1.0)));
+            painter.text(
+                it.center(),
+                Align2::CENTER_CENTER,
+                &self.labels[i],
+                font.clone(),
+                mix(base, on_col, overlap.clamp(0.0, 1.0)),
+            );
         }
         response
     }

@@ -137,7 +137,10 @@ impl<'a> SpotlightTour<'a> {
         let step = &self.steps[cur];
         let target = step.target.expand(self.padding);
         let sp = |k: &str, v: f32| glowkit_core::anim::spring(ui, id.with(k), v, 210.0, 24.0);
-        let hole = Rect::from_min_max(pos2(sp("x0", target.min.x), sp("y0", target.min.y)), pos2(sp("x1", target.max.x), sp("y1", target.max.y)));
+        let hole = Rect::from_min_max(
+            pos2(sp("x0", target.min.x), sp("y0", target.min.y)),
+            pos2(sp("x1", target.max.x), sp("y1", target.max.y)),
+        );
         let area = kit::screen(&ctx, self.within);
         let clip = if self.within.is_some() { area.intersect(ui.clip_rect()) } else { area };
         let mut finished = false;
@@ -166,7 +169,12 @@ impl<'a> SpotlightTour<'a> {
             let pulse = 0.5 + 0.5 * (time * 2.4).sin();
             let ring = with_alpha(t.accent, 0.55 + 0.35 * pulse);
             ui.painter().rect_stroke(hole, 10.0, Stroke::new(1.5, ring), egui::StrokeKind::Outside);
-            ui.painter().rect_stroke(hole.expand(3.0 + 3.0 * pulse), 13.0, Stroke::new(1.0, with_alpha(t.accent, 0.25 * (1.0 - pulse))), egui::StrokeKind::Outside);
+            ui.painter().rect_stroke(
+                hole.expand(3.0 + 3.0 * pulse),
+                13.0,
+                Stroke::new(1.0, with_alpha(t.accent, 0.25 * (1.0 - pulse))),
+                egui::StrokeKind::Outside,
+            );
         });
         ctx.move_to_top(egui::LayerId::new(Order::Foreground, lid));
         glowkit_core::animate(ui);
@@ -181,47 +189,61 @@ impl<'a> SpotlightTour<'a> {
         let ry = glowkit_core::anim::spring(ui, id.with("cy"), rect.min.y, 210.0, 24.0);
         let rect = Rect::from_min_size(pos2(rx, ry), rect.size());
         let cid = id.with("card");
-        let res = kit::float_layer(&ctx, cid, Order::Foreground, rect.expand(12.0), clip, 0.96 + 0.04 * p, rect.center() - used.dir() * rect.size() * 0.5, p, |ui| {
-            ui.interact(rect, cid.with("block"), Sense::click());
-            kit::panel(ui.painter(), rect, &t, t.radius);
-            let x = rect.min.x + 18.0;
-            let mut y = rect.min.y + 18.0;
-            ui.painter().galley(pos2(x, y), tg.clone(), t.foreground);
-            let closer = Rect::from_min_size(pos2(rect.max.x - 38.0, rect.min.y + 12.0), vec2(24.0, 24.0));
-            let close = kit::icon_button(ui, closer, cid.with("x"), LineIcon::X, t.muted_foreground).clicked();
-            y += tg.size().y + 6.0;
-            ui.painter().galley(pos2(x, y), bg.clone(), t.muted_foreground);
-            // dots
-            let by = rect.max.y - 16.0;
-            for i in 0..n {
-                let active = i == cur;
-                let w = if active { 16.0 } else { 6.0 };
-                let dx: f32 = (0..i).map(|j| if j == cur { 16.0 } else { 6.0 } + 5.0).sum();
-                let r = Rect::from_min_size(pos2(x + dx, by - 16.0 - 3.0), vec2(w, 6.0));
-                ui.painter().rect_filled(r, 3.0, if active { t.accent } else { with_alpha(t.muted_foreground, 0.35) });
-            }
-            let mut nx = None;
-            let mut fin = false;
-            let last = cur + 1 == n;
-            let next_label = if last { "Finish" } else { "Next" };
-            let w = kit::button_width(ui, next_label, 13.5);
-            let nr = Rect::from_min_max(pos2(rect.max.x - 18.0 - w, by - 32.0), pos2(rect.max.x - 18.0, by));
-            if kit::button_at(ui, nr, cid.with("next"), next_label, Btn::Primary).clicked() {
-                if last {
-                    fin = true;
-                } else {
-                    nx = Some(cur + 1);
+        let res = kit::float_layer(
+            &ctx,
+            cid,
+            Order::Foreground,
+            rect.expand(12.0),
+            clip,
+            0.96 + 0.04 * p,
+            rect.center() - used.dir() * rect.size() * 0.5,
+            p,
+            |ui| {
+                ui.interact(rect, cid.with("block"), Sense::click());
+                kit::panel(ui.painter(), rect, &t, t.radius);
+                let x = rect.min.x + 18.0;
+                let mut y = rect.min.y + 18.0;
+                ui.painter().galley(pos2(x, y), tg.clone(), t.foreground);
+                let closer = Rect::from_min_size(pos2(rect.max.x - 38.0, rect.min.y + 12.0), vec2(24.0, 24.0));
+                let close = kit::icon_button(ui, closer, cid.with("x"), LineIcon::X, t.muted_foreground).clicked();
+                y += tg.size().y + 6.0;
+                ui.painter().galley(pos2(x, y), bg.clone(), t.muted_foreground);
+                // dots
+                let by = rect.max.y - 16.0;
+                for i in 0..n {
+                    let active = i == cur;
+                    let w = if active { 16.0 } else { 6.0 };
+                    let dx: f32 = (0..i).map(|j| if j == cur { 16.0 } else { 6.0 } + 5.0).sum();
+                    let r = Rect::from_min_size(pos2(x + dx, by - 16.0 - 3.0), vec2(w, 6.0));
+                    ui.painter().rect_filled(
+                        r,
+                        3.0,
+                        if active { t.accent } else { with_alpha(t.muted_foreground, 0.35) },
+                    );
                 }
-            }
-            if cur > 0 {
-                let bw = kit::button_width(ui, "Back", 13.5);
-                let br = Rect::from_min_max(pos2(nr.min.x - 8.0 - bw, by - 32.0), pos2(nr.min.x - 8.0, by));
-                if kit::button_at(ui, br, cid.with("back"), "Back", Btn::Ghost).clicked() {
-                    nx = Some(cur - 1);
+                let mut nx = None;
+                let mut fin = false;
+                let last = cur + 1 == n;
+                let next_label = if last { "Finish" } else { "Next" };
+                let w = kit::button_width(ui, next_label, 13.5);
+                let nr = Rect::from_min_max(pos2(rect.max.x - 18.0 - w, by - 32.0), pos2(rect.max.x - 18.0, by));
+                if kit::button_at(ui, nr, cid.with("next"), next_label, Btn::Primary).clicked() {
+                    if last {
+                        fin = true;
+                    } else {
+                        nx = Some(cur + 1);
+                    }
                 }
-            }
-            (close, nx, fin)
-        });
+                if cur > 0 {
+                    let bw = kit::button_width(ui, "Back", 13.5);
+                    let br = Rect::from_min_max(pos2(nr.min.x - 8.0 - bw, by - 32.0), pos2(nr.min.x - 8.0, by));
+                    if kit::button_at(ui, br, cid.with("back"), "Back", Btn::Ghost).clicked() {
+                        nx = Some(cur - 1);
+                    }
+                }
+                (close, nx, fin)
+            },
+        );
         ctx.move_to_top(egui::LayerId::new(Order::Foreground, cid));
         let (close, nx, fin) = res.inner;
         if close || fin {

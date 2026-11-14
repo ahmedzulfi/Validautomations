@@ -79,7 +79,15 @@ pub struct Avatar {
 impl Avatar {
     /// An avatar for `name` (initials are derived from it).
     pub fn new(name: impl Into<String>) -> Self {
-        Self { name: name.into(), size: 40.0, status: None, style: AvatarStyle::Solid, square: false, color: None, ring: None }
+        Self {
+            name: name.into(),
+            size: 40.0,
+            status: None,
+            style: AvatarStyle::Solid,
+            square: false,
+            color: None,
+            ring: None,
+        }
     }
     /// Diameter in points (default 40).
     pub fn size(mut self, s: f32) -> Self {
@@ -127,7 +135,8 @@ impl Avatar {
                 painter.circle_filled(c, r + 2.0, ring);
             }
         }
-        let outline: Vec<Pos2> = if self.square { rounded_rect_points(rect, corner, 8) } else { circle_points(c, r, 64) };
+        let outline: Vec<Pos2> =
+            if self.square { rounded_rect_points(rect, corner, 8) } else { circle_points(c, r, 64) };
         let (text_col, fs_k) = match self.style {
             AvatarStyle::Solid => {
                 let stops = [shade(col, 0.07), shade(col, -0.07)];
@@ -146,11 +155,32 @@ impl Avatar {
         };
         // hairline edge for crispness
         if self.square {
-            painter.rect_stroke(rect, CornerRadius::same(corner as u8), Stroke::new(1.0, with_alpha(Color32::BLACK, 0.06)), StrokeKind::Inside);
+            painter.rect_stroke(
+                rect,
+                CornerRadius::same(corner as u8),
+                Stroke::new(1.0, with_alpha(Color32::BLACK, 0.06)),
+                StrokeKind::Inside,
+            );
         } else {
-            painter.circle_stroke(c, r - 0.5, Stroke::new(1.0, with_alpha(if self.style == AvatarStyle::Muted { t.border } else { Color32::BLACK }, if self.style == AvatarStyle::Muted { 1.0 } else { 0.06 })));
+            painter.circle_stroke(
+                c,
+                r - 0.5,
+                Stroke::new(
+                    1.0,
+                    with_alpha(
+                        if self.style == AvatarStyle::Muted { t.border } else { Color32::BLACK },
+                        if self.style == AvatarStyle::Muted { 1.0 } else { 0.06 },
+                    ),
+                ),
+            );
         }
-        painter.text(c, egui::Align2::CENTER_CENTER, initials(&self.name), FontId::proportional((rect.width() * fs_k).max(8.0)), text_col);
+        painter.text(
+            c,
+            egui::Align2::CENTER_CENTER,
+            initials(&self.name),
+            FontId::proportional((rect.width() * fs_k).max(8.0)),
+            text_col,
+        );
         if let Some(s) = self.status {
             let dot = match s {
                 AvatarStatus::Online => t.success,
@@ -199,7 +229,16 @@ pub struct AvatarGroup {
 impl AvatarGroup {
     /// A group of avatars for these names.
     pub fn new(names: &[&str]) -> Self {
-        Self { names: names.iter().map(|s| s.to_string()).collect(), max: 5, size: 36.0, overlap: 0.22, extra: 0, style: AvatarStyle::Solid, ring: None, accent_more: false }
+        Self {
+            names: names.iter().map(|s| s.to_string()).collect(),
+            max: 5,
+            size: 36.0,
+            overlap: 0.22,
+            extra: 0,
+            style: AvatarStyle::Solid,
+            ring: None,
+            accent_more: false,
+        }
     }
     /// Show at most this many avatars, then "+N".
     pub fn max(mut self, m: usize) -> Self {
@@ -247,17 +286,37 @@ impl Widget for AvatarGroup {
         for i in 0..count {
             let x = rect.min.x + 2.0 + step * i as f32;
             let base = Rect::from_min_size(pos2(x, rect.min.y + 6.0), vec2(self.size, self.size));
-            let hovered = hover.map(|p| p.x >= x && p.x < x + if i + 1 == count { self.size } else { step } && rect.contains(p)).unwrap_or(false);
-            let lift = glowkit_core::anim::spring(ui, resp.id.with(("lift", i)), if hovered { -5.0 } else { 0.0 }, 400.0, 18.0);
+            let hovered = hover
+                .map(|p| p.x >= x && p.x < x + if i + 1 == count { self.size } else { step } && rect.contains(p))
+                .unwrap_or(false);
+            let lift = glowkit_core::anim::spring(
+                ui,
+                resp.id.with(("lift", i)),
+                if hovered { -5.0 } else { 0.0 },
+                400.0,
+                18.0,
+            );
             let r = base.translate(vec2(0.0, lift));
             if i < shown {
                 Avatar::new(self.names[i].clone()).style(self.style).ring(ring).paint(ui, r);
             } else {
                 let p = ui.painter();
                 p.circle_filled(r.center(), self.size / 2.0 + 2.0, ring);
-                let (fill, txt) = if self.accent_more { (t.primary, t.primary_foreground) } else { (t.muted, t.muted_foreground) };
-                p.circle(r.center(), self.size / 2.0, fill, Stroke::new(1.0, if self.accent_more { fill } else { t.border }));
-                p.text(r.center(), egui::Align2::CENTER_CENTER, format!("+{more}"), FontId::proportional(self.size * 0.32), txt);
+                let (fill, txt) =
+                    if self.accent_more { (t.primary, t.primary_foreground) } else { (t.muted, t.muted_foreground) };
+                p.circle(
+                    r.center(),
+                    self.size / 2.0,
+                    fill,
+                    Stroke::new(1.0, if self.accent_more { fill } else { t.border }),
+                );
+                p.text(
+                    r.center(),
+                    egui::Align2::CENTER_CENTER,
+                    format!("+{more}"),
+                    FontId::proportional(self.size * 0.32),
+                    txt,
+                );
             }
         }
         resp

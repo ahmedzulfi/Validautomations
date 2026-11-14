@@ -52,7 +52,14 @@ impl Default for Folder {
 impl Folder {
     /// An accent-colored folder holding three papers.
     pub fn new() -> Self {
-        Self { color: None, size: 1.0, papers: vec![String::new(), String::new(), String::new()], open: None, autoplay: false, salt: 0 }
+        Self {
+            color: None,
+            size: 1.0,
+            papers: vec![String::new(), String::new(), String::new()],
+            open: None,
+            autoplay: false,
+            salt: 0,
+        }
     }
     /// Folder color. Defaults to the theme accent.
     pub fn color(mut self, c: Color32) -> Self {
@@ -122,7 +129,14 @@ impl Widget for Folder {
         let painter = ui.painter_at(rect.expand(20.0));
         let body = body.translate(vec2(0.0, -6.0 * lift * s));
         let r = 10.0 * s;
-        paint::soft_shadow(&painter, body, r, 24.0 * s, vec2(0.0, 10.0 * s), with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.18 }));
+        paint::soft_shadow(
+            &painter,
+            body,
+            r,
+            24.0 * s,
+            vec2(0.0, 10.0 * s),
+            with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.18 }),
+        );
         // back panel with tab
         let back = shade(color, -0.1);
         let tab = Rect::from_min_size(body.min - vec2(0.0, 10.0 * s), vec2(w * 0.36, 20.0 * s));
@@ -134,9 +148,13 @@ impl Widget for Folder {
         let open_off = [vec2(-w * 0.46, -h * 0.72), vec2(w * 0.42, -h * 0.7), vec2(-w * 0.02, -h * 1.0)];
         let open_rot = [-15f32, 15.0, 5.0];
         let pointer = response.hover_pos();
-        let paper_cols = [mix(Color32::from_gray(230), color, 0.06), mix(Color32::from_gray(242), color, 0.04), Color32::WHITE];
+        let paper_cols =
+            [mix(Color32::from_gray(230), color, 0.06), mix(Color32::from_gray(242), color, 0.04), Color32::WHITE];
         for i in 0..3 {
-            let base = body.center() + vec2(0.0, h * 0.05) + (closed_off[i] + (open_off[i] - closed_off[i]) * o) + vec2(0.0, -h * 0.12 * lift);
+            let base = body.center()
+                + vec2(0.0, h * 0.05)
+                + (closed_off[i] + (open_off[i] - closed_off[i]) * o)
+                + vec2(0.0, -h * 0.12 * lift);
             let mut magnet = Vec2::ZERO;
             if let Some(p) = pointer {
                 if o > 0.8 && p.distance(base) < w * 0.55 {
@@ -160,12 +178,22 @@ impl Widget for Folder {
             let tf = |x: f32, y: f32| center + vec2(x * cs - y * sn, x * sn + y * cs);
             let label = &self.papers[i];
             if !label.is_empty() && o > 0.5 {
-                glowkit_core::text::paint_rotated(&painter, label, tf(0.0, -paper_size[i].y * 0.28), FontId::proportional(10.5 * s), with_alpha(Color32::from_gray(60), (o - 0.5) * 2.0), ang);
+                glowkit_core::text::paint_rotated(
+                    &painter,
+                    label,
+                    tf(0.0, -paper_size[i].y * 0.28),
+                    FontId::proportional(10.5 * s),
+                    with_alpha(Color32::from_gray(60), (o - 0.5) * 2.0),
+                    ang,
+                );
             }
             for k in 0..3 {
                 let y = -paper_size[i].y * 0.08 + k as f32 * 8.0 * s;
                 let lw = paper_size[i].x * if k == 2 { 0.4 } else { 0.62 };
-                painter.line_segment([tf(-lw / 2.0, y), tf(lw / 2.0, y)], Stroke::new(2.0 * s.min(1.5), Color32::from_gray(200)));
+                painter.line_segment(
+                    [tf(-lw / 2.0, y), tf(lw / 2.0, y)],
+                    Stroke::new(2.0 * s.min(1.5), Color32::from_gray(200)),
+                );
             }
         }
         // front flap: hinged at the bottom, tilts (skews + squashes) as it opens

@@ -47,11 +47,7 @@ pub fn animate(ui: &egui::Ui) {
 }
 
 /// Read persistent per-widget state, creating it with `init` on first use.
-pub fn state<T: Clone + Send + Sync + 'static>(
-    ui: &egui::Ui,
-    id: egui::Id,
-    init: impl FnOnce() -> T,
-) -> T {
+pub fn state<T: Clone + Send + Sync + 'static>(ui: &egui::Ui, id: egui::Id, init: impl FnOnce() -> T) -> T {
     ui.data_mut(|d| d.get_temp_mut_or_insert_with(id, init).clone())
 }
 

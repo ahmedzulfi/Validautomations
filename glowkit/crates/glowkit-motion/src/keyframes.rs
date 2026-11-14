@@ -244,7 +244,10 @@ mod tests {
 
     #[test]
     fn repeat_and_delay() {
-        let k = Keyframes::new([(0.0, 0.0_f32), (1.0, 1.0)]).ease(Easing::Linear).repeat(Repeat::Count(1)).repeat_delay(0.5);
+        let k = Keyframes::new([(0.0, 0.0_f32), (1.0, 1.0)])
+            .ease(Easing::Linear)
+            .repeat(Repeat::Count(1))
+            .repeat_delay(0.5);
         assert_eq!(k.total_duration(), Some(2.5));
         assert!((k.sample(1.2) - 1.0).abs() < 1e-4, "holds the end during the repeat delay");
         assert!((k.sample(2.0) - 0.5).abs() < 1e-4);

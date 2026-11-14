@@ -7,7 +7,13 @@ use glowkit_core::{noise, paint, Theme};
 use std::f32::consts::TAU;
 
 /// Show a plain card surface with `effect` painted on its border, then the content.
-fn bordered_card<R>(ui: &mut Ui, base: &Base, border: bool, effect: impl FnOnce(&Ui, Rect), add: impl FnOnce(&mut Ui) -> R) -> InnerResponse<R> {
+fn bordered_card<R>(
+    ui: &mut Ui,
+    base: &Base,
+    border: bool,
+    effect: impl FnOnce(&Ui, Rect),
+    add: impl FnOnce(&mut Ui) -> R,
+) -> InnerResponse<R> {
     show_shell(
         ui,
         base,
@@ -56,7 +62,16 @@ impl Default for BorderBeam {
 impl BorderBeam {
     /// A border beam with theme colors.
     pub fn new() -> Self {
-        Self { base: Base::default(), from: None, to: None, duration: 6.0, length: 0.22, thickness: 1.6, delay: 0.0, reverse: false }
+        Self {
+            base: Base::default(),
+            from: None,
+            to: None,
+            duration: 6.0,
+            length: 0.22,
+            thickness: 1.6,
+            delay: 0.0,
+            reverse: false,
+        }
     }
     base_setters!();
     opt_setter!(/// Tail color. Defaults to the theme's third gradient color.
@@ -96,7 +111,12 @@ impl BorderBeam {
             }
             // soft rounded head, long fading tail: no hard ends
             let front = (-(d / 0.012).powi(2)).exp();
-            let k = if d >= 0.0 && d < len { let u = 1.0 - d / len; u * u * (3.0 - 2.0 * u) } else { 0.0 };
+            let k = if d >= 0.0 && d < len {
+                let u = 1.0 - d / len;
+                u * u * (3.0 - 2.0 * u)
+            } else {
+                0.0
+            };
             let k = k.max(if d < 0.0 { front } else { 0.0 });
             mix(from, to, k).gamma_multiply(k)
         });
@@ -239,7 +259,8 @@ impl ElectricBorder {
                     // two octaves of looping noise around the loop + fast flicker
                     let ang = u * TAU;
                     let (cx, cy) = (ang.cos() * 6.0, ang.sin() * 6.0);
-                    let d = noise::fbm3(cx + seed, cy, time * 1.6 + seed, 3) + 0.35 * noise::noise3(cx * 3.0, cy * 3.0 + seed, time * 7.0);
+                    let d = noise::fbm3(cx + seed, cy, time * 1.6 + seed, 3)
+                        + 0.35 * noise::noise3(cx * 3.0, cy * 3.0 + seed, time * 7.0);
                     p + normal * d * amp * scale
                 })
                 .collect()

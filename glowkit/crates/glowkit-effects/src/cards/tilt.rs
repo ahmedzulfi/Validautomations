@@ -58,7 +58,15 @@ impl Proj {
 impl TiltCard {
     /// A tilt card.
     pub fn new() -> Self {
-        Self { base: Base::default(), max_tilt: 14.0, scale: 1.04, glare: true, parallax: 10.0, ambient: false, colors: None }
+        Self {
+            base: Base::default(),
+            max_tilt: 14.0,
+            scale: 1.04,
+            glare: true,
+            parallax: 10.0,
+            ambient: false,
+            colors: None,
+        }
     }
     base_setters!();
     setter!(/// Maximum tilt in degrees.
@@ -93,16 +101,38 @@ impl TiltCard {
                 let n = (ptr - rect.center()) / (rect.size() / 2.0);
                 let n = vec2(n.x.clamp(-1.0, 1.0), n.y.clamp(-1.0, 1.0)) * k;
                 let tilt = glowkit_core::anim::spring2(ui, ctx.id.with("tilt"), n, 200.0, 18.0);
-                let hk = glowkit_core::anim::spring(ui, ctx.id.with("hk"), if ctx.pointer.is_some() { 1.0 } else { 0.0 }, 200.0, 20.0);
-                let proj = Proj { c: rect.center(), ax: tilt.y * max, ay: tilt.x * max, scale: 1.0 + (self.scale - 1.0) * hk, persp: 900.0 };
+                let hk = glowkit_core::anim::spring(
+                    ui,
+                    ctx.id.with("hk"),
+                    if ctx.pointer.is_some() { 1.0 } else { 0.0 },
+                    200.0,
+                    20.0,
+                );
+                let proj = Proj {
+                    c: rect.center(),
+                    ax: tilt.y * max,
+                    ay: tilt.x * max,
+                    scale: 1.0 + (self.scale - 1.0) * hk,
+                    persp: 900.0,
+                };
                 let half = rect.size() / 2.0;
                 let local = paint::rounded_rect_points(Rect::from_center_size(Pos2::ZERO, rect.size()), radius, 10);
                 let local = paint::subdivide_closed(&local, 16.0);
                 let pts: Vec<Pos2> = local.iter().map(|p| proj.apply(p.to_vec2()).0).collect();
                 let p = ui.painter();
                 // shadow follows the tilt
-                let shadow_rect = Rect::from_center_size(rect.center() + vec2(-tilt.x * 10.0, -tilt.y * 10.0 + 14.0), rect.size() * proj.scale * 0.92);
-                paint::soft_shadow(p, shadow_rect, radius, 30.0 + 10.0 * hk, Vec2::ZERO, with_alpha(Color32::BLACK, if t.dark { 0.55 } else { 0.18 }));
+                let shadow_rect = Rect::from_center_size(
+                    rect.center() + vec2(-tilt.x * 10.0, -tilt.y * 10.0 + 14.0),
+                    rect.size() * proj.scale * 0.92,
+                );
+                paint::soft_shadow(
+                    p,
+                    shadow_rect,
+                    radius,
+                    30.0 + 10.0 * hk,
+                    Vec2::ZERO,
+                    with_alpha(Color32::BLACK, if t.dark { 0.55 } else { 0.18 }),
+                );
                 let fill = base.background(&t);
                 let colors = self.colors;
                 paint::fill_convex_fn(p, &pts, 6, |q| {
@@ -208,7 +238,14 @@ impl WobbleCard {
                 let body = rect.translate(off);
                 let [a, b] = self.colors.unwrap_or([shade(t.accent, -0.05), shade(t.accent, -0.22)]);
                 let p = ui.painter();
-                paint::soft_shadow(p, body, radius, 28.0, vec2(0.0, 10.0) + off * 0.3, with_alpha(b, if t.dark { 0.45 } else { 0.35 }));
+                paint::soft_shadow(
+                    p,
+                    body,
+                    radius,
+                    28.0,
+                    vec2(0.0, 10.0) + off * 0.3,
+                    with_alpha(b, if t.dark { 0.45 } else { 0.35 }),
+                );
                 paint::gradient_rect(p, body, radius, 35.0, &[a, b]);
                 // grain
                 let mut rng = Rng::new(ctx.id.value());
@@ -216,7 +253,11 @@ impl WobbleCard {
                 for _ in 0..((body.width() * body.height()) / 70.0) as usize {
                     let q = pos2(rng.range(body.min.x, body.max.x), rng.range(body.min.y, body.max.y));
                     let light = rng.bool(0.5);
-                    let c = if light { with_alpha(Color32::WHITE, rng.range(0.03, 0.09)) } else { with_alpha(Color32::BLACK, rng.range(0.03, 0.08)) };
+                    let c = if light {
+                        with_alpha(Color32::WHITE, rng.range(0.03, 0.09))
+                    } else {
+                        with_alpha(Color32::BLACK, rng.range(0.03, 0.08))
+                    };
                     clip.rect_filled(Rect::from_center_size(q, vec2(1.0, 1.0)), 0.0, c);
                 }
                 // top sheen
@@ -224,7 +265,12 @@ impl WobbleCard {
                     let v = (q.y - body.min.y) / body.height();
                     with_alpha(Color32::WHITE, (0.4 - v).max(0.0) * 0.18)
                 });
-                p.rect_stroke(body, cr(radius), egui::Stroke::new(1.0, with_alpha(Color32::WHITE, 0.12)), egui::StrokeKind::Inside);
+                p.rect_stroke(
+                    body,
+                    cr(radius),
+                    egui::Stroke::new(1.0, with_alpha(Color32::WHITE, 0.12)),
+                    egui::StrokeKind::Inside,
+                );
                 Content { offset: off - off * 1.6, opacity: 1.0 }
             },
             |ui| {
@@ -288,11 +334,19 @@ impl GlassCard {
                 let radius = base.radius(&t);
                 let tint = self.tint.unwrap_or(Color32::WHITE);
                 let p = ui.painter();
-                paint::soft_shadow(p, rect, radius, 32.0, vec2(0.0, 12.0), with_alpha(Color32::BLACK, if t.dark { 0.35 } else { 0.10 }));
+                paint::soft_shadow(
+                    p,
+                    rect,
+                    radius,
+                    32.0,
+                    vec2(0.0, 12.0),
+                    with_alpha(Color32::BLACK, if t.dark { 0.35 } else { 0.10 }),
+                );
                 let (a0, a1) = if t.dark { (0.20, 0.07) } else { (0.62, 0.38) };
                 let op = self.opacity;
                 paint::fill_convex_fn(p, &paint::rounded_rect_points(rect, radius, 10), 6, |q| {
-                    let u = (((q.x - rect.min.x) / rect.width() + (q.y - rect.min.y) / rect.height()) / 2.0).clamp(0.0, 1.0);
+                    let u = (((q.x - rect.min.x) / rect.width() + (q.y - rect.min.y) / rect.height()) / 2.0)
+                        .clamp(0.0, 1.0);
                     with_alpha(tint, (a0 + (a1 - a0) * u) * op)
                 });
                 if self.frost {
@@ -300,12 +354,17 @@ impl GlassCard {
                     let clip = p.with_clip_rect(rect.shrink(radius * 0.3));
                     for _ in 0..((rect.width() * rect.height()) / 90.0) as usize {
                         let q = pos2(rng.range(rect.min.x, rect.max.x), rng.range(rect.min.y, rect.max.y));
-                        clip.rect_filled(Rect::from_center_size(q, vec2(1.0, 1.0)), 0.0, with_alpha(Color32::WHITE, rng.range(0.02, 0.07)));
+                        clip.rect_filled(
+                            Rect::from_center_size(q, vec2(1.0, 1.0)),
+                            0.0,
+                            with_alpha(Color32::WHITE, rng.range(0.02, 0.07)),
+                        );
                     }
                 }
                 // light-catching rim
                 util::border_fn(p, rect, radius, 1.0, |q, _| {
-                    let u = (((q.x - rect.min.x) / rect.width() + (q.y - rect.min.y) / rect.height()) / 2.0).clamp(0.0, 1.0);
+                    let u = (((q.x - rect.min.x) / rect.width() + (q.y - rect.min.y) / rect.height()) / 2.0)
+                        .clamp(0.0, 1.0);
                     if t.dark {
                         with_alpha(Color32::WHITE, 0.45 * (1.0 - u) + 0.06)
                     } else {
@@ -380,12 +439,31 @@ impl HoverLiftCard {
                 let body = rect.translate(vec2(0.0, -self.lift * k));
                 let accent = self.accent.unwrap_or(t.accent);
                 let p = ui.painter();
-                paint::soft_shadow(p, body, radius, 16.0 + 26.0 * k, vec2(0.0, 4.0 + 14.0 * k), with_alpha(Color32::BLACK, if t.dark { 0.35 + 0.2 * k } else { 0.06 + 0.08 * k }));
+                paint::soft_shadow(
+                    p,
+                    body,
+                    radius,
+                    16.0 + 26.0 * k,
+                    vec2(0.0, 4.0 + 14.0 * k),
+                    with_alpha(Color32::BLACK, if t.dark { 0.35 + 0.2 * k } else { 0.06 + 0.08 * k }),
+                );
                 if k > 0.01 {
-                    paint::soft_shadow(p, body, radius, 30.0, vec2(0.0, 8.0), with_alpha(accent, 0.18 * k.clamp(0.0, 1.0)));
+                    paint::soft_shadow(
+                        p,
+                        body,
+                        radius,
+                        30.0,
+                        vec2(0.0, 8.0),
+                        with_alpha(accent, 0.18 * k.clamp(0.0, 1.0)),
+                    );
                 }
                 p.rect_filled(body, cr(radius), base.background(&t));
-                p.rect_stroke(body, cr(radius), egui::Stroke::new(1.0, t.border.lerp_to_gamma(accent, 0.6 * k.clamp(0.0, 1.0))), egui::StrokeKind::Inside);
+                p.rect_stroke(
+                    body,
+                    cr(radius),
+                    egui::Stroke::new(1.0, t.border.lerp_to_gamma(accent, 0.6 * k.clamp(0.0, 1.0))),
+                    egui::StrokeKind::Inside,
+                );
                 Content { offset: vec2(0.0, -self.lift * k), opacity: 1.0 }
             },
             add,

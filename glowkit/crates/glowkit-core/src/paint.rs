@@ -311,7 +311,11 @@ pub fn galley_with(painter: &Painter, pos: Pos2, galley: &Arc<Galley>, f: impl F
             let p = v.pos + offset;
             let a = v.color.a();
             let c = f(p);
-            *v = Vertex { pos: p, uv: pos2(v.uv.x * norm.x, v.uv.y * norm.y), color: c.gamma_multiply(a as f32 / 255.0) };
+            *v = Vertex {
+                pos: p,
+                uv: pos2(v.uv.x * norm.x, v.uv.y * norm.y),
+                color: c.gamma_multiply(a as f32 / 255.0),
+            };
         }
         painter.add(Shape::mesh(mesh));
     }
@@ -433,10 +437,7 @@ pub fn quad_bezier(a: Pos2, ctrl: Pos2, b: Pos2, n: usize) -> Vec<Pos2> {
         .map(|i| {
             let t = i as f32 / n as f32;
             let u = 1.0 - t;
-            pos2(
-                u * u * a.x + 2.0 * u * t * ctrl.x + t * t * b.x,
-                u * u * a.y + 2.0 * u * t * ctrl.y + t * t * b.y,
-            )
+            pos2(u * u * a.x + 2.0 * u * t * ctrl.x + t * t * b.x, u * u * a.y + 2.0 * u * t * ctrl.y + t * t * b.y)
         })
         .collect()
 }
@@ -472,7 +473,10 @@ pub fn catmull_rom(pts: &[Pos2], per_seg: usize) -> Vec<Pos2> {
             let t2 = t * t;
             let t3 = t2 * t;
             let f = |a: f32, b: f32, c: f32, d: f32| {
-                0.5 * ((2.0 * b) + (-a + c) * t + (2.0 * a - 5.0 * b + 4.0 * c - d) * t2 + (-a + 3.0 * b - 3.0 * c + d) * t3)
+                0.5 * ((2.0 * b)
+                    + (-a + c) * t
+                    + (2.0 * a - 5.0 * b + 4.0 * c - d) * t2
+                    + (-a + 3.0 * b - 3.0 * c + d) * t3)
             };
             out.push(pos2(f(p0.x, p1.x, p2.x, p3.x), f(p0.y, p1.y, p2.y, p3.y)));
         }
@@ -585,7 +589,15 @@ pub fn arc(painter: &Painter, center: Pos2, radius: f32, a0: f32, a1: f32, width
 }
 
 /// Arc stroke with a gradient along its length.
-pub fn arc_gradient(painter: &Painter, center: Pos2, radius: f32, a0: f32, a1: f32, width: f32, f: impl Fn(f32) -> Color32) {
+pub fn arc_gradient(
+    painter: &Painter,
+    center: Pos2,
+    radius: f32,
+    a0: f32,
+    a1: f32,
+    width: f32,
+    f: impl Fn(f32) -> Color32,
+) {
     let steps = (((a1 - a0).abs() / TAU) * 128.0).ceil().max(2.0) as usize;
     let pts: Vec<Pos2> = (0..=steps)
         .map(|i| {

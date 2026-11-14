@@ -27,7 +27,13 @@ pub struct SpringChain {
 impl SpringChain {
     /// `n` points stacked at `at`.
     pub fn new(n: usize, at: Pos2) -> Self {
-        Self { points: vec![at; n.max(1)], velocities: vec![Vec2::ZERO; n.max(1)], stiffness: 400.0, damping: 40.0, falloff: 0.96 }
+        Self {
+            points: vec![at; n.max(1)],
+            velocities: vec![Vec2::ZERO; n.max(1)],
+            stiffness: 400.0,
+            damping: 40.0,
+            falloff: 0.96,
+        }
     }
     /// Spring stiffness of the first link.
     pub fn stiffness(mut self, k: f32) -> Self {
@@ -399,24 +405,41 @@ impl Lanyard {
         let props = Props::new().offset(card_center - rest.center()).rotate(angle_deg);
         let fill = self.card_fill.unwrap_or(t.card);
         let mut host = ui.new_child(UiBuilder::new().max_rect(rest).id_salt(self.id.with("host")));
-        layered(&mut host, self.id.with("card"), LayerSpec { props, origin: Align2::CENTER_CENTER, sense: Sense::hover(), space: Space::Normal }, |ui| {
-            let p = ui.painter();
-            paint::soft_shadow(p, rest.translate(vec2(0.0, 10.0)), t.radius + 4.0, 26.0, Vec2::ZERO, Color32::from_black_alpha(if t.dark { 150 } else { 60 }));
-            p.rect_filled(rest, t.radius + 4.0, fill);
-            p.rect_stroke(rest, t.radius + 4.0, Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
-            // clip slot + metal clip
-            let slot = Rect::from_center_size(pos2(rest.center().x, rest.min.y + 16.0), vec2(36.0, 7.0));
-            p.rect_filled(slot, 4.0, if t.dark { t.background } else { t.muted });
-            let clip = Rect::from_center_size(pos2(rest.center().x, rest.min.y + 2.0), vec2(20.0, 22.0));
-            p.rect_filled(clip, 5.0, color::mix(t.muted_foreground, t.foreground, 0.3));
-            p.rect_filled(clip.shrink2(vec2(5.0, 6.0)), 2.0, fill);
-            let inner = rest.shrink2(vec2(16.0, 0.0)).with_min_y(rest.min.y + 32.0).with_max_y(rest.max.y - 14.0);
-            let mut cui = ui.new_child(UiBuilder::new().max_rect(inner).layout(egui::Layout::top_down(egui::Align::Center)));
-            add_contents(&mut cui);
-            ui.allocate_rect(rest, Sense::hover());
-        });
+        layered(
+            &mut host,
+            self.id.with("card"),
+            LayerSpec { props, origin: Align2::CENTER_CENTER, sense: Sense::hover(), space: Space::Normal },
+            |ui| {
+                let p = ui.painter();
+                paint::soft_shadow(
+                    p,
+                    rest.translate(vec2(0.0, 10.0)),
+                    t.radius + 4.0,
+                    26.0,
+                    Vec2::ZERO,
+                    Color32::from_black_alpha(if t.dark { 150 } else { 60 }),
+                );
+                p.rect_filled(rest, t.radius + 4.0, fill);
+                p.rect_stroke(rest, t.radius + 4.0, Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
+                // clip slot + metal clip
+                let slot = Rect::from_center_size(pos2(rest.center().x, rest.min.y + 16.0), vec2(36.0, 7.0));
+                p.rect_filled(slot, 4.0, if t.dark { t.background } else { t.muted });
+                let clip = Rect::from_center_size(pos2(rest.center().x, rest.min.y + 2.0), vec2(20.0, 22.0));
+                p.rect_filled(clip, 5.0, color::mix(t.muted_foreground, t.foreground, 0.3));
+                p.rect_filled(clip.shrink2(vec2(5.0, 6.0)), 2.0, fill);
+                let inner = rest.shrink2(vec2(16.0, 0.0)).with_min_y(rest.min.y + 32.0).with_max_y(rest.max.y - 14.0);
+                let mut cui =
+                    ui.new_child(UiBuilder::new().max_rect(inner).layout(egui::Layout::top_down(egui::Align::Center)));
+                add_contents(&mut cui);
+                ui.allocate_rect(rest, Sense::hover());
+            },
+        );
         if st.grab.is_some() || hit.hovered() {
-            ui.ctx().set_cursor_icon(if st.grab.is_some() { egui::CursorIcon::Grabbing } else { egui::CursorIcon::Grab });
+            ui.ctx().set_cursor_icon(if st.grab.is_some() {
+                egui::CursorIcon::Grabbing
+            } else {
+                egui::CursorIcon::Grab
+            });
         }
         ui.data_mut(|d| d.insert_temp(skey, st));
         ui.ctx().request_repaint();

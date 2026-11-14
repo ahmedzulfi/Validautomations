@@ -201,7 +201,12 @@ fn rect_key(id: Id) -> Id {
 /// Run `add_contents` inside a transformed layer. Returns the content's response (sensing
 /// `spec.sense`, registered beneath the content's own widgets); its `rect` is this frame's
 /// untransformed layout rect.
-pub(crate) fn layered<R>(ui: &mut Ui, id: Id, spec: LayerSpec, add_contents: impl FnOnce(&mut Ui) -> R) -> InnerResponse<R> {
+pub(crate) fn layered<R>(
+    ui: &mut Ui,
+    id: Id,
+    spec: LayerSpec,
+    add_contents: impl FnOnce(&mut Ui) -> R,
+) -> InnerResponse<R> {
     let ctx = ui.ctx().clone();
     let parent_layer = ui.layer_id();
     let layer = LayerId::new(parent_layer.order, id.with("glowkit_motion_layer"));
@@ -264,7 +269,13 @@ pub(crate) fn layered<R>(ui: &mut Ui, id: Id, spec: LayerSpec, add_contents: imp
 ///     ui.button("I am lifted and still clickable");
 /// });
 /// ```
-pub fn transformed<R>(ui: &mut Ui, id: Id, props: Props, origin: Align2, add_contents: impl FnOnce(&mut Ui) -> R) -> InnerResponse<R> {
+pub fn transformed<R>(
+    ui: &mut Ui,
+    id: Id,
+    props: Props,
+    origin: Align2,
+    add_contents: impl FnOnce(&mut Ui) -> R,
+) -> InnerResponse<R> {
     layered(ui, id, LayerSpec { props, origin, sense: Sense::hover(), space: Space::Normal }, add_contents)
 }
 

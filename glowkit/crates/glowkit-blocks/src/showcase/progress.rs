@@ -14,7 +14,9 @@ fn paint_beam(ui: &Ui, id: egui::Id, x: f32, top: f32, bottom: f32, progress: f3
     let len = (bottom - track_top).max(1.0);
     // track (fades out at the bottom)
     let track: Vec<_> = (0..=24).map(|i| pos2(x, track_top + len * i as f32 / 24.0)).collect();
-    paint::gradient_polyline(p, &track, false, 1.5, |u| with_alpha(t.border, (1.0 - smoothstep(0.75, 1.0, u)) * 0.9 + 0.1));
+    paint::gradient_polyline(p, &track, false, 1.5, |u| {
+        with_alpha(t.border, (1.0 - smoothstep(0.75, 1.0, u)) * 0.9 + 0.1)
+    });
     // beam
     let head = track_top + len * prog;
     if head > track_top + 1.0 {
@@ -29,7 +31,14 @@ fn paint_beam(ui: &Ui, id: egui::Id, x: f32, top: f32, bottom: f32, progress: f3
     }
     // top dot
     let active = smoothstep(0.0, 0.04, prog);
-    paint::soft_shadow(p, Rect::from_center_size(dot_c, Vec2::splat(18.0)), 9.0, 6.0, Vec2::ZERO, Color32::from_black_alpha(40));
+    paint::soft_shadow(
+        p,
+        Rect::from_center_size(dot_c, Vec2::splat(18.0)),
+        9.0,
+        6.0,
+        Vec2::ZERO,
+        Color32::from_black_alpha(40),
+    );
     p.circle_filled(dot_c, 9.0, t.card);
     p.circle_stroke(dot_c, 9.0, Stroke::new(1.0, t.border));
     let inner_on = mix(colors[0], colors[1], 0.5);
@@ -101,7 +110,11 @@ impl TracingBeam {
         let idle = idle_time(ui, id, hovered);
         // (offset, max offset) from last frame
         let (last_off, max_off): (f32, f32) = glowkit_core::state(ui, id.with("off"), || (0.0, 1.0));
-        let mut sa = egui::ScrollArea::vertical().id_salt(id).max_height(self.height).min_scrolled_height(self.height).auto_shrink([false, false]);
+        let mut sa = egui::ScrollArea::vertical()
+            .id_salt(id)
+            .max_height(self.height)
+            .min_scrolled_height(self.height)
+            .auto_shrink([false, false]);
         if self.autoplay && idle > 2.0 && max_off > 1.0 {
             let tt = glowkit_core::time(ui) * 0.12;
             let tri = 1.0 - (tt.fract() * 2.0 - 1.0).abs();
@@ -255,7 +268,15 @@ impl Widget for MultiStepLoader {
                 // the current step: ring that fills, then a check pops in near the end
                 paint::glow(&p, c, 22.0, with_alpha(accent, 0.25));
                 p.circle_stroke(c, 10.0, Stroke::new(1.5, with_alpha(t.border, fade)));
-                paint::arc(&p, c, 10.0, -std::f32::consts::FRAC_PI_2, -std::f32::consts::FRAC_PI_2 + local * std::f32::consts::TAU, 2.0, accent);
+                paint::arc(
+                    &p,
+                    c,
+                    10.0,
+                    -std::f32::consts::FRAC_PI_2,
+                    -std::f32::consts::FRAC_PI_2 + local * std::f32::consts::TAU,
+                    2.0,
+                    accent,
+                );
                 let spin = time * 6.0;
                 p.circle_filled(c + vec2(spin.cos(), spin.sin()) * 4.0, 1.6, accent);
             } else {
@@ -281,7 +302,13 @@ impl Widget for MultiStepLoader {
         p.rect_filled(bar, 2.0, with_alpha(t.muted_foreground, 0.2));
         let fill = Rect::from_min_size(bar.min, vec2(col_w * frac.clamp(0.0, 1.0), 4.0));
         paint::gradient_rect(&p, fill, 2.0, 0.0, &[mix(accent, t.background, 0.4), accent]);
-        p.text(pos2(bar.max.x, bar.min.y - 10.0), Align2::RIGHT_CENTER, format!("{}/{}", cur.min(n), n), FontId::proportional(11.0), t.muted_foreground);
+        p.text(
+            pos2(bar.max.x, bar.min.y - 10.0),
+            Align2::RIGHT_CENTER,
+            format!("{}/{}", cur.min(n), n),
+            FontId::proportional(11.0),
+            t.muted_foreground,
+        );
         resp
     }
 }

@@ -39,7 +39,14 @@ impl Default for Camera {
 impl Camera {
     /// Perspective camera (45° fov) at `position` looking at `target`.
     pub fn looking_at(position: Vec3, target: Vec3) -> Self {
-        Self { position, target, up: Vec3::Y, projection: Projection::Perspective { fov_y: 45f32.to_radians() }, near: 0.05, far: 500.0 }
+        Self {
+            position,
+            target,
+            up: Vec3::Y,
+            projection: Projection::Perspective { fov_y: 45f32.to_radians() },
+            near: 0.05,
+            far: 500.0,
+        }
     }
     /// Vertical field of view in degrees (switches to perspective).
     pub fn fov_degrees(mut self, deg: f32) -> Self {
@@ -110,8 +117,12 @@ impl Projector {
     pub fn new(cam: &Camera, rect: Rect) -> Self {
         let half_h = rect.height() / 2.0;
         match cam.projection {
-            Projection::Perspective { fov_y } => Self { center: rect.center(), focal: half_h / (fov_y / 2.0).tan(), ortho: false, near: cam.near },
-            Projection::Orthographic { height } => Self { center: rect.center(), focal: half_h / (height / 2.0).max(1e-4), ortho: true, near: cam.near },
+            Projection::Perspective { fov_y } => {
+                Self { center: rect.center(), focal: half_h / (fov_y / 2.0).tan(), ortho: false, near: cam.near }
+            }
+            Projection::Orthographic { height } => {
+                Self { center: rect.center(), focal: half_h / (height / 2.0).max(1e-4), ortho: true, near: cam.near }
+            }
         }
     }
     /// Camera-space point → (screen, distance). `None` when in front of the near plane.
@@ -316,7 +327,10 @@ impl OrbitControls {
 
     /// Whether the controls are still moving (inertia or zoom easing).
     pub fn is_moving(&self) -> bool {
-        self.yaw_velocity != 0.0 || self.pitch_velocity != 0.0 || (self.distance - self.target_distance).abs() > 1e-3 || self.auto_rotate != 0.0
+        self.yaw_velocity != 0.0
+            || self.pitch_velocity != 0.0
+            || (self.distance - self.target_distance).abs() > 1e-3
+            || self.auto_rotate != 0.0
     }
 
     /// Camera position for the current yaw/pitch/distance.

@@ -12,7 +12,9 @@ mod grid;
 mod pointer;
 mod tilt;
 
-pub use borders::{AnimatedGradientBorder, BorderBeam, DashedMarchingBorder, ElectricBorder, NeonGradientCard, ShineBorder};
+pub use borders::{
+    AnimatedGradientBorder, BorderBeam, DashedMarchingBorder, ElectricBorder, NeonGradientCard, ShineBorder,
+};
 pub use grid::{CardHoverEffect, FocusCards};
 pub use pointer::{EncryptedCard, GlareCard, GlowingBorderCard, MagicCard, PixelCard, SpotlightCard};
 pub use tilt::{GlassCard, HoverLiftCard, TiltCard, WobbleCard};

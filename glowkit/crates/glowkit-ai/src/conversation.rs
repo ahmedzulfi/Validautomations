@@ -116,21 +116,49 @@ impl Conversation {
             let edge = 18.0;
             let top = (off / 30.0).clamp(0.0, 1.0);
             if top > 0.0 {
-                paint::quad(&p, [view.left_top(), view.right_top(), pos2(view.max.x, view.min.y + edge), pos2(view.min.x, view.min.y + edge)], [bg.gamma_multiply(top), bg.gamma_multiply(top), Color32::TRANSPARENT, Color32::TRANSPARENT]);
+                paint::quad(
+                    &p,
+                    [
+                        view.left_top(),
+                        view.right_top(),
+                        pos2(view.max.x, view.min.y + edge),
+                        pos2(view.min.x, view.min.y + edge),
+                    ],
+                    [bg.gamma_multiply(top), bg.gamma_multiply(top), Color32::TRANSPARENT, Color32::TRANSPARENT],
+                );
             }
             let bot = (distance / 30.0).clamp(0.0, 1.0);
             if bot > 0.0 {
-                paint::quad(&p, [pos2(view.min.x, view.max.y - edge), pos2(view.max.x, view.max.y - edge), view.right_bottom(), view.left_bottom()], [Color32::TRANSPARENT, Color32::TRANSPARENT, bg.gamma_multiply(bot), bg.gamma_multiply(bot)]);
+                paint::quad(
+                    &p,
+                    [
+                        pos2(view.min.x, view.max.y - edge),
+                        pos2(view.max.x, view.max.y - edge),
+                        view.right_bottom(),
+                        view.left_bottom(),
+                    ],
+                    [Color32::TRANSPARENT, Color32::TRANSPARENT, bg.gamma_multiply(bot), bg.gamma_multiply(bot)],
+                );
             }
         }
         let a = common::anim_bool(ui, id.with("btn_a"), show_btn, 0.18);
         if a > 0.0 {
             let c = pos2(view.center().x, view.max.y - 26.0 + (1.0 - a) * 10.0);
             let r = Rect::from_center_size(c, vec2(34.0, 34.0));
-            let resp = ui.interact(r, id.with("to_bottom"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand).on_hover_text("Scroll to bottom");
+            let resp = ui
+                .interact(r, id.with("to_bottom"), Sense::click())
+                .on_hover_cursor(egui::CursorIcon::PointingHand)
+                .on_hover_text("Scroll to bottom");
             let h = common::anim_bool(ui, id.with("btn_h"), resp.hovered(), 0.12);
             let p = ui.painter();
-            paint::soft_shadow(p, r, 17.0, 14.0, vec2(0.0, 4.0), Color32::from_black_alpha(((if t.dark { 110.0 } else { 30.0 }) * a) as u8));
+            paint::soft_shadow(
+                p,
+                r,
+                17.0,
+                14.0,
+                vec2(0.0, 4.0),
+                Color32::from_black_alpha(((if t.dark { 110.0 } else { 30.0 }) * a) as u8),
+            );
             p.circle_filled(c, 17.0, with_alpha(glowkit_core::color::mix(t.popover, common::raised(&t), h), a));
             p.circle_stroke(c, 17.0, Stroke::new(1.0, with_alpha(t.border, a)));
             paint_icon(p, Icon::ArrowDown, Rect::from_center_size(c, vec2(15.0, 15.0)), with_alpha(t.foreground, a));

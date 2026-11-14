@@ -117,7 +117,15 @@ pub fn paint_char(painter: &Painter, ch: char, pos: Pos2, font: &FontId, color: 
     paint_galley_transformed(painter, galley, pos, scale, angle, color, font.size);
 }
 
-fn paint_galley_transformed(painter: &Painter, galley: Arc<Galley>, pos: Pos2, scale: f32, angle: f32, color: Color32, base: f32) {
+fn paint_galley_transformed(
+    painter: &Painter,
+    galley: Arc<Galley>,
+    pos: Pos2,
+    scale: f32,
+    angle: f32,
+    color: Color32,
+    base: f32,
+) {
     let sz = galley.size();
     // keep the glyph centered on where the unscaled glyph would be
     let base_w = sz.x / scale.max(1e-3);

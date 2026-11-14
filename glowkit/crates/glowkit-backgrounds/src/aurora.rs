@@ -83,11 +83,14 @@ impl Aurora {
                 let mut out = [(0.0, 0.0, 0.0); 3];
                 for (k, o) in out.iter_mut().enumerate() {
                     let kf = k as f32;
-                    let edge = hgt + 0.07 * (kf - 1.0)
-                        + amp * (0.16 * fbm3(x * 2.1 + kf * 3.7 + time * 0.03, kf * 5.3, time * 0.12, 3)
-                            + 0.035 * (x * 9.0 + time * 0.7 + kf * 2.1).sin());
+                    let edge = hgt
+                        + 0.07 * (kf - 1.0)
+                        + amp
+                            * (0.16 * fbm3(x * 2.1 + kf * 3.7 + time * 0.03, kf * 5.3, time * 0.12, 3)
+                                + 0.035 * (x * 9.0 + time * 0.7 + kf * 2.1).sin());
                     let reach = 0.18 + 0.32 * (0.5 + 0.5 * noise3(x * 1.6 + kf * 7.0, time * 0.09, kf + 3.0));
-                    let rays = 0.55 + 0.45 * (0.5 + 0.5 * noise3(x * 13.0 + kf * 13.0 + time * 0.1, time * 0.25, kf)).powf(1.5);
+                    let rays = 0.55
+                        + 0.45 * (0.5 + 0.5 * noise3(x * 13.0 + kf * 13.0 + time * 0.1, time * 0.25, kf)).powf(1.5);
                     *o = (edge, reach, rays);
                 }
                 out
@@ -163,7 +166,15 @@ impl Default for GradientBlobs {
 impl GradientBlobs {
     /// Blobs in the theme's chart colors.
     pub fn new() -> Self {
-        Self { base: Base::default(), colors: None, pointer_color: None, base_colors: None, speed: 1.0, size: 1.0, interactive: true }
+        Self {
+            base: Base::default(),
+            colors: None,
+            pointer_color: None,
+            base_colors: None,
+            speed: 1.0,
+            size: 1.0,
+            interactive: true,
+        }
     }
     /// Colors of the drifting blobs (default: theme chart palette).
     pub fn colors(mut self, colors: &[Color32]) -> Self {
@@ -200,7 +211,8 @@ impl GradientBlobs {
     pub fn paint(&self, ui: &Ui, rect: Rect) {
         let Some(f) = self.base.begin(ui, rect, "glowkit_gradient_blobs") else { return };
         let t = &f.theme;
-        let colors: Vec<Rgb> = self.colors.clone().unwrap_or_else(|| t.chart[..5].to_vec()).into_iter().map(Rgb::of).collect();
+        let colors: Vec<Rgb> =
+            self.colors.clone().unwrap_or_else(|| t.chart[..5].to_vec()).into_iter().map(Rgb::of).collect();
         let [b0, b1] = self.base_colors.unwrap_or_else(|| {
             if t.dark {
                 [glowkit_core::mix(f.bg, t.gradient[0], 0.55), glowkit_core::mix(f.bg, t.chart[5], 0.35)]
@@ -309,9 +321,19 @@ impl MeshGradient {
 
     fn default_colors(t: &Theme) -> [Color32; 4] {
         if t.dark {
-            [glowkit_core::color::shade(t.gradient[0], -0.25), t.gradient[1], t.chart[1], glowkit_core::color::shade(t.chart[5], -0.15)]
+            [
+                glowkit_core::color::shade(t.gradient[0], -0.25),
+                t.gradient[1],
+                t.chart[1],
+                glowkit_core::color::shade(t.chart[5], -0.15),
+            ]
         } else {
-            [glowkit_core::color::shade(t.gradient[0], 0.2), glowkit_core::color::shade(t.gradient[1], 0.25), glowkit_core::color::shade(t.chart[1], 0.3), t.chart[5]]
+            [
+                glowkit_core::color::shade(t.gradient[0], 0.2),
+                glowkit_core::color::shade(t.gradient[1], 0.25),
+                glowkit_core::color::shade(t.chart[1], 0.3),
+                t.chart[5],
+            ]
         }
     }
 

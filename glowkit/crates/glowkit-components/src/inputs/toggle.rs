@@ -1,5 +1,7 @@
 use super::kit::{self, control_radius, ControlSize, UiIcon};
-use egui::{pos2, vec2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget};
+use egui::{
+    pos2, vec2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget,
+};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
 
@@ -51,7 +53,8 @@ fn paint_item(ui: &Ui, rect: Rect, item: &ToggleItem, size: ControlSize, color: 
     let painter = ui.painter();
     let is = size.icon();
     let galley = painter.layout_no_wrap(item.label.clone(), FontId::proportional(size.font()), color);
-    let total = galley.size().x + if item.icon.is_some() { is + if item.label.is_empty() { 0.0 } else { 7.0 } } else { 0.0 };
+    let total =
+        galley.size().x + if item.icon.is_some() { is + if item.label.is_empty() { 0.0 } else { 7.0 } } else { 0.0 };
     let mut x = rect.center().x - total / 2.0;
     if let Some(icon) = item.icon {
         icon.paint(painter, Rect::from_center_size(pos2(x + is / 2.0, rect.center().y), vec2(is, is)), color);
@@ -110,7 +113,9 @@ impl Widget for Toggle<'_> {
         let r = control_radius(&t);
         let painter = ui.painter();
         let on_fill = if t.dark { mix(t.secondary, t.foreground, 0.08) } else { t.secondary };
-        let fill = Color32::TRANSPARENT.lerp_to_gamma(with_alpha(t.secondary, 0.7), hover * (1.0 - on)).lerp_to_gamma(on_fill, on);
+        let fill = Color32::TRANSPARENT
+            .lerp_to_gamma(with_alpha(t.secondary, 0.7), hover * (1.0 - on))
+            .lerp_to_gamma(on_fill, on);
         let stroke = if self.outline { Stroke::new(1.0, t.input) } else { Stroke::NONE };
         painter.rect(rect, r, fill, stroke, StrokeKind::Inside);
         let col = t.muted_foreground.lerp_to_gamma(t.foreground, on.max(hover));
@@ -145,11 +150,21 @@ pub struct ToggleGroup<'a> {
 impl<'a> ToggleGroup<'a> {
     /// Exactly one item is pressed: its index is stored in `selected`.
     pub fn single<I: Into<ToggleItem>>(selected: &'a mut usize, items: impl IntoIterator<Item = I>) -> Self {
-        Self { sel: Selection::Single(selected), items: items.into_iter().map(Into::into).collect(), size: ControlSize::Md, outline: true }
+        Self {
+            sel: Selection::Single(selected),
+            items: items.into_iter().map(Into::into).collect(),
+            size: ControlSize::Md,
+            outline: true,
+        }
     }
     /// Any number of items can be pressed; `pressed` is resized to the item count.
     pub fn multi<I: Into<ToggleItem>>(pressed: &'a mut Vec<bool>, items: impl IntoIterator<Item = I>) -> Self {
-        Self { sel: Selection::Multi(pressed), items: items.into_iter().map(Into::into).collect(), size: ControlSize::Md, outline: true }
+        Self {
+            sel: Selection::Multi(pressed),
+            items: items.into_iter().map(Into::into).collect(),
+            size: ControlSize::Md,
+            outline: true,
+        }
     }
     /// Size variant.
     pub fn size(mut self, s: ControlSize) -> Self {
@@ -178,7 +193,14 @@ impl Widget for ToggleGroup<'_> {
         let r = control_radius(&t);
         if self.outline {
             if !t.dark {
-                glowkit_core::paint::soft_shadow(ui.painter(), rect, r.nw as f32, 2.0, vec2(0.0, 1.0), Color32::from_black_alpha(10));
+                glowkit_core::paint::soft_shadow(
+                    ui.painter(),
+                    rect,
+                    r.nw as f32,
+                    2.0,
+                    vec2(0.0, 1.0),
+                    Color32::from_black_alpha(10),
+                );
             }
             ui.painter().rect(rect, r, kit::field_fill(&t), Stroke::new(1.0, t.input), StrokeKind::Inside);
         }
@@ -201,17 +223,25 @@ impl Widget for ToggleGroup<'_> {
             let hover = kit::anim(ui, resp.id.with(("h", i)), iresp.hovered(), 0.12);
             let corner = if self.outline {
                 let rr = r.nw;
-                CornerRadius { nw: if i == 0 { rr } else { 0 }, sw: if i == 0 { rr } else { 0 }, ne: if i + 1 == n { rr } else { 0 }, se: if i + 1 == n { rr } else { 0 } }
+                CornerRadius {
+                    nw: if i == 0 { rr } else { 0 },
+                    sw: if i == 0 { rr } else { 0 },
+                    ne: if i + 1 == n { rr } else { 0 },
+                    se: if i + 1 == n { rr } else { 0 },
+                }
             } else {
                 r
             };
             let on_fill = if t.dark { mix(t.secondary, t.foreground, 0.08) } else { t.secondary };
-            let fill = Color32::TRANSPARENT.lerp_to_gamma(with_alpha(t.secondary, 0.6), hover * (1.0 - on)).lerp_to_gamma(on_fill, on);
+            let fill = Color32::TRANSPARENT
+                .lerp_to_gamma(with_alpha(t.secondary, 0.6), hover * (1.0 - on))
+                .lerp_to_gamma(on_fill, on);
             let inner = if self.outline { ir.shrink(1.0) } else { ir };
             ui.painter().rect_filled(inner, corner, fill);
             if self.outline && i + 1 < n {
                 let xx = kit::snap(ui, ir.max.x) - 0.5;
-                ui.painter().line_segment([pos2(xx, rect.min.y + 1.0), pos2(xx, rect.max.y - 1.0)], Stroke::new(1.0, t.input));
+                ui.painter()
+                    .line_segment([pos2(xx, rect.min.y + 1.0), pos2(xx, rect.max.y - 1.0)], Stroke::new(1.0, t.input));
             }
             let col = t.muted_foreground.lerp_to_gamma(t.foreground, on.max(hover));
             paint_item(ui, ir, item, self.size, col);
@@ -242,7 +272,13 @@ pub struct SegmentedControl<'a> {
 impl<'a> SegmentedControl<'a> {
     /// A segmented control bound to the selected index.
     pub fn new<I: Into<ToggleItem>>(selected: &'a mut usize, items: impl IntoIterator<Item = I>) -> Self {
-        Self { selected, items: items.into_iter().map(Into::into).collect(), size: ControlSize::Md, equal: true, width: None }
+        Self {
+            selected,
+            items: items.into_iter().map(Into::into).collect(),
+            size: ControlSize::Md,
+            equal: true,
+            width: None,
+        }
     }
     /// Size variant.
     pub fn size(mut self, s: ControlSize) -> Self {
@@ -287,12 +323,27 @@ impl Widget for SegmentedControl<'_> {
             x += w;
         }
         let sel = (*self.selected).min(self.items.len().saturating_sub(1));
-        let tx = glowkit_core::anim::spring(ui, resp.id.with("x"), xs.get(sel).copied().unwrap_or(rect.min.x), 380.0, 30.0);
-        let tw = glowkit_core::anim::spring(ui, resp.id.with("w"), widths.get(sel).copied().unwrap_or(0.0), 380.0, 30.0);
+        let tx =
+            glowkit_core::anim::spring(ui, resp.id.with("x"), xs.get(sel).copied().unwrap_or(rect.min.x), 380.0, 30.0);
+        let tw =
+            glowkit_core::anim::spring(ui, resp.id.with("w"), widths.get(sel).copied().unwrap_or(0.0), 380.0, 30.0);
         let thumb = Rect::from_min_size(pos2(tx, rect.min.y + pad), vec2(tw, h - pad * 2.0));
         let thumb_fill = if t.dark { mix(t.muted, t.foreground, 0.1) } else { t.background };
-        glowkit_core::paint::soft_shadow(ui.painter(), thumb, inner_r.nw as f32, 3.0, vec2(0.0, 1.0), Color32::from_black_alpha(if t.dark { 60 } else { 22 }));
-        ui.painter().rect(thumb, inner_r, thumb_fill, Stroke::new(1.0, if t.dark { with_alpha(t.foreground, 0.06) } else { with_alpha(t.border, 0.6) }), StrokeKind::Inside);
+        glowkit_core::paint::soft_shadow(
+            ui.painter(),
+            thumb,
+            inner_r.nw as f32,
+            3.0,
+            vec2(0.0, 1.0),
+            Color32::from_black_alpha(if t.dark { 60 } else { 22 }),
+        );
+        ui.painter().rect(
+            thumb,
+            inner_r,
+            thumb_fill,
+            Stroke::new(1.0, if t.dark { with_alpha(t.foreground, 0.06) } else { with_alpha(t.border, 0.6) }),
+            StrokeKind::Inside,
+        );
         for (i, item) in self.items.iter().enumerate() {
             let ir = Rect::from_min_size(pos2(xs[i], rect.min.y + pad), vec2(widths[i], h - pad * 2.0));
             let iresp = ui.interact(ir, resp.id.with(i), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);

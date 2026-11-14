@@ -65,7 +65,12 @@ impl NavigationMenu {
     }
     /// Like [`Self::panel`] with a large gradient "featured" card on the left.
     pub fn featured_panel(mut self, label: impl Into<String>, featured: (&str, &str), links: Vec<NavMenuLink>) -> Self {
-        self.sections.push(NavSection::Panel { label: label.into(), links, columns: 1, featured: Some((featured.0.into(), featured.1.into())) });
+        self.sections.push(NavSection::Panel {
+            label: label.into(),
+            links,
+            columns: 1,
+            featured: Some((featured.0.into(), featured.1.into())),
+        });
         self
     }
     /// A plain top-level link.
@@ -158,7 +163,16 @@ impl NavigationMenu {
         // close when the pointer leaves both the row and the panel for a moment
         let pointer = ctx.pointer_hover_pos();
         let over_panel = pointer.is_some_and(|pp| panel_rect.is_some_and(|r| r.expand(6.0).contains(pp)));
-        let over_gap = pointer.is_some_and(|pp| open.is_some() && panel_rect.is_some_and(|r| Rect::from_min_max(pos2(r.min.x.min(row.min.x), row.max.y), pos2(r.max.x.max(row.max.x), r.min.y + 2.0)).contains(pp)));
+        let over_gap = pointer.is_some_and(|pp| {
+            open.is_some()
+                && panel_rect.is_some_and(|r| {
+                    Rect::from_min_max(
+                        pos2(r.min.x.min(row.min.x), row.max.y),
+                        pos2(r.max.x.max(row.max.x), r.min.y + 2.0),
+                    )
+                    .contains(pp)
+                })
+        });
         let forced: bool = glowkit_core::state(ui, id.with("forced"), || false);
         if open.is_some() && !any_trigger_hover && !over_panel && !over_gap && pointer.is_some() {
             let l = *left_at.get_or_insert(now);
@@ -180,7 +194,13 @@ impl NavigationMenu {
         let shown: Option<usize> = glowkit_core::state(ui, id.with("shown"), || None);
         if open.is_some() && open != shown {
             let dir = match (shown, open) {
-                (Some(a), Some(b)) => if b > a { 1.0 } else { -1.0 },
+                (Some(a), Some(b)) => {
+                    if b > a {
+                        1.0
+                    } else {
+                        -1.0
+                    }
+                }
                 _ => 0.0,
             };
             glowkit_core::set_state(ui, id.with("dir"), dir);
@@ -198,7 +218,11 @@ impl NavigationMenu {
                     let feat_w = if featured.is_some() { 210.0 } else { 0.0 };
                     let cols = (*columns).min(links.len().max(1));
                     let rows_n = links.len().div_ceil(cols);
-                    let pw = pad * 2.0 + feat_w + if feat_w > 0.0 { 8.0 } else { 0.0 } + cols as f32 * cell_w + (cols as f32 - 1.0) * 4.0;
+                    let pw = pad * 2.0
+                        + feat_w
+                        + if feat_w > 0.0 { 8.0 } else { 0.0 }
+                        + cols as f32 * cell_w
+                        + (cols as f32 - 1.0) * 4.0;
                     let ph = pad * 2.0 + rows_n as f32 * cell_h + (rows_n as f32 - 1.0).max(0.0) * 4.0;
                     let ph = if featured.is_some() { ph.max(220.0) } else { ph };
                     let sw = glowkit_core::anim::spring(ui, id.with("pw"), pw, 300.0, 30.0);
@@ -208,7 +232,10 @@ impl NavigationMenu {
                     glowkit_core::set_state(ui, id.with("panel_rect"), Some(rect));
                     let switched: f64 = glowkit_core::state(ui, id.with("switched"), || now);
                     let dir: f32 = glowkit_core::state(ui, id.with("dir"), || 0.0);
-                    let k = glowkit_core::ease(glowkit_core::Easing::OutCubic, ((now - switched) as f32 / 0.28).clamp(0.0, 1.0));
+                    let k = glowkit_core::ease(
+                        glowkit_core::Easing::OutCubic,
+                        ((now - switched) as f32 / 0.28).clamp(0.0, 1.0),
+                    );
                     if k < 1.0 {
                         ctx.request_repaint();
                     }
@@ -218,55 +245,104 @@ impl NavigationMenu {
                     // the arrow indicator under the active trigger
                     let tr = trig_rects[si];
                     let ax = glowkit_core::anim::spring(ui, id.with("ax"), tr.center().x, 300.0, 30.0);
-                    let res = kit::float_layer(&ctx, lid, Order::Foreground, rect.expand(12.0), clip, 0.97 + 0.03 * p_open, pos2(ax, rect.min.y), p_open, |ui| {
-                        ui.interact(rect, lid.with("block"), Sense::hover());
-                        let pnt = ui.painter().clone();
-                        kit::panel(&pnt, rect, &t, t.radius);
-                        kit::arrow(&pnt, pos2(ax, rect.min.y - 6.0), vec2(0.0, 1.0), 6.0, t.popover, t.border);
-                        let mut cp = pnt.with_clip_rect(rect.shrink(1.0).intersect(clip));
-                        cp.multiply_opacity(k);
-                        let mut out = None;
-                        let ox = rect.min.x + pad + content_dx;
-                        let oy = rect.min.y + pad;
-                        if let Some((ft, fd)) = featured {
-                            let fr = Rect::from_min_size(pos2(ox, oy), vec2(feat_w, ph - pad * 2.0));
-                            paint::gradient_rect(&cp, fr, t.radius * 0.8, 135.0, &[with_alpha(t.gradient[0], 0.9), with_alpha(t.gradient[1], 0.75)]);
-                            LineIcon::Sparkles.paint(&cp, Rect::from_min_size(fr.min + vec2(18.0, 18.0), vec2(26.0, 26.0)), Color32::WHITE);
-                            let dg = cp.layout(fd.clone(), FontId::proportional(13.0), with_alpha(Color32::WHITE, 0.85), feat_w - 36.0);
-                            let dy = fr.max.y - 18.0 - dg.size().y;
-                            cp.text(pos2(fr.min.x + 18.0, dy - 8.0), Align2::LEFT_BOTTOM, ft, FontId::proportional(17.0), Color32::WHITE);
-                            cp.galley(pos2(fr.min.x + 18.0, dy), dg, Color32::WHITE);
-                            let fresp = ui.interact(fr, lid.with("feat"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
-                            if fresp.clicked() {
-                                out = Some(ft.clone());
+                    let res = kit::float_layer(
+                        &ctx,
+                        lid,
+                        Order::Foreground,
+                        rect.expand(12.0),
+                        clip,
+                        0.97 + 0.03 * p_open,
+                        pos2(ax, rect.min.y),
+                        p_open,
+                        |ui| {
+                            ui.interact(rect, lid.with("block"), Sense::hover());
+                            let pnt = ui.painter().clone();
+                            kit::panel(&pnt, rect, &t, t.radius);
+                            kit::arrow(&pnt, pos2(ax, rect.min.y - 6.0), vec2(0.0, 1.0), 6.0, t.popover, t.border);
+                            let mut cp = pnt.with_clip_rect(rect.shrink(1.0).intersect(clip));
+                            cp.multiply_opacity(k);
+                            let mut out = None;
+                            let ox = rect.min.x + pad + content_dx;
+                            let oy = rect.min.y + pad;
+                            if let Some((ft, fd)) = featured {
+                                let fr = Rect::from_min_size(pos2(ox, oy), vec2(feat_w, ph - pad * 2.0));
+                                paint::gradient_rect(
+                                    &cp,
+                                    fr,
+                                    t.radius * 0.8,
+                                    135.0,
+                                    &[with_alpha(t.gradient[0], 0.9), with_alpha(t.gradient[1], 0.75)],
+                                );
+                                LineIcon::Sparkles.paint(
+                                    &cp,
+                                    Rect::from_min_size(fr.min + vec2(18.0, 18.0), vec2(26.0, 26.0)),
+                                    Color32::WHITE,
+                                );
+                                let dg = cp.layout(
+                                    fd.clone(),
+                                    FontId::proportional(13.0),
+                                    with_alpha(Color32::WHITE, 0.85),
+                                    feat_w - 36.0,
+                                );
+                                let dy = fr.max.y - 18.0 - dg.size().y;
+                                cp.text(
+                                    pos2(fr.min.x + 18.0, dy - 8.0),
+                                    Align2::LEFT_BOTTOM,
+                                    ft,
+                                    FontId::proportional(17.0),
+                                    Color32::WHITE,
+                                );
+                                cp.galley(pos2(fr.min.x + 18.0, dy), dg, Color32::WHITE);
+                                let fresp = ui
+                                    .interact(fr, lid.with("feat"), Sense::click())
+                                    .on_hover_cursor(CursorIcon::PointingHand);
+                                if fresp.clicked() {
+                                    out = Some(ft.clone());
+                                }
                             }
-                        }
-                        let gx = ox + feat_w + if feat_w > 0.0 { 8.0 } else { 0.0 };
-                        for (li, l) in links.iter().enumerate() {
-                            let (c, r) = (li % cols, li / cols);
-                            let cr = Rect::from_min_size(pos2(gx + c as f32 * (cell_w + 4.0), oy + r as f32 * (cell_h + 4.0)), vec2(cell_w, cell_h));
-                            let resp = ui.interact(cr, lid.with(("l", si, li)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
-                            let hv = kit::hover_anim(ui, lid.with(("l", si, li)), resp.hovered());
-                            cp.rect_filled(cr, t.radius * 0.7, kit::row_highlight(&t).gamma_multiply(hv));
-                            let mut tx = cr.min.x + 12.0;
-                            if let Some(ic) = l.icon {
-                                let ib = Rect::from_min_size(pos2(tx, cr.min.y + 12.0), vec2(28.0, 28.0));
-                                cp.rect_filled(ib, 7.0, mix(t.popover, t.accent, 0.15 + 0.1 * hv));
-                                ic.paint(&cp, ib.shrink(6.5), t.accent);
-                                tx += 38.0;
+                            let gx = ox + feat_w + if feat_w > 0.0 { 8.0 } else { 0.0 };
+                            for (li, l) in links.iter().enumerate() {
+                                let (c, r) = (li % cols, li / cols);
+                                let cr = Rect::from_min_size(
+                                    pos2(gx + c as f32 * (cell_w + 4.0), oy + r as f32 * (cell_h + 4.0)),
+                                    vec2(cell_w, cell_h),
+                                );
+                                let resp = ui
+                                    .interact(cr, lid.with(("l", si, li)), Sense::click())
+                                    .on_hover_cursor(CursorIcon::PointingHand);
+                                let hv = kit::hover_anim(ui, lid.with(("l", si, li)), resp.hovered());
+                                cp.rect_filled(cr, t.radius * 0.7, kit::row_highlight(&t).gamma_multiply(hv));
+                                let mut tx = cr.min.x + 12.0;
+                                if let Some(ic) = l.icon {
+                                    let ib = Rect::from_min_size(pos2(tx, cr.min.y + 12.0), vec2(28.0, 28.0));
+                                    cp.rect_filled(ib, 7.0, mix(t.popover, t.accent, 0.15 + 0.1 * hv));
+                                    ic.paint(&cp, ib.shrink(6.5), t.accent);
+                                    tx += 38.0;
+                                }
+                                cp.text(
+                                    pos2(tx, cr.min.y + 12.0),
+                                    Align2::LEFT_TOP,
+                                    &l.title,
+                                    FontId::proportional(13.8),
+                                    t.foreground,
+                                );
+                                let mut job = egui::text::LayoutJob::simple(
+                                    l.description.clone(),
+                                    FontId::proportional(12.5),
+                                    t.muted_foreground,
+                                    cr.max.x - tx - 10.0,
+                                );
+                                job.wrap.max_rows = 2;
+                                job.wrap.overflow_character = Some('…');
+                                let g = ui.fonts_mut(|f| f.layout_job(job));
+                                cp.galley(pos2(tx, cr.min.y + 31.0), g, t.muted_foreground);
+                                if resp.clicked() {
+                                    out = Some(l.title.clone());
+                                }
                             }
-                            cp.text(pos2(tx, cr.min.y + 12.0), Align2::LEFT_TOP, &l.title, FontId::proportional(13.8), t.foreground);
-                            let mut job = egui::text::LayoutJob::simple(l.description.clone(), FontId::proportional(12.5), t.muted_foreground, cr.max.x - tx - 10.0);
-                            job.wrap.max_rows = 2;
-                            job.wrap.overflow_character = Some('…');
-                            let g = ui.fonts_mut(|f| f.layout_job(job));
-                            cp.galley(pos2(tx, cr.min.y + 31.0), g, t.muted_foreground);
-                            if resp.clicked() {
-                                out = Some(l.title.clone());
-                            }
-                        }
-                        out
-                    });
+                            out
+                        },
+                    );
                     ctx.move_to_top(egui::LayerId::new(Order::Foreground, lid));
                     if let Some(c) = res.inner {
                         clicked = Some(c);
@@ -327,7 +403,11 @@ impl Menubar {
         let ctx = ui.ctx().clone();
         let id = ui.scope_id().with("glowkit_menubar");
         let font = FontId::proportional(13.5);
-        let widths: Vec<f32> = self.menus.iter().map(|(m, _)| ui.painter().layout_no_wrap(m.clone(), font.clone(), Color32::WHITE).size().x + 22.0).collect();
+        let widths: Vec<f32> = self
+            .menus
+            .iter()
+            .map(|(m, _)| ui.painter().layout_no_wrap(m.clone(), font.clone(), Color32::WHITE).size().x + 22.0)
+            .collect();
         let total = widths.iter().sum::<f32>() + 8.0 + 2.0 * widths.len() as f32;
         let (bar, _) = ui.allocate_exact_size(vec2(total, 40.0), Sense::hover());
         let p = ui.painter();
@@ -371,7 +451,12 @@ impl Menubar {
         let n = self.menus.len();
         for (i, (_, entries)) in self.menus.iter().enumerate() {
             let mid = id.with(("m", i));
-            let p_open = kit::follow_ctx(&ctx, mid.with("p"), if open == Some(i) { 1.0 } else { 0.0 }, if open == Some(i) { 20.0 } else { 30.0 });
+            let p_open = kit::follow_ctx(
+                &ctx,
+                mid.with("p"),
+                if open == Some(i) { 1.0 } else { 0.0 },
+                if open == Some(i) { 20.0 } else { 30.0 },
+            );
             let pop = kit::spring_ctx(&ctx, mid.with("pop"), if open == Some(i) { 1.0 } else { 0.0 }, 420.0, 28.0);
             if p_open < 0.01 && open != Some(i) {
                 continue;

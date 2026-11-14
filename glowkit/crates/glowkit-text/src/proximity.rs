@@ -114,7 +114,12 @@ impl Widget for ProximityText {
         let time = glowkit_core::time(ui);
         let text_rect = egui::Rect::from_center_size(rect.center(), glyphs.size);
         let pointer = resp.hover_pos().or_else(|| {
-            self.auto.then(|| pos2(text_rect.center().x + text_rect.width() * 0.55 * (time * 0.8).sin(), text_rect.center().y + self.size * 0.2 * (time * 1.7).cos()))
+            self.auto.then(|| {
+                pos2(
+                    text_rect.center().x + text_rect.width() * 0.55 * (time * 0.8).sin(),
+                    text_rect.center().y + self.size * 0.2 * (time * 1.7).cos(),
+                )
+            })
         });
         if self.auto {
             glowkit_core::animate(ui);
@@ -122,15 +127,20 @@ impl Widget for ProximityText {
         let dt = glowkit_core::dt(ui);
         let n = glyphs.glyphs.len();
         let falloff = self.falloff;
-        let emph = glowkit_core::with_state(ui, resp.id.with("prox"), || vec![0.0f32; n], |e| {
-            e.resize(n, 0.0);
-            for (v, g) in e.iter_mut().zip(&glyphs.glyphs) {
-                let c = text_rect.min + g.offset + g.size / 2.0;
-                let target = pointer.map(|p| falloff.apply(p.distance(c) / radius)).unwrap_or(0.0);
-                *v = approach(*v, target, 14.0, dt);
-            }
-            e.clone()
-        });
+        let emph = glowkit_core::with_state(
+            ui,
+            resp.id.with("prox"),
+            || vec![0.0f32; n],
+            |e| {
+                e.resize(n, 0.0);
+                for (v, g) in e.iter_mut().zip(&glyphs.glyphs) {
+                    let c = text_rect.min + g.offset + g.size / 2.0;
+                    let target = pointer.map(|p| falloff.apply(p.distance(c) / radius)).unwrap_or(0.0);
+                    *v = approach(*v, target, 14.0, dt);
+                }
+                e.clone()
+            },
+        );
         if emph.iter().any(|v| *v > 1e-3) || resp.hovered() {
             ui.ctx().request_repaint();
         }
@@ -140,7 +150,8 @@ impl Widget for ProximityText {
         let painter = ui.painter();
         let color = self.color.unwrap_or(t.foreground);
         // letters push each other apart as they grow
-        let grow: Vec<f32> = glyphs.glyphs.iter().zip(&emph).map(|(g, e)| g.size.x * (self.max_scale - 1.0) * e).collect();
+        let grow: Vec<f32> =
+            glyphs.glyphs.iter().zip(&emph).map(|(g, e)| g.size.x * (self.max_scale - 1.0) * e).collect();
         let total: f32 = grow.iter().sum();
         let mut acc = -total / 2.0;
         for (g, (e, gr)) in glyphs.glyphs.iter().zip(emph.iter().zip(&grow)) {
@@ -158,7 +169,16 @@ impl Widget for ProximityText {
             let center = text_rect.min + g.offset + g.size / 2.0 + vec2(shift - w / 2.0, -e * self.size * 0.04);
             util::paint_char_xf(painter, g.ch, &font, center, scale, 0.0, c, w);
             if *e > 0.25 {
-                util::paint_char_xf(painter, g.ch, &font, center + vec2(0.0, w * 0.4), scale, 0.0, c.gamma_multiply(0.8), w);
+                util::paint_char_xf(
+                    painter,
+                    g.ch,
+                    &font,
+                    center + vec2(0.0, w * 0.4),
+                    scale,
+                    0.0,
+                    c.gamma_multiply(0.8),
+                    w,
+                );
             }
         }
         resp

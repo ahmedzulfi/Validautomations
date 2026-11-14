@@ -24,7 +24,16 @@ pub struct BoxReveal {
 impl BoxReveal {
     /// Create the effect for `text`.
     pub fn new(text: impl Into<String>) -> Self {
-        Self { text: text.into(), size: 48.0, color: None, box_color: None, bold: true, duration: 0.9, delay: 0.0, trigger: Trigger::OnAppear }
+        Self {
+            text: text.into(),
+            size: 48.0,
+            color: None,
+            box_color: None,
+            bold: true,
+            duration: 0.9,
+            delay: 0.0,
+            trigger: Trigger::OnAppear,
+        }
     }
     /// Font size in points.
     pub fn size(mut self, size: f32) -> Self {
@@ -82,7 +91,10 @@ impl Widget for BoxReveal {
         let grow = ease(Easing::OutCubic, (p / 0.45).min(1.0));
         let leave = ease(Easing::InOutCubic, ((p - 0.45) / 0.55).clamp(0.0, 1.0));
         let w = rect.width();
-        let box_rect = Rect::from_min_max(pos2(rect.min.x + w * leave, rect.min.y + self.size * 0.08), pos2(rect.min.x + w * grow, rect.max.y - self.size * 0.02));
+        let box_rect = Rect::from_min_max(
+            pos2(rect.min.x + w * leave, rect.min.y + self.size * 0.08),
+            pos2(rect.min.x + w * grow, rect.max.y - self.size * 0.02),
+        );
         // text rises in once the box covers it
         let tp = ease(Easing::OutCubic, ((p - 0.4) / 0.6).clamp(0.0, 1.0));
         if tp > 0.0 {

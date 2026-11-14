@@ -55,7 +55,15 @@ impl<'a> ShimmerText<'a> {
 }
 
 /// Paint shimmering text with its top-left at `pos`; returns the rect.
-pub(crate) fn paint_shimmer(ui: &Ui, pos: Pos2, text: &str, size: f32, base: Color32, shine: Color32, speed: f32) -> Rect {
+pub(crate) fn paint_shimmer(
+    ui: &Ui,
+    pos: Pos2,
+    text: &str,
+    size: f32,
+    base: Color32,
+    shine: Color32,
+    speed: f32,
+) -> Rect {
     let g = ui.painter().layout_no_wrap(text.to_owned(), FontId::proportional(size), base);
     let rect = Rect::from_min_size(pos, g.size());
     let time = glowkit_core::time(ui);
@@ -141,7 +149,11 @@ impl Widget for TypingIndicator {
         if ui.is_rect_visible(rect) {
             let p = ui.painter();
             if self.bubble {
-                p.rect_filled(rect, CornerRadius { nw: 18, ne: 18, sw: 6, se: 18 }, if t.dark { t.secondary } else { t.muted });
+                p.rect_filled(
+                    rect,
+                    CornerRadius { nw: 18, ne: 18, sw: 6, se: 18 },
+                    if t.dark { t.secondary } else { t.muted },
+                );
             }
             let col = self.color.unwrap_or(t.muted_foreground);
             let time = glowkit_core::time(ui);
@@ -271,7 +283,11 @@ impl Widget for Loader<'_> {
                 for i in 0..3 {
                     let ph = ((time * 1.25 - i as f32 * 0.16).rem_euclid(1.0) * TAU).sin().max(0.0);
                     let x = c.x + (i as f32 - 1.0) * d * 1.75;
-                    p.circle_filled(pos2(x, c.y + d * 0.5 - ph * ph * d * 1.1), d / 2.0, with_alpha(col, 0.5 + 0.5 * ph));
+                    p.circle_filled(
+                        pos2(x, c.y + d * 0.5 - ph * ph * d * 1.1),
+                        d / 2.0,
+                        with_alpha(col, 0.5 + 0.5 * ph),
+                    );
                 }
             }
             LoaderKind::Pulse => {
@@ -286,7 +302,11 @@ impl Widget for Loader<'_> {
                     let ph = ((time * 1.3 - i as f32 * 0.12).rem_euclid(1.0) * TAU).sin() * 0.5 + 0.5;
                     let h = s * (0.25 + 0.65 * ph);
                     let x = rect.min.x + bw / 2.0 + i as f32 * (rect.width() - bw) / 4.0;
-                    p.rect_filled(Rect::from_center_size(pos2(x, c.y), vec2(bw, h)), CornerRadius::same((bw / 2.0) as u8), with_alpha(col, 0.5 + 0.5 * ph));
+                    p.rect_filled(
+                        Rect::from_center_size(pos2(x, c.y), vec2(bw, h)),
+                        CornerRadius::same((bw / 2.0) as u8),
+                        with_alpha(col, 0.5 + 0.5 * ph),
+                    );
                 }
             }
             LoaderKind::Circular => {
@@ -299,7 +319,11 @@ impl Widget for Loader<'_> {
                 for i in 0..n {
                     let k = (1.0 - (i as f32 - head).abs()).clamp(0.0, 1.0);
                     let x = rect.min.x + bw / 2.0 + i as f32 * bw * 1.6 + bw * 0.3;
-                    p.rect_filled(Rect::from_center_size(pos2(x, c.y), vec2(bw, s * 0.5)), CornerRadius::same(2), with_alpha(col, 0.2 + 0.8 * k));
+                    p.rect_filled(
+                        Rect::from_center_size(pos2(x, c.y), vec2(bw, s * 0.5)),
+                        CornerRadius::same(2),
+                        with_alpha(col, 0.2 + 0.8 * k),
+                    );
                 }
             }
             LoaderKind::TextShimmer | LoaderKind::TextBlink => {}

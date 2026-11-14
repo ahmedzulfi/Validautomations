@@ -2,7 +2,9 @@
 //! zoomable ruler.
 
 use crate::common::{self, icon_button, paint_icon, qfont, qmono, Icon};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, Pos2, Rect, Sense, Shape, Stroke, StrokeKind, Ui, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, Pos2, Rect, Sense, Shape, Stroke, StrokeKind, Ui, Vec2,
+};
 use glowkit_core::{color::with_alpha, noise, Theme};
 
 /// What a clip / track holds.
@@ -130,7 +132,17 @@ pub struct TimelineState {
 
 impl Default for TimelineState {
     fn default() -> Self {
-        Self { playhead: 0.0, playing: false, px_per_sec: 34.0, scroll: 0.0, selected: None, snapping: true, drag: None, snap_line: None, scrubbing: false }
+        Self {
+            playhead: 0.0,
+            playing: false,
+            px_per_sec: 34.0,
+            scroll: 0.0,
+            selected: None,
+            snapping: true,
+            drag: None,
+            snap_line: None,
+            scrubbing: false,
+        }
     }
 }
 
@@ -224,30 +236,67 @@ impl<'a> TimelineEditor<'a> {
         let t_of = move |x: f32| scroll + (x - lanes_x) / px;
 
         // ---- toolbar
-        let play_r = Rect::from_center_size(pos2(rect.left() + 30.0, rect.top() + TOOLBAR / 2.0 + 2.0), Vec2::splat(32.0));
+        let play_r =
+            Rect::from_center_size(pos2(rect.left() + 30.0, rect.top() + TOOLBAR / 2.0 + 2.0), Vec2::splat(32.0));
         let pr = ui.interact(play_r, id.with("play"), Sense::click());
         let ph = ui.ctx().animate_bool_with_time(id.with("playh"), pr.hovered(), 0.1);
         painter.circle_filled(play_r.center(), 15.0 + ph, t.accent);
-        paint_icon(&painter, play_r.shrink(9.0).translate(vec2(if st.playing { 0.0 } else { 1.0 }, 0.0)), if st.playing { Icon::Pause } else { Icon::Play }, t.accent_foreground);
+        paint_icon(
+            &painter,
+            play_r.shrink(9.0).translate(vec2(if st.playing { 0.0 } else { 1.0 }, 0.0)),
+            if st.playing { Icon::Pause } else { Icon::Play },
+            t.accent_foreground,
+        );
         if pr.on_hover_cursor(CursorIcon::PointingHand).clicked() {
             st.playing = !st.playing;
         }
         let tc = timecode(st.playhead, tl.fps);
         painter.text(pos2(rect.left() + 56.0, play_r.center().y), Align2::LEFT_CENTER, tc, qmono(16.0), t.foreground);
-        painter.text(pos2(rect.left() + 56.0 + 92.0, play_r.center().y + 1.0), Align2::LEFT_CENTER, format!("/ {}", timecode(tl.duration, tl.fps)), qmono(11.0), t.muted_foreground);
+        painter.text(
+            pos2(rect.left() + 56.0 + 92.0, play_r.center().y + 1.0),
+            Align2::LEFT_CENTER,
+            format!("/ {}", timecode(tl.duration, tl.fps)),
+            qmono(11.0),
+            t.muted_foreground,
+        );
         // zoom controls (right)
         let zr = Rect::from_min_size(pos2(rect.right() - 196.0, rect.top() + 9.0), vec2(186.0, 28.0));
-        if icon_button(ui, id.with("zo"), Rect::from_min_size(zr.min, Vec2::splat(28.0)), Icon::Minus, false, "Zoom out").clicked() {
+        if icon_button(
+            ui,
+            id.with("zo"),
+            Rect::from_min_size(zr.min, Vec2::splat(28.0)),
+            Icon::Minus,
+            false,
+            "Zoom out",
+        )
+        .clicked()
+        {
             st.px_per_sec = (st.px_per_sec / 1.4).max(4.0);
         }
-        if icon_button(ui, id.with("zi"), Rect::from_min_size(pos2(zr.right() - 28.0, zr.top()), Vec2::splat(28.0)), Icon::Plus, false, "Zoom in").clicked() {
+        if icon_button(
+            ui,
+            id.with("zi"),
+            Rect::from_min_size(pos2(zr.right() - 28.0, zr.top()), Vec2::splat(28.0)),
+            Icon::Plus,
+            false,
+            "Zoom in",
+        )
+        .clicked()
+        {
             st.px_per_sec = (st.px_per_sec * 1.4).min(400.0);
         }
-        let track_r = Rect::from_min_max(pos2(zr.left() + 34.0, zr.center().y - 2.0), pos2(zr.right() - 34.0, zr.center().y + 2.0));
+        let track_r = Rect::from_min_max(
+            pos2(zr.left() + 34.0, zr.center().y - 2.0),
+            pos2(zr.right() - 34.0, zr.center().y + 2.0),
+        );
         painter.rect_filled(track_r, CornerRadius::same(2), with_alpha(t.foreground, 0.12));
         let zk = ((st.px_per_sec / 4.0).ln() / (100.0f32).ln()).clamp(0.0, 1.0);
         let knob = pos2(track_r.left() + track_r.width() * zk, track_r.center().y);
-        let kresp = ui.interact(Rect::from_center_size(knob, Vec2::splat(16.0)).union(track_r.expand2(vec2(0.0, 6.0))), id.with("zk"), Sense::click_and_drag());
+        let kresp = ui.interact(
+            Rect::from_center_size(knob, Vec2::splat(16.0)).union(track_r.expand2(vec2(0.0, 6.0))),
+            id.with("zk"),
+            Sense::click_and_drag(),
+        );
         if let (true, Some(p)) = (kresp.dragged() || kresp.clicked(), kresp.interact_pointer_pos()) {
             let k = ((p.x - track_r.left()) / track_r.width()).clamp(0.0, 1.0);
             let anchor_t = st.playhead;
@@ -256,7 +305,11 @@ impl<'a> TimelineEditor<'a> {
             st.scroll = anchor_t - (ax - lanes_x) / st.px_per_sec;
         }
         let kh = ui.ctx().animate_bool_with_time(id.with("kh"), kresp.hovered() || kresp.dragged(), 0.1);
-        painter.rect_filled(Rect::from_min_max(track_r.min, pos2(knob.x, track_r.max.y)), CornerRadius::same(2), t.accent);
+        painter.rect_filled(
+            Rect::from_min_max(track_r.min, pos2(knob.x, track_r.max.y)),
+            CornerRadius::same(2),
+            t.accent,
+        );
         painter.circle(knob, 6.0 + kh * 1.5, t.foreground, Stroke::new(2.0, t.accent));
         // snapping toggle
         let snap_r = Rect::from_min_size(pos2(zr.left() - 40.0, zr.top()), Vec2::splat(28.0));
@@ -275,10 +328,24 @@ impl<'a> TimelineEditor<'a> {
             let major = ((s / step).round() * step - s).abs() < minor * 0.1;
             if s >= -1e-3 && s <= tl.duration + 1e-3 {
                 let h = if major { 10.0 } else { 5.0 };
-                rp.line_segment([pos2(x, ruler.bottom() - h), pos2(x, ruler.bottom())], Stroke::new(1.0, if major { t.muted_foreground } else { with_alpha(t.muted_foreground, 0.5) }));
+                rp.line_segment(
+                    [pos2(x, ruler.bottom() - h), pos2(x, ruler.bottom())],
+                    Stroke::new(1.0, if major { t.muted_foreground } else { with_alpha(t.muted_foreground, 0.5) }),
+                );
                 if major {
-                    let label = if step < 1.0 { format!("{s:.2}s") } else { let si = s.round() as i64; format!("{:02}:{:02}", si / 60, si % 60) };
-                    rp.text(pos2(x + 4.0, ruler.top() + 9.0), Align2::LEFT_CENTER, label, qmono(10.0), t.muted_foreground);
+                    let label = if step < 1.0 {
+                        format!("{s:.2}s")
+                    } else {
+                        let si = s.round() as i64;
+                        format!("{:02}:{:02}", si / 60, si % 60)
+                    };
+                    rp.text(
+                        pos2(x + 4.0, ruler.top() + 9.0),
+                        Align2::LEFT_CENTER,
+                        label,
+                        qmono(10.0),
+                        t.muted_foreground,
+                    );
                 }
             }
             s += minor;
@@ -308,22 +375,59 @@ impl<'a> TimelineEditor<'a> {
             lp.rect_filled(lane, CornerRadius::same(6), with_alpha(t.foreground, if t.dark { 0.025 } else { 0.05 }));
             // header
             let hr = Rect::from_min_max(pos2(rect.left() + 10.0, y), pos2(lanes_x - 8.0, y + h));
-            painter.rect(hr, CornerRadius::same(7), if t.dark { t.background } else { t.card }, Stroke::new(1.0, t.border), StrokeKind::Inside);
+            painter.rect(
+                hr,
+                CornerRadius::same(7),
+                if t.dark { t.background } else { t.card },
+                Stroke::new(1.0, t.border),
+                StrokeKind::Inside,
+            );
             let kind_col = match tr.kind {
                 ClipKind::Video => t.chart[0],
                 ClipKind::Audio => t.chart[4],
                 ClipKind::Title => t.chart[3],
                 ClipKind::Effect => t.chart[2],
             };
-            painter.rect_filled(Rect::from_min_size(hr.min + vec2(0.0, 6.0), vec2(3.0, h - 12.0)), CornerRadius::same(2), kind_col);
-            painter.text(pos2(hr.left() + 12.0, hr.center().y), Align2::LEFT_CENTER, &tr.name, qfont(12.5), if tr.muted { t.muted_foreground } else { t.foreground });
+            painter.rect_filled(
+                Rect::from_min_size(hr.min + vec2(0.0, 6.0), vec2(3.0, h - 12.0)),
+                CornerRadius::same(2),
+                kind_col,
+            );
+            painter.text(
+                pos2(hr.left() + 12.0, hr.center().y),
+                Align2::LEFT_CENTER,
+                &tr.name,
+                qfont(12.5),
+                if tr.muted { t.muted_foreground } else { t.foreground },
+            );
             for (k, (label, on)) in [("M", tr.muted), ("L", tr.locked)].iter().enumerate() {
-                let br = Rect::from_center_size(pos2(hr.right() - 14.0 - k as f32 * 24.0, hr.center().y), vec2(20.0, 18.0));
+                let br =
+                    Rect::from_center_size(pos2(hr.right() - 14.0 - k as f32 * 24.0, hr.center().y), vec2(20.0, 18.0));
                 let resp = ui.interact(br, id.with(("tg", ti, k)), Sense::click());
                 let hv = ui.ctx().animate_bool_with_time(id.with(("tgh", ti, k)), resp.hovered(), 0.1);
-                painter.rect(br, CornerRadius::same(4), if *on { with_alpha(if k == 0 { t.warning } else { t.destructive }, 0.25) } else { with_alpha(t.foreground, 0.05 + 0.06 * hv) }, Stroke::NONE, StrokeKind::Inside);
-                painter.text(br.center(), Align2::CENTER_CENTER, *label, qfont(10.0), if *on { t.foreground } else { t.muted_foreground });
-                if resp.on_hover_text(if k == 0 { "Mute" } else { "Lock" }).on_hover_cursor(CursorIcon::PointingHand).clicked() {
+                painter.rect(
+                    br,
+                    CornerRadius::same(4),
+                    if *on {
+                        with_alpha(if k == 0 { t.warning } else { t.destructive }, 0.25)
+                    } else {
+                        with_alpha(t.foreground, 0.05 + 0.06 * hv)
+                    },
+                    Stroke::NONE,
+                    StrokeKind::Inside,
+                );
+                painter.text(
+                    br.center(),
+                    Align2::CENTER_CENTER,
+                    *label,
+                    qfont(10.0),
+                    if *on { t.foreground } else { t.muted_foreground },
+                );
+                if resp
+                    .on_hover_text(if k == 0 { "Mute" } else { "Lock" })
+                    .on_hover_cursor(CursorIcon::PointingHand)
+                    .clicked()
+                {
                     toggles.push((ti, k as u8));
                 }
             }
@@ -343,13 +447,18 @@ impl<'a> TimelineEditor<'a> {
         for (ti, tr) in tl.tracks.iter().enumerate() {
             let lane = lane_rects[ti];
             for c in &tr.clips {
-                let r = Rect::from_min_max(pos2(x_of(c.start), lane.top() + 3.0), pos2(x_of(c.end()), lane.bottom() - 3.0));
+                let r =
+                    Rect::from_min_max(pos2(x_of(c.start), lane.top() + 3.0), pos2(x_of(c.end()), lane.bottom() - 3.0));
                 if !r.intersects(lanes) || tr.locked {
                     continue;
                 }
                 let resp = ui.interact(r.intersect(lanes), id.with(("clip", c.id)), Sense::click_and_drag());
                 // classify by where the press happened (the drag only starts after a threshold)
-                let p = if resp.drag_started() { ui.input(|i| i.pointer.press_origin()).or(pointer).unwrap_or_default() } else { pointer.unwrap_or_default() };
+                let p = if resp.drag_started() {
+                    ui.input(|i| i.pointer.press_origin()).or(pointer).unwrap_or_default()
+                } else {
+                    pointer.unwrap_or_default()
+                };
                 let edge = if (p.x - r.left()).abs() < 7.0 {
                     Some(Mode::TrimL)
                 } else if (p.x - r.right()).abs() < 7.0 {
@@ -366,7 +475,14 @@ impl<'a> TimelineEditor<'a> {
                 }
                 if resp.drag_started() {
                     st.selected = Some(c.id);
-                    st.drag = Some(ClipDrag { id: c.id, mode: edge.unwrap_or(Mode::Move), grab_t: t_of(p.x), start: c.start, len: c.len, track: ti });
+                    st.drag = Some(ClipDrag {
+                        id: c.id,
+                        mode: edge.unwrap_or(Mode::Move),
+                        grab_t: t_of(p.x),
+                        start: c.start,
+                        len: c.len,
+                        track: ti,
+                    });
                 }
             }
         }
@@ -390,7 +506,9 @@ impl<'a> TimelineEditor<'a> {
                 }
                 let tol = 8.0 / px;
                 let snapping = st.snapping && !ui.input(|i| i.modifiers.alt);
-                let target_track = lane_at(p.y).filter(|k| tl.tracks[*k].kind == tl.tracks[d.track].kind && !tl.tracks[*k].locked).unwrap_or(d.track);
+                let target_track = lane_at(p.y)
+                    .filter(|k| tl.tracks[*k].kind == tl.tracks[d.track].kind && !tl.tracks[*k].locked)
+                    .unwrap_or(d.track);
                 let mut new = (d.start, d.len);
                 match d.mode {
                     Mode::Move => {
@@ -449,7 +567,11 @@ impl<'a> TimelineEditor<'a> {
                         }
                     }
                 }
-                ui.ctx().set_cursor_icon(if d.mode == Mode::Move { CursorIcon::Grabbing } else { CursorIcon::ResizeColumn });
+                ui.ctx().set_cursor_icon(if d.mode == Mode::Move {
+                    CursorIcon::Grabbing
+                } else {
+                    CursorIcon::ResizeColumn
+                });
             }
             if ui.input(|i| !i.pointer.primary_down()) {
                 st.drag = None;
@@ -460,7 +582,9 @@ impl<'a> TimelineEditor<'a> {
             st.playing = !st.playing;
         }
         if let Some(sel) = st.selected {
-            if ui.rect_contains_pointer(rect) && (common::pressed(ui, egui::Key::Delete) || common::pressed(ui, egui::Key::Backspace)) {
+            if ui.rect_contains_pointer(rect)
+                && (common::pressed(ui, egui::Key::Delete) || common::pressed(ui, egui::Key::Backspace))
+            {
                 for tr in &mut tl.tracks {
                     tr.clips.retain(|c| c.id != sel);
                 }
@@ -479,13 +603,18 @@ impl<'a> TimelineEditor<'a> {
                 ClipKind::Effect => t.chart[2],
             };
             for c in &tr.clips {
-                let r = Rect::from_min_max(pos2(x_of(c.start), lane.top() + 3.0), pos2(x_of(c.end()), lane.bottom() - 3.0));
+                let r =
+                    Rect::from_min_max(pos2(x_of(c.start), lane.top() + 3.0), pos2(x_of(c.end()), lane.bottom() - 3.0));
                 if !r.intersects(lanes) {
                     continue;
                 }
                 let col = c.color.unwrap_or(base);
                 let sel = ui.ctx().animate_bool_with_time(id.with(("cs", c.id)), st.selected == Some(c.id), 0.12);
-                let hov = ui.ctx().animate_bool_with_time(id.with(("ch", c.id)), hovered.is_some_and(|h| h.0 == c.id) || st.drag.is_some_and(|d| d.id == c.id), 0.12);
+                let hov = ui.ctx().animate_bool_with_time(
+                    id.with(("ch", c.id)),
+                    hovered.is_some_and(|h| h.0 == c.id) || st.drag.is_some_and(|d| d.id == c.id),
+                    0.12,
+                );
                 let dim = if tr.muted { 0.45 } else { 1.0 };
                 let mut cp = lp.clone();
                 cp.set_opacity(dim);
@@ -503,18 +632,39 @@ impl<'a> TimelineEditor<'a> {
                         while x < strip.right() {
                             let tr_ = Rect::from_min_size(pos2(x, strip.top()), vec2(thumb_w - 1.0, strip.height()));
                             let seed = c.id as f32 * 3.1 + k as f32 * 0.7;
-                            let c1 = glowkit_core::color::hsv((noise::noise2(seed, 1.0) * 120.0 + c.id as f32 * 40.0) % 360.0, 0.45, 0.55);
-                            let c2 = glowkit_core::color::hsv((noise::noise2(seed, 5.0) * 120.0 + c.id as f32 * 40.0 + 40.0) % 360.0, 0.5, 0.3);
+                            let c1 = glowkit_core::color::hsv(
+                                (noise::noise2(seed, 1.0) * 120.0 + c.id as f32 * 40.0) % 360.0,
+                                0.45,
+                                0.55,
+                            );
+                            let c2 = glowkit_core::color::hsv(
+                                (noise::noise2(seed, 5.0) * 120.0 + c.id as f32 * 40.0 + 40.0) % 360.0,
+                                0.5,
+                                0.3,
+                            );
                             glowkit_core::paint::gradient_rect(&tcp, tr_, 2.0, 70.0, &[c1, c2]);
                             // a little "horizon" for depth
-                            tcp.line_segment([pos2(tr_.left(), tr_.center().y + 3.0), pos2(tr_.right(), tr_.center().y - 2.0)], Stroke::new(1.0, with_alpha(Color32::WHITE, 0.15)));
+                            tcp.line_segment(
+                                [pos2(tr_.left(), tr_.center().y + 3.0), pos2(tr_.right(), tr_.center().y - 2.0)],
+                                Stroke::new(1.0, with_alpha(Color32::WHITE, 0.15)),
+                            );
                             x += thumb_w;
                             k += 1;
                         }
-                        cp.text(inner.left_top() + vec2(6.0, 8.0), Align2::LEFT_CENTER, common::elide(&cp, &c.name, qfont(11.0), inner.width() - 10.0), qfont(11.0), Color32::WHITE);
+                        cp.text(
+                            inner.left_top() + vec2(6.0, 8.0),
+                            Align2::LEFT_CENTER,
+                            common::elide(&cp, &c.name, qfont(11.0), inner.width() - 10.0),
+                            qfont(11.0),
+                            Color32::WHITE,
+                        );
                     }
                     ClipKind::Audio => {
-                        cp.rect_filled(inner, CornerRadius::same(5), col.lerp_to_gamma(Color32::BLACK, if t.dark { 0.55 } else { 0.25 }));
+                        cp.rect_filled(
+                            inner,
+                            CornerRadius::same(5),
+                            col.lerp_to_gamma(Color32::BLACK, if t.dark { 0.55 } else { 0.25 }),
+                        );
                         let mid = inner.center().y + 5.0;
                         let bar = 3.0;
                         let x0 = inner.left().max(lanes.left());
@@ -522,24 +672,49 @@ impl<'a> TimelineEditor<'a> {
                         let wave_col = col.lerp_to_gamma(Color32::WHITE, 0.25);
                         while x < inner.right().min(lanes.right()) {
                             let ts_ = t_of(x) - c.start;
-                            let amp = (noise::noise2(ts_ * 3.0, c.id as f32) * 0.5 + 0.5).powf(1.5) * (0.6 + 0.4 * (ts_ * 1.7).sin().abs());
+                            let amp = (noise::noise2(ts_ * 3.0, c.id as f32) * 0.5 + 0.5).powf(1.5)
+                                * (0.6 + 0.4 * (ts_ * 1.7).sin().abs());
                             let h = (amp * (inner.height() - 18.0) * 0.5).max(1.0);
                             cp.line_segment([pos2(x, mid - h), pos2(x, mid + h)], Stroke::new(1.6, wave_col));
                             x += bar;
                         }
-                        cp.text(inner.left_top() + vec2(6.0, 8.0), Align2::LEFT_CENTER, common::elide(&cp, &c.name, qfont(11.0), inner.width() - 10.0), qfont(11.0), Color32::WHITE);
+                        cp.text(
+                            inner.left_top() + vec2(6.0, 8.0),
+                            Align2::LEFT_CENTER,
+                            common::elide(&cp, &c.name, qfont(11.0), inner.width() - 10.0),
+                            qfont(11.0),
+                            Color32::WHITE,
+                        );
                     }
                     _ => {
-                        glowkit_core::paint::gradient_rect(&cp, inner, 5.0, 0.0, &[col.lerp_to_gamma(Color32::BLACK, 0.2), col.lerp_to_gamma(Color32::BLACK, 0.45)]);
-                        cp.text(inner.left_center() + vec2(8.0, 0.0), Align2::LEFT_CENTER, common::elide(&cp, &c.name, qfont(11.5), inner.width() - 14.0), qfont(11.5), Color32::WHITE);
+                        glowkit_core::paint::gradient_rect(
+                            &cp,
+                            inner,
+                            5.0,
+                            0.0,
+                            &[col.lerp_to_gamma(Color32::BLACK, 0.2), col.lerp_to_gamma(Color32::BLACK, 0.45)],
+                        );
+                        cp.text(
+                            inner.left_center() + vec2(8.0, 0.0),
+                            Align2::LEFT_CENTER,
+                            common::elide(&cp, &c.name, qfont(11.5), inner.width() - 14.0),
+                            qfont(11.5),
+                            Color32::WHITE,
+                        );
                     }
                 }
-                let border = with_alpha(col.lerp_to_gamma(Color32::WHITE, 0.4), 0.6 + 0.4 * hov).lerp_to_gamma(t.foreground, sel);
+                let border = with_alpha(col.lerp_to_gamma(Color32::WHITE, 0.4), 0.6 + 0.4 * hov)
+                    .lerp_to_gamma(t.foreground, sel);
                 cp.rect_stroke(r, rr, Stroke::new(1.0 + sel * 1.2, border), StrokeKind::Inside);
                 if hov > 0.05 && r.width() > 24.0 {
                     // trim brackets
                     for (x, dir) in [(r.left() + 4.0, 1.0), (r.right() - 4.0, -1.0)] {
-                        let pts = vec![pos2(x + dir * 3.0, r.top() + 8.0), pos2(x, r.top() + 8.0), pos2(x, r.bottom() - 8.0), pos2(x + dir * 3.0, r.bottom() - 8.0)];
+                        let pts = vec![
+                            pos2(x + dir * 3.0, r.top() + 8.0),
+                            pos2(x, r.top() + 8.0),
+                            pos2(x, r.bottom() - 8.0),
+                            pos2(x + dir * 3.0, r.bottom() - 8.0),
+                        ];
                         cp.add(Shape::line(pts, Stroke::new(2.0, with_alpha(Color32::WHITE, 0.85 * hov))));
                     }
                 }
@@ -548,7 +723,14 @@ impl<'a> TimelineEditor<'a> {
         // snap line
         if let Some(sx) = st.snap_line {
             let x = x_of(sx);
-            common::dashed_polyline(&painter, &[pos2(x, ruler.top()), pos2(x, lanes.bottom())], 4.0, 3.0, 0.0, Stroke::new(1.2, t.warning));
+            common::dashed_polyline(
+                &painter,
+                &[pos2(x, ruler.top()), pos2(x, lanes.bottom())],
+                4.0,
+                3.0,
+                0.0,
+                Stroke::new(1.2, t.warning),
+            );
         }
         // ---- playhead
         let phx = x_of(st.playhead);
@@ -556,10 +738,21 @@ impl<'a> TimelineEditor<'a> {
             let col = t.destructive;
             painter.line_segment([pos2(phx, ruler.top()), pos2(phx, lanes.bottom())], Stroke::new(1.5, col));
             let top = ruler.top();
-            let head = vec![pos2(phx - 7.0, top), pos2(phx + 7.0, top), pos2(phx + 7.0, top + 10.0), pos2(phx, top + 17.0), pos2(phx - 7.0, top + 10.0)];
+            let head = vec![
+                pos2(phx - 7.0, top),
+                pos2(phx + 7.0, top),
+                pos2(phx + 7.0, top + 10.0),
+                pos2(phx, top + 17.0),
+                pos2(phx - 7.0, top + 10.0),
+            ];
             painter.add(Shape::convex_polygon(head, col, Stroke::NONE));
             if st.playing || st.scrubbing {
-                glowkit_core::paint::glow(&painter, pos2(phx, top + 8.0), 14.0 + 3.0 * (time * 6.0).sin(), with_alpha(col, 0.35));
+                glowkit_core::paint::glow(
+                    &painter,
+                    pos2(phx, top + 8.0),
+                    14.0 + 3.0 * (time * 6.0).sin(),
+                    with_alpha(col, 0.35),
+                );
             }
         }
         changed

@@ -31,13 +31,28 @@ fn header(ui: &mut Ui, id: egui::Id, icon: Icon, label: &str, busy: bool, open: 
     paint_icon(p, icon, Rect::from_center_size(pos2(rect.min.x + 8.0, rect.center().y), vec2(16.0, 16.0)), col);
     let tx = rect.min.x + 25.0;
     if busy {
-        paint_shimmer(ui, pos2(tx, rect.center().y - g.size().y / 2.0), label, size, t.muted_foreground, t.foreground, 1.6);
+        paint_shimmer(
+            ui,
+            pos2(tx, rect.center().y - g.size().y / 2.0),
+            label,
+            size,
+            t.muted_foreground,
+            t.foreground,
+            1.6,
+        );
     } else {
         ui.painter().galley(pos2(tx, rect.center().y - g.size().y / 2.0), g.clone(), col);
     }
     let mut x = tx + g.size().x + 8.0;
     if let Some(e) = extra {
-        let r = common::text(ui.painter(), pos2(x, rect.center().y), Align2::LEFT_CENTER, e, 12.0, with_alpha(t.muted_foreground, 0.75));
+        let r = common::text(
+            ui.painter(),
+            pos2(x, rect.center().y),
+            Align2::LEFT_CENTER,
+            e,
+            12.0,
+            with_alpha(t.muted_foreground, 0.75),
+        );
         x = r.max.x + 6.0;
     }
     common::chevron(ui.painter(), pos2(x + 5.0, rect.center().y), 9.0, col, open);
@@ -100,7 +115,11 @@ impl Widget for Reasoning<'_> {
         let t = Theme::of(ui);
         let id = common::widget_id(ui, self.id_salt);
         let now = ui.input(|i| i.time);
-        let mut st: ReasoningState = glowkit_core::state(ui, id.with("rs"), || ReasoningState { started: now, finished: None, was_streaming: self.streaming });
+        let mut st: ReasoningState = glowkit_core::state(ui, id.with("rs"), || ReasoningState {
+            started: now,
+            finished: None,
+            was_streaming: self.streaming,
+        });
         let user_key = id.with("user");
         if self.streaming && !st.was_streaming {
             st.started = now;
@@ -120,7 +139,11 @@ impl Widget for Reasoning<'_> {
         st.was_streaming = self.streaming;
         glowkit_core::set_state(ui, id.with("rs"), st);
         let secs = self.duration.unwrap_or_else(|| (st.finished.unwrap_or(now) - st.started) as f32);
-        let label = if self.streaming { "Thinking…".to_owned() } else { format!("Thought for {}", common::fmt_secs(secs.max(1.0))) };
+        let label = if self.streaming {
+            "Thinking…".to_owned()
+        } else {
+            format!("Thought for {}", common::fmt_secs(secs.max(1.0)))
+        };
         let (_, open_now) = common::toggle_state(ui, id, self.default_open || self.streaming, false);
         let resp = ui
             .vertical(|ui| {
@@ -135,10 +158,18 @@ impl Widget for Reasoning<'_> {
                     let avail = ui.available_rect_before_wrap();
                     let inner = Rect::from_min_max(avail.min + vec2(18.0, 2.0), avail.max);
                     let r = ui.scope_builder(egui::UiBuilder::new().max_rect(inner), |ui| {
-                        ui.add(Markdown::new(self.text).size(13.5).color(mix(t.muted_foreground, t.foreground, 0.12)).caret(self.streaming));
+                        ui.add(
+                            Markdown::new(self.text)
+                                .size(13.5)
+                                .color(mix(t.muted_foreground, t.foreground, 0.12))
+                                .caret(self.streaming),
+                        );
                     });
                     let rr = r.response.rect;
-                    ui.painter().line_segment([pos2(avail.min.x + 7.5, rr.min.y), pos2(avail.min.x + 7.5, rr.max.y)], Stroke::new(1.5, t.border));
+                    ui.painter().line_segment(
+                        [pos2(avail.min.x + 7.5, rr.min.y), pos2(avail.min.x + 7.5, rr.max.y)],
+                        Stroke::new(1.5, t.border),
+                    );
                     ui.add_space(4.0);
                 });
             })
@@ -269,9 +300,15 @@ impl Widget for ChainOfThought<'_> {
                     let lg = common::galley_wrapped(ui, s.label, 13.5, label_col, w - text_x);
                     let dg = s.description.map(|d| common::galley_wrapped(ui, d, 12.5, t.muted_foreground, w - text_x));
                     let chips_h = if s.chips.is_empty() { 0.0 } else { 30.0 };
-                    let h = lg.size().y + dg.as_ref().map(|g| g.size().y + 3.0).unwrap_or(0.0) + chips_h + if i + 1 < n { 16.0 } else { 2.0 };
+                    let h = lg.size().y
+                        + dg.as_ref().map(|g| g.size().y + 3.0).unwrap_or(0.0)
+                        + chips_h
+                        + if i + 1 < n { 16.0 } else { 2.0 };
                     let (rect, _) = ui.allocate_exact_size(vec2(w, h), Sense::hover());
-                    let c = pos2(rect.min.x + 10.0, rect.min.y + lg.rows.first().map(|r| r.row.size.y / 2.0).unwrap_or(9.0));
+                    let c = pos2(
+                        rect.min.x + 10.0,
+                        rect.min.y + lg.rows.first().map(|r| r.row.size.y / 2.0).unwrap_or(9.0),
+                    );
                     let p = ui.painter();
                     if let Some(pc) = prev_center {
                         p.line_segment([pos2(pc.x, pc.y + 12.0), pos2(c.x, c.y - 12.0)], Stroke::new(1.0, t.border));
@@ -287,7 +324,15 @@ impl Widget for ChainOfThought<'_> {
                     }
                     let mut y = rect.min.y;
                     if s.status == StepStatus::Active {
-                        paint_shimmer(ui, pos2(rect.min.x + text_x, y), s.label, 13.5, mix(t.muted_foreground, t.foreground, 0.3), t.foreground, 1.6);
+                        paint_shimmer(
+                            ui,
+                            pos2(rect.min.x + text_x, y),
+                            s.label,
+                            13.5,
+                            mix(t.muted_foreground, t.foreground, 0.3),
+                            t.foreground,
+                            1.6,
+                        );
                     } else {
                         ui.painter().galley(pos2(rect.min.x + text_x, y), lg.clone(), label_col);
                     }
@@ -307,8 +352,18 @@ impl Widget for ChainOfThought<'_> {
                             }
                             let p = ui.painter();
                             p.rect_filled(r, CornerRadius::same(6), common::raised(&t));
-                            p.rect_stroke(r, CornerRadius::same(6), Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
-                            paint_icon(p, Icon::Globe, Rect::from_center_size(pos2(r.min.x + 11.0, r.center().y), vec2(11.0, 11.0)), t.muted_foreground);
+                            p.rect_stroke(
+                                r,
+                                CornerRadius::same(6),
+                                Stroke::new(1.0, t.border),
+                                egui::StrokeKind::Inside,
+                            );
+                            paint_icon(
+                                p,
+                                Icon::Globe,
+                                Rect::from_center_size(pos2(r.min.x + 11.0, r.center().y), vec2(11.0, 11.0)),
+                                t.muted_foreground,
+                            );
                             p.galley(pos2(r.min.x + 19.0, r.center().y - g.size().y / 2.0), g, t.muted_foreground);
                             x = r.max.x + 6.0;
                         }

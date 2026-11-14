@@ -50,7 +50,16 @@ pub struct RadarChart<'a> {
 impl<'a> RadarChart<'a> {
     /// A radar chart; each series needs one value per axis.
     pub fn new(series: &'a [Series]) -> Self {
-        Self { series, labels: Vec::new(), base: Base::new(300.0), levels: 4, grid_shape: RadarGrid::Polygon, dots: true, fill_opacity: 0.28, max: None }
+        Self {
+            series,
+            labels: Vec::new(),
+            base: Base::new(300.0),
+            levels: 4,
+            grid_shape: RadarGrid::Polygon,
+            dots: true,
+            fill_opacity: 0.28,
+            max: None,
+        }
     }
     base_setters!();
     /// Axis labels.
@@ -110,9 +119,20 @@ impl Widget for RadarChart<'_> {
         let legend_on = self.base.legend && k > 1;
         let mut focus = None;
         if legend_on {
-            let entries: Vec<LegendEntry> = self.series.iter().enumerate().map(|(i, s)| LegendEntry { label: s.name.clone(), color: color_of(i) }).collect();
+            let entries: Vec<LegendEntry> = self
+                .series
+                .iter()
+                .enumerate()
+                .map(|(i, s)| LegendEntry { label: s.name.clone(), color: color_of(i) })
+                .collect();
             let before = hidden.clone();
-            focus = legend(ui, id, Rect::from_min_max(pos2(rect.left(), rect.bottom() - LEGEND_H), rect.max), &entries, &mut hidden);
+            focus = legend(
+                ui,
+                id,
+                Rect::from_min_max(pos2(rect.left(), rect.bottom() - LEGEND_H), rect.max),
+                &entries,
+                &mut hidden,
+            );
             if before != hidden {
                 set_hidden_state(ui, id, hidden.clone());
             }
@@ -120,14 +140,16 @@ impl Widget for RadarChart<'_> {
         if n < 3 || !ui.is_rect_visible(rect) {
             return resp;
         }
-        let area = Rect::from_min_max(rect.min, pos2(rect.right(), rect.bottom() - if legend_on { LEGEND_H } else { 0.0 }));
+        let area =
+            Rect::from_min_max(rect.min, pos2(rect.right(), rect.bottom() - if legend_on { LEGEND_H } else { 0.0 }));
         let c = area.center();
         let font = axis_font();
         let label_w = self.labels.iter().map(|l| text_width(&painter, l, &font)).fold(0.0, f32::max);
         let radius = ((area.width() / 2.0 - label_w - 14.0).min(area.height() / 2.0 - 28.0)).max(10.0);
         let data_max = self.series.iter().flat_map(|s| s.values.iter()).fold(0.0f64, |m, v| m.max(*v));
         let max = self.max.unwrap_or_else(|| nice_ticks(0.0, data_max, self.levels + 1).max).max(1e-9);
-        let mut targets: Vec<f32> = self.series.iter().flat_map(|s| (0..n).map(|i| s.values.get(i).copied().unwrap_or(0.0) as f32)).collect();
+        let mut targets: Vec<f32> =
+            self.series.iter().flat_map(|s| (0..n).map(|i| s.values.get(i).copied().unwrap_or(0.0) as f32)).collect();
         targets.extend(hidden.iter().map(|h| if *h { 0.0 } else { 1.0 }));
         let cur = tween(ui, id, &targets);
         let angle = |i: usize| -FRAC_PI_2 + i as f32 / n as f32 * TAU;
@@ -151,7 +173,8 @@ impl Widget for RadarChart<'_> {
             let a = ((p - c).y.atan2((p - c).x) + FRAC_PI_2).rem_euclid(TAU);
             ((a / TAU * n as f32).round() as usize) % n
         });
-        let halpha = glowkit_core::anim::follow(ui, id.with("hover_alpha"), if hover.is_some() { 1.0 } else { 0.0 }, 16.0);
+        let halpha =
+            glowkit_core::anim::follow(ui, id.with("hover_alpha"), if hover.is_some() { 1.0 } else { 0.0 }, 16.0);
         for i in 0..n {
             let hl = hover == Some(i);
             let col = if hl { t.muted_foreground.gamma_multiply(0.7) } else { gc };
@@ -160,7 +183,11 @@ impl Widget for RadarChart<'_> {
                 let d = dir(i);
                 let p = c + d * (radius + 10.0);
                 let align = if d.x.abs() < 0.2 {
-                    if d.y < 0.0 { Align2::CENTER_BOTTOM } else { Align2::CENTER_TOP }
+                    if d.y < 0.0 {
+                        Align2::CENTER_BOTTOM
+                    } else {
+                        Align2::CENTER_TOP
+                    }
                 } else if d.x > 0.0 {
                     Align2::LEFT_CENTER
                 } else {
@@ -182,7 +209,8 @@ impl Widget for RadarChart<'_> {
                 _ => 1.0,
             };
             let color = color_of(s);
-            let pts: Vec<Pos2> = (0..n).map(|i| c + dir(i) * radius * (cur[s * n + i] / max as f32).max(0.0) * grow).collect();
+            let pts: Vec<Pos2> =
+                (0..n).map(|i| c + dir(i) * radius * (cur[s * n + i] / max as f32).max(0.0) * grow).collect();
             fan_fill(&painter, c, &pts, with_alpha(color, self.fill_opacity * dim * vis));
             painter.add(Shape::closed_line(pts.clone(), Stroke::new(2.0, color.gamma_multiply(dim * vis))));
             if self.dots {
@@ -194,8 +222,24 @@ impl Widget for RadarChart<'_> {
             }
         }
         if let (Some(i), true) = (hover, self.base.tooltip) {
-            let rows: Vec<TipRow> = (0..k).filter(|s| !hidden[*s]).map(|s| TipRow::new(Some(color_of(s)), self.series[s].name.clone(), (self.base.format)(self.series[s].values.get(i).copied().unwrap_or(0.0)))).collect();
-            tooltip(ui, id, resp.hover_pos().unwrap_or(c), self.labels.get(i).map(|s| s.as_str()).unwrap_or(""), &rows, halpha);
+            let rows: Vec<TipRow> = (0..k)
+                .filter(|s| !hidden[*s])
+                .map(|s| {
+                    TipRow::new(
+                        Some(color_of(s)),
+                        self.series[s].name.clone(),
+                        (self.base.format)(self.series[s].values.get(i).copied().unwrap_or(0.0)),
+                    )
+                })
+                .collect();
+            tooltip(
+                ui,
+                id,
+                resp.hover_pos().unwrap_or(c),
+                self.labels.get(i).map(|s| s.as_str()).unwrap_or(""),
+                &rows,
+                halpha,
+            );
         }
         resp
     }
@@ -231,7 +275,18 @@ pub struct RadialBarChart<'a> {
 impl<'a> RadialBarChart<'a> {
     /// One ring per datum, outermost first.
     pub fn new(data: &'a [Datum]) -> Self {
-        Self { data, base: Base::new(280.0), max: None, sweep: 270.0, start: 0.0, inner: 0.3, track: true, labels: true, center_title: None, center_caption: None }
+        Self {
+            data,
+            base: Base::new(280.0),
+            max: None,
+            sweep: 270.0,
+            start: 0.0,
+            inner: 0.3,
+            track: true,
+            labels: true,
+            center_title: None,
+            center_caption: None,
+        }
     }
     base_setters!();
     /// Value of a full ring (default: the largest value).
@@ -303,7 +358,8 @@ impl Widget for RadialBarChart<'_> {
             }
             Some((((radius - d) / ring).floor() as usize).min(n - 1))
         });
-        let halpha = glowkit_core::anim::follow(ui, id.with("hover_alpha"), if hover.is_some() { 1.0 } else { 0.0 }, 16.0);
+        let halpha =
+            glowkit_core::anim::follow(ui, id.with("hover_alpha"), if hover.is_some() { 1.0 } else { 0.0 }, 16.0);
         let font = axis_font();
         for (i, d) in self.data.iter().enumerate() {
             let rm = radius - ring * (i as f32 + 0.5);
@@ -320,21 +376,43 @@ impl Widget for RadialBarChart<'_> {
             if self.labels && self.sweep < 359.0 {
                 let tangent = vec2(-a0.sin(), a0.cos());
                 let anchor = c + vec2(a0.cos(), a0.sin()) * rm - tangent * (w / 2.0 + 6.0);
-                painter.text(anchor, Align2::RIGHT_CENTER, &d.label, font.clone(), t.muted_foreground.lerp_to_gamma(t.foreground, if hover == Some(i) { 1.0 } else { 0.0 }));
+                painter.text(
+                    anchor,
+                    Align2::RIGHT_CENTER,
+                    &d.label,
+                    font.clone(),
+                    t.muted_foreground.lerp_to_gamma(t.foreground, if hover == Some(i) { 1.0 } else { 0.0 }),
+                );
             }
         }
         if self.center_title.is_some() || self.center_caption.is_some() {
             let size = (r_in * 0.5).clamp(14.0, 30.0);
             if let Some(tt) = &self.center_title {
-                painter.text(c - vec2(0.0, size * 0.2), Align2::CENTER_CENTER, tt, FontId::proportional(size), t.foreground);
+                painter.text(
+                    c - vec2(0.0, size * 0.2),
+                    Align2::CENTER_CENTER,
+                    tt,
+                    FontId::proportional(size),
+                    t.foreground,
+                );
             }
             if let Some(cc) = &self.center_caption {
-                painter.text(c + vec2(0.0, size * 0.6), Align2::CENTER_CENTER, cc, FontId::proportional(11.5), t.muted_foreground);
+                painter.text(
+                    c + vec2(0.0, size * 0.6),
+                    Align2::CENTER_CENTER,
+                    cc,
+                    FontId::proportional(11.5),
+                    t.muted_foreground,
+                );
             }
         }
         if let (Some(i), true) = (hover, self.base.tooltip) {
             let d = &self.data[i];
-            let row = TipRow::new(Some(d.color.unwrap_or_else(|| palette(&t, i))), d.label.clone(), (self.base.format)(d.value));
+            let row = TipRow::new(
+                Some(d.color.unwrap_or_else(|| palette(&t, i))),
+                d.label.clone(),
+                (self.base.format)(d.value),
+            );
             tooltip(ui, id, resp.hover_pos().unwrap_or(c), "", &[row], halpha);
         }
         resp
@@ -467,7 +545,12 @@ impl Widget for Gauge {
             arc_gradient(&painter, c, r, a0, end, self.thickness, |u| gradient(&colors, u * fv));
             painter.circle_filled(c + vec2(a0.cos(), a0.sin()) * r, self.thickness / 2.0, gradient(&colors, 0.0));
             painter.circle_filled(c + vec2(end.cos(), end.sin()) * r, self.thickness / 2.0, gradient(&colors, fv));
-            glowkit_core::paint::glow(&painter, c + vec2(end.cos(), end.sin()) * r, self.thickness * 1.6, with_alpha(gradient(&colors, fv), 0.35));
+            glowkit_core::paint::glow(
+                &painter,
+                c + vec2(end.cos(), end.sin()) * r,
+                self.thickness * 1.6,
+                with_alpha(gradient(&colors, fv), 0.35),
+            );
         }
         if self.ticks {
             for i in 0..=20 {
@@ -476,7 +559,13 @@ impl Widget for Gauge {
                 let major = i % 5 == 0;
                 let r0 = r - self.thickness / 2.0 - 5.0;
                 let r1 = r0 - if major { 7.0 } else { 3.5 };
-                painter.line_segment([c + d * r0, c + d * r1], Stroke::new(if major { 1.4 } else { 1.0 }, t.muted_foreground.gamma_multiply(if major { 0.7 } else { 0.4 })));
+                painter.line_segment(
+                    [c + d * r0, c + d * r1],
+                    Stroke::new(
+                        if major { 1.4 } else { 1.0 },
+                        t.muted_foreground.gamma_multiply(if major { 0.7 } else { 0.4 }),
+                    ),
+                );
             }
         }
         if self.needle {
@@ -492,13 +581,37 @@ impl Widget for Gauge {
         }
         let shown = self.min + span * fv as f64;
         let value_y = c.y + 26.0;
-        painter.text(pos2(c.x, value_y), Align2::CENTER_CENTER, format!("{}{}", (self.format)(shown), self.unit), FontId::proportional(26.0), t.foreground);
+        painter.text(
+            pos2(c.x, value_y),
+            Align2::CENTER_CENTER,
+            format!("{}{}", (self.format)(shown), self.unit),
+            FontId::proportional(26.0),
+            t.foreground,
+        );
         if !self.label.is_empty() {
-            painter.text(pos2(c.x, value_y + 22.0), Align2::CENTER_CENTER, &self.label, FontId::proportional(12.0), t.muted_foreground);
+            painter.text(
+                pos2(c.x, value_y + 22.0),
+                Align2::CENTER_CENTER,
+                &self.label,
+                FontId::proportional(12.0),
+                t.muted_foreground,
+            );
         }
         let font = axis_font();
-        painter.text(c + vec2(-r, self.thickness / 2.0 + 6.0), Align2::CENTER_TOP, (self.format)(self.min), font.clone(), t.muted_foreground);
-        painter.text(c + vec2(r, self.thickness / 2.0 + 6.0), Align2::CENTER_TOP, (self.format)(self.max), font, t.muted_foreground);
+        painter.text(
+            c + vec2(-r, self.thickness / 2.0 + 6.0),
+            Align2::CENTER_TOP,
+            (self.format)(self.min),
+            font.clone(),
+            t.muted_foreground,
+        );
+        painter.text(
+            c + vec2(r, self.thickness / 2.0 + 6.0),
+            Align2::CENTER_TOP,
+            (self.format)(self.max),
+            font,
+            t.muted_foreground,
+        );
         resp
     }
 }
@@ -528,7 +641,16 @@ pub struct DonutProgress {
 impl DonutProgress {
     /// Progress in `0..=1`.
     pub fn new(fraction: f32) -> Self {
-        Self { value: fraction.clamp(0.0, 1.0), size: 120.0, thickness: 10.0, color: None, gradient: None, label: String::new(), text: None, animate: true }
+        Self {
+            value: fraction.clamp(0.0, 1.0),
+            size: 120.0,
+            thickness: 10.0,
+            color: None,
+            gradient: None,
+            label: String::new(),
+            text: None,
+            animate: true,
+        }
     }
     /// Diameter in points (default 120).
     pub fn size(mut self, s: f32) -> Self {
@@ -597,9 +719,21 @@ impl Widget for DonutProgress {
             }
         }
         let txt = self.text.clone().unwrap_or_else(|| format!("{:.0}%", v * 100.0));
-        painter.text(c, Align2::CENTER_CENTER, txt, FontId::proportional((self.size * 0.2).clamp(12.0, 30.0)), t.foreground);
+        painter.text(
+            c,
+            Align2::CENTER_CENTER,
+            txt,
+            FontId::proportional((self.size * 0.2).clamp(12.0, 30.0)),
+            t.foreground,
+        );
         if !self.label.is_empty() {
-            painter.text(pos2(c.x, rect.bottom() - 8.0), Align2::CENTER_CENTER, &self.label, FontId::proportional(12.0), t.muted_foreground);
+            painter.text(
+                pos2(c.x, rect.bottom() - 8.0),
+                Align2::CENTER_CENTER,
+                &self.label,
+                FontId::proportional(12.0),
+                t.muted_foreground,
+            );
         }
         resp
     }

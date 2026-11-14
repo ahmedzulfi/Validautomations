@@ -54,7 +54,15 @@ pub struct ContextMeter<'a> {
 impl<'a> ContextMeter<'a> {
     /// `used` of `max` tokens.
     pub fn new(used: u64, max: u64) -> Self {
-        Self { used, max: max.max(1), segments: Vec::new(), cost: None, model: None, style: MeterStyle::Ring, colors: None }
+        Self {
+            used,
+            max: max.max(1),
+            segments: Vec::new(),
+            cost: None,
+            model: None,
+            style: MeterStyle::Ring,
+            colors: None,
+        }
     }
     /// Add a breakdown entry.
     pub fn segment(mut self, label: &'a str, tokens: u64) -> Self {
@@ -110,7 +118,11 @@ impl<'a> ContextMeter<'a> {
         ui.horizontal(|ui| {
             ui.label(egui::RichText::new(format!("{pct:.1}%")).size(13.0).color(t.foreground));
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                ui.label(egui::RichText::new(format!("{} / {}", format_tokens(self.used), format_tokens(self.max))).size(12.0).color(t.muted_foreground));
+                ui.label(
+                    egui::RichText::new(format!("{} / {}", format_tokens(self.used), format_tokens(self.max)))
+                        .size(12.0)
+                        .color(t.muted_foreground),
+                );
             });
         });
         let (bar, _) = ui.allocate_exact_size(vec2(width, 6.0), Sense::hover());
@@ -131,7 +143,14 @@ impl<'a> ContextMeter<'a> {
                 common::text(p, pos2(r.min.x, r.center().y), Align2::LEFT_CENTER, m, 12.5, t.muted_foreground);
             }
             if let Some(c) = self.cost {
-                common::text(p, pos2(r.max.x, r.center().y), Align2::RIGHT_CENTER, format!("${c:.4}"), 12.5, t.foreground);
+                common::text(
+                    p,
+                    pos2(r.max.x, r.center().y),
+                    Align2::RIGHT_CENTER,
+                    format!("${c:.4}"),
+                    12.5,
+                    t.foreground,
+                );
             }
         }
     }
@@ -141,7 +160,11 @@ impl<'a> ContextMeter<'a> {
         let r = CornerRadius::same((bar.height() / 2.0) as u8);
         p.rect_filled(bar, r, with_alpha(t.muted_foreground, 0.16));
         let mut x = bar.min.x;
-        let segs: Vec<(usize, u64)> = if self.segments.is_empty() { vec![(0, self.used)] } else { self.segments.iter().enumerate().map(|(i, s)| (i, s.1)).collect() };
+        let segs: Vec<(usize, u64)> = if self.segments.is_empty() {
+            vec![(0, self.used)]
+        } else {
+            self.segments.iter().enumerate().map(|(i, s)| (i, s.1)).collect()
+        };
         let clip = p.with_clip_rect(bar);
         let fill_w = bar.width() * self.frac();
         let mut fill = Vec::new();
@@ -189,7 +212,11 @@ impl Widget for ContextMeter<'_> {
                 if f > 0.0 {
                     paint::arc(p, c, 7.0, -FRAC_PI_2, -FRAC_PI_2 + TAU * f, 2.4, self.level_color(&t));
                 }
-                p.galley(pos2(rect.min.x + 29.0, rect.center().y - g.size().y / 2.0), g, t.muted_foreground.lerp_to_gamma(t.foreground, h));
+                p.galley(
+                    pos2(rect.min.x + 29.0, rect.center().y - g.size().y / 2.0),
+                    g,
+                    t.muted_foreground.lerp_to_gamma(t.foreground, h),
+                );
                 if resp.hovered() {
                     egui::Area::new(resp.id.with("card"))
                         .order(Order::Tooltip)
@@ -200,7 +227,12 @@ impl Widget for ContextMeter<'_> {
                                 .fill(t.popover)
                                 .stroke(Stroke::new(1.0, t.border))
                                 .corner_radius(t.corner())
-                                .shadow(egui::Shadow { offset: [0, 6], blur: 24, spread: 0, color: Color32::from_black_alpha(if t.dark { 120 } else { 30 }) })
+                                .shadow(egui::Shadow {
+                                    offset: [0, 6],
+                                    blur: 24,
+                                    spread: 0,
+                                    color: Color32::from_black_alpha(if t.dark { 120 } else { 30 }),
+                                })
                                 .inner_margin(egui::Margin::same(14))
                                 .show(ui, |ui| {
                                     ui.set_width(240.0);

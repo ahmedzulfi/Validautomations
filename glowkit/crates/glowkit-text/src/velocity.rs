@@ -86,7 +86,8 @@ impl Widget for ScrollVelocity {
         let font = util::font(self.size, false);
         let bold = util::weight(self.bold, self.size);
         let painter = ui.painter().clone();
-        let galleys: Vec<_> = self.rows.iter().map(|s| util::layout(&painter, format!("{s}{}", self.separator), &font)).collect();
+        let galleys: Vec<_> =
+            self.rows.iter().map(|s| util::layout(&painter, format!("{s}{}", self.separator), &font)).collect();
         let row_h = self.size * 1.2;
         let gap = self.size * 0.1;
         let w = self.width.unwrap_or(ui.available_width());
@@ -97,20 +98,25 @@ impl Widget for ScrollVelocity {
         let scroll = if resp.hovered() { ui.input(|i| i.smooth_scroll_delta.y) } else { 0.0 };
         let n = galleys.len();
         let speed = self.speed;
-        let st = glowkit_core::with_state(ui, resp.id.with("vel"), || VelState { offsets: vec![0.0; n], boost: 0.0, dir: 1.0 }, |s| {
-            s.offsets.resize(n, 0.0);
-            if scroll.abs() > 0.1 {
-                s.boost = (s.boost + scroll.abs() * 0.06).min(12.0);
-                s.dir = if scroll < 0.0 { 1.0 } else { -1.0 };
-            }
-            s.boost = approach(s.boost, 0.0, 2.5, dt);
-            for (i, (o, g)) in s.offsets.iter_mut().zip(&galleys).enumerate() {
-                let sign = if i % 2 == 0 { -1.0 } else { 1.0 };
-                let unit = g.size().x.max(1.0);
-                *o = (*o + sign * s.dir * speed * (1.0 + s.boost) * dt).rem_euclid(unit);
-            }
-            s.clone()
-        });
+        let st = glowkit_core::with_state(
+            ui,
+            resp.id.with("vel"),
+            || VelState { offsets: vec![0.0; n], boost: 0.0, dir: 1.0 },
+            |s| {
+                s.offsets.resize(n, 0.0);
+                if scroll.abs() > 0.1 {
+                    s.boost = (s.boost + scroll.abs() * 0.06).min(12.0);
+                    s.dir = if scroll < 0.0 { 1.0 } else { -1.0 };
+                }
+                s.boost = approach(s.boost, 0.0, 2.5, dt);
+                for (i, (o, g)) in s.offsets.iter_mut().zip(&galleys).enumerate() {
+                    let sign = if i % 2 == 0 { -1.0 } else { 1.0 };
+                    let unit = g.size().x.max(1.0);
+                    *o = (*o + sign * s.dir * speed * (1.0 + s.boost) * dt).rem_euclid(unit);
+                }
+                s.clone()
+            },
+        );
         if !ui.is_rect_visible(rect) {
             return resp;
         }

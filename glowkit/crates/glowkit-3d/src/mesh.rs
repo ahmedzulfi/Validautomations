@@ -388,7 +388,13 @@ impl Mesh {
         for (si, w) in profile.windows(2).enumerate() {
             let n_at = |pi: usize| -> (f32, f32) {
                 let own = seg_n[si];
-                let other = if pi == si { si.checked_sub(1) } else if si + 1 < seg_n.len() { Some(si + 1) } else { None };
+                let other = if pi == si {
+                    si.checked_sub(1)
+                } else if si + 1 < seg_n.len() {
+                    Some(si + 1)
+                } else {
+                    None
+                };
                 match other {
                     Some(o) if own.0 * seg_n[o].0 + own.1 * seg_n[o].1 > 0.82 => {
                         let (x, y) = (own.0 + seg_n[o].0, own.1 + seg_n[o].1);
@@ -489,10 +495,14 @@ impl Mesh {
     /// Regular dodecahedron with circumradius `r` (built as the dual of the icosahedron).
     pub fn dodecahedron(r: f32) -> Self {
         let (p, f) = icosahedron_data();
-        let centers: Vec<Vec3> = f.iter().map(|t| ((p[t[0] as usize] + p[t[1] as usize] + p[t[2] as usize]) / 3.0).normalized() * r).collect();
+        let centers: Vec<Vec3> = f
+            .iter()
+            .map(|t| ((p[t[0] as usize] + p[t[1] as usize] + p[t[2] as usize]) / 3.0).normalized() * r)
+            .collect();
         let mut faces = Vec::new();
         for (vi, v) in p.iter().enumerate() {
-            let mut around: Vec<u32> = f.iter().enumerate().filter(|(_, t)| t.contains(&(vi as u32))).map(|(i, _)| i as u32).collect();
+            let mut around: Vec<u32> =
+                f.iter().enumerate().filter(|(_, t)| t.contains(&(vi as u32))).map(|(i, _)| i as u32).collect();
             let u = v.any_orthogonal();
             let w = v.cross(u);
             around.sort_by(|&a, &b| {
@@ -687,23 +697,50 @@ pub mod models {
         let white = hex("#F4F4F5");
         let red = hex("#EF4444");
         let body = Mesh::lathe(
-            &[(0.0, -1.05), (0.30, -1.05), (0.40, -0.75), (0.46, -0.3), (0.47, 0.1), (0.44, 0.45), (0.36, 0.78), (0.24, 1.05), (0.11, 1.25), (0.0, 1.35)],
+            &[
+                (0.0, -1.05),
+                (0.30, -1.05),
+                (0.40, -0.75),
+                (0.46, -0.3),
+                (0.47, 0.1),
+                (0.44, 0.45),
+                (0.36, 0.78),
+                (0.24, 1.05),
+                (0.11, 1.25),
+                (0.0, 1.35),
+            ],
             24,
         )
         .paint(|p, _| if p.y > 0.72 { red } else { white });
         let mut m = body;
-        let nozzle = Mesh::cylinder(0.26, 0.34, 0.3, 20).transformed(&Mat4::translation(vec3(0.0, -1.18, 0.0))).with_color(hex("#52525B"));
+        let nozzle = Mesh::cylinder(0.26, 0.34, 0.3, 20)
+            .transformed(&Mat4::translation(vec3(0.0, -1.18, 0.0)))
+            .with_color(hex("#52525B"));
         m.merge(&nozzle);
         for i in 0..3 {
             let a = i as f32 / 3.0 * TAU;
-            let pts = [vec3(0.3, -1.1, -0.04), vec3(0.85, -1.25, -0.04), vec3(0.42, -0.35, -0.04), vec3(0.3, -1.1, 0.04), vec3(0.85, -1.25, 0.04), vec3(0.42, -0.35, 0.04)];
+            let pts = [
+                vec3(0.3, -1.1, -0.04),
+                vec3(0.85, -1.25, -0.04),
+                vec3(0.42, -0.35, -0.04),
+                vec3(0.3, -1.1, 0.04),
+                vec3(0.85, -1.25, 0.04),
+                vec3(0.42, -0.35, 0.04),
+            ];
             let c = pts.iter().fold(Vec3::ZERO, |s, p| s + *p) / 6.0;
-            let fin = Mesh::polyhedron(&pts.map(|p| p - c), &[vec![0, 1, 2], vec![3, 4, 5], vec![0, 1, 4, 3], vec![1, 2, 5, 4], vec![2, 0, 3, 5]]);
+            let fin = Mesh::polyhedron(
+                &pts.map(|p| p - c),
+                &[vec![0, 1, 2], vec![3, 4, 5], vec![0, 1, 4, 3], vec![1, 2, 5, 4], vec![2, 0, 3, 5]],
+            );
             m.merge(&fin.transformed(&(Mat4::rotation_y(a) * Mat4::translation(c))).with_color(red));
         }
-        let ring = Mesh::torus(0.17, 0.035, 20, 8).transformed(&(Mat4::translation(vec3(0.0, 0.32, 0.45)) * Mat4::rotation_x(PI / 2.0))).with_color(hex("#A1A1AA"));
+        let ring = Mesh::torus(0.17, 0.035, 20, 8)
+            .transformed(&(Mat4::translation(vec3(0.0, 0.32, 0.45)) * Mat4::rotation_x(PI / 2.0)))
+            .with_color(hex("#A1A1AA"));
         m.merge(&ring);
-        let glass = Mesh::uv_sphere(0.15, 16, 8).transformed(&(Mat4::translation(vec3(0.0, 0.32, 0.4)) * Mat4::scale(vec3(1.0, 1.0, 0.45)))).with_color(hex("#38BDF8"));
+        let glass = Mesh::uv_sphere(0.15, 16, 8)
+            .transformed(&(Mat4::translation(vec3(0.0, 0.32, 0.4)) * Mat4::scale(vec3(1.0, 1.0, 0.45))))
+            .with_color(hex("#38BDF8"));
         m.merge(&glass);
         m
     }
@@ -717,7 +754,17 @@ pub mod models {
     pub fn mug() -> Mesh {
         let body_c = hex("#FAFAFA");
         let mut m = Mesh::lathe(
-            &[(0.0, -0.6), (0.52, -0.6), (0.6, -0.52), (0.62, -0.3), (0.64, 0.55), (0.64, 0.6), (0.56, 0.6), (0.56, -0.48), (0.0, -0.48)],
+            &[
+                (0.0, -0.6),
+                (0.52, -0.6),
+                (0.6, -0.52),
+                (0.62, -0.3),
+                (0.64, 0.55),
+                (0.64, 0.6),
+                (0.56, 0.6),
+                (0.56, -0.48),
+                (0.0, -0.48),
+            ],
             32,
         )
         .with_color(body_c);
@@ -792,7 +839,6 @@ f 1 5 6
     pub fn paper_plane() -> Mesh {
         Mesh::from_obj(PAPER_PLANE_OBJ).unwrap_or_default()
     }
-
 }
 
 #[cfg(test)]
@@ -839,7 +885,9 @@ mod tests {
 
     #[test]
     fn closed_solids_point_outward() {
-        for m in [Mesh::cube(1.0), Mesh::uv_sphere(1.0, 12, 6), Mesh::dodecahedron(1.0), Mesh::cylinder(0.5, 0.5, 1.0, 8)] {
+        for m in
+            [Mesh::cube(1.0), Mesh::uv_sphere(1.0, 12, 6), Mesh::dodecahedron(1.0), Mesh::cylinder(0.5, 0.5, 1.0, 8)]
+        {
             for t in &m.indices {
                 let [a, b, c] = t.map(|i| m.positions[i as usize]);
                 let f = (b - a).cross(c - a);

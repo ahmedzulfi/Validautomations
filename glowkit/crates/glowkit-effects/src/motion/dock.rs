@@ -79,7 +79,16 @@ pub struct Dock<'a> {
 impl<'a> Dock<'a> {
     /// A dock over `items`.
     pub fn new(items: &'a [DockItem]) -> Self {
-        Self { items, size: 46.0, magnification: 1.75, distance: 150.0, gap: 10.0, style: DockStyle::Tiles, labels: true, autoplay: false }
+        Self {
+            items,
+            size: 46.0,
+            magnification: 1.75,
+            distance: 150.0,
+            gap: 10.0,
+            style: DockStyle::Tiles,
+            labels: true,
+            autoplay: false,
+        }
     }
     /// Resting icon size in points.
     pub fn size(mut self, s: f32) -> Self {
@@ -134,9 +143,13 @@ impl<'a> Dock<'a> {
         let base_w = n as f32 * self.size + (n as f32 - 1.0) * self.gap + pad * 2.0;
         let base_left = rect.center().x - base_w / 2.0;
         let base_center = |i: usize| base_left + pad + self.size / 2.0 + i as f32 * (self.size + self.gap);
-        let hot_zone = Rect::from_min_max(pos2(base_left - 20.0, panel_bottom - big - pad - 8.0), pos2(base_left + base_w + 20.0, panel_bottom));
+        let hot_zone = Rect::from_min_max(
+            pos2(base_left - 20.0, panel_bottom - big - pad - 8.0),
+            pos2(base_left + base_w + 20.0, panel_bottom),
+        );
 
-        let real = ui.input(|i| i.pointer.hover_pos()).filter(|p| hot_zone.contains(*p) && ui.rect_contains_pointer(hot_zone));
+        let real =
+            ui.input(|i| i.pointer.hover_pos()).filter(|p| hot_zone.contains(*p) && ui.rect_contains_pointer(hot_zone));
         let now = glowkit_core::time(ui);
         let mut pointer_x = real.map(|p| p.x);
         let mut sim_click = None;
@@ -151,7 +164,8 @@ impl<'a> Dock<'a> {
             let prev: f32 = glowkit_core::state(ui, id.with("auto_k"), || k);
             if prev != k {
                 if let Some(x) = pointer_x {
-                    sim_click = (0..n).min_by(|a, b| (base_center(*a) - x).abs().total_cmp(&(base_center(*b) - x).abs()));
+                    sim_click =
+                        (0..n).min_by(|a, b| (base_center(*a) - x).abs().total_cmp(&(base_center(*b) - x).abs()));
                 }
             }
             glowkit_core::set_state(ui, id.with("auto_k"), k);
@@ -181,14 +195,21 @@ impl<'a> Dock<'a> {
             x += s + self.gap;
         }
         let items_top = item_rects.iter().map(|r| r.min.y).fold(panel_bottom - pad - self.size, f32::min);
-        let panel = Rect::from_min_max(pos2(left, (items_top - pad).min(panel_bottom - panel_h)), pos2(left + total_w, panel_bottom));
-        let hovered = real.and_then(|p| item_rects.iter().position(|r| r.expand2(vec2(self.gap / 2.0, pad)).contains(p))).or_else(|| {
-            if real.is_none() {
-                pointer_x.and_then(|px| item_rects.iter().position(|r| px >= r.min.x - self.gap / 2.0 && px <= r.max.x + self.gap / 2.0))
-            } else {
-                None
-            }
-        });
+        let panel = Rect::from_min_max(
+            pos2(left, (items_top - pad).min(panel_bottom - panel_h)),
+            pos2(left + total_w, panel_bottom),
+        );
+        let hovered = real
+            .and_then(|p| item_rects.iter().position(|r| r.expand2(vec2(self.gap / 2.0, pad)).contains(p)))
+            .or_else(|| {
+                if real.is_none() {
+                    pointer_x.and_then(|px| {
+                        item_rects.iter().position(|r| px >= r.min.x - self.gap / 2.0 && px <= r.max.x + self.gap / 2.0)
+                    })
+                } else {
+                    None
+                }
+            });
         let mut clicked = None;
         if response.clicked() {
             if let Some(p) = response.interact_pointer_pos() {
@@ -232,21 +253,45 @@ impl<'a> Dock<'a> {
             });
             match self.style {
                 DockStyle::Tiles => {
-                    paint::soft_shadow(&painter, r, r.width() * 0.24, 10.0, vec2(0.0, 3.0), with_alpha(Color32::BLACK, if t.dark { 0.35 } else { 0.15 }));
+                    paint::soft_shadow(
+                        &painter,
+                        r,
+                        r.width() * 0.24,
+                        10.0,
+                        vec2(0.0, 3.0),
+                        with_alpha(Color32::BLACK, if t.dark { 0.35 } else { 0.15 }),
+                    );
                     icon_tile(&painter, r, r.width() * 0.24, colors, &item.icon, 1.0);
                 }
                 DockStyle::Minimal => {
-                    let hov = glowkit_core::anim::follow(ui, id.with(("hv", i)), if hovered == Some(i) { 1.0 } else { 0.0 }, 14.0);
+                    let hov = glowkit_core::anim::follow(
+                        ui,
+                        id.with(("hv", i)),
+                        if hovered == Some(i) { 1.0 } else { 0.0 },
+                        14.0,
+                    );
                     let bg = mix(t.muted, t.secondary, hov);
                     painter.circle(r.center(), r.width() / 2.0, bg, Stroke::new(1.0, t.border));
-                    painter.text(r.center(), Align2::CENTER_CENTER, &item.icon, FontId::proportional(r.height() * 0.42), mix(t.muted_foreground, t.foreground, 0.5 + hov * 0.5));
+                    painter.text(
+                        r.center(),
+                        Align2::CENTER_CENTER,
+                        &item.icon,
+                        FontId::proportional(r.height() * 0.42),
+                        mix(t.muted_foreground, t.foreground, 0.5 + hov * 0.5),
+                    );
                 }
             }
             if item.active {
                 painter.circle_filled(pos2(r.center().x, panel.max.y - 3.5), 2.0, t.foreground.gamma_multiply(0.75));
             }
             if self.labels {
-                let show = glowkit_core::anim::spring(ui, id.with(("tip", i)), if hovered == Some(i) { 1.0 } else { 0.0 }, 380.0, 26.0);
+                let show = glowkit_core::anim::spring(
+                    ui,
+                    id.with(("tip", i)),
+                    if hovered == Some(i) { 1.0 } else { 0.0 },
+                    380.0,
+                    26.0,
+                );
                 if show > 0.02 {
                     let a = show.clamp(0.0, 1.0);
                     let font = FontId::proportional(12.5);
@@ -254,8 +299,20 @@ impl<'a> Dock<'a> {
                     let size = g.size() + vec2(18.0, 10.0);
                     let c = pos2(r.center().x, r.min.y - 12.0 - size.y / 2.0 + (1.0 - show) * 8.0);
                     let tip = Rect::from_center_size(c, size * (0.85 + 0.15 * show));
-                    painter.rect(tip, CornerRadius::same(7), with_alpha(t.foreground, a * 0.95), Stroke::NONE, StrokeKind::Inside);
-                    painter.text(tip.center(), Align2::CENTER_CENTER, &item.label, FontId::proportional(12.5), with_alpha(t.background, a));
+                    painter.rect(
+                        tip,
+                        CornerRadius::same(7),
+                        with_alpha(t.foreground, a * 0.95),
+                        Stroke::NONE,
+                        StrokeKind::Inside,
+                    );
+                    painter.text(
+                        tip.center(),
+                        Align2::CENTER_CENTER,
+                        &item.label,
+                        FontId::proportional(12.5),
+                        with_alpha(t.background, a),
+                    );
                 }
             }
         }

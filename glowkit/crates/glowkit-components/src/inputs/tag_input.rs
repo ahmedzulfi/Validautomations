@@ -1,6 +1,9 @@
 use super::field::FieldLabel;
 use super::kit::{self, control_radius, UiIcon};
-use egui::{pos2, vec2, Align, Color32, CornerRadius, CursorIcon, FontId, Layout, Rect, Response, RichText, Sense, Shape, Stroke, StrokeKind, TextEdit, Ui, Widget};
+use egui::{
+    pos2, vec2, Align, Color32, CornerRadius, CursorIcon, FontId, Layout, Rect, Response, RichText, Sense, Shape,
+    Stroke, StrokeKind, TextEdit, Ui, Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
@@ -26,7 +29,9 @@ pub struct TagInput<'a> {
 impl<'a> TagInput<'a> {
     /// A tag input editing `tags`.
     pub fn new(tags: &'a mut Vec<String>) -> Self {
-        Self { tags, placeholder: "Add tag…".into(), label: None, max_tags: None, width: None, allow_duplicates: false }
+        Self {
+            tags, placeholder: "Add tag…".into(), label: None, max_tags: None, width: None, allow_duplicates: false
+        }
     }
     /// Placeholder for the text field.
     pub fn placeholder(mut self, p: impl Into<String>) -> Self {
@@ -74,66 +79,92 @@ impl Widget for TagInput<'_> {
             let mut remove: Option<usize> = None;
             let mut changed = false;
             let full = self.max_tags.map(|m| self.tags.len() >= m).unwrap_or(false);
-            let inner = egui::Frame::NONE.inner_margin(egui::Margin { left: 6, right: 6, top: 5, bottom: 5 }).show(ui, |ui| {
-                ui.set_width(width - 12.0);
-                ui.horizontal_wrapped(|ui| {
-                    ui.spacing_mut().item_spacing = vec2(5.0, 5.0);
-                    for (i, tag) in self.tags.iter().enumerate() {
-                        let g = ui.painter().layout_no_wrap(tag.clone(), FontId::proportional(13.0), t.secondary_foreground);
-                        let size = vec2(g.size().x + 10.0 + 20.0, 24.0);
-                        let (r, _) = ui.allocate_exact_size(size, Sense::hover());
-                        let appear = kit::anim(ui, id.with(("tag", tag.as_str())), true, 0.2);
-                        let rr = Rect::from_center_size(r.center(), r.size() * (0.85 + 0.15 * appear));
-                        ui.painter().rect(rr, CornerRadius::same(5), with_alpha(t.secondary, appear), Stroke::new(1.0, with_alpha(t.border, appear)), StrokeKind::Inside);
-                        ui.painter().galley(pos2(rr.min.x + 9.0, rr.center().y - g.size().y / 2.0), g, with_alpha(t.secondary_foreground, appear));
-                        let xr = Rect::from_center_size(pos2(rr.max.x - 11.0, rr.center().y), vec2(16.0, 16.0));
-                        let x = ui.interact(xr, id.with(("x", i)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
-                        if x.hovered() {
-                            ui.painter().rect_filled(xr, CornerRadius::same(3), with_alpha(t.muted_foreground, 0.18));
+            let inner =
+                egui::Frame::NONE.inner_margin(egui::Margin { left: 6, right: 6, top: 5, bottom: 5 }).show(ui, |ui| {
+                    ui.set_width(width - 12.0);
+                    ui.horizontal_wrapped(|ui| {
+                        ui.spacing_mut().item_spacing = vec2(5.0, 5.0);
+                        for (i, tag) in self.tags.iter().enumerate() {
+                            let g = ui.painter().layout_no_wrap(
+                                tag.clone(),
+                                FontId::proportional(13.0),
+                                t.secondary_foreground,
+                            );
+                            let size = vec2(g.size().x + 10.0 + 20.0, 24.0);
+                            let (r, _) = ui.allocate_exact_size(size, Sense::hover());
+                            let appear = kit::anim(ui, id.with(("tag", tag.as_str())), true, 0.2);
+                            let rr = Rect::from_center_size(r.center(), r.size() * (0.85 + 0.15 * appear));
+                            ui.painter().rect(
+                                rr,
+                                CornerRadius::same(5),
+                                with_alpha(t.secondary, appear),
+                                Stroke::new(1.0, with_alpha(t.border, appear)),
+                                StrokeKind::Inside,
+                            );
+                            ui.painter().galley(
+                                pos2(rr.min.x + 9.0, rr.center().y - g.size().y / 2.0),
+                                g,
+                                with_alpha(t.secondary_foreground, appear),
+                            );
+                            let xr = Rect::from_center_size(pos2(rr.max.x - 11.0, rr.center().y), vec2(16.0, 16.0));
+                            let x = ui
+                                .interact(xr, id.with(("x", i)), Sense::click())
+                                .on_hover_cursor(CursorIcon::PointingHand);
+                            if x.hovered() {
+                                ui.painter().rect_filled(
+                                    xr,
+                                    CornerRadius::same(3),
+                                    with_alpha(t.muted_foreground, 0.18),
+                                );
+                            }
+                            UiIcon::X.paint(
+                                ui.painter(),
+                                xr.shrink(2.5),
+                                if x.hovered() { t.foreground } else { t.muted_foreground },
+                            );
+                            if x.clicked() {
+                                remove = Some(i);
+                            }
                         }
-                        UiIcon::X.paint(ui.painter(), xr.shrink(2.5), if x.hovered() { t.foreground } else { t.muted_foreground });
-                        if x.clicked() {
-                            remove = Some(i);
+                        let hint = if full { String::new() } else { self.placeholder.clone() };
+                        let te = TextEdit::singleline(&mut buf)
+                            .id(te_id)
+                            .frame(egui::Frame::NONE)
+                            .margin(egui::Margin::symmetric(4, 0))
+                            .font(FontId::proportional(14.0))
+                            .hint_text(RichText::new(hint).color(t.muted_foreground))
+                            .desired_width(ui.available_width().clamp(80.0, 160.0))
+                            .interactive(!full)
+                            .min_size(vec2(0.0, 24.0))
+                            .align(egui::Align2::LEFT_CENTER);
+                        let r = ui.add(te);
+                        let (enter, back) =
+                            ui.input(|i| (i.key_pressed(egui::Key::Enter), i.key_pressed(egui::Key::Backspace)));
+                        let mut commit = |text: &str, tags: &mut Vec<String>| {
+                            let s = text.trim().trim_end_matches(',').trim().to_owned();
+                            if !s.is_empty() && (self.allow_duplicates || !tags.contains(&s)) && !full {
+                                tags.push(s);
+                                changed = true;
+                            }
+                        };
+                        if buf.contains(',') {
+                            let parts: Vec<String> = buf.split(',').map(|s| s.to_owned()).collect();
+                            for p in &parts[..parts.len() - 1] {
+                                commit(p, self.tags);
+                            }
+                            buf = parts.last().cloned().unwrap_or_default();
                         }
-                    }
-                    let hint = if full { String::new() } else { self.placeholder.clone() };
-                    let te = TextEdit::singleline(&mut buf)
-                        .id(te_id)
-                        .frame(egui::Frame::NONE)
-                        .margin(egui::Margin::symmetric(4, 0))
-                        .font(FontId::proportional(14.0))
-                        .hint_text(RichText::new(hint).color(t.muted_foreground))
-                        .desired_width(ui.available_width().clamp(80.0, 160.0))
-                        .interactive(!full)
-                        .min_size(vec2(0.0, 24.0))
-                        .align(egui::Align2::LEFT_CENTER);
-                    let r = ui.add(te);
-                    let (enter, back) = ui.input(|i| (i.key_pressed(egui::Key::Enter), i.key_pressed(egui::Key::Backspace)));
-                    let mut commit = |text: &str, tags: &mut Vec<String>| {
-                        let s = text.trim().trim_end_matches(',').trim().to_owned();
-                        if !s.is_empty() && (self.allow_duplicates || !tags.contains(&s)) && !full {
-                            tags.push(s);
-                            changed = true;
+                        if r.lost_focus() && enter {
+                            let b = std::mem::take(&mut buf);
+                            commit(&b, self.tags);
+                            r.request_focus();
+                        } else if r.has_focus() && back && buf.is_empty() && !self.tags.is_empty() && !r.changed() {
+                            remove = Some(self.tags.len() - 1);
                         }
-                    };
-                    if buf.contains(',') {
-                        let parts: Vec<String> = buf.split(',').map(|s| s.to_owned()).collect();
-                        for p in &parts[..parts.len() - 1] {
-                            commit(p, self.tags);
-                        }
-                        buf = parts.last().cloned().unwrap_or_default();
-                    }
-                    if r.lost_focus() && enter {
-                        let b = std::mem::take(&mut buf);
-                        commit(&b, self.tags);
-                        r.request_focus();
-                    } else if r.has_focus() && back && buf.is_empty() && !self.tags.is_empty() && !r.changed() {
-                        remove = Some(self.tags.len() - 1);
-                    }
-                    r
-                })
-                .inner
-            });
+                        r
+                    })
+                    .inner
+                });
             if let Some(i) = remove {
                 self.tags.remove(i);
                 changed = true;
@@ -150,11 +181,32 @@ impl Widget for TagInput<'_> {
             let border = t.input.lerp_to_gamma(t.muted_foreground, 0.25 * hover).lerp_to_gamma(t.ring, focus);
             let mut shapes = vec![];
             if !t.dark {
-                shapes.push(egui::epaint::Shadow { offset: [0, 1], blur: 2, spread: 0, color: Color32::from_black_alpha(10) }.as_shape(rect, r).into());
+                shapes.push(
+                    egui::epaint::Shadow { offset: [0, 1], blur: 2, spread: 0, color: Color32::from_black_alpha(10) }
+                        .as_shape(rect, r)
+                        .into(),
+                );
             }
-            shapes.push(egui::epaint::RectShape::new(rect, r, kit::field_fill(&t), Stroke::new(1.0, border), StrokeKind::Inside).into());
+            shapes.push(
+                egui::epaint::RectShape::new(
+                    rect,
+                    r,
+                    kit::field_fill(&t),
+                    Stroke::new(1.0, border),
+                    StrokeKind::Inside,
+                )
+                .into(),
+            );
             if focus > 0.01 {
-                shapes.push(egui::epaint::RectShape::stroke(rect, r, Stroke::new(1.0 + 2.0 * focus, with_alpha(t.ring, 0.32 * focus)), StrokeKind::Outside).into());
+                shapes.push(
+                    egui::epaint::RectShape::stroke(
+                        rect,
+                        r,
+                        Stroke::new(1.0 + 2.0 * focus, with_alpha(t.ring, 0.32 * focus)),
+                        StrokeKind::Outside,
+                    )
+                    .into(),
+                );
             }
             ui.painter().set(chrome, Shape::Vec(shapes));
             let mut resp = inner.inner;
@@ -232,7 +284,10 @@ impl Widget for Rating<'_> {
         let gap = self.size * 0.18;
         let stars_w = self.max as f32 * self.size + (self.max - 1) as f32 * gap;
         let extra = if self.show_value { 36.0 } else { 0.0 };
-        let (rect, mut resp) = ui.allocate_exact_size(vec2(stars_w + extra, self.size), if self.read_only { Sense::hover() } else { Sense::click() });
+        let (rect, mut resp) = ui.allocate_exact_size(
+            vec2(stars_w + extra, self.size),
+            if self.read_only { Sense::hover() } else { Sense::click() },
+        );
         if !self.read_only {
             resp = resp.on_hover_cursor(CursorIcon::PointingHand);
         }
@@ -243,7 +298,11 @@ impl Widget for Rating<'_> {
             let v = if self.half && frac < 0.5 { i + 0.5 } else { i + 1.0 };
             v.min(self.max as f32)
         };
-        let hover_v = if self.read_only { None } else { resp.hover_pos().filter(|p| p.x <= rect.min.x + stars_w).map(|p| value_at(p.x)) };
+        let hover_v = if self.read_only {
+            None
+        } else {
+            resp.hover_pos().filter(|p| p.x <= rect.min.x + stars_w).map(|p| value_at(p.x))
+        };
         if let (true, Some(v)) = (resp.clicked(), hover_v) {
             *self.value = if (*self.value - v).abs() < 1e-3 { 0.0 } else { v };
             resp.mark_changed();
@@ -255,19 +314,34 @@ impl Widget for Rating<'_> {
         for i in 0..self.max {
             let c = pos2(rect.min.x + i as f32 * (self.size + gap) + self.size / 2.0, rect.center().y);
             let is_hovered = hover_v.map(|v| (v.ceil() as usize).saturating_sub(1) == i).unwrap_or(false);
-            let s = glowkit_core::anim::spring(ui, resp.id.with(("s", i)), if is_hovered { 1.18 } else { 1.0 }, 500.0, 14.0);
+            let s = glowkit_core::anim::spring(
+                ui,
+                resp.id.with(("s", i)),
+                if is_hovered { 1.18 } else { 1.0 },
+                500.0,
+                14.0,
+            );
             let outer = self.size * 0.5 * s;
             let inner = outer * 0.45;
             star_aa(painter, c, outer, inner, empty);
             let f = (shown - i as f32).clamp(0.0, 1.0);
             if f > 0.0 {
-                let clip = Rect::from_min_max(pos2(c.x - outer, c.y - outer), pos2(c.x - outer + 2.0 * outer * f, c.y + outer));
+                let clip = Rect::from_min_max(
+                    pos2(c.x - outer, c.y - outer),
+                    pos2(c.x - outer + 2.0 * outer * f, c.y + outer),
+                );
                 let col = if hover_v.is_some() { with_alpha(fill, 0.85) } else { fill };
                 star_aa(&painter.with_clip_rect(clip.intersect(painter.clip_rect())), c, outer, inner, col);
             }
         }
         if self.show_value {
-            painter.text(pos2(rect.min.x + stars_w + 10.0, rect.center().y), egui::Align2::LEFT_CENTER, format!("{shown:.1}"), FontId::proportional(14.0), t.muted_foreground);
+            painter.text(
+                pos2(rect.min.x + stars_w + 10.0, rect.center().y),
+                egui::Align2::LEFT_CENTER,
+                format!("{shown:.1}"),
+                FontId::proportional(14.0),
+                t.muted_foreground,
+            );
         }
         resp
     }

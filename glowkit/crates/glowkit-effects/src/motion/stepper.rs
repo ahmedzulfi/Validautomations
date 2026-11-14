@@ -1,4 +1,7 @@
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui,
+    UiBuilder,
+};
 use glowkit_core::anim::{ease, Easing};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
@@ -63,7 +66,8 @@ impl<'a> Stepper<'a> {
         let id = ui.scope_id().with("glowkit_stepper");
         let cur = (*self.step).min(n);
         let now = glowkit_core::time(ui);
-        let mut anim: StepAnim = glowkit_core::state(ui, id.with("anim"), || StepAnim { from: cur, to: cur, t0: -10.0 });
+        let mut anim: StepAnim =
+            glowkit_core::state(ui, id.with("anim"), || StepAnim { from: cur, to: cur, t0: -10.0 });
         if anim.to != cur {
             anim = StepAnim { from: anim.to, to: cur, t0: now };
             glowkit_core::set_state(ui, id.with("anim"), anim);
@@ -97,12 +101,19 @@ impl<'a> Stepper<'a> {
                 let a = pos2(cx + 22.0, ind_y);
                 let b = pos2(cx + gapx - 22.0, ind_y);
                 painter.line_segment([a, b], Stroke::new(2.0, t.border));
-                let fillp = glowkit_core::anim::spring(ui, id.with(("conn", i)), if cur > i { 1.0 } else { 0.0 }, 140.0, 22.0);
+                let fillp =
+                    glowkit_core::anim::spring(ui, id.with(("conn", i)), if cur > i { 1.0 } else { 0.0 }, 140.0, 22.0);
                 if fillp > 0.001 {
                     painter.line_segment([a, a.lerp(b, fillp.min(1.0))], Stroke::new(2.0, t.accent));
                 }
             }
-            let state = if cur > i { 2.0 } else if cur == i { 1.0 } else { 0.0 };
+            let state = if cur > i {
+                2.0
+            } else if cur == i {
+                1.0
+            } else {
+                0.0
+            };
             let s = glowkit_core::anim::spring(ui, id.with(("ind", i)), state, 260.0, 20.0);
             let c = pos2(cx, ind_y);
             let active = s.clamp(0.0, 1.0);
@@ -129,7 +140,11 @@ impl<'a> Stepper<'a> {
                 let tc = mix(t.muted_foreground, t.accent_foreground, active);
                 painter.text(c, Align2::CENTER_CENTER, format!("{}", i + 1), FontId::proportional(13.0), tc);
             }
-            let hit = ui.interact(Rect::from_center_size(c, egui::Vec2::splat(34.0)), id.with(("ind_hit", i)), Sense::click());
+            let hit = ui.interact(
+                Rect::from_center_size(c, egui::Vec2::splat(34.0)),
+                id.with(("ind_hit", i)),
+                Sense::click(),
+            );
             if hit.hovered() {
                 ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
             }
@@ -139,7 +154,8 @@ impl<'a> Stepper<'a> {
         }
 
         // sliding content
-        let body = Rect::from_min_size(pos2(panel.min.x + pad, panel.min.y + header_h), vec2(w - pad * 2.0, panel_body_h));
+        let body =
+            Rect::from_min_size(pos2(panel.min.x + pad, panel.min.y + header_h), vec2(w - pad * 2.0, panel_body_h));
         let clip = body.expand2(vec2(pad, 4.0)).intersect(ui.clip_rect());
         let dir = if anim.to >= anim.from { 1.0 } else { -1.0 };
         let e = ease(Easing::OutCubic, p);
@@ -194,7 +210,13 @@ impl<'a> Stepper<'a> {
                 let hv = glowkit_core::anim::follow(ui, id.with("next_hv"), if b.hovered() { 1.0 } else { 0.0 }, 14.0);
                 let fill = mix(t.accent, glowkit_core::color::shade(t.accent, 0.08), hv);
                 painter.rect(br, CornerRadius::same(99), fill, Stroke::NONE, StrokeKind::Inside);
-                painter.text(br.center(), Align2::CENTER_CENTER, label, FontId::proportional(14.0), t.accent_foreground);
+                painter.text(
+                    br.center(),
+                    Align2::CENTER_CENTER,
+                    label,
+                    FontId::proportional(14.0),
+                    t.accent_foreground,
+                );
                 if b.hovered() {
                     ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
                 }
@@ -204,8 +226,20 @@ impl<'a> Stepper<'a> {
             } else {
                 let br = Rect::from_center_size(pos2(panel.center().x, fy), vec2(120.0, 36.0));
                 let b = ui.interact(br, id.with("restart"), Sense::click());
-                painter.rect(br, CornerRadius::same(99), Color32::TRANSPARENT, Stroke::new(1.0, t.border), StrokeKind::Inside);
-                painter.text(br.center(), Align2::CENTER_CENTER, "Start over", FontId::proportional(14.0), t.foreground);
+                painter.rect(
+                    br,
+                    CornerRadius::same(99),
+                    Color32::TRANSPARENT,
+                    Stroke::new(1.0, t.border),
+                    StrokeKind::Inside,
+                );
+                painter.text(
+                    br.center(),
+                    Align2::CENTER_CENTER,
+                    "Start over",
+                    FontId::proportional(14.0),
+                    t.foreground,
+                );
                 if b.clicked() {
                     clicked_step = Some(0);
                 }

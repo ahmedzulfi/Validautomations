@@ -141,7 +141,9 @@ impl ConfettiBurst {
         let colors = self.colors.clone().unwrap_or_else(|| t.chart.to_vec());
         // simulation clock (advanced by `show`), so low frame rates never cut lifetimes short
         let now: f32 = glowkit_core::state(ui, id.with("clock"), || 0.0);
-        let seed = (glowkit_core::time(ui) * 1000.0) as u64 ^ (origin.x as u64).wrapping_mul(31) ^ (origin.y as u64).wrapping_mul(131);
+        let seed = (glowkit_core::time(ui) * 1000.0) as u64
+            ^ (origin.x as u64).wrapping_mul(31)
+            ^ (origin.y as u64).wrapping_mul(131);
         let mut rng = Rng::new(seed);
         let count = self.count;
         let sc = self.scalar;
@@ -186,16 +188,22 @@ impl ConfettiBurst {
                     // autoplay: alternate cannons from the bottom corners
                     let n = (glowkit_core::time(ui) / 1.6).floor() as i32;
                     let left = n % 2 == 0;
-                    let o = if left { pos2(rect.min.x + 20.0, rect.max.y) } else { pos2(rect.max.x - 20.0, rect.max.y) };
+                    let o =
+                        if left { pos2(rect.min.x + 20.0, rect.max.y) } else { pos2(rect.max.x - 20.0, rect.max.y) };
                     self.fire_with(ui, o, if left { -60.0 } else { -120.0 }, 45.0);
                 }
             }
         }
         let dt = glowkit_core::dt(ui);
-        let now = glowkit_core::with_state(ui, id.with("clock"), || 0.0f32, |c| {
-            *c += dt;
-            *c
-        });
+        let now = glowkit_core::with_state(
+            ui,
+            id.with("clock"),
+            || 0.0f32,
+            |c| {
+                *c += dt;
+                *c
+            },
+        );
         let g = self.gravity;
         let life = self.lifetime;
         let pieces = glowkit_core::with_state(ui, id.with("pieces"), Vec::<Piece>::new, |v| {
@@ -329,10 +337,15 @@ impl Fireworks {
         let id = ui.scope_id().with(("fireworks", self.salt));
         let input = area_input(ui, rect, id, false, 0.0);
         let dt = glowkit_core::dt(ui);
-        let now = glowkit_core::with_state(ui, id.with("clock"), || 0.0f32, |c| {
-            *c += dt;
-            *c
-        });
+        let now = glowkit_core::with_state(
+            ui,
+            id.with("clock"),
+            || 0.0f32,
+            |c| {
+                *c += dt;
+                *c
+            },
+        );
         let auto = self.autoplay && self.interval > 0.0;
         let colors = self.colors.clone();
         let n_sparks = self.sparks;
@@ -350,14 +363,22 @@ impl Fireworks {
                     let rise = (rect.max.y - target.y).max(40.0);
                     let vy = -(2.0 * ROCKET_G * rise).sqrt();
                     let t_up = -vy / ROCKET_G;
-                    rockets.push(Rocket { pos: pos2(x0, rect.max.y), vel: vec2((target.x - x0) / t_up, vy), target_y: target.y, hue: r.range(0.0, 360.0) });
+                    rockets.push(Rocket {
+                        pos: pos2(x0, rect.max.y),
+                        vel: vec2((target.x - x0) / t_up, vy),
+                        target_y: target.y,
+                        hue: r.range(0.0, 360.0),
+                    });
                 };
                 for c in &input.clicks {
                     launch(*c, seed, rockets);
                 }
                 if auto && now >= *next {
                     let mut r = Rng::new(*seed * 31 + 7);
-                    let target = pos2(r.range(rect.min.x + rect.width() * 0.15, rect.max.x - rect.width() * 0.15), r.range(rect.min.y + rect.height() * 0.15, rect.min.y + rect.height() * 0.5));
+                    let target = pos2(
+                        r.range(rect.min.x + rect.width() * 0.15, rect.max.x - rect.width() * 0.15),
+                        r.range(rect.min.y + rect.height() * 0.15, rect.min.y + rect.height() * 0.5),
+                    );
                     launch(target, seed, rockets);
                     *next = now + interval * r.range(0.6, 1.3);
                 }
@@ -386,7 +407,8 @@ impl Fireworks {
                     let ring = rng.bool(0.35);
                     for k in 0..n_sparks {
                         let a = k as f32 / n_sparks as f32 * TAU + rng.range(-0.05, 0.05);
-                        let sp = if ring { 240.0 * rng.range(0.92, 1.0) } else { 270.0 * rng.range(0.15, 1.0).sqrt() } * power;
+                        let sp = if ring { 240.0 * rng.range(0.92, 1.0) } else { 270.0 * rng.range(0.15, 1.0).sqrt() }
+                            * power;
                         embers.push(Ember {
                             pos: b.pos,
                             vel: vec2(a.cos(), a.sin()) * sp + b.vel * 0.15,
@@ -456,7 +478,9 @@ mod tests {
             });
             out.textures_delta.clear();
             shapes = out.shapes.len();
-            if f % 30 == 0 { eprintln!("frame {f}: shapes {shapes}"); }
+            if f % 30 == 0 {
+                eprintln!("frame {f}: shapes {shapes}");
+            }
         }
         assert!(shapes > 0);
     }

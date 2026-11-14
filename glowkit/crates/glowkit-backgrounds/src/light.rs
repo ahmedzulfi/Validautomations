@@ -72,7 +72,8 @@ impl Lightning {
         gradient_polyline(p, pts, false, 22.0 * scale, |u| light(color, a * 0.07 * fade(u), dark));
         gradient_polyline(p, pts, false, 9.0 * scale, |u| light(color, a * 0.2 * fade(u), dark));
         gradient_polyline(p, pts, false, 3.6 * scale, |u| light(color, a * 0.6 * fade(u), dark));
-        let core = if dark { glowkit_core::mix(color, Color32::WHITE, 0.85) } else { glowkit_core::color::shade(color, -0.1) };
+        let core =
+            if dark { glowkit_core::mix(color, Color32::WHITE, 0.85) } else { glowkit_core::color::shade(color, -0.1) };
         gradient_polyline(p, pts, false, 1.5 * scale, |u| core.gamma_multiply((a * fade(u)).min(1.0)));
     }
 
@@ -97,7 +98,12 @@ impl Lightning {
             })
             .collect();
         let p = &f.painter;
-        glow_ellipse(p, pos2(cx, rect.center().y), vec2(rect.width() * 0.22, h * 0.75), light(color, 0.28 * flicker, dark));
+        glow_ellipse(
+            p,
+            pos2(cx, rect.center().y),
+            vec2(rect.width() * 0.22, h * 0.75),
+            light(color, 0.28 * flicker, dark),
+        );
         glow_ellipse(p, pos2(cx, rect.max.y), vec2(rect.width() * 0.25, 60.0), light(color, 0.35 * flicker, dark));
         if self.branches {
             let epoch = (time * 3.0).floor() as u32;
@@ -116,7 +122,9 @@ impl Lightning {
                 let pts: Vec<Pos2> = (0..=m)
                     .map(|k| {
                         let u = k as f32 / m as f32;
-                        let jag = (noise3(u * 7.0, seed as f32 * 0.37, time * 4.0) * 26.0 + noise3(u * 23.0, seed as f32 * 0.71, time * 7.0) * 8.0) * u.sqrt();
+                        let jag = (noise3(u * 7.0, seed as f32 * 0.37, time * 4.0) * 26.0
+                            + noise3(u * 23.0, seed as f32 * 0.71, time * 7.0) * 8.0)
+                            * u.sqrt();
                         o + vec2(side * u * len * 0.75 + jag, u * len * 0.85 + jag * 0.5)
                     })
                     .collect();
@@ -216,7 +224,8 @@ impl Orb {
         let p = &f.painter;
         glow(p, c, radius * 1.9, light(lut.sample(st.spin + 0.3).to_color(), 0.2, dark));
         // ring mesh: (radius fraction, alpha)
-        let rings: [(f32, f32); 7] = [(0.35, 0.0), (0.7, 0.18), (0.88, 0.55), (0.98, 1.0), (1.02, 1.0), (1.1, 0.35), (1.45, 0.0)];
+        let rings: [(f32, f32); 7] =
+            [(0.35, 0.0), (0.7, 0.18), (0.88, 0.55), (0.98, 1.0), (1.02, 1.0), (1.1, 0.35), (1.45, 0.0)];
         let seg = 160;
         let mut m = Mesh::default();
         let shift = self.hue_shift / 360.0;
@@ -284,7 +293,16 @@ impl Default for Ripple {
 impl Ripple {
     /// Eight circles, the first 105 points in radius.
     pub fn new() -> Self {
-        Self { base: Base::default(), circles: 8, first: 105.0, step: 35.0, opacity: 0.24, color: None, expanding: false, center: None }
+        Self {
+            base: Base::default(),
+            circles: 8,
+            first: 105.0,
+            step: 35.0,
+            opacity: 0.24,
+            color: None,
+            expanding: false,
+            center: None,
+        }
     }
     /// Number of circles (default 8).
     pub fn circles(mut self, n: usize) -> Self {
@@ -412,7 +430,16 @@ impl Default for Spotlight {
 impl Spotlight {
     /// Light rays from the top center.
     pub fn new() -> Self {
-        Self { base: Base::default(), origin: SpotlightOrigin::TopCenter, color: None, rays: 14, spread: 1.0, speed: 1.0, follow: true, length: 1.0 }
+        Self {
+            base: Base::default(),
+            origin: SpotlightOrigin::TopCenter,
+            color: None,
+            rays: 14,
+            spread: 1.0,
+            speed: 1.0,
+            follow: true,
+            length: 1.0,
+        }
     }
     /// Where the light comes from (default top center).
     pub fn origin(mut self, o: SpotlightOrigin) -> Self {
@@ -482,7 +509,9 @@ impl Spotlight {
         let (o, base_dir) = match self.origin {
             SpotlightOrigin::TopLeft => (rect.left_top() + vec2(-rect.width() * 0.05, -rect.height() * 0.25), 0.62f32),
             SpotlightOrigin::TopCenter => (pos2(rect.center().x, rect.min.y - rect.height() * 0.2), PI / 2.0),
-            SpotlightOrigin::TopRight => (rect.right_top() + vec2(rect.width() * 0.05, -rect.height() * 0.25), PI - 0.62),
+            SpotlightOrigin::TopRight => {
+                (rect.right_top() + vec2(rect.width() * 0.05, -rect.height() * 0.25), PI - 0.62)
+            }
         };
         let target = if self.follow { pointer(ui, rect).map(|p| (p - o).angle()) } else { None };
         let aim = glowkit_core::with_state(ui, f.id, Aim::default, |s| {

@@ -50,11 +50,7 @@ pub fn hsv(h: f32, s: f32, v: f32) -> Color32 {
         _ => (c, 0.0, x),
     };
     let m = v - c;
-    Color32::from_rgb(
-        ((r + m) * 255.0).round() as u8,
-        ((g + m) * 255.0).round() as u8,
-        ((b + m) * 255.0).round() as u8,
-    )
+    Color32::from_rgb(((r + m) * 255.0).round() as u8, ((g + m) * 255.0).round() as u8, ((b + m) * 255.0).round() as u8)
 }
 
 /// Set the (unmultiplied) alpha of a color, `a` in `0..=1`.
@@ -213,7 +209,11 @@ mod tests {
             let back = from_oklab(to_oklab(c));
             let [a, b, cc, _] = c.to_array();
             let [x, y, z, _] = back.to_array();
-            assert!((a as i32 - x as i32).abs() <= 1 && (b as i32 - y as i32).abs() <= 1 && (cc as i32 - z as i32).abs() <= 1);
+            assert!(
+                (a as i32 - x as i32).abs() <= 1
+                    && (b as i32 - y as i32).abs() <= 1
+                    && (cc as i32 - z as i32).abs() <= 1
+            );
         }
     }
 

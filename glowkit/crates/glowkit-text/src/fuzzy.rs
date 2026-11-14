@@ -25,7 +25,17 @@ pub struct FuzzyText {
 impl FuzzyText {
     /// Create the effect for `text`.
     pub fn new(text: impl Into<String>) -> Self {
-        Self { text: text.into(), size: 96.0, color: None, bold: true, base: 0.18, hover: 0.5, range: None, row: 2.0, fps: 60.0 }
+        Self {
+            text: text.into(),
+            size: 96.0,
+            color: None,
+            bold: true,
+            base: 0.18,
+            hover: 0.5,
+            range: None,
+            row: 2.0,
+            fps: 60.0,
+        }
     }
     /// Font size in points.
     pub fn size(mut self, size: f32) -> Self {

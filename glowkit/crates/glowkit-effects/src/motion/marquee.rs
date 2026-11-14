@@ -37,7 +37,18 @@ impl Default for Marquee {
 impl Marquee {
     /// Horizontal marquee moving left at 40 pt/s with faded edges.
     pub fn new() -> Self {
-        Self { speed: 40.0, reverse: false, vertical: false, pause_on_hover: true, hover_speed: 0.0, gap: 24.0, fade: 64.0, fade_color: None, length: None, salt: 0 }
+        Self {
+            speed: 40.0,
+            reverse: false,
+            vertical: false,
+            pause_on_hover: true,
+            hover_speed: 0.0,
+            gap: 24.0,
+            fade: 64.0,
+            fade_color: None,
+            length: None,
+            salt: 0,
+        }
     }
     /// Scroll speed in points per second.
     pub fn speed(mut self, s: f32) -> Self {
@@ -103,16 +114,22 @@ impl Marquee {
         };
         let (rect, response) = ui.allocate_exact_size(size, Sense::hover());
         let hovered = self.pause_on_hover && ui.rect_contains_pointer(rect);
-        let factor = glowkit_core::anim::follow(ui, id.with("speed"), if hovered { self.hover_speed } else { 1.0 }, 5.0);
+        let factor =
+            glowkit_core::anim::follow(ui, id.with("speed"), if hovered { self.hover_speed } else { 1.0 }, 5.0);
         let dt = glowkit_core::dt(ui);
         let period = content + self.gap;
         let dir = if self.reverse { -1.0 } else { 1.0 };
-        let offset = glowkit_core::with_state(ui, id.with("off"), || 0.0f32, |o| {
-            if period > 1.0 {
-                *o = (*o + self.speed * factor * dt * dir).rem_euclid(period);
-            }
-            *o
-        });
+        let offset = glowkit_core::with_state(
+            ui,
+            id.with("off"),
+            || 0.0f32,
+            |o| {
+                if period > 1.0 {
+                    *o = (*o + self.speed * factor * dt * dir).rem_euclid(period);
+                }
+                *o
+            },
+        );
         if self.speed > 0.0 {
             glowkit_core::animate(ui);
         }
@@ -127,8 +144,10 @@ impl Marquee {
             } else {
                 Rect::from_min_size(rect.min + vec2(start, 0.0), vec2(100_000.0, rect.height().max(cross)))
             };
-            let layout = if self.vertical { Layout::top_down(Align::Center) } else { Layout::left_to_right(Align::Center) };
-            let mut child = ui.new_child(UiBuilder::new().max_rect(max_rect).layout(layout).id_salt(("marquee_copy", k)));
+            let layout =
+                if self.vertical { Layout::top_down(Align::Center) } else { Layout::left_to_right(Align::Center) };
+            let mut child =
+                ui.new_child(UiBuilder::new().max_rect(max_rect).layout(layout).id_salt(("marquee_copy", k)));
             child.set_clip_rect(clip);
             add_contents(&mut child);
             if k == 0 {

@@ -229,14 +229,34 @@ impl Widget for FallingText {
         let home_off = vec2((w - glyphs.size.x) / 2.0, top);
         let homes: Vec<Body> = words
             .iter()
-            .map(|(_, r)| Body { pos: r.center() + home_off, vel: Vec2::ZERO, angle: 0.0, spin: 0.0, half: vec2(r.width() + bold + 6.0, r.height() * 0.8) / 2.0 })
+            .map(|(_, r)| Body {
+                pos: r.center() + home_off,
+                vel: Vec2::ZERO,
+                angle: 0.0,
+                spin: 0.0,
+                half: vec2(r.width() + bold + 6.0, r.height() * 0.8) / 2.0,
+            })
             .collect();
         let key = words.len() as u64 ^ ((w * 10.0) as u64) << 16 ^ (self.size.to_bits() as u64) << 32;
         let now = ui.input(|i| i.time);
         let id = resp.id.with("falling");
-        let mut sim = glowkit_core::state(ui, id, || Sim { phase: Phase::Resting, bodies: homes.clone(), snapshot: Vec::new(), phase_t: now, key, appeared: false });
+        let mut sim = glowkit_core::state(ui, id, || Sim {
+            phase: Phase::Resting,
+            bodies: homes.clone(),
+            snapshot: Vec::new(),
+            phase_t: now,
+            key,
+            appeared: false,
+        });
         if sim.key != key || sim.bodies.len() != homes.len() {
-            sim = Sim { phase: Phase::Resting, bodies: homes.clone(), snapshot: Vec::new(), phase_t: now, key, appeared: false };
+            sim = Sim {
+                phase: Phase::Resting,
+                bodies: homes.clone(),
+                snapshot: Vec::new(),
+                phase_t: now,
+                key,
+                appeared: false,
+            };
         }
         let since = (now - sim.phase_t) as f32;
         let drop = |sim: &mut Sim| {

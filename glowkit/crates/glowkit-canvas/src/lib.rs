@@ -49,8 +49,13 @@ mod whiteboard;
 
 pub use common::Icon;
 pub use freehand::{paint_ink, paint_ribbon, stroke_radii, InkPoint, InkStyle};
-pub use gantt::{civil_from_days, days_from_civil, weekday, Gantt, GanttChart, GanttGroup, GanttState, GanttTask, GanttZoom};
-pub use graph::{edge_path, ConnectError, Edge, EdgeAnim, EdgeId, EdgeKind, Graph, LayoutDirection, Node, NodeId, NodeShape, NodeStatus, Port, PortLayout, PortRef, PortSide, PortType};
+pub use gantt::{
+    civil_from_days, days_from_civil, weekday, Gantt, GanttChart, GanttGroup, GanttState, GanttTask, GanttZoom,
+};
+pub use graph::{
+    edge_path, ConnectError, Edge, EdgeAnim, EdgeId, EdgeKind, Graph, LayoutDirection, Node, NodeId, NodeShape,
+    NodeStatus, Port, PortLayout, PortRef, PortSide, PortType,
+};
 pub use grid::{group_thousands, parse_number, CellKind, CellRange, DataGrid, GridColumn, GridData, GridState};
 pub use kanban::{insertion_index, Board, Card, Column, KanbanBoard, KanbanState, Label};
 pub use mindmap::{mind_layout, MindLayout, MindMap, MindMapEditor, MindMapState, MindNode};
@@ -59,8 +64,14 @@ pub use orgchart::{tree_layout, OrgChart, OrgChartState, OrgChartView, OrgPerson
 pub use signature::{Ink, SignaturePad};
 pub use timeline::{ruler_step, snap_to, timecode, Clip, ClipKind, Timeline, TimelineEditor, TimelineState, Track};
 pub use undo::History;
-pub use view::{fit_view, paint_background, Background, CanvasResponse, CanvasUi, CanvasView, ControlAction, Controls, InfiniteCanvas, MiniMap, WheelMode};
-pub use whiteboard::{paint_wb_shape, rough_segment, synthetic_stroke, Document, ShapeKind, Tool, WbShape, WbStyle, Whiteboard, WhiteboardState, INK, STICKY_COLORS, WB_COLORS};
+pub use view::{
+    fit_view, paint_background, Background, CanvasResponse, CanvasUi, CanvasView, ControlAction, Controls,
+    InfiniteCanvas, MiniMap, WheelMode,
+};
+pub use whiteboard::{
+    paint_wb_shape, rough_segment, synthetic_stroke, Document, ShapeKind, Tool, WbShape, WbStyle, Whiteboard,
+    WhiteboardState, INK, STICKY_COLORS, WB_COLORS,
+};
 
 #[cfg(feature = "demos")]
 mod demos;

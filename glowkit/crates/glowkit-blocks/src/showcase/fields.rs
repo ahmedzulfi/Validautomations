@@ -77,7 +77,11 @@ impl MetaBalls {
     /// Paint into `rect`, with `pointer` as the position of the pointer blob.
     pub fn paint_at(&self, ui: &Ui, rect: Rect, pointer: Pos2) {
         let t = Theme::of(ui);
-        let colors = if self.colors.is_empty() { vec![t.gradient[0], t.gradient[1], t.gradient[2]] } else { self.colors.clone() };
+        let colors = if self.colors.is_empty() {
+            vec![t.gradient[0], t.gradient[1], t.gradient[2]]
+        } else {
+            self.colors.clone()
+        };
         let time = glowkit_core::time(ui) * self.speed;
         let m = rect.width().min(rect.height());
         let mut balls: Vec<(Pos2, f32, Color32)> = (0..self.count)
@@ -95,7 +99,8 @@ impl MetaBalls {
         let cols = (rect.width() / self.cell).ceil() as usize;
         let rows = (rect.height() / self.cell).ceil() as usize;
         let size = rect.size();
-        let rgb: Vec<[f32; 3]> = balls.iter().map(|b| b.2.to_normalized_gamma_f32()).map(|c| [c[0], c[1], c[2]]).collect();
+        let rgb: Vec<[f32; 3]> =
+            balls.iter().map(|b| b.2.to_normalized_gamma_f32()).map(|c| [c[0], c[1], c[2]]).collect();
         paint::shader_grid(&p, rect, cols, rows, |uv| {
             let q = pos2(rect.min.x + uv.x * size.x, rect.min.y + uv.y * size.y);
             let mut f = 0.0;
@@ -215,7 +220,12 @@ impl Widget for BallPit {
                     .map(|i| {
                         let hh = |k: u64| hash01(i as u64 * 31 + k);
                         let r = (w.min(h) * (0.045 + 0.05 * hh(1))).max(8.0);
-                        Ball { pos: vec2(r + hh(2) * (w - 2.0 * r), -hh(3) * h), vel: vec2(hh(4) * 200.0 - 100.0, 0.0), r, color: i }
+                        Ball {
+                            pos: vec2(r + hh(2) * (w - 2.0 * r), -hh(3) * h),
+                            vel: vec2(hh(4) * 200.0 - 100.0, 0.0),
+                            r,
+                            color: i,
+                        }
                     })
                     .collect(),
             )
@@ -297,7 +307,12 @@ impl Widget for BallPit {
             let c = rect.min + b.pos;
             let base = colors[b.color % colors.len()];
             // contact shadow
-            paint::glow_ellipse(&p, c + vec2(0.0, b.r * 0.85), vec2(b.r * 0.9, b.r * 0.25), Color32::from_black_alpha(if t.dark { 70 } else { 30 }));
+            paint::glow_ellipse(
+                &p,
+                c + vec2(0.0, b.r * 0.85),
+                vec2(b.r * 0.9, b.r * 0.25),
+                Color32::from_black_alpha(if t.dark { 70 } else { 30 }),
+            );
             let hl = c + vec2(-b.r * 0.35, -b.r * 0.4);
             let light = mix(base, Color32::WHITE, 0.45);
             let dark = mix(base, Color32::BLACK, 0.35);
@@ -412,7 +427,9 @@ impl Widget for RippleGrid {
                 cols.push(with_alpha(col, edge(q) * (0.55 + 0.45 * e)));
             }
             let n = cols.len();
-            paint::gradient_polyline(&p, &out, false, 1.2, |u| cols[((u * (n - 1) as f32).round() as usize).min(n - 1)]);
+            paint::gradient_polyline(&p, &out, false, 1.2, |u| {
+                cols[((u * (n - 1) as f32).round() as usize).min(n - 1)]
+            });
         };
         let sp = self.spacing;
         let nx = (rect.width() / sp).ceil() as i32;

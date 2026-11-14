@@ -118,10 +118,22 @@ impl Widget for MorphingIsland {
         let bg = self.color.unwrap_or(hex("#050506"));
         let radius = (h / 2.0).min(36.0);
         let p = ui.painter();
-        paint::soft_shadow(p, rect, radius, 24.0, vec2(0.0, 10.0), Color32::from_black_alpha(if t.dark { 120 } else { 60 }));
+        paint::soft_shadow(
+            p,
+            rect,
+            radius,
+            24.0,
+            vec2(0.0, 10.0),
+            Color32::from_black_alpha(if t.dark { 120 } else { 60 }),
+        );
         p.rect_filled(rect, radius, bg);
         if t.dark {
-            p.rect_stroke(rect, radius, egui::Stroke::new(1.0, with_alpha(Color32::WHITE, 0.07)), egui::StrokeKind::Inside);
+            p.rect_stroke(
+                rect,
+                radius,
+                egui::Stroke::new(1.0, with_alpha(Color32::WHITE, 0.07)),
+                egui::StrokeKind::Inside,
+            );
         }
 
         // cross-fade: content alpha rises once the size is close to the target
@@ -149,13 +161,25 @@ impl Widget for MorphingIsland {
                 let cy = rect.center().y;
                 icon.paint(&pnt, Rect::from_center_size(pos2(rect.min.x + 22.0, cy), vec2(16.0, 16.0)), *color);
                 pnt.text(pos2(rect.min.x + 38.0, cy), Align2::LEFT_CENTER, text, FontId::proportional(13.0), white);
-                pnt.text(pos2(rect.max.x - 16.0, cy), Align2::RIGHT_CENTER, trailing, FontId::proportional(13.0), *color);
+                pnt.text(
+                    pos2(rect.max.x - 16.0, cy),
+                    Align2::RIGHT_CENTER,
+                    trailing,
+                    FontId::proportional(13.0),
+                    *color,
+                );
             }
             IslandView::Call { name, subtitle } => {
                 let cy = rect.center().y;
                 let av = pos2(rect.min.x + pad + 22.0, cy);
                 paint::gradient_circle(&pnt, av, 22.0, &[t.gradient[0], t.gradient[1]]);
-                pnt.text(av, Align2::CENTER_CENTER, name.chars().next().unwrap_or('?').to_string(), FontId::proportional(18.0), white);
+                pnt.text(
+                    av,
+                    Align2::CENTER_CENTER,
+                    name.chars().next().unwrap_or('?').to_string(),
+                    FontId::proportional(18.0),
+                    white,
+                );
                 pnt.text(pos2(av.x + 34.0, cy - 9.0), Align2::LEFT_CENTER, subtitle, FontId::proportional(12.0), dim);
                 pnt.text(pos2(av.x + 34.0, cy + 9.0), Align2::LEFT_CENTER, name, FontId::proportional(15.5), white);
                 let decline = pos2(rect.max.x - pad - 70.0, cy);
@@ -171,42 +195,95 @@ impl Widget for MorphingIsland {
                 let art = Rect::from_min_size(rect.min + vec2(pad + 4.0, pad + 4.0), vec2(52.0, 52.0));
                 paint::gradient_rect(&pnt, art, 12.0, 45.0, &t.gradient);
                 LineIcon::Music.paint(&pnt, Rect::from_center_size(art.center(), vec2(22.0, 22.0)), white);
-                pnt.text(pos2(art.max.x + 14.0, art.min.y + 14.0), Align2::LEFT_CENTER, title, FontId::proportional(15.5), white);
-                pnt.text(pos2(art.max.x + 14.0, art.min.y + 36.0), Align2::LEFT_CENTER, artist, FontId::proportional(13.0), dim);
+                pnt.text(
+                    pos2(art.max.x + 14.0, art.min.y + 14.0),
+                    Align2::LEFT_CENTER,
+                    title,
+                    FontId::proportional(15.5),
+                    white,
+                );
+                pnt.text(
+                    pos2(art.max.x + 14.0, art.min.y + 36.0),
+                    Align2::LEFT_CENTER,
+                    artist,
+                    FontId::proportional(13.0),
+                    dim,
+                );
                 // equalizer
                 for i in 0..4 {
                     let hh = 6.0 + 14.0 * (0.5 + 0.5 * (time * (5.0 + i as f32 * 1.7) + i as f32).sin());
                     let x = rect.max.x - pad - 34.0 + i as f32 * 7.0;
-                    let r = Rect::from_min_max(pos2(x, art.center().y + 10.0 - hh), pos2(x + 4.0, art.center().y + 10.0));
+                    let r =
+                        Rect::from_min_max(pos2(x, art.center().y + 10.0 - hh), pos2(x + 4.0, art.center().y + 10.0));
                     pnt.rect_filled(r, 2.0, t.gradient[1]);
                 }
                 // progress
                 let py = art.max.y + 20.0;
                 let bar = Rect::from_min_max(pos2(rect.min.x + pad + 4.0, py), pos2(rect.max.x - pad - 4.0, py + 4.0));
                 pnt.rect_filled(bar, 2.0, with_alpha(white, 0.2));
-                let filled = Rect::from_min_max(bar.min, pos2(bar.min.x + bar.width() * progress.clamp(0.0, 1.0), bar.max.y));
+                let filled =
+                    Rect::from_min_max(bar.min, pos2(bar.min.x + bar.width() * progress.clamp(0.0, 1.0), bar.max.y));
                 pnt.rect_filled(filled, 2.0, white);
                 let total = 214.0;
                 let cur = total * progress;
-                pnt.text(pos2(bar.min.x, py + 14.0), Align2::LEFT_CENTER, format!("{}:{:02}", cur as u32 / 60, cur as u32 % 60), FontId::proportional(11.0), dim);
-                pnt.text(pos2(bar.max.x, py + 14.0), Align2::RIGHT_CENTER, format!("-{}:{:02}", (total - cur) as u32 / 60, (total - cur) as u32 % 60), FontId::proportional(11.0), dim);
+                pnt.text(
+                    pos2(bar.min.x, py + 14.0),
+                    Align2::LEFT_CENTER,
+                    format!("{}:{:02}", cur as u32 / 60, cur as u32 % 60),
+                    FontId::proportional(11.0),
+                    dim,
+                );
+                pnt.text(
+                    pos2(bar.max.x, py + 14.0),
+                    Align2::RIGHT_CENTER,
+                    format!("-{}:{:02}", (total - cur) as u32 / 60, (total - cur) as u32 % 60),
+                    FontId::proportional(11.0),
+                    dim,
+                );
                 // controls
                 let cy = py + 30.0;
                 let cx = rect.center().x;
-                LineIcon::ChevronLeft.paint_with(&pnt, Rect::from_center_size(pos2(cx - 50.0, cy), vec2(18.0, 18.0)), white, 2.2);
+                LineIcon::ChevronLeft.paint_with(
+                    &pnt,
+                    Rect::from_center_size(pos2(cx - 50.0, cy), vec2(18.0, 18.0)),
+                    white,
+                    2.2,
+                );
                 pnt.rect_filled(Rect::from_center_size(pos2(cx - 4.5, cy), vec2(4.0, 16.0)), 1.5, white);
                 pnt.rect_filled(Rect::from_center_size(pos2(cx + 4.5, cy), vec2(4.0, 16.0)), 1.5, white);
-                LineIcon::ChevronRight.paint_with(&pnt, Rect::from_center_size(pos2(cx + 50.0, cy), vec2(18.0, 18.0)), white, 2.2);
+                LineIcon::ChevronRight.paint_with(
+                    &pnt,
+                    Rect::from_center_size(pos2(cx + 50.0, cy), vec2(18.0, 18.0)),
+                    white,
+                    2.2,
+                );
                 glowkit_core::animate(ui);
             }
             IslandView::Notification { title, body } => {
                 let ic = Rect::from_min_size(rect.min + vec2(pad + 2.0, pad + 4.0), vec2(40.0, 40.0));
                 pnt.rect_filled(ic, 10.0, t.accent);
                 LineIcon::Mail.paint(&pnt, Rect::from_center_size(ic.center(), vec2(20.0, 20.0)), t.accent_foreground);
-                pnt.text(pos2(ic.max.x + 12.0, ic.min.y + 10.0), Align2::LEFT_CENTER, title, FontId::proportional(14.5), white);
-                let g = pnt.layout(body.clone(), FontId::proportional(12.5), dim, rect.max.x - ic.max.x - 12.0 - pad - 30.0);
+                pnt.text(
+                    pos2(ic.max.x + 12.0, ic.min.y + 10.0),
+                    Align2::LEFT_CENTER,
+                    title,
+                    FontId::proportional(14.5),
+                    white,
+                );
+                let g = pnt.layout(
+                    body.clone(),
+                    FontId::proportional(12.5),
+                    dim,
+                    rect.max.x - ic.max.x - 12.0 - pad - 30.0,
+                );
                 pnt.galley(pos2(ic.max.x + 12.0, ic.min.y + 20.0), g, dim);
-                pnt.text(pos2(rect.max.x - pad - 4.0, ic.min.y + 10.0), Align2::RIGHT_CENTER, "now", FontId::proportional(11.5), dim);
+                pnt.text(
+                    pos2(rect.max.x - pad - 4.0, ic.min.y + 10.0),
+                    Align2::RIGHT_CENTER,
+                    "now",
+                    FontId::proportional(11.5),
+                    dim,
+                );
             }
         }
         resp

@@ -387,7 +387,10 @@ fn parse_lines(lines: &[&str]) -> Vec<Block> {
                     while j < n && lines[j].trim().is_empty() {
                         j += 1;
                     }
-                    if j < n && (list_marker(lines[j]).is_some() || (indent_of(lines[j]) >= 2 && fence_open(lines[j]).is_none())) {
+                    if j < n
+                        && (list_marker(lines[j]).is_some()
+                            || (indent_of(lines[j]) >= 2 && fence_open(lines[j]).is_none()))
+                    {
                         i = j;
                         continue;
                     }
@@ -414,7 +417,10 @@ fn parse_lines(lines: &[&str]) -> Vec<Block> {
                         }
                     }
                     let (checked, rest) = task_marker(rest);
-                    items.push((ListItem { depth: stack.len() - 1, number, checked, spans: Vec::new() }, rest.to_owned()));
+                    items.push((
+                        ListItem { depth: stack.len() - 1, number, checked, spans: Vec::new() },
+                        rest.to_owned(),
+                    ));
                     i += 1;
                     continue;
                 }
@@ -687,7 +693,9 @@ pub fn parse_inline(src: &str) -> Vec<Span> {
             '<' => {
                 let rest: String = chars[i + 1..].iter().take_while(|&&x| x != '>' && !x.is_whitespace()).collect();
                 let end = i + 1 + rest.chars().count();
-                if (rest.starts_with("http://") || rest.starts_with("https://") || rest.starts_with("mailto:")) && chars.get(end) == Some(&'>') {
+                if (rest.starts_with("http://") || rest.starts_with("https://") || rest.starts_with("mailto:"))
+                    && chars.get(end) == Some(&'>')
+                {
                     st.flush();
                     push_span(&mut st.out, Span { text: rest.clone(), style: st.style, link: Some(rest) });
                     i = end + 1;

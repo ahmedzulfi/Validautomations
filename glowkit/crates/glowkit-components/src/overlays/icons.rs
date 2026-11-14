@@ -107,12 +107,7 @@ impl LineIcon {
             painter.add(Shape::line(pts, st));
         };
         let rrect = |x0: f32, y0: f32, x1: f32, y1: f32, r: f32| {
-            painter.rect_stroke(
-                Rect::from_min_max(p(x0, y0), p(x1, y1)),
-                r * k,
-                st,
-                egui::StrokeKind::Middle,
-            );
+            painter.rect_stroke(Rect::from_min_max(p(x0, y0), p(x1, y1)), r * k, st, egui::StrokeKind::Middle);
         };
         match self {
             LineIcon::Home => {
@@ -129,7 +124,10 @@ impl LineIcon {
                 circle(12.0, 12.0, 7.5);
                 for i in 0..8 {
                     let a = i as f32 / 8.0 * TAU;
-                    line(&[(12.0 + a.cos() * 7.5, 12.0 + a.sin() * 7.5), (12.0 + a.cos() * 10.0, 12.0 + a.sin() * 10.0)]);
+                    line(&[
+                        (12.0 + a.cos() * 7.5, 12.0 + a.sin() * 7.5),
+                        (12.0 + a.cos() * 10.0, 12.0 + a.sin() * 10.0),
+                    ]);
                 }
             }
             LineIcon::User => {
@@ -337,7 +335,17 @@ impl LineIcon {
                 closed(&[(13.0, 2.5), (4.5, 13.5), (11.5, 13.5), (10.5, 21.5), (19.5, 10.5), (12.5, 10.5)]);
             }
             LineIcon::Book => {
-                line(&[(4.0, 19.0), (4.0, 5.0), (7.0, 3.0), (20.0, 3.0), (20.0, 17.0), (7.0, 17.0), (4.0, 19.0), (7.0, 21.0), (20.0, 21.0)]);
+                line(&[
+                    (4.0, 19.0),
+                    (4.0, 5.0),
+                    (7.0, 3.0),
+                    (20.0, 3.0),
+                    (20.0, 17.0),
+                    (7.0, 17.0),
+                    (4.0, 19.0),
+                    (7.0, 21.0),
+                    (20.0, 21.0),
+                ]);
             }
             LineIcon::Music => {
                 line(&[(9.0, 18.0), (9.0, 5.0), (20.0, 3.0), (20.0, 16.0)]);

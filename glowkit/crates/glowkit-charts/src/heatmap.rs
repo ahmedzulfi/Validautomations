@@ -42,7 +42,17 @@ pub struct Heatmap<'a> {
 impl<'a> Heatmap<'a> {
     /// A heatmap of `rows` (each row a vector of column values).
     pub fn new(rows: &'a [Vec<f64>]) -> Self {
-        Self { rows, row_labels: Vec::new(), col_labels: Vec::new(), base: Base::new(260.0), color: None, gap: 3.0, radius: 4.0, show_values: false, scale: true }
+        Self {
+            rows,
+            row_labels: Vec::new(),
+            col_labels: Vec::new(),
+            base: Base::new(260.0),
+            color: None,
+            gap: 3.0,
+            radius: 4.0,
+            show_values: false,
+            scale: true,
+        }
     }
     base_setters!();
     /// Labels on the left, one per row.
@@ -94,12 +104,17 @@ impl Widget for Heatmap<'_> {
         let painter = ui.painter_at(rect);
         let font = axis_font();
         let color = self.color.unwrap_or(t.chart[0]);
-        let left = self.row_labels.iter().map(|l| text_width(&painter, l, &font)).fold(0.0, f32::max) + if self.row_labels.is_empty() { 0.0 } else { 10.0 };
+        let left = self.row_labels.iter().map(|l| text_width(&painter, l, &font)).fold(0.0, f32::max)
+            + if self.row_labels.is_empty() { 0.0 } else { 10.0 };
         let bottom = if self.col_labels.is_empty() { 0.0 } else { 22.0 } + if self.scale { 30.0 } else { 0.0 };
-        let grid = Rect::from_min_max(pos2(rect.left() + left, rect.top() + 2.0), pos2(rect.right() - 2.0, rect.bottom() - bottom));
+        let grid = Rect::from_min_max(
+            pos2(rect.left() + left, rect.top() + 2.0),
+            pos2(rect.right() - 2.0, rect.bottom() - bottom),
+        );
         let cw = (grid.width() + self.gap) / nc as f32;
         let ch = (grid.height() + self.gap) / nr as f32;
-        let (lo, hi) = self.rows.iter().flatten().fold((f64::INFINITY, f64::NEG_INFINITY), |(a, b), v| (a.min(*v), b.max(*v)));
+        let (lo, hi) =
+            self.rows.iter().flatten().fold((f64::INFINITY, f64::NEG_INFINITY), |(a, b), v| (a.min(*v), b.max(*v)));
         let span = (hi - lo).max(1e-9);
         let e = entry_time(ui, id, self.base.animate, 1.4);
         let hover = resp.hover_pos().filter(|p| grid.contains(*p)).map(|p| {
@@ -110,13 +125,22 @@ impl Widget for Heatmap<'_> {
         for (r, row) in self.rows.iter().enumerate() {
             if let Some(l) = self.row_labels.get(r) {
                 let hl = hover.map(|h| h.0 == r).unwrap_or(false);
-                painter.text(pos2(grid.left() - 10.0, grid.top() + r as f32 * ch + (ch - self.gap) / 2.0), Align2::RIGHT_CENTER, l, font.clone(), if hl { t.foreground } else { t.muted_foreground });
+                painter.text(
+                    pos2(grid.left() - 10.0, grid.top() + r as f32 * ch + (ch - self.gap) / 2.0),
+                    Align2::RIGHT_CENTER,
+                    l,
+                    font.clone(),
+                    if hl { t.foreground } else { t.muted_foreground },
+                );
             }
             for (c, v) in row.iter().enumerate() {
                 let k = ((v - lo) / span) as f32;
                 let delay = (r + c) as f32 / (nr + nc) as f32 * 0.7;
                 let a = if self.base.animate { ease(Easing::OutCubic, (e - delay) / 0.5) } else { 1.0 };
-                let cell = Rect::from_min_size(pos2(grid.left() + c as f32 * cw, grid.top() + r as f32 * ch), vec2(cw - self.gap, ch - self.gap));
+                let cell = Rect::from_min_size(
+                    pos2(grid.left() + c as f32 * cw, grid.top() + r as f32 * ch),
+                    vec2(cw - self.gap, ch - self.gap),
+                );
                 let cell = Rect::from_center_size(cell.center(), cell.size() * (0.6 + 0.4 * a));
                 let col = ramp(&t, color, k.max(0.001));
                 let cr = CornerRadius::same(self.radius.min(cell.width().min(cell.height()) / 2.0) as u8);
@@ -125,8 +149,18 @@ impl Widget for Heatmap<'_> {
                     painter.rect_stroke(cell.expand(1.5), cr, Stroke::new(1.5, t.foreground), StrokeKind::Outside);
                 }
                 if self.show_values && cell.width() > 26.0 && a > 0.9 {
-                    let tc = if k > 0.55 { glowkit_core::color::contrast_text(color) } else { t.foreground.gamma_multiply(0.8) };
-                    painter.text(cell.center(), Align2::CENTER_CENTER, (self.base.format)(*v), FontId::proportional(10.5), tc);
+                    let tc = if k > 0.55 {
+                        glowkit_core::color::contrast_text(color)
+                    } else {
+                        t.foreground.gamma_multiply(0.8)
+                    };
+                    painter.text(
+                        cell.center(),
+                        Align2::CENTER_CENTER,
+                        (self.base.format)(*v),
+                        FontId::proportional(10.5),
+                        tc,
+                    );
                 }
             }
         }
@@ -136,7 +170,13 @@ impl Widget for Heatmap<'_> {
             for (c, l) in self.col_labels.iter().enumerate().take(nc) {
                 if c % stride == 0 {
                     let hl = hover.map(|h| h.1 == c).unwrap_or(false);
-                    painter.text(pos2(grid.left() + c as f32 * cw + (cw - self.gap) / 2.0, y), Align2::CENTER_TOP, l, font.clone(), if hl { t.foreground } else { t.muted_foreground });
+                    painter.text(
+                        pos2(grid.left() + c as f32 * cw + (cw - self.gap) / 2.0, y),
+                        Align2::CENTER_TOP,
+                        l,
+                        font.clone(),
+                        if hl { t.foreground } else { t.muted_foreground },
+                    );
                 }
             }
             y += 22.0;
@@ -150,12 +190,32 @@ impl Widget for Heatmap<'_> {
             let steps = 24;
             for s in 0..steps {
                 let k = s as f32 / (steps - 1) as f32;
-                let r = Rect::from_min_size(pos2(bar.left() + bar.width() * s as f32 / steps as f32, bar.top()), vec2(bar.width() / steps as f32 + 0.5, bar.height()));
+                let r = Rect::from_min_size(
+                    pos2(bar.left() + bar.width() * s as f32 / steps as f32, bar.top()),
+                    vec2(bar.width() / steps as f32 + 0.5, bar.height()),
+                );
                 painter.rect_filled(r, CornerRadius::ZERO, ramp(&t, color, k));
             }
-            painter.rect_stroke(bar, CornerRadius::same(2), Stroke::new(1.0, with_alpha(t.border, 0.6)), StrokeKind::Outside);
-            painter.text(pos2(bar.left() - 8.0, bar.center().y), Align2::RIGHT_CENTER, lo_s, font.clone(), t.muted_foreground);
-            painter.text(pos2(bar.right() + 8.0, bar.center().y), Align2::LEFT_CENTER, hi_s, font.clone(), t.muted_foreground);
+            painter.rect_stroke(
+                bar,
+                CornerRadius::same(2),
+                Stroke::new(1.0, with_alpha(t.border, 0.6)),
+                StrokeKind::Outside,
+            );
+            painter.text(
+                pos2(bar.left() - 8.0, bar.center().y),
+                Align2::RIGHT_CENTER,
+                lo_s,
+                font.clone(),
+                t.muted_foreground,
+            );
+            painter.text(
+                pos2(bar.right() + 8.0, bar.center().y),
+                Align2::LEFT_CENTER,
+                hi_s,
+                font.clone(),
+                t.muted_foreground,
+            );
         }
         if let (Some((r, c)), true) = (hover, self.base.tooltip) {
             let v = self.rows[r][c];
@@ -166,7 +226,14 @@ impl Widget for Heatmap<'_> {
                 _ => String::new(),
             };
             let k = ((v - lo) / span) as f32;
-            tooltip(ui, id, resp.hover_pos().unwrap_or(rect.center()), &title, &[TipRow::new(Some(ramp(&t, color, k)), "Value", (self.base.format)(v))], 1.0);
+            tooltip(
+                ui,
+                id,
+                resp.hover_pos().unwrap_or(rect.center()),
+                &title,
+                &[TipRow::new(Some(ramp(&t, color, k)), "Value", (self.base.format)(v))],
+                1.0,
+            );
         }
         resp
     }
@@ -200,7 +267,16 @@ pub struct CalendarHeatmap<'a> {
 impl<'a> CalendarHeatmap<'a> {
     /// One value per consecutive day, starting at [`CalendarHeatmap::start_date`].
     pub fn new(values: &'a [f64]) -> Self {
-        Self { values, start: (2025, 1, 1), cell: 12.0, gap: 3.0, color: None, unit: "contributions".into(), animate: true, legend: true }
+        Self {
+            values,
+            start: (2025, 1, 1),
+            cell: 12.0,
+            gap: 3.0,
+            color: None,
+            unit: "contributions".into(),
+            animate: true,
+            legend: true,
+        }
     }
     /// Date of the first value (year, month 1-12, day 1-31).
     pub fn start_date(mut self, year: i32, month: u32, day: u32) -> Self {
@@ -272,7 +348,13 @@ impl Widget for CalendarHeatmap<'_> {
         };
         let level_color = |l: usize| ramp(&t, color, if l == 0 { 0.0 } else { l as f32 / 4.0 });
         for (r, name) in [(1, "Mon"), (3, "Wed"), (5, "Fri")] {
-            painter.text(pos2(rect.left(), origin.y + r as f32 * step + cell / 2.0), Align2::LEFT_CENTER, name, font.clone(), t.muted_foreground);
+            painter.text(
+                pos2(rect.left(), origin.y + r as f32 * step + cell / 2.0),
+                Align2::LEFT_CENTER,
+                name,
+                font.clone(),
+                t.muted_foreground,
+            );
         }
         let e = entry_time(ui, id, self.animate, 1.5);
         let hover = resp.hover_pos().and_then(|p| {
@@ -294,7 +376,13 @@ impl Widget for CalendarHeatmap<'_> {
             let (_, m, _) = civil_from_days(start + i as i64);
             if m != last_month && wd <= 1 || i == 0 {
                 if m != last_month && x - last_label_x > 28.0 {
-                    painter.text(pos2(x, rect.top() + 4.0), Align2::LEFT_TOP, month_name(m), font.clone(), t.muted_foreground);
+                    painter.text(
+                        pos2(x, rect.top() + 4.0),
+                        Align2::LEFT_TOP,
+                        month_name(m),
+                        font.clone(),
+                        t.muted_foreground,
+                    );
                     last_label_x = x;
                 }
                 last_month = m;
@@ -313,19 +401,32 @@ impl Widget for CalendarHeatmap<'_> {
             let mut x = (origin.x + weeks as f32 * step - self.gap).min(rect.right()) - 5.0 * (cell + 3.0) - 30.0;
             painter.text(pos2(x - 6.0, y), Align2::RIGHT_CENTER, "Less", font.clone(), t.muted_foreground);
             for l in 0..5 {
-                painter.rect_filled(Rect::from_min_size(pos2(x, y - cell / 2.0), vec2(cell, cell)), CornerRadius::same((cell * 0.22).round() as u8), level_color(l));
+                painter.rect_filled(
+                    Rect::from_min_size(pos2(x, y - cell / 2.0), vec2(cell, cell)),
+                    CornerRadius::same((cell * 0.22).round() as u8),
+                    level_color(l),
+                );
                 x += cell + 3.0;
             }
             painter.text(pos2(x + 3.0, y), Align2::LEFT_CENTER, "More", font.clone(), t.muted_foreground);
             let total_sum: f64 = self.values.iter().sum();
-            painter.text(pos2(origin.x, y), Align2::LEFT_CENTER, format!("{} {} in the last year", format_thousands(total_sum, 0), self.unit), font.clone(), t.muted_foreground);
+            painter.text(
+                pos2(origin.x, y),
+                Align2::LEFT_CENTER,
+                format!("{} {} in the last year", format_thousands(total_sum, 0), self.unit),
+                font.clone(),
+                t.muted_foreground,
+            );
         }
         if let Some(i) = hover {
             let (y, m, d) = civil_from_days(start + i as i64);
             let v = self.values[i];
             let title = format!("{} {} on {} {}, {}", format_thousands(v, 0), self.unit, month_name(m), d, y);
             let cell_i = i + lead;
-            let p = pos2(origin.x + (cell_i / 7) as f32 * step + cell / 2.0, origin.y + (cell_i % 7) as f32 * step + cell / 2.0);
+            let p = pos2(
+                origin.x + (cell_i / 7) as f32 * step + cell / 2.0,
+                origin.y + (cell_i % 7) as f32 * step + cell / 2.0,
+            );
             tooltip(ui, id, p, &title, &[], 1.0);
         }
         resp

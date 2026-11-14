@@ -2,7 +2,10 @@
 
 use crate::common;
 use crate::icons::{paint_icon, Icon};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Order, Painter, Pos2, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Order, Painter, Pos2, Rect, Response, Sense, Stroke, StrokeKind,
+    Ui, Widget,
+};
 use glowkit_core::color::{hsv, mix, with_alpha};
 use glowkit_core::Theme;
 
@@ -124,10 +127,27 @@ impl Widget for Sources<'_> {
                     favicon(p, pos2(row.min.x + 18.0, row.center().y), 9.0, s.domain(), &t);
                     let title = common::galley(ui, s.title, 13.0, t.foreground);
                     let tw = title.size().x.min(w - 200.0);
-                    let clip = Rect::from_min_max(pos2(row.min.x + 36.0, row.min.y), pos2(row.min.x + 36.0 + tw, row.max.y));
-                    ui.painter().with_clip_rect(clip).galley(pos2(row.min.x + 36.0, row.center().y - title.size().y / 2.0), title, t.foreground);
-                    common::text(ui.painter(), pos2(row.min.x + 36.0 + tw + 10.0, row.center().y), Align2::LEFT_CENTER, s.domain(), 12.0, t.muted_foreground);
-                    paint_icon(ui.painter(), Icon::External, Rect::from_center_size(pos2(row.max.x - 16.0, row.center().y), vec2(12.0, 12.0)), with_alpha(t.muted_foreground, hh));
+                    let clip =
+                        Rect::from_min_max(pos2(row.min.x + 36.0, row.min.y), pos2(row.min.x + 36.0 + tw, row.max.y));
+                    ui.painter().with_clip_rect(clip).galley(
+                        pos2(row.min.x + 36.0, row.center().y - title.size().y / 2.0),
+                        title,
+                        t.foreground,
+                    );
+                    common::text(
+                        ui.painter(),
+                        pos2(row.min.x + 36.0 + tw + 10.0, row.center().y),
+                        Align2::LEFT_CENTER,
+                        s.domain(),
+                        12.0,
+                        t.muted_foreground,
+                    );
+                    paint_icon(
+                        ui.painter(),
+                        Icon::External,
+                        Rect::from_center_size(pos2(row.max.x - 16.0, row.center().y), vec2(12.0, 12.0)),
+                        with_alpha(t.muted_foreground, hh),
+                    );
                     if rr.clicked() {
                         ui.ctx().open_url(egui::OpenUrl::new_tab(s.url));
                     }
@@ -183,7 +203,11 @@ impl Widget for InlineCitation<'_> {
             return ui.allocate_response(vec2(0.0, 0.0), Sense::hover());
         };
         let id = common::widget_id(ui, self.id_salt);
-        let label = if self.sources.len() > 1 { format!("{} +{}", first.domain(), self.sources.len() - 1) } else { first.domain().to_owned() };
+        let label = if self.sources.len() > 1 {
+            format!("{} +{}", first.domain(), self.sources.len() - 1)
+        } else {
+            first.domain().to_owned()
+        };
         let g = common::galley(ui, label, 11.5, t.muted_foreground);
         let (rect, resp) = ui.allocate_exact_size(vec2(g.size().x + 14.0, 20.0), Sense::click());
         let mut st: CardState = glowkit_core::state(ui, id.with("card"), CardState::default);
@@ -197,8 +221,17 @@ impl Widget for InlineCitation<'_> {
         let h = common::anim_bool(ui, id.with("hh"), resp.hovered() || show, 0.12);
         let p = ui.painter();
         p.rect_filled(rect, CornerRadius::same(10), mix(common::raised(&t), t.accent, h * 0.12));
-        p.rect_stroke(rect, CornerRadius::same(10), Stroke::new(1.0, mix(t.border, t.accent, h * 0.5)), StrokeKind::Inside);
-        p.galley(pos2(rect.min.x + 7.0, rect.center().y - g.size().y / 2.0), g, t.muted_foreground.lerp_to_gamma(t.foreground, h));
+        p.rect_stroke(
+            rect,
+            CornerRadius::same(10),
+            Stroke::new(1.0, mix(t.border, t.accent, h * 0.5)),
+            StrokeKind::Inside,
+        );
+        p.galley(
+            pos2(rect.min.x + 7.0, rect.center().y - g.size().y / 2.0),
+            g,
+            t.muted_foreground.lerp_to_gamma(t.foreground, h),
+        );
         if show {
             let n = self.sources.len();
             st.page = st.page.min(n - 1);
@@ -213,7 +246,12 @@ impl Widget for InlineCitation<'_> {
                         .fill(t.popover)
                         .stroke(Stroke::new(1.0, t.border))
                         .corner_radius(t.corner())
-                        .shadow(egui::Shadow { offset: [0, 6], blur: 24, spread: 0, color: Color32::from_black_alpha(if t.dark { 120 } else { 30 }) })
+                        .shadow(egui::Shadow {
+                            offset: [0, 6],
+                            blur: 24,
+                            spread: 0,
+                            color: Color32::from_black_alpha(if t.dark { 120 } else { 30 }),
+                        })
                         .inner_margin(egui::Margin::same(14))
                         .show(ui, |ui| {
                             ui.set_width(300.0);
@@ -224,9 +262,14 @@ impl Widget for InlineCitation<'_> {
                                     if common::icon_button(ui, Icon::ChevronLeft, 22.0, None, "").clicked() {
                                         st.page = (st.page + n - 1) % n;
                                     }
-                                    let g = common::galley(ui, format!("{}/{}", st.page + 1, n), 11.5, t.muted_foreground);
+                                    let g =
+                                        common::galley(ui, format!("{}/{}", st.page + 1, n), 11.5, t.muted_foreground);
                                     let (r, _) = ui.allocate_exact_size(vec2(g.size().x + 8.0, 22.0), Sense::hover());
-                                    ui.painter().galley(pos2(r.min.x + 4.0, r.center().y - g.size().y / 2.0), g, t.muted_foreground);
+                                    ui.painter().galley(
+                                        pos2(r.min.x + 4.0, r.center().y - g.size().y / 2.0),
+                                        g,
+                                        t.muted_foreground,
+                                    );
                                     if common::icon_button(ui, Icon::ChevronRight, 22.0, None, "").clicked() {
                                         st.page = (st.page + 1) % n;
                                     }
@@ -239,7 +282,10 @@ impl Widget for InlineCitation<'_> {
                             });
                             let tg = common::galley_wrapped(ui, s.title, 13.5, t.foreground, 300.0);
                             let (r, _) = ui.allocate_exact_size(tg.size(), Sense::hover());
-                            common::paint_galley_fx(ui.painter(), r.min, &tg, |_| common::Fx { bold: true, ..Default::default() });
+                            common::paint_galley_fx(ui.painter(), r.min, &tg, |_| common::Fx {
+                                bold: true,
+                                ..Default::default()
+                            });
                             if !s.snippet.is_empty() {
                                 let sg = common::galley_wrapped(ui, s.snippet, 12.5, t.muted_foreground, 300.0);
                                 let (r, _) = ui.allocate_exact_size(sg.size(), Sense::hover());

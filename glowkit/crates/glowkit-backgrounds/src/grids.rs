@@ -109,7 +109,16 @@ impl Default for SquaresGrid {
 impl SquaresGrid {
     /// A diagonally moving 40 pt grid.
     pub fn new() -> Self {
-        Self { base: Base::default(), cell: 40.0, direction: Direction::Diagonal, speed: 1.0, line: None, hover: None, vignette: true, auto_hover: false }
+        Self {
+            base: Base::default(),
+            cell: 40.0,
+            direction: Direction::Diagonal,
+            speed: 1.0,
+            line: None,
+            hover: None,
+            vignette: true,
+            auto_hover: false,
+        }
     }
     /// Cell size in points (default 40).
     pub fn cell_size(mut self, size: f32) -> Self {
@@ -162,15 +171,25 @@ impl SquaresGrid {
         let base_ix = ((scroll.x) / cell).floor() as i32;
         let base_iy = ((scroll.y) / cell).floor() as i32;
         let trail = glowkit_core::with_state(ui, f.id, Trail::default, |s| {
-            s.update(hp.map(|p| {
-                let (x, y) = cell_of(p);
-                (x - base_ix, y - base_iy)
-            }), f.dt, 1.8, 1);
+            s.update(
+                hp.map(|p| {
+                    let (x, y) = cell_of(p);
+                    (x - base_ix, y - base_iy)
+                }),
+                f.dt,
+                1.8,
+                1,
+            );
             s.cells.clone()
         });
-        let fill = self.hover.unwrap_or_else(|| if t.dark { mix(t.muted, t.accent, 0.45) } else { mix(t.muted, t.accent, 0.25) });
+        let fill =
+            self.hover
+                .unwrap_or_else(|| if t.dark { mix(t.muted, t.accent, 0.45) } else { mix(t.muted, t.accent, 0.25) });
         for (x, y, a, _) in trail {
-            let r = Rect::from_min_size(origin + vec2((x + base_ix) as f32 * cell, (y + base_iy) as f32 * cell), vec2(cell, cell));
+            let r = Rect::from_min_size(
+                origin + vec2((x + base_ix) as f32 * cell, (y + base_iy) as f32 * cell),
+                vec2(cell, cell),
+            );
             f.painter.rect_filled(r, 0.0, fill.gamma_multiply(a.min(1.0)));
         }
         let lc = self.line.unwrap_or_else(|| line_color(&f));
@@ -235,7 +254,16 @@ impl Default for DotGrid {
 impl DotGrid {
     /// Dots every 28 points.
     pub fn new() -> Self {
-        Self { base: Base::default(), gap: 28.0, dot: 3.5, color: None, active: None, proximity: 140.0, strength: 1.0, auto_hover: false }
+        Self {
+            base: Base::default(),
+            gap: 28.0,
+            dot: 3.5,
+            color: None,
+            active: None,
+            proximity: 140.0,
+            strength: 1.0,
+            auto_hover: false,
+        }
     }
     /// Distance between dots in points (default 28).
     pub fn gap(mut self, gap: f32) -> Self {
@@ -324,7 +352,13 @@ impl DotGrid {
             }
             s.off.clone()
         });
-        let base = self.color.unwrap_or_else(|| if t.dark { mix(f.bg, t.foreground, 0.2) } else { mix(f.bg, t.foreground, 0.22) });
+        let base = self.color.unwrap_or_else(|| {
+            if t.dark {
+                mix(f.bg, t.foreground, 0.2)
+            } else {
+                mix(f.bg, t.foreground, 0.22)
+            }
+        });
         let active = self.active.unwrap_or(t.accent);
         let dark = f.dark();
         for j in 0..rows {
@@ -468,10 +502,17 @@ impl GridPattern {
         let y0 = rect.min.y - extra - ((extra / cell).ceil() * cell - extra) + ((rect.height() % cell) * 0.5) - cell;
         let cols = ((rect.width()) / cell).ceil() as i32 + 2;
         let rows = ((rect.height() + 2.0 * extra) / cell).ceil() as i32 + 3;
-        let fill = self.fill.unwrap_or_else(|| if t.dark { mix(t.muted_foreground, t.foreground, 0.2).gamma_multiply(0.4) } else { t.muted_foreground.gamma_multiply(0.35) });
+        let fill = self.fill.unwrap_or_else(|| {
+            if t.dark {
+                mix(t.muted_foreground, t.foreground, 0.2).gamma_multiply(0.4)
+            } else {
+                t.muted_foreground.gamma_multiply(0.35)
+            }
+        });
         let quad = |i: i32, j: i32, c: Color32| {
             let (x, y) = (x0 + i as f32 * cell, y0 + j as f32 * cell);
-            let pts = vec![to_screen(x, y), to_screen(x + cell, y), to_screen(x + cell, y + cell), to_screen(x, y + cell)];
+            let pts =
+                vec![to_screen(x, y), to_screen(x + cell, y), to_screen(x + cell, y + cell), to_screen(x, y + cell)];
             f.painter.add(Shape::convex_polygon(pts, c, Stroke::NONE));
         };
         // animated squares
@@ -592,7 +633,13 @@ impl RetroGrid {
     pub fn paint(&self, ui: &Ui, rect: Rect) {
         let Some(f) = self.base.begin(ui, rect, "glowkit_retro_grid") else { return };
         let t = &f.theme;
-        let color = self.color.unwrap_or_else(|| if t.dark { mix(t.muted_foreground, t.foreground, 0.1).gamma_multiply(0.55) } else { t.muted_foreground.gamma_multiply(0.45) });
+        let color = self.color.unwrap_or_else(|| {
+            if t.dark {
+                mix(t.muted_foreground, t.foreground, 0.1).gamma_multiply(0.55)
+            } else {
+                t.muted_foreground.gamma_multiply(0.45)
+            }
+        });
         let hy = rect.min.y + rect.height() * self.horizon;
         let cx = rect.center().x;
         let focal = rect.width() * 0.6;
@@ -604,7 +651,12 @@ impl RetroGrid {
         let p = &f.painter;
         let dark = f.dark();
         if self.glow {
-            glowkit_core::paint::glow_ellipse(p, pos2(cx, hy), vec2(rect.width() * 0.45, rect.height() * 0.35), light(color, 0.35, dark));
+            glowkit_core::paint::glow_ellipse(
+                p,
+                pos2(cx, hy),
+                vec2(rect.width() * 0.45, rect.height() * 0.35),
+                light(color, 0.35, dark),
+            );
         }
         let depth_alpha = |z: f32| (1.0 - ((z - near) / (focal * 9.0)).clamp(0.0, 1.0)).powf(1.8);
         // horizontal lines (scroll toward the viewer)
@@ -629,10 +681,14 @@ impl RetroGrid {
             let x = i as f32 * cell_world;
             let a = proj(x, near);
             let b = proj(x, focal * 12.0);
-            glowkit_core::paint::gradient_polyline(p, &[a, a.lerp(b, 0.5), b], false, 1.0, |u| color.gamma_multiply((1.0 - u).powf(2.0)));
+            glowkit_core::paint::gradient_polyline(p, &[a, a.lerp(b, 0.5), b], false, 1.0, |u| {
+                color.gamma_multiply((1.0 - u).powf(2.0))
+            });
         }
         if self.glow {
-            glowkit_core::paint::gradient_polyline(p, &[pos2(rect.min.x, hy), pos2(rect.max.x, hy)], false, 1.5, |u| light(color, (1.0 - (u - 0.5).abs() * 2.0).powf(0.8), dark));
+            glowkit_core::paint::gradient_polyline(p, &[pos2(rect.min.x, hy), pos2(rect.max.x, hy)], false, 1.5, |u| {
+                light(color, (1.0 - (u - 0.5).abs() * 2.0).powf(0.8), dark)
+            });
         }
         // fade the sky and the horizon into the background
         let clear = with_alpha(f.bg, 0.0);
@@ -641,7 +697,11 @@ impl RetroGrid {
             p.rect_filled(Rect::from_min_max(rect.min, pos2(rect.max.x, hy)), 0.0, f.bg);
         }
         if !self.glow {
-            glowkit_core::paint::quad(p, [pos2(rect.min.x, hy), pos2(rect.max.x, hy), pos2(rect.max.x, y_fade), pos2(rect.min.x, y_fade)], [f.bg, f.bg, clear, clear]);
+            glowkit_core::paint::quad(
+                p,
+                [pos2(rect.min.x, hy), pos2(rect.max.x, hy), pos2(rect.max.x, y_fade), pos2(rect.min.x, y_fade)],
+                [f.bg, f.bg, clear, clear],
+            );
         }
     }
 }
@@ -736,9 +796,11 @@ impl FlickeringGrid {
                 let a1 = h01(id, k + 1);
                 let blend = smoothstep(0.0, (0.25 * rate).min(0.5), fr);
                 let mut a = (a0 + (a1 - a0) * blend) * self.max_opacity;
-                let r = Rect::from_min_size(rect.min + vec2(i as f32 * step, j as f32 * step), Vec2::splat(self.square));
+                let r =
+                    Rect::from_min_size(rect.min + vec2(i as f32 * step, j as f32 * step), Vec2::splat(self.square));
                 if self.mask {
-                    let d = vec2((r.center().x - rect.min.x - cxr) / cxr, (r.center().y - rect.min.y - cyr) / cyr).length();
+                    let d =
+                        vec2((r.center().x - rect.min.x - cxr) / cxr, (r.center().y - rect.min.y - cyr) / cyr).length();
                     a *= 1.0 - smoothstep(0.3, 1.05, d);
                 }
                 if a > 0.004 {
@@ -784,7 +846,14 @@ impl Default for BackgroundBoxes {
 impl BackgroundBoxes {
     /// Boxes of 64 x 32 points.
     pub fn new() -> Self {
-        Self { base: Base::default(), colors: None, line: None, box_size: vec2(64.0, 32.0), plus: true, auto_hover: false }
+        Self {
+            base: Base::default(),
+            colors: None,
+            line: None,
+            box_size: vec2(64.0, 32.0),
+            plus: true,
+            auto_hover: false,
+        }
     }
     /// Colors boxes light up with, picked at random (default: theme chart + gradient).
     pub fn colors(mut self, colors: &[Color32]) -> Self {
@@ -849,19 +918,29 @@ impl BackgroundBoxes {
         let (j0, j1) = ((lo.y / bs.y).floor() as i32 - 1, (hi.y / bs.y).ceil() as i32 + 1);
         let hp = hover_point(ui, &f, self.auto_hover);
         let trail = glowkit_core::with_state(ui, f.id, Trail::default, |st| {
-            st.update(hp.map(|p| {
-                let g = back(p);
-                ((g.x / bs.x).floor() as i32, (g.y / bs.y).floor() as i32)
-            }), f.dt, 0.55, colors.len());
+            st.update(
+                hp.map(|p| {
+                    let g = back(p);
+                    ((g.x / bs.x).floor() as i32, (g.y / bs.y).floor() as i32)
+                }),
+                f.dt,
+                0.55,
+                colors.len(),
+            );
             st.cells.clone()
         });
         let p = &f.painter;
         for (i, j, al, ci) in trail {
             let (x, y) = (i as f32 * bs.x, j as f32 * bs.y);
-            let pts = vec![fwd(vec2(x, y)), fwd(vec2(x + bs.x, y)), fwd(vec2(x + bs.x, y + bs.y)), fwd(vec2(x, y + bs.y))];
+            let pts =
+                vec![fwd(vec2(x, y)), fwd(vec2(x + bs.x, y)), fwd(vec2(x + bs.x, y + bs.y)), fwd(vec2(x, y + bs.y))];
             let col = colors[ci as usize % colors.len()];
             let a = al.clamp(0.0, 1.0);
-            p.add(Shape::convex_polygon(pts, col.gamma_multiply(a.powf(0.7) * if t.dark { 0.9 } else { 0.75 }), Stroke::NONE));
+            p.add(Shape::convex_polygon(
+                pts,
+                col.gamma_multiply(a.powf(0.7) * if t.dark { 0.9 } else { 0.75 }),
+                Stroke::NONE,
+            ));
         }
         let lc = self.line.unwrap_or_else(|| line_color(&f));
         let stroke = Stroke::new(1.0, lc);
@@ -932,7 +1011,15 @@ impl Default for HexGrid {
 impl HexGrid {
     /// Hexagons with a 24 pt radius.
     pub fn new() -> Self {
-        Self { base: Base::default(), radius: 24.0, line: None, color: None, pulses: true, auto_hover: false, mask: true }
+        Self {
+            base: Base::default(),
+            radius: 24.0,
+            line: None,
+            color: None,
+            pulses: true,
+            auto_hover: false,
+            mask: true,
+        }
     }
     /// Hexagon radius (center to corner) in points (default 24).
     pub fn radius(mut self, r: f32) -> Self {

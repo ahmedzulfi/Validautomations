@@ -115,7 +115,11 @@ impl Widget for GlitchText {
         let origin = pos2(rect.min.x + pad, rect.min.y);
         let h = galley.size().y;
         let mut r = Rng::new(tick.wrapping_mul(0x9E37_79B9) ^ id.value());
-        let jitter = if bursting { vec2(r.range(-1.0, 1.0), r.range(-1.0, 1.0)) * self.size * 0.025 * level } else { vec2(0.0, 0.0) };
+        let jitter = if bursting {
+            vec2(r.range(-1.0, 1.0), r.range(-1.0, 1.0)) * self.size * 0.025 * level
+        } else {
+            vec2(0.0, 0.0)
+        };
         // slice boundaries
         let cuts = if bursting { 7 } else { 3 };
         let mut ys: Vec<f32> = (0..cuts).map(|_| r.f32()).collect();
@@ -131,7 +135,10 @@ impl Widget for GlitchText {
             }
             let shifted = r.bool(if bursting { 0.6 } else { 0.25 });
             let sx = if shifted { r.range(-1.0, 1.0) * self.size * 0.14 * level } else { 0.0 };
-            let band = Rect::from_min_max(pos2(rect.min.x - self.size, rect.min.y + a * h), pos2(rect.max.x + self.size, rect.min.y + b * h));
+            let band = Rect::from_min_max(
+                pos2(rect.min.x - self.size, rect.min.y + a * h),
+                pos2(rect.max.x + self.size, rect.min.y + b * h),
+            );
             let p = painter.with_clip_rect(band.intersect(ui.clip_rect()));
             let pos = origin + jitter + vec2(sx, 0.0);
             let ch_split = split * if shifted { 1.6 } else { 1.0 };
@@ -143,7 +150,14 @@ impl Widget for GlitchText {
         if bursting && r.bool(0.5) {
             let y = rect.min.y + r.f32() * h;
             let c = if r.bool(0.5) { self.left } else { self.right };
-            painter.rect_filled(Rect::from_min_size(pos2(rect.min.x + r.range(0.0, rect.width() * 0.4), y), vec2(rect.width() * r.range(0.2, 0.6), 2.0)), 0.0, c.gamma_multiply(0.6));
+            painter.rect_filled(
+                Rect::from_min_size(
+                    pos2(rect.min.x + r.range(0.0, rect.width() * 0.4), y),
+                    vec2(rect.width() * r.range(0.2, 0.6), 2.0),
+                ),
+                0.0,
+                c.gamma_multiply(0.6),
+            );
         }
         resp
     }

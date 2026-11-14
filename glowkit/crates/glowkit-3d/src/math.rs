@@ -483,7 +483,12 @@ impl Quat {
         let th = d.clamp(-1.0, 1.0).acos();
         let s = th.sin();
         let (wa, wb) = (((1.0 - t) * th).sin() / s, (t * th).sin() / s);
-        Quat { x: self.x * wa + b.x * wb, y: self.y * wa + b.y * wb, z: self.z * wa + b.z * wb, w: self.w * wa + b.w * wb }
+        Quat {
+            x: self.x * wa + b.x * wb,
+            y: self.y * wa + b.y * wb,
+            z: self.z * wa + b.z * wb,
+            w: self.w * wa + b.w * wb,
+        }
     }
     /// Rotation matrix.
     pub fn to_mat4(self) -> Mat4 {
@@ -603,7 +608,9 @@ mod tests {
     #[test]
     fn rotations_agree() {
         let v = vec3(1.0, 2.0, 3.0);
-        for (axis, m) in [(Vec3::X, Mat4::rotation_x(0.7)), (Vec3::Y, Mat4::rotation_y(0.7)), (Vec3::Z, Mat4::rotation_z(0.7))] {
+        for (axis, m) in
+            [(Vec3::X, Mat4::rotation_x(0.7)), (Vec3::Y, Mat4::rotation_y(0.7)), (Vec3::Z, Mat4::rotation_z(0.7))]
+        {
             let q = Quat::from_axis_angle(axis, 0.7);
             assert!(close(q.rotate(v), m.transform_point(v)));
             assert!(close(q.to_mat4().transform_point(v), m.transform_point(v)));
@@ -613,7 +620,9 @@ mod tests {
 
     #[test]
     fn inverse_roundtrip() {
-        let m = Mat4::translation(vec3(1.0, -2.0, 3.0)) * Mat4::rotation(vec3(1.0, 1.0, 0.0), 0.9) * Mat4::scale(vec3(2.0, 0.5, 1.5));
+        let m = Mat4::translation(vec3(1.0, -2.0, 3.0))
+            * Mat4::rotation(vec3(1.0, 1.0, 0.0), 0.9)
+            * Mat4::scale(vec3(2.0, 0.5, 1.5));
         let inv = m.inverse().unwrap();
         let id = m * inv;
         for c in 0..4 {
@@ -653,7 +662,9 @@ mod tests {
 
     #[test]
     fn transform_matrix() {
-        let t = Transform::from_translation(vec3(1.0, 0.0, 0.0)).with_rotation(Quat::from_axis_angle(Vec3::Z, FRAC_PI_2)).with_scale(2.0);
+        let t = Transform::from_translation(vec3(1.0, 0.0, 0.0))
+            .with_rotation(Quat::from_axis_angle(Vec3::Z, FRAC_PI_2))
+            .with_scale(2.0);
         assert!(close(t.matrix().transform_point(Vec3::X), vec3(1.0, 2.0, 0.0)));
         let n = t.matrix().normal_matrix().transform_vector(Vec3::X).normalized();
         assert!(close(n, Vec3::Y));

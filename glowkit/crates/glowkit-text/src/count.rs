@@ -36,7 +36,13 @@ pub fn format_number(value: f64, decimals: usize, separator: &str, decimal_point
 
 /// Paint `s` with digits in fixed-width slots (tabular figures) so numbers don't wobble.
 /// Returns the width. With `paint == None` only measures.
-pub(crate) fn tabular(painter: &Painter, s: &str, font: &FontId, slot: f32, at: Option<(egui::Pos2, Color32, f32)>) -> f32 {
+pub(crate) fn tabular(
+    painter: &Painter,
+    s: &str,
+    font: &FontId,
+    slot: f32,
+    at: Option<(egui::Pos2, Color32, f32)>,
+) -> f32 {
     let mut x = 0.0;
     for ch in s.chars() {
         let g = util::layout_char(painter, ch, font);
@@ -177,7 +183,8 @@ impl Widget for CountUp {
         let slot = util::digit_width(&painter, &font);
         let fmt = |v: f64| format_number(v, self.decimals, &self.separator, &self.decimal_point);
         let id = ui.next_auto_id();
-        let st = glowkit_core::state(ui, id.with("count"), || CountState { from: self.from, to: self.to, shown: self.from });
+        let st =
+            glowkit_core::state(ui, id.with("count"), || CountState { from: self.from, to: self.to, shown: self.from });
         let mut st = st;
         if st.to != self.to {
             st = CountState { from: st.shown, to: self.to, shown: st.shown };
@@ -185,7 +192,8 @@ impl Widget for CountUp {
         }
         let pre = util::layout(&painter, self.prefix.clone(), &font);
         let suf = util::layout(&painter, self.suffix.clone(), &font);
-        let num_w = tabular(&painter, &fmt(st.from), &font, slot, None).max(tabular(&painter, &fmt(st.to), &font, slot, None));
+        let num_w =
+            tabular(&painter, &fmt(st.from), &font, slot, None).max(tabular(&painter, &fmt(st.to), &font, slot, None));
         let h = pre.size().y.max(self.size * 1.2);
         let (rect, resp) = ui.allocate_exact_size(vec2(pre.size().x + num_w + suf.size().x + bold, h), Sense::click());
         let elapsed = Clock::triggered(ui, id, self.trigger, self.duration, resp.hovered(), resp.clicked());

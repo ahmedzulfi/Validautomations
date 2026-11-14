@@ -2,7 +2,10 @@
 
 use crate::icons::{paint_icon, Icon};
 use egui::epaint::Vertex;
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Galley, Id, Painter, Pos2, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, UiBuilder, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Galley, Id, Painter, Pos2, Rect, Response, Sense, Shape, Stroke,
+    StrokeKind, Ui, UiBuilder, Vec2,
+};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
 use std::ops::Range;
@@ -119,7 +122,9 @@ pub(crate) fn spinner(painter: &Painter, center: Pos2, radius: f32, width: f32, 
     painter.circle_stroke(center, radius, Stroke::new(width, with_alpha(color, 0.18)));
     let a0 = time * 5.2;
     let sweep = 1.3 + (time * 2.1).sin() * 0.6;
-    glowkit_core::paint::arc_gradient(painter, center, radius, a0, a0 + sweep, width, |t| color.gamma_multiply(0.25 + 0.75 * t));
+    glowkit_core::paint::arc_gradient(painter, center, radius, a0, a0 + sweep, width, |t| {
+        color.gamma_multiply(0.25 + 0.75 * t)
+    });
 }
 
 /// Single-line text galley.
@@ -233,12 +238,17 @@ pub(crate) fn reveal(ui: &mut Ui, id: Id, open: f32, add: impl FnOnce(&mut Ui)) 
 
 /// A collapsible state stored in egui memory: returns (open, animated openness).
 pub(crate) fn toggle_state(ui: &Ui, id: Id, default_open: bool, toggled: bool) -> (bool, f32) {
-    let open = glowkit_core::with_state(ui, id.with("open"), || default_open, |o| {
-        if toggled {
-            *o = !*o;
-        }
-        *o
-    });
+    let open = glowkit_core::with_state(
+        ui,
+        id.with("open"),
+        || default_open,
+        |o| {
+            if toggled {
+                *o = !*o;
+            }
+            *o
+        },
+    );
     let t = ui.ctx().animate_bool_with_time(id.with("open_anim"), open, 0.22);
     (open, glowkit_core::ease(glowkit_core::Easing::OutCubic, t))
 }

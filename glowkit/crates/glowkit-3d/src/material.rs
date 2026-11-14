@@ -263,8 +263,16 @@ impl Default for Lights {
             sky: Color32::from_rgb(200, 215, 255),
             sky_intensity: 0.12,
             directional: vec![
-                DirectionalLight { direction: vec3(0.55, 0.8, 0.6).normalized(), color: Color32::from_rgb(255, 250, 240), intensity: 0.85 },
-                DirectionalLight { direction: vec3(-0.8, 0.1, 0.3).normalized(), color: Color32::from_rgb(190, 205, 255), intensity: 0.28 },
+                DirectionalLight {
+                    direction: vec3(0.55, 0.8, 0.6).normalized(),
+                    color: Color32::from_rgb(255, 250, 240),
+                    intensity: 0.85,
+                },
+                DirectionalLight {
+                    direction: vec3(-0.8, 0.1, 0.3).normalized(),
+                    color: Color32::from_rgb(190, 205, 255),
+                    intensity: 0.28,
+                },
             ],
             point: Vec::new(),
         }
@@ -274,7 +282,14 @@ impl Default for Lights {
 impl Lights {
     /// No lights at all.
     pub fn none() -> Self {
-        Self { ambient: Color32::WHITE, ambient_intensity: 0.0, sky: Color32::WHITE, sky_intensity: 0.0, directional: vec![], point: vec![] }
+        Self {
+            ambient: Color32::WHITE,
+            ambient_intensity: 0.0,
+            sky: Color32::WHITE,
+            sky_intensity: 0.0,
+            directional: vec![],
+            point: vec![],
+        }
     }
     /// Only ambient light.
     pub fn ambient(intensity: f32) -> Self {
@@ -357,7 +372,12 @@ impl Rgb {
             }
         };
         let q = |x: f32| (tm(x) * a * 255.0).round().clamp(0.0, 255.0) as u8;
-        Color32::from_rgba_premultiplied(q(self.0), q(self.1), q(self.2), if additive { 0 } else { (a * 255.0).round() as u8 })
+        Color32::from_rgba_premultiplied(
+            q(self.0),
+            q(self.1),
+            q(self.2),
+            if additive { 0 } else { (a * 255.0).round() as u8 },
+        )
     }
 }
 

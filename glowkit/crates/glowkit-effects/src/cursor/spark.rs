@@ -61,7 +61,18 @@ impl Default for ClickSpark {
 impl ClickSpark {
     /// Default sparks: 8 lines, 24 pt radius, accent colored.
     pub fn new() -> Self {
-        Self { color: None, count: 8, radius: 24.0, length: 12.0, width: 2.0, duration: 0.45, easing: Easing::OutCubic, autoplay: false, area: None, salt: 0 }
+        Self {
+            color: None,
+            count: 8,
+            radius: 24.0,
+            length: 12.0,
+            width: 2.0,
+            duration: 0.45,
+            easing: Easing::OutCubic,
+            autoplay: false,
+            area: None,
+            salt: 0,
+        }
     }
     /// Spark color. Defaults to the theme accent.
     pub fn color(mut self, c: Color32) -> Self {
@@ -180,7 +191,16 @@ impl Default for ClickRipple {
 impl ClickRipple {
     /// Three rings expanding to 120 pt over one second.
     pub fn new() -> Self {
-        Self { color: None, rings: 3, max_radius: 120.0, duration: 1.1, fill: true, autoplay: false, area: None, salt: 0 }
+        Self {
+            color: None,
+            rings: 3,
+            max_radius: 120.0,
+            duration: 1.1,
+            fill: true,
+            autoplay: false,
+            area: None,
+            salt: 0,
+        }
     }
     /// Ring color. Defaults to the theme accent.
     pub fn color(mut self, c: Color32) -> Self {

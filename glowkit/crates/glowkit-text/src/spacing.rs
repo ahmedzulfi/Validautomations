@@ -109,7 +109,14 @@ impl Widget for GradualSpacing {
             let alpha = ease(Easing::OutCubic, (lin * 1.8).min(1.0));
             let gal = util::layout_char(painter, g.ch, &font);
             let pos = rect.min + vec2(x - g.size.x / 2.0, g.offset.y);
-            util::paint_blurred(painter, pos, &gal, color.gamma_multiply(alpha), (1.0 - alpha) * self.size * 0.08, bold);
+            util::paint_blurred(
+                painter,
+                pos,
+                &gal,
+                color.gamma_multiply(alpha),
+                (1.0 - alpha) * self.size * 0.08,
+                bold,
+            );
         }
         resp
     }
