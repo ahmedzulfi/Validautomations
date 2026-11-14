@@ -116,6 +116,16 @@ SOURCES = OrderedDict([
         "Background", "Controls", "MiniMap", "Node Toolbar", "Edge Label", "Custom Nodes", "Custom Edges",
         "Animated Edges", "Selection", "Snap to Grid", "Auto Layout", "Undo Redo",
     ]}),
+    ("Bencho", {"url": "https://bencho.dev", "items": [
+        "Card stack", "ASCII wake", "Wake slider", "Folding bill", "Heat map", "Signature pad",
+        "Dynamic island", "Particles", "Generate", "Image accordion", "Magnetic select", "Checklist",
+        "Liquid toggle", "Now playing", "Tilt card", "Slosh slider", "Context meter", "Card swap",
+        "Stacked bars", "Emoji reactions", "Image compare", "Voice note", "Time scrubber", "Label input",
+        "Step player", "Glass bubble", "Slide to confirm", "Carousel", "Magnifying dock", "Pull to refresh",
+        "Escape button", "Create menu", "Slingshot", "Rolling counter", "Toast stack", "Asset swap", "Like",
+        "Eye tracker", "Upload dropzone", "One-time code", "Todo tower", "Action node", "Assignees",
+        "Palette", "Aspect ratio", "Dragging ball", "Search",
+    ]}),
     ("Tremor", {"url": "https://tremor.so", "items": [
         "Area Chart", "Bar Chart", "Line Chart", "Donut Chart", "Bar List", "Spark Chart", "Tracker",
         "Category Bar", "Progress Bar", "Progress Circle", "Combo Chart", "Scatter Chart",
@@ -131,7 +141,7 @@ ALIASES = {  # library name variants used in `covers`
     "shadcnui": "shadcn/ui", "aielements": "Vercel AI Elements", "vercelaielements": "Vercel AI Elements",
     "promptkit": "prompt-kit", "elevenlabsui": "ElevenLabs UI", "elevenlabs": "ElevenLabs UI",
     "evilcharts": "Evil Charts", "tremor": "Tremor", "mvpblocks": "MVP Blocks", "reactflow": "React Flow",
-    "xyflow": "React Flow",
+    "xyflow": "React Flow", "bencho": "Bencho",
 }
 
 def main():
