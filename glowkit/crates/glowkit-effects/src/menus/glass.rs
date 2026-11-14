@@ -264,8 +264,10 @@ impl GlassSurface {
             for (scale, chan) in [(1.18f32, 0usize), (0.82, 2)] {
                 let mut fr = warp_with(scale);
                 for v in &mut fr.vertices {
-                    let w = smoothstep(-e * 0.6, 0.0, sd_round_rect(v.pos, glass, wr)) * 0.38;
                     let c = v.color;
+                    // additive light: fade it out on bright content so it never washes out to white
+                    let lum = (0.3 * c.r() as f32 + 0.55 * c.g() as f32 + 0.15 * c.b() as f32) / 255.0;
+                    let w = smoothstep(-e * 0.6, 0.0, sd_round_rect(v.pos, glass, wr)) * 0.36 * (1.0 - lum).powi(2);
                     let val = if chan == 0 { c.r() } else { c.b() };
                     let x = (val as f32 * w) as u8;
                     // alpha 0: additive light

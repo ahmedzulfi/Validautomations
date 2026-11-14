@@ -442,8 +442,28 @@ impl ShapeBlur {
                     .collect()
             }
         };
+        let pts = match self.kind {
+            ShapeBlurKind::Diamond | ShapeBlurKind::Star => chaikin(pts, 4),
+            _ => pts,
+        };
         paint::subdivide_closed(&pts, 3.0)
     }
+}
+
+/// Round off the corners of a closed polygon (Chaikin corner cutting).
+fn chaikin(mut pts: Vec<Pos2>, iterations: usize) -> Vec<Pos2> {
+    for _ in 0..iterations {
+        let n = pts.len();
+        let mut out = Vec::with_capacity(n * 2);
+        for i in 0..n {
+            let a = pts[i];
+            let b = pts[(i + 1) % n];
+            out.push(a.lerp(b, 0.25));
+            out.push(a.lerp(b, 0.75));
+        }
+        pts = out;
+    }
+    pts
 }
 
 impl Widget for ShapeBlur {

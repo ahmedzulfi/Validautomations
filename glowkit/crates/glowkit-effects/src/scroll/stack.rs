@@ -447,7 +447,8 @@ impl ContainerScroll {
         let head_h = if self.title.is_empty() { 0.0 } else { 74.0 + if self.subtitle.is_empty() { 0.0 } else { 22.0 } };
         let w = self.width.min(ui.available_width() - 8.0);
         let (rect, response) = ui.allocate_exact_size(vec2(ui.available_width(), head_h + self.height + 30.0), Sense::hover());
-        let raw = self.progress.unwrap_or_else(|| view_progress(ui, rect, 0.12));
+        let dev = Rect::from_center_size(pos2(rect.center().x, rect.min.y + head_h + 12.0 + self.height / 2.0), vec2(w, self.height));
+        let raw = self.progress.unwrap_or_else(|| view_progress(ui, dev, 0.3));
         let e = ease(Easing::OutCubic, raw.clamp(0.0, 1.0));
         if self.progress.is_none() {
             // keep tracking while the parent scrolls
@@ -478,7 +479,6 @@ impl ContainerScroll {
                 with_alpha(paint::linear_fn(Rect::from_min_size(pos, g.size()), 0.0, &stops)(p), a)
             });
         }
-        let dev = Rect::from_center_size(pos2(rect.center().x, rect.min.y + head_h + 12.0 + self.height / 2.0), vec2(w, self.height));
         let mut persp = Persp::new(pos2(dev.center().x, dev.max.y));
         persp.rx = self.tilt.to_radians() * (1.0 - e);
         persp.scale = self.start_scale + (1.0 - self.start_scale) * e;

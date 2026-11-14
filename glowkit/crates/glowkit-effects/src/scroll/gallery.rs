@@ -171,6 +171,9 @@ impl egui::Widget for AppleCardsCarousel<'_> {
         } else {
             st.idle += dt;
         }
+        if self.autoplay {
+            glowkit_core::animate(ui);
+        }
         if self.autoplay && st.idle > 1.5 {
             st.tick += dt;
             if st.tick > 2.2 {
@@ -881,7 +884,7 @@ impl HeroVideoDialog {
                 let pts = [bar.left_top(), bar.right_top(), bar.right_bottom(), bar.left_bottom()];
                 paint::quad(ui.painter(), pts, [Color32::TRANSPARENT, Color32::TRANSPARENT, with_alpha(Color32::BLACK, 0.6), with_alpha(Color32::BLACK, 0.6)]);
                 let frac = (secs % self.length) / self.length;
-                let track = Rect::from_min_max(pos2(r.min.x + 46.0, r.max.y - 20.0), pos2(r.max.x - 90.0, r.max.y - 16.0));
+                let track = Rect::from_min_max(pos2(r.min.x + 46.0, r.max.y - 20.0), pos2(r.max.x - 112.0, r.max.y - 16.0));
                 ui.painter().rect_filled(track, CornerRadius::same(99), with_alpha(Color32::WHITE, 0.3));
                 let fill = Rect::from_min_max(track.min, pos2(track.min.x + track.width() * frac, track.max.y));
                 ui.painter().rect_filled(fill, CornerRadius::same(99), Color32::WHITE);

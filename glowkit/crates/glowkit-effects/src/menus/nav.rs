@@ -595,10 +595,10 @@ impl Widget for PillNav<'_> {
             let g = clip.layout_no_wrap(label.clone(), font.clone(), pill_text);
             let tl = r.center() - g.size() / 2.0;
             if off < ph - 0.5 {
-                clip.galley(tl - vec2(0.0, off), g.clone(), pill_text);
+                clip.galley_with_override_text_color(tl - vec2(0.0, off), g.clone(), pill_text);
             }
             if off > 0.5 {
-                clip.galley(tl + vec2(0.0, ph - off), g, hover_text);
+                clip.galley_with_override_text_color(tl + vec2(0.0, ph - off), g, hover_text);
             }
             if *self.active == i {
                 let a = follow(ui, id.with(("dot", i)), 1.0, 8.0);
@@ -732,13 +732,18 @@ impl StaggeredMenu {
 
         let nl = layers.len() + 1;
         let mut panel_x = rect.max.x;
-        for k in 0..nl {
-            let e = if open {
-                ease(Easing::OutQuart, stagger(since, k, 0.08, 0.6))
-            } else {
-                1.0 - ease(Easing::InOutCubic, stagger(since, nl - 1 - k, 0.05, 0.4))
-            };
-            if e <= 0.001 {
+        let es: Vec<f32> = (0..nl)
+            .map(|k| {
+                if open {
+                    ease(Easing::OutQuart, stagger(since, k, 0.08, 0.6))
+                } else {
+                    1.0 - ease(Easing::InOutCubic, stagger(since, nl - 1 - k, 0.05, 0.4))
+                }
+            })
+            .collect();
+        let covered = es[nl - 1] >= 0.999;
+        for (k, &e) in es.iter().enumerate() {
+            if e <= 0.001 || (covered && k < nl - 1) {
                 continue;
             }
             let x = rect.max.x - pw * e;
