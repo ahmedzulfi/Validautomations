@@ -2,10 +2,10 @@
 
 # ✦ glowkit
 
-**A big, beautiful, animated component library for Rust.**
-Build Windows, macOS and Linux apps (and web apps through WebAssembly) with the kind of
-components you see on the best websites: shimmering text, aurora backgrounds, border beams,
-spotlight cards, magnetic docks, animated charts, and a full AI chat kit. 100% Rust, built on [egui](https://github.com/emilk/egui).
+**Premium, animated UI for Rust apps, games and tools.**
+AI agent interfaces, live dashboards, game menus and HUDs, node editors, charts, 3D and hundreds of
+micro-interactions, for native Windows, macOS and Linux apps (and the web through WebAssembly).
+100% Rust, built on [egui](https://github.com/emilk/egui). No Electron, no webview.
 
 [Live gallery](https://glowkit-rs.github.io/glowkit/gallery/) · [Website](https://glowkit-rs.github.io/glowkit/) · [Catalog](CATALOG.md) · [Docs](https://docs.rs/glowkit) · [Customizing](crates/glowkit/docs/CUSTOMIZING.md) · [Contributing](CONTRIBUTING.md)
 
@@ -13,14 +13,23 @@ spotlight cards, magnetic docks, animated charts, and a full AI chat kit. 100% R
 
 ---
 
-## Why
+## Who it's for
 
-The web has an incredible ecosystem of copy-paste animated components (React Bits, Magic UI,
-Aceternity, Motion Primitives, shadcn/ui, AI Elements, Evil Charts, ...). Rust desktop apps have
-had nothing like it. glowkit brings that whole world to Rust:
+Rust is where people are rewriting Electron apps into fast, native tools. glowkit gives those apps
+the polish web apps get from React component libraries:
 
-* **458 gallery entries** across text animations, backgrounds, buttons, cards & borders,
-  cursor effects, motion & layout, inputs, navigation, overlays, data display, loaders, charts, AI, 3D, canvas editors, page sections, dashboards and full app templates.
+| You're building | glowkit gives you |
+|---|---|
+| **AI agent apps** (session managers, local LLM chat, agent fleets) | Streaming markdown chat, tool calls, approvals, diff review, traces, agent trees, run monitors, MCP and skills managers |
+| **Dashboards** (trading, crypto, infra, analytics) | Animated charts, candlesticks, order books, Sankey, stat cards, data grids, live-updating numbers |
+| **Games** (Bevy via `bevy_egui`) | Main and pause menus, HUD bars, minimaps, inventories, skill trees, dialogue, loot and achievement popups |
+| **Dev tools** (editors, inspectors, profilers) | Node editor, infinite canvas, timeline, flame graphs, command palette, log consoles |
+| **Any native app that should feel premium** | 600+ animated blocks: transitions, morphs, physics-based interactions, text effects, backgrounds, 3D |
+
+## What's inside
+
+* **603 showcased blocks and components** across AI agents, dashboards, game UI, micro-interactions,
+  transitions, charts, canvas editors, 3D, text effects, backgrounds and full app templates.
 * **A real motion engine.** Springs, keyframes, GSAP-style timelines, variants with stagger, enter/exit presence, layout animations, drag with inertia.
 * **3D without the setup.** A built-in software 3D renderer draws lit, depth-sorted meshes straight into egui: no wgpu boilerplate.
 * **Native everywhere.** One codebase runs as a native app on Windows, macOS and Linux, and in
@@ -32,10 +41,9 @@ had nothing like it. glowkit brings that whole world to Rust:
   (on appear / loop / hover / click), noise, gradients, glows and per-glyph text layout.
 * **Modular.** Each category is its own crate behind a cargo feature, so you only compile what you use.
 * **Parity with the web, measured.** [CATALOG.md](CATALOG.md) is generated from the code and maps
-  476 components from 12 popular web libraries (React Bits, Magic UI, Aceternity, Motion Primitives,
-  shadcn/ui, AI Elements, prompt-kit, ElevenLabs UI, Evil Charts, MVP Blocks, React Flow, Tremor) to
-  their glowkit equivalents: every one currently has a match. The lists are a snapshot; those
-  libraries keep growing, and PRs that update them are welcome.
+  components from 20+ popular web libraries (React Bits, Magic UI, Aceternity, Motion Primitives,
+  AI Elements, prompt-kit, ElevenLabs UI, Bencho, beUI, Snapblocks, Originkit, BoardUI and more) to
+  their glowkit equivalents. The lists are a snapshot; PRs that update them are welcome.
 * **Original implementations.** glowkit recreates well-known UI *patterns* in Rust from scratch.
 
 ## Quick start

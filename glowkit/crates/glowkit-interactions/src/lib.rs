@@ -5,6 +5,7 @@
 //! Modules are re-exported at the crate root.
 
 pub mod beui;
+pub mod game;
 pub mod obsidian_board;
 pub mod origin;
 pub mod snap_a;
@@ -13,6 +14,7 @@ pub mod suiss;
 pub mod transitions;
 
 pub use beui::*;
+pub use game::*;
 pub use obsidian_board::*;
 pub use origin::*;
 pub use snap_a::*;
@@ -31,5 +33,6 @@ pub fn demos() -> Vec<glowkit_core::demo::Demo> {
     v.extend(origin::demos());
     v.extend(beui::demos());
     v.extend(obsidian_board::demos());
+    v.extend(game::demos());
     v
 }

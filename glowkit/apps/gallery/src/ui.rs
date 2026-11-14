@@ -249,13 +249,14 @@ fn dot_field(p: &egui::Painter, area: Rect, t: &Theme, time: f32) {
 }
 
 /// Gallery order: blocks and rich interactions first, primitives last.
-pub const CATEGORY_ORDER: [Category; 20] = [
-    Category::Blocks,
-    Category::MicroInteractions,
+pub const CATEGORY_ORDER: [Category; 21] = [
+    Category::Ai,
     Category::Templates,
     Category::Dashboards,
-    Category::Ai,
+    Category::Games,
     Category::Charts,
+    Category::MicroInteractions,
+    Category::Blocks,
     Category::Canvas,
     Category::CardsAndBorders,
     Category::TextAnimations,
@@ -421,11 +422,11 @@ impl Gallery {
         x += 140.0;
         if !narrow {
             let links: [(&str, Option<Category>); 5] = [
-                ("Blocks", Some(Category::Blocks)),
+                ("AI agents", Some(Category::Ai)),
+                ("Games", Some(Category::Games)),
                 ("Interactions", Some(Category::MicroInteractions)),
                 ("Templates", Some(Category::Templates)),
                 ("Charts", Some(Category::Charts)),
-                ("AI", Some(Category::Ai)),
             ];
             for (label, cat) in links {
                 let active = self.page == Page::Home && self.filter == cat && (cat.is_some() || self.search.is_empty());
@@ -560,17 +561,21 @@ impl Gallery {
                 dot_field(ui.painter(), deco, &t, time);
                 dot_field(ui.painter(), deco.translate(vec2(-(full.width() - 460.0), 60.0)), &t, time + 2.0);
                 let title = if ui.available_width() > 760.0 { 60.0 } else { 40.0 };
-                centered_text(ui, "Animated UI Blocks", display(title), t.foreground);
-                centered_text(ui, "for Rust", display(title), t.muted_foreground.lerp_to_gamma(t.foreground, 0.35));
+                centered_text(ui, "Premium animated UI", display(title), t.foreground);
+                centered_text(ui, "for Rust apps", display(title), t.muted_foreground.lerp_to_gamma(t.foreground, 0.35));
                 ui.add_space(18.0);
                 centered_rich(
                     ui,
                     &[
-                        ("A library of ", false),
-                        ("animated blocks", true),
+                        ("Blocks for ", false),
+                        ("AI agent apps", true),
+                        (", ", false),
+                        ("dashboards", true),
+                        (", ", false),
+                        ("games", true),
                         (" and ", false),
-                        ("micro-interactions", true),
-                        (" you can ship in native Windows, macOS and Linux apps, or on the web.", false),
+                        ("dev tools", true),
+                        (". Native on Windows, macOS and Linux, and on the web. No Electron.", false),
                     ],
                     17.0,
                     600.0,

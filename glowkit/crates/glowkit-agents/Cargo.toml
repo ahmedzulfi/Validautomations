@@ -1,0 +1,24 @@
+[package]
+name = "glowkit-agents"
+description = "AI agent interface blocks for egui: agent trees, traces, approvals, diff review, run monitors, threads with branching, tool UIs, generative UI and copilot panels."
+readme = "../../README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[features]
+default = []
+demos = ["glowkit-effects/demos", "glowkit-ai/demos", "glowkit-charts/demos"]
+
+[dependencies]
+egui.workspace = true
+glowkit-core.workspace = true
+glowkit-effects.workspace = true
+glowkit-ai.workspace = true
+glowkit-charts.workspace = true

@@ -13,7 +13,7 @@ categories.workspace = true
 authors.workspace = true
 
 [features]
-default = ["text", "backgrounds", "effects", "components", "charts", "ai", "blocks", "motion", "three-d", "canvas", "templates", "interactions"]
+default = ["text", "backgrounds", "effects", "components", "charts", "ai", "blocks", "motion", "three-d", "canvas", "templates", "interactions", "agents"]
 text = ["dep:glowkit-text"]
 backgrounds = ["dep:glowkit-backgrounds"]
 effects = ["dep:glowkit-effects"]
@@ -26,8 +26,9 @@ three-d = ["dep:glowkit-3d"]
 canvas = ["dep:glowkit-canvas"]
 templates = ["dep:glowkit-templates"]
 interactions = ["dep:glowkit-interactions"]
+agents = ["dep:glowkit-agents"]
 ## Gallery demos for every enabled crate.
-demos = ["glowkit-text?/demos", "glowkit-backgrounds?/demos", "glowkit-effects?/demos", "glowkit-components?/demos", "glowkit-charts?/demos", "glowkit-ai?/demos", "glowkit-blocks?/demos", "glowkit-motion?/demos", "glowkit-3d?/demos", "glowkit-canvas?/demos", "glowkit-templates?/demos", "glowkit-interactions?/demos"]
+demos = ["glowkit-text?/demos", "glowkit-backgrounds?/demos", "glowkit-effects?/demos", "glowkit-components?/demos", "glowkit-charts?/demos", "glowkit-ai?/demos", "glowkit-blocks?/demos", "glowkit-motion?/demos", "glowkit-3d?/demos", "glowkit-canvas?/demos", "glowkit-templates?/demos", "glowkit-interactions?/demos", "glowkit-agents?/demos"]
 
 [dependencies]
 egui.workspace = true
@@ -44,3 +45,4 @@ glowkit-3d = { workspace = true, optional = true }
 glowkit-canvas = { workspace = true, optional = true }
 glowkit-templates = { workspace = true, optional = true }
 glowkit-interactions = { workspace = true, optional = true }
+glowkit-agents = { workspace = true, optional = true }

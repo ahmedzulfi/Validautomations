@@ -36,6 +36,8 @@ pub use glowkit_components as components;
 pub use glowkit_effects as effects;
 #[cfg(feature = "interactions")]
 pub use glowkit_interactions as interactions;
+#[cfg(feature = "agents")]
+pub use glowkit_agents as agents;
 #[cfg(feature = "motion")]
 pub use glowkit_motion as motion;
 #[cfg(feature = "templates")]
@@ -86,6 +88,8 @@ pub fn all_demos() -> Vec<glowkit_core::demo::Demo> {
     v.extend(glowkit_templates::demos());
     #[cfg(feature = "interactions")]
     v.extend(glowkit_interactions::demos());
+    #[cfg(feature = "agents")]
+    v.extend(glowkit_agents::demos());
     v.sort_by_key(|d| d.category);
     v
 }

@@ -26,10 +26,11 @@ pub enum Category {
     Canvas,
     Dashboards,
     Templates,
+    Games,
 }
 
 impl Category {
-    pub const ALL: [Category; 20] = [
+    pub const ALL: [Category; 21] = [
         Category::TextAnimations,
         Category::Backgrounds,
         Category::Buttons,
@@ -50,6 +51,7 @@ impl Category {
         Category::Canvas,
         Category::Dashboards,
         Category::Templates,
+        Category::Games,
     ];
 
     pub fn label(self) -> &'static str {
@@ -74,6 +76,7 @@ impl Category {
             Category::Canvas => "Canvas & Editors",
             Category::Dashboards => "Dashboards & Shells",
             Category::Templates => "Templates",
+            Category::Games => "Game UI",
         }
     }
 
@@ -99,6 +102,7 @@ impl Category {
             Category::Canvas => "✐",
             Category::Dashboards => "▥",
             Category::Templates => "❖",
+            Category::Games => "♜",
         }
     }
 }
