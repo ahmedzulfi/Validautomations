@@ -129,7 +129,7 @@ impl egui::Widget for AppleCardsCarousel<'_> {
         if n == 0 {
             return response;
         }
-        let dt = glowkit_core::dt(ui);
+        let dt = super::common::wall_dt(ui);
         let step = self.card.x + self.gap;
         let row_w = n as f32 * step - self.gap;
         let max = (row_w - (rect.width() - 8.0)).max(0.0);
@@ -790,7 +790,7 @@ impl HeroVideoDialog {
         let dialog = Rect::from_center_size(area.center(), vec2(dlg_w, dlg_w * 9.0 / 16.0));
         let close_btn = Rect::from_center_size(pos2(dialog.max.x - 4.0, dialog.min.y - 4.0), vec2(30.0, 30.0));
         let now = ui.input(|i| i.time);
-        let dt = glowkit_core::dt(ui);
+        let dt = super::common::wall_dt(ui);
         let mut st: VideoState = glowkit_core::state(ui, id.with("st"), VideoState::default);
         let pointer = response.hover_pos();
         if response.clicked() {

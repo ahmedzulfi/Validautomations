@@ -19,7 +19,7 @@ fn wander(rect: Rect, t: f32, salt: f32) -> Pos2 {
 /// Tracks the pointer, or wanders when idle (with autoplay). Returns (position, active 0..1).
 fn pointer_or_wander(ui: &Ui, id: Id, rect: Rect, response: &Response, autoplay: bool) -> (Pos2, bool, f32) {
     let hover = response.hover_pos();
-    let dt = glowkit_core::dt(ui);
+    let dt = super::common::wall_dt(ui);
     let idle = glowkit_core::with_state(ui, id.with("idle"), || 10.0f32, |s| {
         if hover.is_some() {
             *s = 0.0;
@@ -485,7 +485,7 @@ impl egui::Widget for TextRevealCard {
         let rect = Rect::from_center_size(outer.center(), size);
         let response = ui.interact(rect, ui.next_auto_id().with("glowkit_text_reveal"), Sense::click_and_drag());
         let id = response.id;
-        let dt = glowkit_core::dt(ui);
+        let dt = super::common::wall_dt(ui);
         let time = glowkit_core::time(ui);
         let pad = 30.0;
         let text_area = Rect::from_min_max(pos2(rect.min.x + pad, rect.min.y + 96.0), pos2(rect.max.x - pad, rect.max.y - 26.0));

@@ -106,7 +106,7 @@ impl BubbleMenu {
         let hovered = ui.rect_contains_pointer(rect);
         let btn_rect = Rect::from_center_size(pos2(rect.max.x - pad - bar / 2.0, rect.min.y + pad + bar / 2.0), Vec2::splat(bar));
         let btn = ui.interact(btn_rect, id.with("btn"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
-        let (open, since) = toggle(ui, id, btn.clicked(), None, self.autoplay, hovered, 3.8, 1.6);
+        let (open, since) = toggle(ui, id, btn.clicked(), None, self.autoplay, hovered, 6.0, 1.8);
         let p_open = spring(ui, id.with("open"), if open { 1.0 } else { 0.0 }, 240.0, 22.0);
         let time = glowkit_core::time(ui);
         let surf = surface(&t);
@@ -115,7 +115,7 @@ impl BubbleMenu {
         // pill grid
         let per_row = if n <= 4 { 2 } else { 3 };
         let rows = n.div_ceil(per_row).max(1);
-        let gap = 18.0;
+        let gap = 26.0;
         let pill_h = 62.0;
         let pill_w = ((rect.width() - 2.0 * pad - gap * (per_row as f32 - 1.0)) / per_row as f32).min(220.0);
         let area_top = rect.min.y + pad + bar + 12.0;
@@ -201,7 +201,7 @@ impl BubbleMenu {
             );
         }
         if clicked.is_some() {
-            toggle(ui, id, false, Some(false), self.autoplay, hovered, 3.8, 1.6);
+            toggle(ui, id, false, Some(false), self.autoplay, hovered, 6.0, 1.8);
         }
 
         // header bubbles
@@ -328,7 +328,7 @@ impl CardNav {
         let burger_rect = Rect::from_center_size(pos2(bar.min.x + 34.0, bar.center().y), vec2(44.0, 44.0));
         let bt = ui.interact(burger_rect, id.with("burger"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
         let hovered = ui.rect_contains_pointer(rect);
-        let (open, since) = toggle(ui, id, bt.clicked(), None, self.autoplay, hovered, 4.0, 1.8);
+        let (open, since) = toggle(ui, id, bt.clicked(), None, self.autoplay, hovered, 6.0, 1.8);
         let p = spring(ui, id.with("p"), if open { 1.0 } else { 0.0 }, 190.0, 21.0).max(0.0);
         let nav = Rect::from_min_size(bar.min, vec2(w, bar_h + self.body_height * p));
         let painter = ui.painter_at(rect.expand(24.0));
@@ -425,7 +425,7 @@ impl CardNav {
             }
         }
         if clicked.is_some() {
-            toggle(ui, id, false, Some(false), self.autoplay, hovered, 4.0, 1.8);
+            toggle(ui, id, false, Some(false), self.autoplay, hovered, 6.0, 1.8);
         }
         InnerResponse::new(clicked, resp)
     }
@@ -727,7 +727,7 @@ impl StaggeredMenu {
         // header toggle
         let toggle_rect = Rect::from_min_size(pos2(rect.max.x - 130.0, rect.min.y + 14.0), vec2(112.0, 40.0));
         let tr = ui.interact(toggle_rect, id.with("toggle"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
-        let (open, since) = toggle(ui, id, tr.clicked(), None, self.autoplay, hovered, 4.4, 1.8);
+        let (open, since) = toggle(ui, id, tr.clicked(), None, self.autoplay, hovered, 6.0, 1.8);
         let p = follow(ui, id.with("p"), if open { 1.0 } else { 0.0 }, 7.0);
 
         let nl = layers.len() + 1;
@@ -836,7 +836,7 @@ impl StaggeredMenu {
             }
         }
         if clicked.is_some() {
-            toggle(ui, id, false, Some(false), self.autoplay, hovered, 4.4, 1.8);
+            toggle(ui, id, false, Some(false), self.autoplay, hovered, 6.0, 1.8);
         }
         InnerResponse::new(clicked, resp)
     }

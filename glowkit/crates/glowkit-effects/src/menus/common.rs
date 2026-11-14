@@ -240,11 +240,7 @@ pub(crate) fn paint_avatar(painter: &Painter, rect: Rect, radius: f32, colors: [
     let cx = rect.center().x + ((seed % 3) as f32 - 1.0) * w * 0.04;
     if backdrop {
         // backlight
-        paint::glow(painter, pos2(cx, rect.min.y + h * 0.38), w * 0.55, with_alpha(Color32::WHITE, 0.28));
-        // decorative rings
-        let ring_c = pos2(rect.min.x + w * (0.2 + 0.6 * ((seed * 7 % 5) as f32 / 4.0)), rect.min.y + h * 0.18);
-        painter.circle_stroke(ring_c, w * 0.16, Stroke::new(1.5, with_alpha(Color32::WHITE, 0.22)));
-        painter.circle_filled(ring_c + vec2(w * 0.22, h * 0.1), w * 0.025, with_alpha(Color32::WHITE, 0.4));
+        paint::glow(painter, pos2(cx, rect.min.y + h * 0.38), w * 0.6, with_alpha(Color32::WHITE, 0.3));
     }
     const SKIN: [&str; 5] = ["#F1C27D", "#E0AC69", "#C68642", "#8D5524", "#FFDBAC"];
     const HAIR: [&str; 5] = ["#2B1B17", "#4A2C1D", "#1C1C28", "#A5682A", "#5A3218"];
@@ -260,10 +256,11 @@ pub(crate) fn paint_avatar(painter: &Painter, rect: Rect, radius: f32, colors: [
     }
     // shoulders
     painter.add(Shape::ellipse_filled(pos2(cx, head.y + r * 1.55 + h * 0.3), vec2(w * 0.42, h * 0.32), shirt));
-    painter.add(Shape::ellipse_filled(
-        pos2(cx, head.y + r * 1.55 + h * 0.3 + 2.0),
-        vec2(w * 0.42 - 3.0, h * 0.32 - 3.0),
-        mix(shirt, a, 0.18),
+    // collar
+    painter.add(Shape::convex_polygon(
+        vec![pos2(cx - r * 0.55, head.y + r * 1.5), pos2(cx + r * 0.55, head.y + r * 1.5), pos2(cx, head.y + r * 2.2)],
+        mix(shirt, a, 0.25),
+        Stroke::NONE,
     ));
     // neck
     painter.rect_filled(
@@ -332,8 +329,9 @@ pub(crate) fn soft_ribbon(painter: &Painter, pts: &[Pos2], closed: bool, mut f: 
     for k in 0..count {
         let i = k % n;
         let p = pts[i];
-        let prev = if closed { pts[(i + n - 1) % n] } else { pts[i.saturating_sub(1)] };
-        let next = if closed { pts[(i + 1) % n] } else { pts[(i + 1).min(n - 1)] };
+        let w = 3.min(n / 4).max(1);
+        let prev = if closed { pts[(i + n - w) % n] } else { pts[i.saturating_sub(w)] };
+        let next = if closed { pts[(i + w) % n] } else { pts[(i + w).min(n - 1)] };
         let mut d = next - prev;
         if d.length_sq() < 1e-6 {
             d = vec2(1.0, 0.0);

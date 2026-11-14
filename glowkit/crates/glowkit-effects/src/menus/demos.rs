@@ -89,12 +89,8 @@ fn poster(p: &Painter, r: Rect, palette: [Color32; 3], seed: u32) {
         pos2(r.min.x + r.width() * 0.55, base - r.height() * 0.06),
         pos2(r.min.x + r.width() * 0.8, base - r.height() * 0.24),
         pos2(r.max.x, base - r.height() * 0.1),
-        pos2(r.max.x, r.max.y),
-        pos2(r.min.x, r.max.y),
     ];
-    // two convex halves
-    p.add(egui::Shape::convex_polygon(vec![pts[0], pts[1], pts[2], pos2(pts[2].x, r.max.y), pts[6]], palette[0], egui::Stroke::NONE));
-    p.add(egui::Shape::convex_polygon(vec![pts[2], pts[3], pts[4], pts[5], pos2(pts[2].x, r.max.y)], palette[0], egui::Stroke::NONE));
+    paint::area_fill(p, &pts, r.max.y, palette[0], palette[0]);
     for k in 0..3 {
         let y = r.min.y + 26.0 + k as f32 * 12.0;
         p.line_segment([pos2(r.min.x + 18.0, y), pos2(r.min.x + 18.0 + 40.0 - k as f32 * 10.0, y)], egui::Stroke::new(2.0, with_alpha(Color32::WHITE, 0.7)));
@@ -366,7 +362,7 @@ if r.inner { /* contact clicked */ }"##,
                 let t = Theme::of(ui);
                 let time = glowkit_core::time(ui);
                 glowkit_core::animate(ui);
-                GlassSurface::new().size(vec2(380.0, 190.0)).height(380.0).refraction(26.0).show(
+                GlassSurface::new().size(vec2(380.0, 190.0)).height(380.0).refraction(30.0).blur(2.5).show(
                     ui,
                     glass_backdrop(t.dark, time),
                     |ui| {
@@ -400,8 +396,8 @@ if r.inner { /* contact clicked */ }"##,
                     .size(vec2(190.0, 190.0))
                     .height(380.0)
                     .lens(true)
-                    .refraction(42.0)
-                    .magnify(1.12)
+                    .refraction(60.0)
+                    .magnify(1.3)
                     .wobble(1.0)
                     .follow_pointer(true)
                     .autoplay(true)

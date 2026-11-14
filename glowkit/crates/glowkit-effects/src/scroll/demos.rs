@@ -31,7 +31,7 @@ struct AutoScroll {
 /// A vertical `ScrollArea` that glides up and down on its own while the pointer is away.
 fn auto_scroll(ui: &mut Ui, key: &str, height: f32, speed: f32, add: impl FnOnce(&mut Ui)) {
     let id = ui.scope_id().with(("auto_scroll", key));
-    let dt = glowkit_core::dt(ui);
+    let dt = super::common::wall_dt(ui);
     let mut st: AutoScroll = glowkit_core::state(ui, id, || AutoScroll { idle: 1.0, dir: 1.0, wait: 0.8, ..Default::default() });
     let mut sa = ScrollArea::vertical().id_salt(("auto_scroll_area", key)).max_height(height).min_scrolled_height(height).auto_shrink([false, false]);
     if st.idle > 0.8 && st.max > 0.0 {
@@ -507,7 +507,7 @@ ui.add(AppleCardsCarousel::new(&cards));"##,
             show: |ui| {
                 auto_scroll(ui, "container-scroll", 400.0, 70.0, |ui| {
                     scroll_hint(ui, "Scroll down");
-                    ui.add_space(60.0);
+                    ui.add_space(250.0);
                     ContainerScroll::new()
                         .subtitle("Unleash the power of")
                         .title("Scroll Animations")

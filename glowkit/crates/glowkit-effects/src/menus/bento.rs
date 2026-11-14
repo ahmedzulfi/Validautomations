@@ -1,4 +1,4 @@
-use super::common::{bold_text, capture, desaturate, paint_avatar, pointer_or_auto, subdivide, Persp, VIVID};
+use super::common::{bold_text, capture, clip_mesh, desaturate, paint_avatar, pointer_or_auto, subdivide, Persp, VIVID};
 use crate::buttons::util::{self, cr, outline};
 use egui::{pos2, vec2, Align2, Color32, CursorIcon, FontId, InnerResponse, Pos2, Rect, Sense, Shape, Stroke, Ui, Vec2};
 use glowkit_core::anim::{follow, smoothstep, spring2};
@@ -398,13 +398,15 @@ impl ChromaGrid {
                     let u = ((q.y - tile.min.y) / tile.height()).clamp(0.0, 1.0);
                     mix(mix(card_bg, colors[0], if t.dark { 0.22 } else { 0.12 }), card_bg, u)
                 });
-                paint_avatar(p, img, 11.0, colors, i as u32, true);
                 let y = img.max.y + 12.0;
                 bold_text(p, pos2(tile.min.x + 14.0, y), Align2::LEFT_TOP, &item.name, FontId::proportional(15.0), fg);
                 p.text(pos2(tile.min.x + 14.0, y + 22.0), Align2::LEFT_TOP, &item.role, FontId::proportional(12.5), muted);
                 p.text(pos2(tile.max.x - 14.0, y + 2.0), Align2::RIGHT_TOP, &item.handle, FontId::proportional(12.0), muted);
             });
             let mut mesh = subdivide(&mesh, 14.0, tile.expand(2.0));
+            let avatar = capture(ui, |p| paint_avatar(p, img, 11.0, colors, i as u32, true));
+            let avatar = clip_mesh(&subdivide(&avatar, 14.0, img.expand(2.0)), &outline(img, 11.0, 6.0));
+            mesh.append(avatar);
             for v in &mut mesh.vertices {
                 let d = v.pos.distance(sp);
                 let m = (1.0 - smoothstep(spot * 0.25, spot, d)) * k;

@@ -628,7 +628,7 @@ impl egui::Widget for HeroParallax<'_> {
             painter.galley(pos2(x, y + h + 12.0), b, t.muted_foreground);
         }
         let e = smoothstep(0.0, 0.55, p);
-        let block_top = rect.min.y + 250.0 - scroll * 0.7;
+        let block_top = rect.min.y + 270.0 - scroll * 0.75;
         let (cw, chh) = (self.card.x, self.card.y);
         let gap = 22.0;
         let block_h = 3.0 * chh + 2.0 * gap;

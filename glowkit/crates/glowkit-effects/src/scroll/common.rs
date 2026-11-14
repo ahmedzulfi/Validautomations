@@ -570,8 +570,8 @@ fn land_at(s: &SceneSpec, heights: &[Vec<f32>], u: f32, v: f32) -> Option<[f32; 
             let depth = 1.0 - k as f32 / n.max(1) as f32;
             let shade = ((v - h) * 3.0).clamp(0.0, 0.35);
             let mut c = lerp3(*col, [0.0, 0.0, 0.0], shade);
-            if *sharp && (v - h) < 0.02 && k == 0 {
-                c = lerp3(c, [1.0, 1.0, 1.0], 0.15);
+            if *sharp && k == 0 {
+                c = lerp3(c, [1.0, 1.0, 1.0], 0.12 * (1.0 - (v - h) / 0.012).clamp(0.0, 1.0));
             }
             c = lerp3(c, s.haze, depth * 0.25);
             hit = Some(c);
@@ -675,7 +675,7 @@ pub(crate) struct DriveState {
 /// (with inertia) while hovered, and a gentle ping-pong autoplay (`speed` points / second) when
 /// the pointer has been away for a moment. Returns the offset in `0..=max`.
 pub(crate) fn drive_scroll(ui: &Ui, id: Id, response: &Response, max: f32, horizontal: bool, speed: f32) -> f32 {
-    let dt = glowkit_core::dt(ui);
+    let dt = wall_dt(ui);
     let hovered = response.hovered() || response.dragged();
     let wheel = if response.hovered() {
         ui.input(|i| {
@@ -759,7 +759,7 @@ pub(crate) fn scroll_rail(painter: &egui::Painter, t: &glowkit_core::Theme, trac
 /// Same as [`drive_scroll`] but unbounded: the offset grows forever (wrap it yourself), with a
 /// constant drift of `speed` points / second while idle.
 pub(crate) fn drive_loop(ui: &Ui, id: Id, response: &Response, horizontal: bool, speed: f32) -> f32 {
-    let dt = glowkit_core::dt(ui);
+    let dt = wall_dt(ui);
     let hovered = response.hovered() || response.dragged();
     let wheel = if response.hovered() {
         ui.input(|i| {
@@ -882,4 +882,10 @@ pub(crate) fn in_convex(poly: &[Pos2], p: Pos2) -> bool {
         }
     }
     true
+}
+
+/// Real time since the last frame (clamped to 0.25 s). Autoplay timers use this instead of the
+/// physics-clamped `glowkit_core::dt` so they keep their pace even when frames are slow.
+pub(crate) fn wall_dt(ui: &Ui) -> f32 {
+    ui.input(|i| i.unstable_dt).clamp(0.0, 0.25)
 }

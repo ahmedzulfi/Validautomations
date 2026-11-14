@@ -178,7 +178,7 @@ impl ProfileCard {
                 Align2::CENTER_TOP,
                 &title,
                 FontId::proportional(14.5),
-                with_alpha(Color32::WHITE, 0.72),
+                with_alpha(Color32::WHITE, 0.88),
             );
             // frosted bar
             p.rect(bar, util::cr(18.0), with_alpha(Color32::WHITE, 0.12), Stroke::new(1.0, with_alpha(Color32::WHITE, 0.22)), egui::StrokeKind::Inside);
@@ -610,7 +610,8 @@ impl Widget for StickerPeel {
         let dragging_now = resp.dragged();
         let resp = resp.on_hover_cursor(if dragging_now { CursorIcon::Grabbing } else { CursorIcon::Grab });
         let s = Rect::from_center_size(rect.center(), self.size);
-        let corner = s.max;
+        let rr = self.radius.min(self.size.min_elem() / 2.0);
+        let corner = s.max - Vec2::splat(rr) + vec2(1.0, 1.0).normalized() * rr;
         let diag = (s.min - s.max).normalized();
         let rest = corner + diag * self.rest_peel;
         let now = glowkit_core::time(ui);
