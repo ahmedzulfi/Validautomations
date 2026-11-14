@@ -606,5 +606,166 @@ ui.add(BoxReveal::new("UI library for egui").delay(0.2).size(24.0));"##,
                 });
             },
         },
+        Demo {
+            id: "curved-loop",
+            name: "Curved Loop",
+            category: C,
+            description: "A text marquee flowing endlessly along a curved path. Drag it to scrub; throw it and it keeps running that way.",
+            covers: &["React Bits: Curved Loop"],
+            code: r##"ui.add(CurvedLoopText::new("Welcome to glowkit")
+    .curve(80.0)
+    .speed(80.0));
+ui.add(CurvedLoopText::new("Bend it like Rust")
+    .curve(-40.0)
+    .gradient(&palettes::MAGIC)
+    .reverse(true));"##,
+            show: |ui| {
+                let t = Theme::of(ui);
+                ui.add_space(14.0);
+                ui.add(CurvedLoopText::new("Welcome to glowkit").size(72.0).curve(70.0).speed(80.0));
+                ui.add(CurvedLoopText::new("Bend it like Rust").size(30.0).curve(-26.0).speed(55.0).gradient(&[t.gradient[0], t.gradient[1], t.gradient[2]]).reverse(true).bold(false));
+                ui.vertical_centered(|ui| hint(ui, "drag the text · throw it to change direction"));
+            },
+        },
+        Demo {
+            id: "text-cursor",
+            name: "Text Cursor",
+            category: C,
+            description: "A trail of little text or emoji stamps pops out behind the pointer, wobbling and drifting as it fades. A ghost pointer draws loops when you are away.",
+            covers: &["React Bits: Text Cursor"],
+            code: r##"ui.add(TextCursor::new("✦").size(28.0));
+// or over your own content:
+TextCursor::new("❤").colors(&[hex("#F472B6")]).paint(ui, rect);"##,
+            show: |ui| {
+                let t = Theme::of(ui);
+                let (rect, _) = ui.allocate_exact_size(vec2(ui.available_width(), 360.0), Sense::hover());
+                let p = ui.painter_at(rect);
+                p.text(rect.center() - vec2(0.0, 12.0), egui::Align2::CENTER_CENTER, "Move your pointer", egui::FontId::proportional(40.0), t.foreground.gamma_multiply(0.85));
+                p.text(rect.center() + vec2(0.0, 26.0), egui::Align2::CENTER_CENTER, "every few points it leaves a ✦ behind", egui::FontId::proportional(15.0), t.muted_foreground);
+                TextCursor::new("✦").size(40.0).paint(ui, rect);
+            },
+        },
+        Demo {
+            id: "scroll-float",
+            name: "Scroll Float",
+            category: C,
+            description: "Letters float up out of the line, tall and squeezed at first, settling into shape one after another as the progress grows. Driven by time, a progress value or a scroll area.",
+            covers: &["React Bits: Scroll Float"],
+            code: r##"ui.add(ScrollFloat::new("Scroll. Float. Repeat.").size(56.0));
+// tie it to the enclosing ScrollArea:
+ui.add(ScrollFloat::new("Floats in as you scroll").scroll_linked());
+// or drive it yourself:
+ui.add(ScrollFloat::new("Manual").progress(progress));"##,
+            show: |ui| {
+                let t = Theme::of(ui);
+                ui.add_space(26.0);
+                ui.vertical_centered(|ui| {
+                    ui.add(ScrollFloat::new("Scroll. Float. Repeat.").size(60.0));
+                    ui.add_space(10.0);
+                    let w = ui.available_width().min(640.0);
+                    // the scroll area scrolls itself back and forth until you hover it
+                    let auto_id = ui.scope_id().with("float_scroll_auto");
+                    let (hovered, max): (bool, f32) = ui.data(|d| d.get_temp(auto_id)).unwrap_or((false, 0.0));
+                    let time = glowkit_core::time(ui);
+                    egui::Frame::new().stroke(egui::Stroke::new(1.0, t.border)).corner_radius(t.corner()).show(ui, |ui| {
+                        ui.set_width(w);
+                        let mut area = egui::ScrollArea::vertical().id_salt("float_scroll").max_height(190.0);
+                        if !hovered && max > 0.0 {
+                            let k = 0.5 - 0.5 * (time * 0.45).cos();
+                            area = area.vertical_scroll_offset(max * k);
+                            ui.ctx().request_repaint();
+                        }
+                        let out = area.show(ui, |ui| {
+                            ui.set_width(w);
+                            ui.vertical_centered(|ui| {
+                                ui.add_space(60.0);
+                                hint(ui, "scroll down ↓");
+                                ui.add_space(70.0);
+                                for (i, line) in ["Every letter", "floats into place", "as it scrolls", "into view."].iter().enumerate() {
+                                    let c = if i % 2 == 0 { t.foreground } else { t.accent };
+                                    ui.add(ScrollFloat::new(*line).size(40.0).color(c).scroll_linked());
+                                    ui.add_space(40.0);
+                                }
+                                ui.add_space(80.0);
+                            });
+                        });
+                        let max = (out.content_size.y - out.inner_rect.height()).max(0.0);
+                        let hovered = ui.rect_contains_pointer(out.inner_rect);
+                        ui.data_mut(|d| d.insert_temp(auto_id, (hovered, max)));
+                    });
+                });
+            },
+        },
+        Demo {
+            id: "ascii-text",
+            name: "ASCII Text",
+            category: C,
+            description: "Big lettering redrawn as animated ASCII art: denser symbols where there is more ink, rippled by a flowing wave and tinted with a drifting gradient. The pointer bends it like a lens.",
+            covers: &["React Bits: ASCII Text"],
+            code: r##"ui.add(AsciiText::new("ASCII").size(170.0));
+ui.add(AsciiText::new("RUST").cell(7.0).colors(&palettes::NEON));"##,
+            show: |ui| centered_at(ui, 14.0, |ui| {
+                ui.add(AsciiText::new("ASCII").size(210.0).cell(8.5));
+                hint(ui, "hover to bend the characters");
+            }),
+        },
+        Demo {
+            id: "scrambled-text",
+            name: "Scrambled Text",
+            category: C,
+            description: "A paragraph whose letters dissolve into flickering symbols near the pointer and settle back into place after a moment.",
+            covers: &["React Bits: Scrambled Text"],
+            code: r##"ui.add(ScrambledText::new("Once upon a time, in a world woven from bits and bytes...")
+    .radius(100.0)
+    .max_width(640.0));"##,
+            show: |ui| centered_at(ui, 70.0, |ui| {
+                ui.add(ScrambledText::new("Once upon a time, in a world woven from bits and bytes, there lived a curious little widget. It painted itself sixty times a second and dreamed of becoming a whole user interface.")
+                    .size(22.0).radius(100.0).max_width(660.0));
+                ui.add_space(20.0);
+                ui.add(ScrambledText::new("HOVER TO DECODE").size(30.0).radius(70.0).charset(glowkit_core::text::SCRAMBLE_CHARS).autoplay(false));
+            }),
+        },
+        Demo {
+            id: "comic-text",
+            name: "Comic Text",
+            category: C,
+            description: "Chunky comic-book lettering with a thick ink outline, a hard drop shadow and a halftone dot pattern, popping in with a springy twist.",
+            covers: &["Magic UI: Comic Text"],
+            code: r##"ui.add(ComicText::new("BOOM!").size(110.0));
+ui.add(ComicText::new("POW!")
+    .fill(hex("#38BDF8"))
+    .dots(hex("#1D4ED8"))
+    .trigger(Trigger::OnClick));"##,
+            show: |ui| centered_at(ui, 40.0, |ui| {
+                let l = Trigger::Loop { pause_ms: 2200 };
+                ui.add(ComicText::new("BOOM!").size(120.0).trigger(l));
+                row(ui, "comic", |ui| {
+                    ui.add(ComicText::new("POW!").size(64.0).fill(hex("#38BDF8")).dots(hex("#1D4ED8")).slant(14.0).trigger(l));
+                    ui.add_space(30.0);
+                    ui.add(ComicText::new("ZAP!").size(64.0).fill(hex("#F472B6")).dots(hex("#FDE047")).slant(6.0).trigger(l));
+                });
+            }),
+        },
+        Demo {
+            id: "video-text",
+            name: "Video Text",
+            category: C,
+            description: "Huge letters that act as a window onto a moving scene (aurora, ocean, lava or plasma) flowing continuously across the whole word.",
+            covers: &["Magic UI: Video Text"],
+            code: r##"ui.add(VideoText::new("AURORA").size(170.0));
+ui.add(VideoText::new("OCEAN").scene(VideoScene::Ocean));
+ui.add(VideoText::new("LAVA").scene(VideoScene::Lava));"##,
+            show: |ui| centered_at(ui, 20.0, |ui| {
+                ui.add(VideoText::new("AURORA").size(160.0));
+                ui.add_space(4.0);
+                row(ui, "video", |ui| {
+                    ui.add(VideoText::new("OCEAN").scene(VideoScene::Ocean).size(76.0));
+                    ui.add_space(28.0);
+                    ui.add(VideoText::new("LAVA").scene(VideoScene::Lava).size(76.0));
+                    ui.add_space(28.0);
+                    ui.add(VideoText::new("PLASMA").scene(VideoScene::Plasma).size(76.0));
+                });
+            }),
+        },
     ]
 }

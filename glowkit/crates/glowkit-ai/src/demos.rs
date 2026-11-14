@@ -704,5 +704,473 @@ if ui.add(Checkpoint::new().time("2 min ago")).clicked() { restore(); }"##,
                 glowkit_core::set_state(ui, id, url);
             }),
         },
+        Demo {
+            id: "ai-confirmation",
+            name: "Confirmation",
+            category: C,
+            description: "A tool-approval card: the agent pauses and shows exactly what it wants to run, with Deny / Approve and compact resolved states.",
+            covers: &["Vercel AI Elements: Confirmation", "assistant-ui: Human-in-the-loop approval", "Vercel AI SDK: Tool approval"],
+            code: r##"ui.add(Confirmation::new(&mut state, "Run shell command?")
+    .tool("bash")
+    .detail("Directory", "~/projects/storefront")
+    .code("rm -rf node_modules && npm install"));"##,
+            show: |ui| {
+                ui.add_space(6.0);
+                let id = ui.scope_id().with("confirm_demo");
+                let mut st: [ApprovalState; 3] = glowkit_core::state(ui, id, || [ApprovalState::Pending, ApprovalState::Approved, ApprovalState::Denied]);
+                let w = ui.available_width();
+                ui.horizontal_top(|ui| {
+                    ui.add_space(((w - 860.0) / 2.0).max(0.0));
+                    ui.spacing_mut().item_spacing.x = 20.0;
+                    ui.allocate_ui_with_layout(vec2(440.0, 0.0), egui::Layout::top_down(egui::Align::Min), |ui| {
+                        ui.set_width(440.0);
+                        ui.add(Confirmation::new(&mut st[0], "Run shell command?")
+                            .tool("bash")
+                            .description("The agent wants to reinstall dependencies.")
+                            .detail("Directory", "~/projects/storefront")
+                            .detail("Network", "registry.npmjs.org")
+                            .code("rm -rf node_modules && npm install"));
+                    });
+                    ui.allocate_ui_with_layout(vec2(400.0, 0.0), egui::Layout::top_down(egui::Align::Min), |ui| {
+                        ui.set_width(400.0);
+                        ui.add(Confirmation::new(&mut st[1], "Write src/config.rs")
+                            .tool("write_file")
+                            .icon(Icon::Pencil)
+                            .detail("Changes", "+12  −3 lines")
+                            .resolved_texts("Approved: file written (12 lines)", "Denied"));
+                        ui.add_space(12.0);
+                        ui.add(Confirmation::new(&mut st[2], "Email 214 customers")
+                            .tool("send_email")
+                            .detail("Subject", "Your order has shipped")
+                            .resolved_texts("Approved", "Denied: the agent will draft it instead"));
+                    });
+                });
+                glowkit_core::set_state(ui, id, st);
+            },
+        },
+        Demo {
+            id: "ai-open-in-chat",
+            name: "Open In Chat",
+            category: C,
+            description: "A dropdown button that hands the current prompt to another chat app, with provider badges, hints and a copy row.",
+            covers: &["Vercel AI Elements: Open In Chat"],
+            code: r##"let providers = [ChatProvider::new("Lumen Chat", "lumen.chat"), ChatProvider::new("Orbit", "orbit.ai")];
+if let Some(i) = OpenInChat::new(prompt, &providers).show(ui) {
+    // open providers[i] with the prompt
+}"##,
+            show: |ui| column(ui, 640.0, |ui| {
+                let t = Theme::of(ui);
+                let prompt = "Write a launch announcement for our new Rust UI library, upbeat but technical.";
+                ui.add_space(6.0);
+                egui::Frame::new().fill(t.card).stroke(egui::Stroke::new(1.0, t.border)).corner_radius(t.corner()).inner_margin(egui::Margin::same(16)).show(ui, |ui| {
+                    ui.set_width(ui.available_width());
+                    ui.label(egui::RichText::new("PROMPT").size(10.5).color(t.muted_foreground).strong());
+                    ui.add_space(2.0);
+                    ui.add(egui::Label::new(egui::RichText::new(prompt).size(14.0).color(t.foreground)).wrap());
+                    ui.add_space(8.0);
+                    let providers = [
+                        ChatProvider::new("Lumen Chat", "lumen.chat · Nova models"),
+                        ChatProvider::new("Orbit", "orbit.ai · Orbit 5"),
+                        ChatProvider::new("Helix Assistant", "helix.dev · long context"),
+                        ChatProvider::new("Quill", "quill.app · writing"),
+                    ];
+                    let e = glowkit_core::Clock::elapsed(ui, ui.scope_id().with("oic_clock"));
+                    let force = if e < 6.0 { Some(true) } else { None };
+                    if e < 6.1 {
+                        glowkit_core::animate(ui);
+                    }
+                    ui.horizontal(|ui| {
+                        let _ = OpenInChat::new(prompt, &providers).force_open(force).id_salt("oic").show(ui);
+                        label(ui, "  hand the prompt to another assistant");
+                    });
+                });
+                ui.add_space(130.0);
+            }),
+        },
+        Demo {
+            id: "ai-toolbar",
+            name: "Toolbar",
+            category: C,
+            description: "A floating icon toolbar for canvases and nodes, with dividers, toggled states, and quick tooltips with shortcut hints.",
+            covers: &["Vercel AI Elements: Toolbar", "React Flow: NodeToolbar"],
+            code: r##"let items = [
+    ToolbarItem::new(Icon::Sparkle, "Ask AI").shortcut("⌘K"),
+    ToolbarItem::new(Icon::Pencil, "Edit"),
+    ToolbarItem::new(Icon::Copy, "Duplicate").shortcut("⌘D"),
+];
+if let Some(i) = AiToolbar::new(&items).show_at(ui, node_rect.center_top() - vec2(0.0, 10.0)) {
+    // handle items[i]
+}"##,
+            show: |ui| {
+                let t = Theme::of(ui);
+                let w = ui.available_width().min(860.0);
+                let pad = (ui.available_width() - w) / 2.0;
+                let (rect, _) = ui.allocate_exact_size(vec2(ui.available_width(), 360.0), egui::Sense::hover());
+                let rect = egui::Rect::from_min_size(rect.min + vec2(pad, 0.0), vec2(w, 360.0));
+                let p = ui.painter();
+                p.rect_filled(rect, t.corner(), crate::common::raised(&t));
+                p.rect_stroke(rect, t.corner(), egui::Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
+                let dot = glowkit_core::color::with_alpha(t.muted_foreground, 0.22);
+                let mut y = rect.min.y + 12.0;
+                while y < rect.max.y {
+                    let mut x = rect.min.x + 12.0;
+                    while x < rect.max.x {
+                        p.circle_filled(egui::pos2(x, y), 1.0, dot);
+                        x += 20.0;
+                    }
+                    y += 20.0;
+                }
+                let node = |p: &egui::Painter, r: egui::Rect, title: &str, sub: &str, sel: bool, icon: Icon| {
+                    glowkit_core::paint::soft_shadow(p, r, 10.0, 12.0, vec2(0.0, 4.0), egui::Color32::from_black_alpha(if t.dark { 70 } else { 18 }));
+                    p.rect(r, egui::CornerRadius::same(10), t.card, egui::Stroke::new(if sel { 1.5 } else { 1.0 }, if sel { t.accent } else { t.border }), egui::StrokeKind::Inside);
+                    let ib = egui::Rect::from_min_size(r.min + vec2(12.0, 12.0), vec2(28.0, 28.0));
+                    p.rect_filled(ib, egui::CornerRadius::same(7), glowkit_core::color::with_alpha(t.accent, 0.14));
+                    paint_icon(p, icon, ib.shrink(7.0), t.accent);
+                    p.text(egui::pos2(ib.max.x + 10.0, ib.min.y + 7.0), egui::Align2::LEFT_CENTER, title, egui::FontId::proportional(13.5), t.foreground);
+                    p.text(egui::pos2(ib.max.x + 10.0, ib.min.y + 23.0), egui::Align2::LEFT_CENTER, sub, egui::FontId::proportional(11.5), t.muted_foreground);
+                };
+                let n1 = egui::Rect::from_min_size(rect.min + vec2(w * 0.08, 200.0), vec2(190.0, 54.0));
+                let n2 = egui::Rect::from_min_size(rect.min + vec2(w * 0.42, 150.0), vec2(210.0, 54.0));
+                let n3 = egui::Rect::from_min_size(rect.min + vec2(w * 0.74, 230.0), vec2(180.0, 54.0));
+                for (a, b) in [(n1, n2), (n2, n3)] {
+                    let pts = glowkit_core::paint::cubic_bezier(a.right_center(), a.right_center() + vec2(60.0, 0.0), b.left_center() - vec2(60.0, 0.0), b.left_center(), 32);
+                    p.add(egui::Shape::line(pts, egui::Stroke::new(1.5, glowkit_core::color::with_alpha(t.muted_foreground, 0.5))));
+                }
+                node(p, n1, "User prompt", "input", false, Icon::User);
+                node(p, n2, "Generate draft", "Nova 2 · 0.7 temp", true, Icon::Sparkle);
+                node(p, n3, "Publish", "webhook", false, Icon::Globe);
+                let e = looped(ui, 10.0);
+                let id = ui.scope_id().with("tb_demo");
+                let mut locked: bool = glowkit_core::state(ui, id, || false);
+                let items = [
+                    ToolbarItem::new(Icon::Sparkle, "Ask AI").shortcut("⌘K"),
+                    ToolbarItem::new(Icon::Pencil, "Edit").shortcut("E"),
+                    ToolbarItem::new(Icon::Copy, "Duplicate").shortcut("⌘D"),
+                    ToolbarItem::new(Icon::Play, "Run node").separator(),
+                    ToolbarItem::new(Icon::Lock, "Lock position").active(locked),
+                    ToolbarItem::new(Icon::X, "Delete").shortcut("⌫").separator().color(t.destructive),
+                ];
+                let hovering_toolbar = ui.rect_contains_pointer(rect);
+                let tip = if hovering_toolbar { None } else { Some(((e / 1.6) as usize) % items.len()) };
+                if AiToolbar::new(&items).force_tooltip(tip).id_salt("node_tb").show_at(ui, n2.center_top() - vec2(0.0, 10.0)) == Some(4) {
+                    locked = !locked;
+                }
+                glowkit_core::set_state(ui, id, locked);
+                let side = [
+                    ToolbarItem::new(Icon::ArrowUp, "Select").active(true),
+                    ToolbarItem::new(Icon::Plus, "Add node").shortcut("N"),
+                    ToolbarItem::new(Icon::Code, "Code node"),
+                    ToolbarItem::new(Icon::Search, "Find").separator().shortcut("⌘F"),
+                ];
+                let _ = AiToolbar::new(&side).vertical(true).button_size(30.0).id_salt("side_tb").show_at(ui, egui::pos2(rect.min.x + 14.0, rect.min.y + 90.0));
+            },
+        },
+        Demo {
+            id: "ai-jsx-preview",
+            name: "JSX Preview",
+            category: C,
+            description: "Generative UI: streamed JSX-like markup is parsed on every frame (half-written tags and all) and rendered into real themed widgets that fade in.",
+            covers: &["prompt-kit: JSX Preview", "Vercel AI Elements: JSX Preview", "Vercel AI SDK: Generative UI"],
+            code: r##"// `markup` grows as the model streams
+ui.add(JsxPreview::new(&markup));
+
+// or just parse it
+let tree = parse_markup("<Card><Title>Hi</Title><Button>Go");"##,
+            show: |ui| {
+                const SRC: &str = r#"<Card>
+  <Row>
+    <Avatar name="Ada Lovelace" />
+    <Stack>
+      <Title>Pro plan</Title>
+      <Description>Billed monthly · renews Dec 1</Description>
+    </Stack>
+  </Row>
+  <Separator />
+  <Row>
+    <Stat label="Tokens used" value="1.2M" delta="+12%" />
+    <Stat label="Spend" value="$48.20" delta="-3%" />
+  </Row>
+  <Progress value="68" />
+  <Switch checked>Auto top-up</Switch>
+  <Row>
+    <Badge variant="success">Active</Badge>
+    <Badge>Priority</Badge>
+  </Row>
+  <Row>
+    <Button>Upgrade</Button>
+    <Button variant="outline">Manage</Button>
+  </Row>
+</Card>"#;
+                let e = looped(ui, 14.0);
+                let n = ((e / 8.0).min(1.0) * SRC.len() as f32) as usize;
+                let mut cut = n.min(SRC.len());
+                while !SRC.is_char_boundary(cut) {
+                    cut -= 1;
+                }
+                let partial = &SRC[..cut];
+                ui.columns(2, |cols| {
+                    cols[0].vertical(|ui| {
+                        label(ui, if cut < SRC.len() { "STREAMING MARKUP…" } else { "MARKUP" });
+                        ui.add_space(4.0);
+                        egui::ScrollArea::vertical().id_salt("jsx_src").max_height(330.0).stick_to_bottom(true).show(ui, |ui| {
+                            ui.add(CodeBlock::new(if partial.is_empty() { " " } else { partial }).language("jsx").header(false).size(11.5));
+                        });
+                    });
+                    cols[1].vertical(|ui| {
+                        label(ui, "RENDERED");
+                        ui.add_space(4.0);
+                        ui.set_max_width(400.0);
+                        ui.add(JsxPreview::new(partial).id_salt(("jsx", (glowkit_core::time(ui) / 14.0) as u32)));
+                    });
+                });
+            },
+        },
+        Demo {
+            id: "ai-audio-player",
+            name: "Audio Player",
+            category: C,
+            description: "An audio player card with a scrubbable waveform, play / pause, elapsed time and a speed pill, plus a compact scrub-bar variant.",
+            covers: &["ElevenLabs UI: Audio Player"],
+            code: r##"let mut state = AudioPlayerState::new(184.0);
+ui.add(AudioPlayer::new(&mut state)
+    .title("Welcome message")
+    .subtitle("Aria · Narration"));"##,
+            show: |ui| column(ui, 620.0, |ui| {
+                let id = ui.scope_id().with("player_demo");
+                let mut st: [AudioPlayerState; 2] = glowkit_core::state(ui, id, || {
+                    let mut a = AudioPlayerState::new(184.0);
+                    a.position = 61.0;
+                    a.playing = true;
+                    let mut b = AudioPlayerState::new(312.0);
+                    b.position = 128.0;
+                    b.playing = true;
+                    b.speed = 1.5;
+                    [a, b]
+                });
+                let t = Theme::of(ui);
+                ui.add(AudioPlayer::new(&mut st[0]).title("Welcome to Lumen Labs").subtitle("Aria · Narration · 44.1 kHz").seed(4).looping(true));
+                ui.add_space(14.0);
+                ui.add(AudioPlayer::new(&mut st[1]).title("Episode 12: Shipping Rust to the web").subtitle("The Render Loop podcast").waveform(false).color(t.chart[1]).looping(true));
+                glowkit_core::set_state(ui, id, st);
+            }),
+        },
+        Demo {
+            id: "ai-dot-matrix",
+            name: "Dot Matrix",
+            category: C,
+            description: "An LED dot-matrix display with glowing dots and phosphor afterglow: scrolling pixel text, live level bars and animated patterns.",
+            covers: &["ElevenLabs UI: Matrix"],
+            code: r##"ui.add(DotMatrix::new(64, 9).content(MatrixContent::Text("HELLO WORLD")).gradient(true));
+ui.add(DotMatrix::new(24, 10).content(MatrixContent::Levels(&levels)));
+ui.add(DotMatrix::new(15, 15).content(MatrixContent::Pattern(MatrixPattern::Ripple)));"##,
+            show: |ui| column(ui, 760.0, |ui| {
+                let time = glowkit_core::time(ui);
+                ui.add_space(4.0);
+                ui.vertical_centered(|ui| {
+                    ui.add(DotMatrix::new(76, 9).pitch(9.5).content(MatrixContent::Text("GLOWKIT * VOICE AGENT ONLINE * 24 KHZ")).gradient(true).id_salt("dm_text"));
+                });
+                ui.add_space(14.0);
+                let lvl = simulated_level(ui, 2.3);
+                let levels: Vec<f32> = (0..12)
+                    .map(|i| {
+                        let x = i as f32 / 11.0;
+                        let n = glowkit_core::noise::noise3(x * 3.0, time * 2.4, 1.0) * 0.5 + 0.5;
+                        (n * (0.55 + lvl * 1.1) * (1.15 - x * 0.35)).clamp(0.08, 1.0)
+                    })
+                    .collect();
+                ui.horizontal(|ui| {
+                    ui.spacing_mut().item_spacing.x = 14.0;
+                    let t = Theme::of(ui);
+                    ui.vertical(|ui| {
+                        ui.add(DotMatrix::new(24, 12).pitch(8.5).content(MatrixContent::Levels(&levels)).color(t.chart[4]).persistence(0.25).id_salt("dm_lv"));
+                        label(ui, "Levels");
+                    });
+                    for (i, (pat, name)) in [(MatrixPattern::Ripple, "Ripple"), (MatrixPattern::Loader, "Loader"), (MatrixPattern::Rain, "Rain"), (MatrixPattern::Sparkle, "Sparkle")].into_iter().enumerate() {
+                        ui.vertical(|ui| {
+                            let c = [t.accent, t.chart[1], t.chart[4], t.chart[3]][i];
+                            ui.add(DotMatrix::new(13, 13).pitch(8.5).content(MatrixContent::Pattern(pat)).color(c).persistence(if i == 2 { 0.3 } else { 0.12 }).id_salt(("dm_p", i)));
+                            label(ui, name);
+                        });
+                    }
+                });
+            }),
+        },
+        Demo {
+            id: "ai-mic-selector",
+            name: "Mic Selector",
+            category: C,
+            description: "A microphone picker with a live level meter, a device dropdown with a full segmented meter, and a mute toggle.",
+            covers: &["ElevenLabs UI: Mic Selector"],
+            code: r##"let devices = ["MacBook Pro Microphone", "Studio USB Mic", "AirPods Pro"];
+ui.add(MicSelector::new(&devices, &mut selected, &mut muted).level(mic_level));"##,
+            show: |ui| column(ui, 700.0, |ui| {
+                let id = ui.scope_id().with("mic_demo");
+                let (mut sel, mut muted, mut sel2, mut muted2): (usize, bool, usize, bool) = glowkit_core::state(ui, id, || (1, false, 0, true));
+                let devices = ["MacBook Pro Microphone", "Studio USB Condenser", "AirPods Pro", "Webcam C920"];
+                let lvl = simulated_level(ui, 0.8);
+                glowkit_core::animate(ui);
+                let e = glowkit_core::Clock::elapsed(ui, id.with("clock"));
+                ui.add_space(6.0);
+                ui.horizontal_top(|ui| {
+                    ui.spacing_mut().item_spacing.x = 40.0;
+                    ui.vertical(|ui| {
+                        label(ui, "LIVE");
+                        ui.add(MicSelector::new(&devices, &mut sel, &mut muted).level(lvl).force_open(if e < 6.0 { Some(true) } else { None }).id_salt("mic1"));
+                    });
+                    ui.vertical(|ui| {
+                        label(ui, "MUTED");
+                        ui.add(MicSelector::new(&devices, &mut sel2, &mut muted2).level(lvl).width(250.0).id_salt("mic2"));
+                    });
+                });
+                glowkit_core::set_state(ui, id, (sel, muted, sel2, muted2));
+            }),
+        },
+        Demo {
+            id: "ai-speech-input",
+            name: "Speech Input",
+            category: C,
+            description: "A dictate button that springs open into a live waveform with a timer and streaming interim transcript, then shows the final text.",
+            covers: &["ElevenLabs UI: Speech Input", "Vercel AI Elements: Speech Input"],
+            code: r##"ui.add(SpeechInput::new(&mut phase)
+    .level(mic_level)
+    .transcript(&interim_text));
+// when the recognizer finishes: phase = SpeechPhase::Done"##,
+            show: |ui| column(ui, 600.0, |ui| {
+                const TEXT: &str = "Book a table for four at the Italian place near the office, Friday around seven thirty, and send the invite to the design team.";
+                let id = ui.scope_id().with("speech_demo");
+                let (mut phase, mut auto, mut t0): (SpeechPhase, bool, f64) = glowkit_core::state(ui, id, || (SpeechPhase::Idle, true, -1.0));
+                let now = ui.input(|i| i.time);
+                if t0 < 0.0 {
+                    t0 = now - 2.6; // start mid-recording so previews show the live state
+                }
+                let e = (now - t0) as f32;
+                let lvl = simulated_level(ui, 4.1);
+                glowkit_core::animate(ui);
+                if auto {
+                    let cyc = e % 14.0;
+                    phase = if cyc < 1.2 {
+                        SpeechPhase::Idle
+                    } else if cyc < 8.0 {
+                        SpeechPhase::Recording
+                    } else if cyc < 9.6 {
+                        SpeechPhase::Processing
+                    } else {
+                        SpeechPhase::Done
+                    };
+                }
+                let words: Vec<&str> = TEXT.split(' ').collect();
+                let rec_e = if auto { ((e % 14.0) - 1.2).max(0.0) } else { 6.0 };
+                let shown = if phase == SpeechPhase::Recording && auto {
+                    let k = ((rec_e / 6.4) * words.len() as f32) as usize;
+                    words[..k.min(words.len())].join(" ")
+                } else {
+                    TEXT.to_owned()
+                };
+                ui.add_space(10.0);
+                let before = phase;
+                let mic = if phase == SpeechPhase::Recording { lvl } else { 0.0 };
+                ui.add(SpeechInput::new(&mut phase).level(mic).transcript(&shown).id_salt("speech"));
+                if phase != before {
+                    auto = false;
+                }
+                if !auto && phase == SpeechPhase::Processing {
+                    phase = SpeechPhase::Done;
+                }
+                ui.add_space(14.0);
+                label(ui, if auto { "Autoplaying: click the control to take over" } else { "Click to record, click stop to finish" });
+                glowkit_core::set_state(ui, id, (phase, auto, t0));
+            }),
+        },
+        Demo {
+            id: "ai-scrub-bar",
+            name: "Scrub Bar",
+            category: C,
+            description: "A media timeline scrubber with buffered and played ranges, a hover time tooltip, chapter markers and a thumb that grows on hover.",
+            covers: &["ElevenLabs UI: Scrub Bar", "Media Chrome: Time Range", "Vidstack: Time Slider"],
+            code: r##"let markers = [ScrubMarker::new(42.0, "Intro"), ScrubMarker::new(118.0, "Demo")];
+ui.add(ScrubBar::new(&mut position, duration)
+    .buffered(position + 30.0)
+    .markers(&markers)
+    .show_times(true));"##,
+            show: |ui| column(ui, 700.0, |ui| {
+                let t = Theme::of(ui);
+                let id = ui.scope_id().with("scrub_demo");
+                let (mut pos, mut pos2): (f32, f32) = glowkit_core::state(ui, id, || (74.0, 40.0));
+                let dt = glowkit_core::dt(ui);
+                glowkit_core::animate(ui);
+                pos = (pos + dt) % 240.0;
+                // "video" frame
+                let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), 200.0), egui::Sense::hover());
+                let time = glowkit_core::time(ui);
+                glowkit_core::paint::gradient_rect(ui.painter(), r, t.radius, 120.0 + (time * 0.2).sin() * 15.0, &[glowkit_core::hex("#1E1B4B"), glowkit_core::hex("#7C3AED"), glowkit_core::hex("#DB2777")]);
+                glowkit_core::paint::glow(ui.painter(), r.center() + vec2((time * 0.5).sin() * 120.0, 10.0), 120.0, glowkit_core::color::with_alpha(glowkit_core::hex("#F59E0B"), 0.35));
+                ui.painter().text(r.left_bottom() + vec2(18.0, -20.0), egui::Align2::LEFT_BOTTOM, "Keynote: building voice agents", egui::FontId::proportional(16.0), egui::Color32::WHITE);
+                ui.add_space(6.0);
+                let markers = [
+                    ScrubMarker::new(30.0, "Intro"),
+                    ScrubMarker::new(96.0, "Live demo").color(t.chart[1]),
+                    ScrubMarker::new(170.0, "Q&A").color(t.chart[3]),
+                ];
+                let buf = (pos + 45.0).min(240.0);
+                ui.add(ScrubBar::new(&mut pos, 240.0).buffered(buf).markers(&markers).show_times(true));
+                ui.add_space(22.0);
+                label(ui, "SEGMENTED BUFFER · CUSTOM COLOR");
+                ui.add(ScrubBar::new(&mut pos2, 180.0).buffered_ranges(&[(0.0, 62.0), (90.0, 128.0)]).color(t.chart[4]).thickness(6.0));
+                glowkit_core::set_state(ui, id, (pos, pos2));
+            }),
+        },
+        Demo {
+            id: "ai-transcript-viewer",
+            name: "Transcript Viewer",
+            category: C,
+            description: "A transcript synced to playback: the current word rides an accent pill that glides along, spoken words brighten, and clicking any word seeks.",
+            covers: &["ElevenLabs UI: Transcript Viewer"],
+            code: r##"let words = TranscriptWord::timeline(&[("Agent", "Hi! How can I help?")], 0.0, 2.6);
+if let Some(seek) = TranscriptViewer::new(&words, position).height(220.0).show(ui) {
+    position = seek;
+}"##,
+            show: |ui| column(ui, 680.0, |ui| {
+                let t = Theme::of(ui);
+                let words = TranscriptWord::timeline(
+                    &[
+                        ("Agent", "Hi, thanks for calling Lumen support. How can I help you today?"),
+                        ("Maya", "Hey! My order shipped last week, but the tracking page hasn't updated since Tuesday."),
+                        ("Agent", "Sorry about that. I can see it left our warehouse on Monday and it's now with the regional carrier. It should arrive by Friday."),
+                        ("Maya", "Great, could you text me when it's out for delivery?"),
+                        ("Agent", "Of course. I've turned on SMS updates for this order."),
+                    ],
+                    0.4,
+                    2.7,
+                );
+                let dur = words.last().map(|w| w.end + 1.0).unwrap_or(1.0);
+                let id = ui.scope_id().with("transcript_demo");
+                let (mut pos, mut playing): (f32, bool) = glowkit_core::state(ui, id, || (6.5, true));
+                if playing {
+                    pos += glowkit_core::dt(ui);
+                    if pos > dur {
+                        pos = 0.0;
+                    }
+                    glowkit_core::animate(ui);
+                }
+                egui::Frame::new().fill(t.card).stroke(egui::Stroke::new(1.0, t.border)).corner_radius(t.corner_scaled(1.2)).inner_margin(egui::Margin::same(16)).show(ui, |ui| {
+                    ui.set_width(ui.available_width());
+                    ui.horizontal(|ui| {
+                        if crate::media::play_button(ui, playing, 36.0, t.accent).clicked() {
+                            playing = !playing;
+                        }
+                        ui.add_space(6.0);
+                        ui.vertical(|ui| {
+                            ui.add_space(6.0);
+                            ui.add(ScrubBar::new(&mut pos, dur).buffered(dur).show_times(true));
+                        });
+                    });
+                    ui.add_space(6.0);
+                    if let Some(s) = TranscriptViewer::new(&words, pos).height(230.0).id_salt("tv").show(ui) {
+                        pos = s;
+                    }
+                });
+                glowkit_core::set_state(ui, id, (pos, playing));
+            }),
+        },
     ]
 }

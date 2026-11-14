@@ -384,5 +384,113 @@ GrainNoise::new().opacity(0.12).paint(ui, rect);"##,
             code: r##"ui.add(HexGrid::new().radius(24.0));"##,
             show: |ui| hero(ui, "Hex Grid", "", None, |ui, r| HexGrid::new().auto_hover(true).paint(ui, r)),
         },
+        Demo {
+            id: "liquid-ether",
+            name: "Liquid Ether",
+            category: C,
+            description: "A real-time fluid simulation: moving the pointer stirs glowing eddies of color that curl, mix and slowly fade. A ghost pointer keeps it alive.",
+            covers: &["React Bits: Liquid Ether"],
+            code: r##"ui.add(LiquidEther::new());
+ui.add(LiquidEther::new().colors(&[hex("#5227FF"), hex("#FF9FFC"), hex("#B19EEF")]).force(1.4));"##,
+            show: |ui| hero(ui, "Liquid Ether", "Stir it with your pointer", None, |ui, r| LiquidEther::new().paint(ui, r)),
+        },
+        Demo {
+            id: "grid-scan",
+            name: "Grid Scan",
+            category: C,
+            description: "A wireframe grid tunnel receding into the distance, swept by a glowing scan frame that lights up the lines it passes. The view leans toward the pointer.",
+            covers: &["React Bits: Grid Scan"],
+            code: r##"ui.add(GridScan::new().scan_color(hex("#FF9FFC")));"##,
+            show: |ui| hero(ui, "Grid Scan", "", None, |ui, r| GridScan::new().paint(ui, r)),
+        },
+        Demo {
+            id: "prismatic-burst",
+            name: "Prismatic Burst",
+            category: C,
+            description: "Rays of rainbow light bursting from the center, rotating, flickering and breathing, with shock rings rippling outward.",
+            covers: &["React Bits: Prismatic Burst"],
+            code: r##"ui.add(PrismaticBurst::new());
+ui.add(PrismaticBurst::new().colors(&palettes::MAGIC).rays(64));"##,
+            show: |ui| hero(ui, "", "", None, |ui, r| PrismaticBurst::new().paint(ui, r)),
+        },
+        Demo {
+            id: "grid-motion",
+            name: "Grid Motion",
+            category: C,
+            description: "A tilted wall of tiles whose rows slide in opposite directions as the pointer moves, each with its own lag, for a deep parallax feel.",
+            covers: &["React Bits: Grid Motion"],
+            code: r##"ui.add(GridMotion::new().items(["Rust", "egui", "wasm", "60 fps"]));"##,
+            show: |ui| hero(ui, "", "", None, |ui, r| GridMotion::new().paint(ui, r)),
+        },
+        Demo {
+            id: "laser-flow",
+            name: "Laser Flow",
+            category: C,
+            description: "A laser beam falls from the top and splashes across a surface, wrapped in luminous fog that curls outward and up.",
+            covers: &["React Bits: Laser Flow"],
+            code: r##"ui.add(LaserFlow::new());
+ui.add(LaserFlow::new().color(hex("#FF79C6")).fog(1.4));"##,
+            show: |ui| {
+                let (rect, _) = ui.allocate_exact_size(vec2(ui.available_width(), 360.0), Sense::hover());
+                LaserFlow::new().paint(ui, rect);
+                let t = Theme::of(ui);
+                let card = Rect::from_center_size(egui::pos2(rect.center().x, rect.min.y + rect.height() * 0.66 + 62.0), vec2(300.0, 70.0));
+                let p = ui.painter_at(rect);
+                p.text(card.center(), Align2::CENTER_CENTER, "Ship at the speed of light", FontId::proportional(18.0), t.foreground.gamma_multiply(0.85));
+            },
+        },
+        Demo {
+            id: "metallic-paint",
+            name: "Metallic Paint",
+            category: C,
+            description: "A shape or logo filled with flowing liquid metal: rippling chrome bands, a bevelled rim and a highlight that follows the pointer.",
+            covers: &["React Bits: Metallic Paint"],
+            code: r##"ui.add(MetallicPaint::new());
+ui.add(MetallicPaint::new().shape(MetalShape::Heart).tint(hex("#F9A8D4")));"##,
+            show: |ui| {
+                let (rect, _) = ui.allocate_exact_size(vec2(ui.available_width(), 360.0), Sense::hover());
+                let w = rect.width() / 3.0;
+                let shapes = [
+                    (MetalShape::Heart, Some(glowkit_core::hex("#FBCFE8"))),
+                    (MetalShape::Sparkle, None),
+                    (MetalShape::Star, Some(glowkit_core::hex("#FDE68A"))),
+                ];
+                let t = Theme::of(ui);
+                ui.painter().rect_filled(rect, 0.0, t.background);
+                for (i, (shape, tint)) in shapes.into_iter().enumerate() {
+                    let r = Rect::from_min_size(egui::pos2(rect.min.x + w * i as f32, rect.min.y), vec2(w, rect.height()));
+                    let mut m = MetallicPaint::new().shape(shape).id_salt(i).transparent().scale(if i == 1 { 0.78 } else { 0.62 });
+                    if let Some(c) = tint {
+                        m = m.tint(c);
+                    }
+                    m.paint(ui, r);
+                }
+            },
+        },
+        Demo {
+            id: "background-lines",
+            name: "Background Lines",
+            category: C,
+            description: "Long flowing curves sweep across the area, drawing themselves in, lingering and erasing again, each on its own rhythm and in its own color.",
+            covers: &["Aceternity UI: Background Lines"],
+            code: r##"ui.add(BackgroundLines::new().count(24));"##,
+            show: |ui| hero(ui, "Background Lines", "Curves that draw themselves", None, |ui, r| BackgroundLines::new().paint(ui, r)),
+        },
+        Demo {
+            id: "dotted-map",
+            name: "Dotted Map",
+            category: C,
+            description: "A world map drawn as a grid of dots, with glowing arcs flying between cities one after another and markers rippling where they land.",
+            covers: &["Magic UI: Dotted Map", "Aceternity UI: World Map"],
+            code: r##"ui.add(DottedMap::new());
+ui.add(DottedMap::new().connections(&[
+    (cities::LONDON, cities::NEW_YORK),
+    (cities::LONDON, cities::TOKYO),
+]));"##,
+            show: |ui| {
+                let (rect, _) = ui.allocate_exact_size(vec2(ui.available_width(), 380.0), Sense::hover());
+                DottedMap::new().paint(ui, rect);
+            },
+        },
     ]
 }

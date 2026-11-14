@@ -9,7 +9,9 @@
 //!   [`InlineCitation`], [`ContextMeter`], [`Workflow`].
 //! * Output: [`Artifact`], [`ImageGen`], [`WebPreview`].
 //! * Loading: [`TypingIndicator`], [`Loader`], [`ShimmerText`].
-//! * Voice: [`VoiceOrb`], [`LiveWaveform`], [`AudioBars`], [`VoiceButton`].
+//! * Voice & audio: [`VoiceOrb`], [`LiveWaveform`], [`AudioBars`], [`VoiceButton`], [`SpeechInput`],
+//!   [`MicSelector`], [`AudioPlayer`], [`ScrubBar`], [`TranscriptViewer`], [`DotMatrix`].
+//! * Agent controls: [`Confirmation`], [`OpenInChat`], [`AiToolbar`], [`JsxPreview`].
 //!
 //! Every component reads its colors from the active [`glowkit_core::Theme`].
 //!
@@ -23,25 +25,46 @@
 #![warn(missing_docs)]
 
 mod artifact;
+mod audio_player;
 mod code;
 mod common;
+mod confirmation;
 mod context;
 mod conversation;
+mod dot_matrix;
 mod icons;
+mod jsx_preview;
 mod loader;
 pub mod markdown;
+mod media;
 mod message;
+mod mic_selector;
 mod misc;
+mod open_in_chat;
 mod prompt;
 mod reasoning;
+mod scrub_bar;
+mod speech_input;
 mod sources;
 mod streaming;
 mod task;
 mod tool;
+mod toolbar;
+mod transcript;
 mod voice;
 mod workflow;
 
 pub use artifact::{Artifact, ArtifactOutput, ImageGen};
+pub use audio_player::{AudioPlayer, AudioPlayerState};
+pub use confirmation::{ApprovalState, Confirmation};
+pub use dot_matrix::{DotMatrix, MatrixContent, MatrixPattern};
+pub use jsx_preview::{parse_markup, JsxPreview, MarkupNode};
+pub use mic_selector::MicSelector;
+pub use open_in_chat::{ChatProvider, OpenInChat};
+pub use scrub_bar::{ScrubBar, ScrubMarker};
+pub use speech_input::{SpeechInput, SpeechPhase};
+pub use toolbar::{AiToolbar, ToolbarItem};
+pub use transcript::{TranscriptViewer, TranscriptWord};
 pub use code::{highlight, CodeBlock, TokenKind};
 pub use context::{format_tokens, ContextMeter, MeterStyle};
 pub use conversation::Conversation;

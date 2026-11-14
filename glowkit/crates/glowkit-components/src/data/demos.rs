@@ -606,5 +606,312 @@ ui.add(TreeView::new(&nodes, &mut selected).open_depth(2));"##,
                 });
             },
         },
+        Demo {
+            id: "aspect-ratio",
+            name: "Aspect Ratio",
+            category: C,
+            description: "A container that locks content to a ratio (16:9, 1:1, 4:3) and clips it to rounded corners, for media, maps and embeds.",
+            covers: &["shadcn/ui: Aspect Ratio", "Radix UI: Aspect Ratio"],
+            code: r##"AspectRatio::new(16.0 / 9.0).max_width(420.0).show(ui, |ui| {
+    let r = ui.max_rect();
+    // paint an image, video frame or map into r
+});"##,
+            show: |ui| {
+                ui.add_space(24.0);
+                let t = Theme::of(ui);
+                let time = glowkit_core::time(ui);
+                glowkit_core::animate(ui);
+                center(ui, 820.0, |ui| {
+                    ui.horizontal_top(|ui| {
+                        ui.spacing_mut().item_spacing.x = 20.0;
+                        col(ui, 400.0, |ui| {
+                            AspectRatio::video().show(ui, |ui| {
+                                let r = ui.max_rect();
+                                let p = ui.painter();
+                                let shift = (time * 0.15).sin() * 20.0;
+                                glowkit_core::paint::gradient_rect(p, r, 0.0, 120.0 + shift, &[t.gradient[0], t.gradient[1], t.gradient[2]]);
+                                // hills
+                                for (k, a) in [(0.0f32, 0.35f32), (1.0, 0.55)] {
+                                    let pts: Vec<egui::Pos2> = (0..=40)
+                                        .map(|i| {
+                                            let x = i as f32 / 40.0;
+                                            let y = 0.62 + k * 0.12 + 0.08 * ((x * 5.0 + k * 2.0 + time * 0.2).sin());
+                                            egui::pos2(r.min.x + x * r.width(), r.min.y + y * r.height())
+                                        })
+                                        .collect();
+                                    glowkit_core::paint::area_fill(p, &pts, r.max.y, egui::Color32::from_black_alpha((a * 255.0) as u8), egui::Color32::from_black_alpha((a * 255.0) as u8));
+                                }
+                                let c = r.center();
+                                p.circle_filled(c, 26.0, egui::Color32::from_white_alpha(230));
+                                p.add(egui::Shape::convex_polygon(vec![c + vec2(-7.0, -11.0), c + vec2(12.0, 0.0), c + vec2(-7.0, 11.0)], egui::Color32::from_rgb(20, 20, 24), egui::Stroke::NONE));
+                                let bar = egui::Rect::from_min_max(egui::pos2(r.min.x + 16.0, r.max.y - 18.0), egui::pos2(r.max.x - 16.0, r.max.y - 14.0));
+                                p.rect_filled(bar, 2.0, egui::Color32::from_white_alpha(70));
+                                let prog = (time * 0.05).fract();
+                                p.rect_filled(egui::Rect::from_min_size(bar.min, vec2(bar.width() * prog, bar.height())), 2.0, egui::Color32::WHITE);
+                                p.text(egui::pos2(r.min.x + 16.0, r.min.y + 14.0), egui::Align2::LEFT_TOP, "Northern Lights · 4K", egui::FontId::proportional(13.0), egui::Color32::WHITE);
+                            });
+                            ui.add_space(6.0);
+                            caption(ui, "16 : 9 video");
+                        });
+                        col(ui, 200.0, |ui| {
+                            AspectRatio::square().show(ui, |ui| {
+                                let r = ui.max_rect();
+                                let p = ui.painter();
+                                p.rect_filled(r, 0.0, if t.dark { glowkit_core::hex("#18181B") } else { glowkit_core::hex("#F4F4F5") });
+                                for i in 0..6 {
+                                    let rr = 18.0 + i as f32 * 14.0;
+                                    p.circle_stroke(r.center(), rr, egui::Stroke::new(6.0, glowkit_core::color::with_alpha(t.chart[i % 6], 0.85)));
+                                }
+                                glowkit_core::paint::glow(p, r.center(), 70.0, glowkit_core::color::with_alpha(t.accent, 0.4));
+                                p.circle_filled(r.center(), 8.0, t.foreground);
+                            });
+                            ui.add_space(6.0);
+                            caption(ui, "1 : 1 album art");
+                        });
+                        col(ui, 180.0, |ui| {
+                            AspectRatio::new(3.0 / 4.0).show(ui, |ui| {
+                                let r = ui.max_rect();
+                                let p = ui.painter();
+                                p.rect_filled(r, 0.0, if t.dark { glowkit_core::hex("#0F172A") } else { glowkit_core::hex("#E0F2FE") });
+                                let grid = glowkit_core::color::with_alpha(t.muted_foreground, 0.18);
+                                for i in 0..12 {
+                                    let x = r.min.x + i as f32 * 18.0;
+                                    p.line_segment([egui::pos2(x, r.min.y), egui::pos2(x, r.max.y)], egui::Stroke::new(1.0, grid));
+                                    let y = r.min.y + i as f32 * 22.0;
+                                    p.line_segment([egui::pos2(r.min.x, y), egui::pos2(r.max.x, y)], egui::Stroke::new(1.0, grid));
+                                }
+                                let road: Vec<egui::Pos2> = (0..=30).map(|i| { let y = i as f32 / 30.0; egui::pos2(r.min.x + r.width() * (0.3 + 0.25 * (y * 4.0).sin()), r.min.y + y * r.height()) }).collect();
+                                p.add(egui::Shape::line(road, egui::Stroke::new(5.0, glowkit_core::color::with_alpha(t.warning, 0.8))));
+                                let pin = r.min + vec2(r.width() * 0.62, r.height() * 0.42);
+                                glowkit_core::paint::glow(p, pin, 30.0 + 6.0 * (time * 3.0).sin(), glowkit_core::color::with_alpha(t.destructive, 0.5));
+                                p.circle_filled(pin, 7.0, t.destructive);
+                                p.circle_filled(pin, 2.5, egui::Color32::WHITE);
+                            });
+                            ui.add_space(6.0);
+                            caption(ui, "3 : 4 map");
+                        });
+                    });
+                });
+            },
+        },
+        Demo {
+            id: "item",
+            name: "Item",
+            category: C,
+            description: "Flexible list rows with an icon, avatar or thumbnail, a title and description, and trailing actions, in default, outline and muted styles.",
+            covers: &["shadcn/ui: Item", "Origin UI: List items"],
+            code: r##"Item::new("Two-factor authentication")
+    .description("Verify via email or phone number.")
+    .icon(UiIcon::Lock)
+    .variant(ItemVariant::Outline)
+    .actions(|ui| { ui.add(Button::new("Enable").small()); })
+    .show(ui);"##,
+            show: |ui| {
+                ui.add_space(16.0);
+                with(ui, "item_demo", || (1usize, false), |ui, (sel, enabled)| {
+                    center(ui, 860.0, |ui| {
+                        ui.horizontal_top(|ui| {
+                            ui.spacing_mut().item_spacing.x = 28.0;
+                            col(ui, 420.0, |ui| {
+                                ui.spacing_mut().item_spacing.y = 10.0;
+                                caption(ui, "Outline · Muted · Small · Default");
+                                let en = *enabled;
+                                Item::new("Two-factor authentication")
+                                    .description("Verify via email or phone number.")
+                                    .media(ItemMedia::TintedIcon(UiIcon::Lock.into(), Theme::of(ui).accent))
+                                    .variant(ItemVariant::Outline)
+                                    .actions_width(96.0)
+                                    .actions(|ui| {
+                                        if ui.add(Button::new(if en { "Enabled" } else { "Enable" }).small().variant(if en { ButtonVariant::Secondary } else { ButtonVariant::Default }).icon(if en { UiIcon::Check } else { UiIcon::Plus })).clicked() {
+                                            *enabled = !en;
+                                        }
+                                    })
+                                    .show(ui);
+                                Item::new("Your profile has been verified.")
+                                    .media(ItemMedia::TintedIcon(UiIcon::CheckCircle.into(), Theme::of(ui).success))
+                                    .variant(ItemVariant::Muted)
+                                    .small()
+                                    .chevron(true)
+                                    .show(ui);
+                                Item::new("Usage report.pdf")
+                                    .description("2.4 MB · Updated 3 days ago")
+                                    .icon(UiIcon::File)
+                                    .variant(ItemVariant::Outline)
+                                    .small()
+                                    .actions_width(76.0)
+                                    .actions(|ui| {
+                                        ui.add(Button::icon_only(UiIcon::MoreHorizontal).small().variant(ButtonVariant::Ghost));
+                                        ui.add(Button::icon_only(UiIcon::Download).small().variant(ButtonVariant::Ghost));
+                                    })
+                                    .show(ui);
+                                Item::new("Billing & invoices")
+                                    .description("Default variant: no surface until hovered.")
+                                    .icon(UiIcon::Dollar)
+                                    .small()
+                                    .clickable(true)
+                                    .actions_width(70.0)
+                                    .actions(|ui| {
+                                        ui.add(Badge::new("3 due").variant(BadgeVariant::Warning).pill(true));
+                                    })
+                                    .show(ui);
+                            });
+                            col(ui, 400.0, |ui| {
+                                caption(ui, "Group with avatars & thumbnails");
+                                let t = Theme::of(ui);
+                                egui::Frame::new().fill(t.card).stroke(t.border_stroke()).corner_radius(t.corner()).inner_margin(egui::Margin::same(6)).show(ui, |ui| {
+                                    ui.spacing_mut().item_spacing.y = 2.0;
+                                    let people = [("Ada Lovelace", "ada@analytical.io"), ("Alan Turing", "alan@bletchley.uk"), ("Grace Hopper", "grace@cobol.dev")];
+                                    for (i, (n, e)) in people.iter().enumerate() {
+                                        if Item::new(*n).description(*e).media(ItemMedia::Avatar(n.to_string())).small().chevron(true).selected(*sel == i).show(ui).clicked() {
+                                            *sel = i;
+                                        }
+                                    }
+                                    ui.add(Separator::horizontal().margin(4.0));
+                                    for (i, (n, d)) in [("Midnight Drive", "Synthwave · 3:42"), ("Golden Hour", "Lo-fi · 2:58")].iter().enumerate() {
+                                        Item::new(*n).description(*d).media(ItemMedia::Image(i as u32 + 2)).small().actions_width(40.0).actions(|ui| {
+                                            ui.add(Button::icon_only(UiIcon::Heart).small().variant(ButtonVariant::Ghost));
+                                        }).show(ui);
+                                    }
+                                });
+                            });
+                        });
+                    });
+                });
+            },
+        },
+        Demo {
+            id: "resizable",
+            name: "Resizable",
+            category: C,
+            description: "Horizontal and vertical split panels with draggable grip handles, min/max sizes and nested groups. Double-click a handle to even it out.",
+            covers: &["shadcn/ui: Resizable", "react-resizable-panels: PanelGroup"],
+            code: r##"ResizablePanels::horizontal(&mut sizes).height(300.0).min(0.15).show(ui, |ui, i| {
+    if i == 1 {
+        ResizablePanels::vertical(&mut inner).frame(false).show(ui, |ui, j| { /* ... */ });
+    }
+});"##,
+            show: |ui| {
+                ui.add_space(16.0);
+                with(ui, "resizable_demo", || ([0.26f32, 0.74], [0.62f32, 0.38], [0.5f32, 0.5]), |ui, (outer, inner, side)| {
+                    center(ui, 860.0, |ui| {
+                        let t = Theme::of(ui);
+                        let label = |ui: &mut Ui, title: &str, pct: f32| {
+                            let r = ui.max_rect();
+                            ui.painter().text(r.center() - vec2(0.0, 9.0), egui::Align2::CENTER_CENTER, title, egui::FontId::proportional(14.5), t.foreground);
+                            ui.painter().text(r.center() + vec2(0.0, 11.0), egui::Align2::CENTER_CENTER, format!("{:.0}%", pct * 100.0), egui::FontId::monospace(11.5), t.muted_foreground);
+                        };
+                        ui.horizontal_top(|ui| {
+                            ui.spacing_mut().item_spacing.x = 20.0;
+                            col(ui, 560.0, |ui| {
+                                caption(ui, "Nested groups");
+                                let (o, inn) = (*outer, *inner);
+                                ResizablePanels::horizontal(outer).height(300.0).min(0.18).max(0.6).id_salt("outer").show(ui, |ui, i| {
+                                    if i == 0 {
+                                        let r = ui.max_rect();
+                                        ui.painter().rect_filled(r, 0.0, glowkit_core::color::with_alpha(t.muted, 0.5));
+                                        let mut y = r.min.y + 18.0;
+                                        for (k, name) in ["Inbox", "Drafts", "Sent", "Archive"].iter().enumerate() {
+                                            let rr = egui::Rect::from_min_size(egui::pos2(r.min.x + 10.0, y - 4.0), vec2(r.width() - 20.0, 26.0));
+                                            if k == 0 { ui.painter().rect_filled(rr, 6.0, glowkit_core::color::with_alpha(t.accent, 0.14)); }
+                                            ui.painter().text(egui::pos2(r.min.x + 22.0, y + 9.0), egui::Align2::LEFT_CENTER, name, egui::FontId::proportional(13.0), if k == 0 { t.accent } else { t.muted_foreground });
+                                            y += 32.0;
+                                        }
+                                        ui.painter().text(egui::pos2(r.center().x, r.max.y - 16.0), egui::Align2::CENTER_CENTER, format!("{:.0}%", o[0] * 100.0), egui::FontId::monospace(11.5), t.muted_foreground);
+                                    } else {
+                                        ResizablePanels::vertical(inner).frame(false).min(0.2).id_salt("inner").show(ui, |ui, j| {
+                                            label(ui, if j == 0 { "Content" } else { "Terminal" }, inn[j]);
+                                        });
+                                    }
+                                });
+                            });
+                            col(ui, 280.0, |ui| {
+                                caption(ui, "Vertical");
+                                let sv = *side;
+                                ResizablePanels::vertical(side).height(300.0).min_sizes(&[0.25, 0.25]).id_salt("side").show(ui, |ui, i| {
+                                    label(ui, if i == 0 { "Header" } else { "Body" }, sv[i]);
+                                });
+                            });
+                        });
+                    });
+                });
+            },
+        },
+        Demo {
+            id: "scroll-area",
+            name: "Scroll Area",
+            category: C,
+            description: "A themed scroll container with a thin overlay scrollbar that fades in on hover or scroll, widens under the pointer and can be dragged.",
+            covers: &["shadcn/ui: Scroll Area", "Radix UI: Scroll Area"],
+            code: r##"StyledScrollArea::vertical().max_height(280.0).show(ui, |ui| {
+    for tag in &tags {
+        ui.label(tag);
+    }
+});"##,
+            show: |ui| {
+                ui.add_space(16.0);
+                let t = Theme::of(ui);
+                let time = glowkit_core::time(ui);
+                center(ui, 820.0, |ui| {
+                    ui.horizontal_top(|ui| {
+                        ui.spacing_mut().item_spacing.x = 24.0;
+                        col(ui, 240.0, |ui| {
+                            caption(ui, "Vertical · auto-hide");
+                            egui::Frame::new().fill(t.card).stroke(t.border_stroke()).corner_radius(t.corner()).inner_margin(egui::Margin::same(1)).show(ui, |ui| {
+                                ui.set_width(240.0);
+                                StyledScrollArea::vertical().max_height(290.0).fade_edges(t.card).id_salt("tags").show(ui, |ui| {
+                                    // gentle autoplay so the bar is visible in previews
+                                    let cyc = time % 8.0;
+                                    if cyc < 3.0 {
+                                        ui.scroll_with_delta(vec2(0.0, -1.2));
+                                        glowkit_core::animate(ui);
+                                    } else if (4.0..7.0).contains(&cyc) {
+                                        ui.scroll_with_delta(vec2(0.0, 1.2));
+                                        glowkit_core::animate(ui);
+                                    } else {
+                                        glowkit_core::animate(ui);
+                                    }
+                                    ui.spacing_mut().item_spacing.y = 0.0;
+                                    let w = ui.available_width();
+                                    let (hr, _) = ui.allocate_exact_size(vec2(w, 44.0), egui::Sense::hover());
+                                    ui.painter().text(egui::pos2(hr.min.x + 16.0, hr.center().y + 2.0), egui::Align2::LEFT_CENTER, "Tags", egui::FontId::proportional(14.5), t.foreground);
+                                    for i in (0..40).rev() {
+                                        let (r, _) = ui.allocate_exact_size(vec2(w, 36.0), egui::Sense::hover());
+                                        ui.painter().text(egui::pos2(r.min.x + 16.0, r.center().y), egui::Align2::LEFT_CENTER, format!("v1.2.0-beta.{i}"), egui::FontId::proportional(13.0), t.foreground);
+                                        ui.painter().line_segment([egui::pos2(r.min.x + 16.0, r.max.y), egui::pos2(r.max.x - 16.0, r.max.y)], egui::Stroke::new(1.0, t.border));
+                                    }
+                                });
+                            });
+                        });
+                        col(ui, 540.0, |ui| {
+                            caption(ui, "Horizontal · always visible");
+                            egui::Frame::new().fill(t.card).stroke(t.border_stroke()).corner_radius(t.corner()).inner_margin(egui::Margin::same(1)).show(ui, |ui| {
+                                ui.set_width(540.0);
+                                StyledScrollArea::horizontal().scrollbar(ScrollbarMode::Always).fade_edges(t.card).id_salt("art").show(ui, |ui| {
+                                    ui.add_space(14.0);
+                                    ui.horizontal(|ui| {
+                                        ui.add_space(14.0);
+                                        ui.spacing_mut().item_spacing.x = 14.0;
+                                        let names = ["Ornella Binni", "Tom Byrom", "Vladimir Malyav", "Mira Okafor", "Jun Park", "Lena Voss"];
+                                        for (i, n) in names.iter().enumerate() {
+                                            ui.vertical(|ui| {
+                                                AspectRatio::new(3.0 / 4.0).width(150.0).surface(t.card).show(ui, |ui| {
+                                                    let r = ui.max_rect();
+                                                    let h = i as f32 * 53.0 + 200.0;
+                                                    glowkit_core::paint::gradient_rect(ui.painter(), r, 0.0, 150.0, &[glowkit_core::hsv(h, 0.55, 0.9), glowkit_core::hsv(h + 60.0, 0.7, 0.55)]);
+                                                    glowkit_core::paint::glow(ui.painter(), r.min + vec2(r.width() * 0.7, r.height() * 0.3), 50.0, egui::Color32::from_white_alpha(70));
+                                                });
+                                                ui.label(egui::RichText::new(format!("Photo by {n}")).size(12.0).color(t.muted_foreground));
+                                            });
+                                        }
+                                        ui.add_space(4.0);
+                                    });
+                                    ui.add_space(16.0);
+                                });
+                            });
+                        });
+                    });
+                });
+            },
+        },
     ]
 }

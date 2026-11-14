@@ -1,7 +1,7 @@
 //! # glowkit-backgrounds
 //!
 //! Animated backgrounds for egui: aurora, particles, grids, waves, beams, meteors, starfields,
-//! silk, plasma and more.
+//! silk, plasma, liquid ether, laser flow, prismatic bursts, dotted world maps and more.
 //!
 //! Every background is a builder with two ways to use it:
 //!
@@ -28,16 +28,32 @@ use egui::{pos2, vec2, Color32, Id, Painter, Pos2, Rect, Ui};
 use glowkit_core::Theme;
 
 mod aurora;
+mod background_lines;
+mod dotted_map;
 mod glyphs;
 mod grain;
+mod grid_motion;
+mod grid_scan;
 mod grids;
+mod laser_flow;
 mod light;
 mod lines;
+mod liquid_ether;
+mod metallic_paint;
 mod particles;
+mod prismatic_burst;
 mod shaders;
 mod sky;
 
 pub use aurora::{Aurora, GradientBlobs, MeshGradient};
+pub use background_lines::BackgroundLines;
+pub use dotted_map::{cities, is_land, DottedMap, LonLat};
+pub use grid_motion::GridMotion;
+pub use grid_scan::GridScan;
+pub use laser_flow::LaserFlow;
+pub use liquid_ether::LiquidEther;
+pub use metallic_paint::{MetalShape, MetallicPaint};
+pub use prismatic_burst::PrismaticBurst;
 pub use glyphs::{LetterGlitch, MatrixRain};
 pub use grain::GrainNoise;
 pub use grids::Direction;
