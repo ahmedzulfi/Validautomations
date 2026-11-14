@@ -75,64 +75,26 @@ impl Widget for FieldLabel {
 }
 
 /// Muted helper text shown under a form control.
-///
-/// ```no_run
-/// # let ui: &mut egui::Ui = todo!();
-/// ui.add(glowkit_components::FieldDescription::new("We'll never share your email."));
-/// ```
-#[must_use = "add it with `ui.add(...)`"]
-pub struct FieldDescription {
-    text: String,
-}
-
-impl FieldDescription {
-    /// Helper text.
-    pub fn new(text: impl Into<String>) -> Self {
-        Self { text: text.into() }
-    }
-}
-
-impl Widget for FieldDescription {
-    fn ui(self, ui: &mut Ui) -> Response {
-        let t = Theme::of(ui);
-        ui.add(egui::Label::new(egui::RichText::new(self.text).size(12.5).color(t.muted_foreground)).wrap())
-    }
+pub(crate) fn field_description(ui: &mut Ui, text: &str) -> Response {
+    let t = Theme::of(ui);
+    ui.add(egui::Label::new(egui::RichText::new(text).size(12.5).color(t.muted_foreground)).wrap())
 }
 
 /// Red validation message with a small alert icon, shown under a form control.
-///
-/// ```no_run
-/// # let ui: &mut egui::Ui = todo!();
-/// ui.add(glowkit_components::FieldError::new("Password must be at least 8 characters."));
-/// ```
-#[must_use = "add it with `ui.add(...)`"]
-pub struct FieldError {
-    text: String,
-}
-
-impl FieldError {
-    /// Error text.
-    pub fn new(text: impl Into<String>) -> Self {
-        Self { text: text.into() }
-    }
-}
-
-impl Widget for FieldError {
-    fn ui(self, ui: &mut Ui) -> Response {
-        let t = Theme::of(ui);
-        let g = ui.painter().layout(
-            self.text,
-            egui::FontId::proportional(12.5),
-            t.destructive,
-            ui.available_width() - 18.0,
-        );
-        let (rect, resp) = ui.allocate_exact_size(vec2(g.size().x + 18.0, g.size().y.max(14.0)), Sense::hover());
-        UiIcon::AlertCircle.paint(
-            ui.painter(),
-            egui::Rect::from_min_size(rect.min + vec2(0.0, 1.0), vec2(13.0, 13.0)),
-            t.destructive,
-        );
-        ui.painter().galley(rect.min + vec2(18.0, 0.0), g, t.destructive);
-        resp
-    }
+pub(crate) fn field_error(ui: &mut Ui, text: &str) -> Response {
+    let t = Theme::of(ui);
+    let g = ui.painter().layout(
+        text.to_owned(),
+        egui::FontId::proportional(12.5),
+        t.destructive,
+        ui.available_width() - 18.0,
+    );
+    let (rect, resp) = ui.allocate_exact_size(vec2(g.size().x + 18.0, g.size().y.max(14.0)), Sense::hover());
+    UiIcon::AlertCircle.paint(
+        ui.painter(),
+        egui::Rect::from_min_size(rect.min + vec2(0.0, 1.0), vec2(13.0, 13.0)),
+        t.destructive,
+    );
+    ui.painter().galley(rect.min + vec2(18.0, 0.0), g, t.destructive);
+    resp
 }

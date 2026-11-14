@@ -119,59 +119,6 @@ ui.add(Button::icon_only(UiIcon::Settings).variant(ButtonVariant::Outline));"##,
             },
         },
         Demo {
-            id: "button-group",
-            name: "Button Group",
-            category: C,
-            description: "Buttons joined into one control with shared borders, for related actions.",
-            covers: &["shadcn/ui: Button Group", "Origin UI: Button groups"],
-            code: r##"if let Some(i) = ButtonGroup::new(vec![
-    Button::new("Archive").icon(UiIcon::Inbox),
-    Button::new("Report"),
-    Button::new("Snooze").icon(UiIcon::Clock),
-]).show(ui) {
-    // handle click on button `i`
-}"##,
-            show: |ui| {
-                ui.add_space(70.0);
-                center(ui, 420.0, |ui| {
-                    ui.spacing_mut().item_spacing.y = 18.0;
-                    ButtonGroup::new(vec![Button::new("Archive").icon(UiIcon::Inbox), Button::new("Report"), Button::new("Snooze").icon(UiIcon::Clock)]).show(ui);
-                    ButtonGroup::new(vec![Button::icon_only(UiIcon::ChevronLeft), Button::new("Page 3 of 10"), Button::icon_only(UiIcon::ChevronRight)]).show(ui);
-                    ButtonGroup::new(vec![Button::new("Merge pull request"), Button::icon_only(UiIcon::ChevronDown)]).variant(ButtonVariant::Default).show(ui);
-                    ButtonGroup::new(vec![Button::new("Day"), Button::new("Week"), Button::new("Month"), Button::new("Year")]).size(ControlSize::Sm).variant(ButtonVariant::Secondary).show(ui);
-                });
-            },
-        },
-        Demo {
-            id: "toggle-group",
-            name: "Toggle & Toggle Group",
-            category: C,
-            description: "Pressed-state buttons, alone or joined into single- and multi-select groups: an editor toolbar.",
-            covers: &["shadcn/ui: Toggle", "shadcn/ui: Toggle Group", "Animate UI: Toggle Group"],
-            code: r##"ui.add(ToggleGroup::multi(&mut styles, [UiIcon::Bold, UiIcon::Italic, UiIcon::Underline]));
-ui.add(ToggleGroup::single(&mut align, [UiIcon::AlignLeft, UiIcon::AlignCenter, UiIcon::AlignRight]));
-ui.add(Toggle::new(&mut starred, ToggleItem::new(UiIcon::Star, "Star")).outline(true));"##,
-            show: |ui| {
-                ui.add_space(60.0);
-                with(ui, "tg", || (vec![true, false, false], 0usize, false, vec![false, true, false], 1usize), |ui, (styles, align, star, ghost, view)| {
-                    center(ui, 460.0, |ui| {
-                        ui.spacing_mut().item_spacing = vec2(10.0, 18.0);
-                        caption(ui, "Toolbar");
-                        ui.horizontal(|ui| {
-                            ui.add(ToggleGroup::multi(styles, [UiIcon::Bold, UiIcon::Italic, UiIcon::Underline]));
-                            ui.add(ToggleGroup::single(align, [UiIcon::AlignLeft, UiIcon::AlignCenter, UiIcon::AlignRight]));
-                            ui.add(Toggle::new(star, ToggleItem::new(UiIcon::Star, "Star")).outline(true));
-                        });
-                        caption(ui, "Ghost & labels");
-                        ui.horizontal(|ui| {
-                            ui.add(ToggleGroup::multi(ghost, [UiIcon::Bold, UiIcon::Italic, UiIcon::Underline]).outline(false));
-                            ui.add(ToggleGroup::single(view, [ToggleItem::new(UiIcon::List, "List"), ToggleItem::new(UiIcon::Grid, "Grid")]).size(ControlSize::Sm));
-                        });
-                    });
-                });
-            },
-        },
-        Demo {
             id: "segmented-control",
             name: "Segmented Control",
             category: C,
@@ -243,64 +190,6 @@ ui.add(Input::new(&mut user).label("Username").required(true)
                         ui.spacing_mut().item_spacing.y = 18.0;
                         ui.add(PasswordInput::new(pw).label("Password").strength_meter(true).width(340.0));
                         ui.add(PasswordInput::new(pw2).label("Confirm password").placeholder("Repeat password").width(340.0));
-                    });
-                });
-            },
-        },
-        Demo {
-            id: "search-input",
-            name: "Search Input",
-            category: C,
-            description: "Search fields with a magnifier, clear button and keyboard shortcut hint; square or pill.",
-            covers: &["Origin UI: Search input", "shadcn/ui: Command (search field)", "Kibo UI: Search", "Bencho: Search"],
-            code: r##"ui.add(SearchInput::new(&mut query).shortcut("⌘K"));
-ui.add(SearchInput::new(&mut query).pill(true).placeholder("Search docs…"));"##,
-            show: |ui| {
-                ui.add_space(90.0);
-                with(ui, "search", || (String::new(), "egui widgets".to_string()), |ui, (a, b)| {
-                    center(ui, 400.0, |ui| {
-                        ui.spacing_mut().item_spacing.y = 18.0;
-                        ui.add(SearchInput::new(a).shortcut("⌘K").width(400.0));
-                        ui.add(SearchInput::new(b).pill(true).placeholder("Search docs…").size(ControlSize::Lg).width(400.0));
-                    });
-                });
-            },
-        },
-        Demo {
-            id: "textarea",
-            name: "Textarea",
-            category: C,
-            description: "A multi-line field that grows with its content, with a live character counter.",
-            covers: &["shadcn/ui: Textarea", "Origin UI: Textarea", "Origin UI: Textarea with character limit"],
-            code: r##"ui.add(Textarea::new(&mut bio).label("Bio").placeholder("Tell us a little about yourself")
-    .max_len(180).description("Shown on your public profile."));"##,
-            show: |ui| {
-                ui.add_space(50.0);
-                with(ui, "ta", || "Rust developer building animated interfaces with egui. Coffee, synthwave and well-kerned type.".to_string(), |ui, bio| {
-                    center(ui, 440.0, |ui| {
-                        ui.add(Textarea::new(bio).label("Bio").placeholder("Tell us a little about yourself").max_len(180).description("Shown on your public profile.").width(440.0));
-                    });
-                });
-            },
-        },
-        Demo {
-            id: "number-input",
-            name: "Number Input",
-            category: C,
-            description: "A stepper with − / + buttons; the value slides when it changes and can be typed directly.",
-            covers: &["Origin UI: Number input", "Kibo UI: Number field", "Animate UI: Counter"],
-            code: r##"ui.add(NumberInput::new(&mut qty).range(0.0..=99.0).label("Quantity"));
-ui.add(NumberInput::new(&mut price).step(0.5).prefix("$").decimals(2).label("Price"));"##,
-            show: |ui| {
-                ui.add_space(90.0);
-                with(ui, "num", || (2u32, 19.5f64, 72.0f32), |ui, (qty, price, w)| {
-                    center(ui, 520.0, |ui| {
-                        ui.horizontal_top(|ui| {
-                            ui.spacing_mut().item_spacing.x = 24.0;
-                            ui.add(NumberInput::new(qty).range(0.0..=99.0).label("Quantity"));
-                            ui.add(NumberInput::new(price).step(0.5).prefix("$").decimals(2).range(0.0..=1000.0).label("Price"));
-                            ui.add(NumberInput::new(w).step(0.5).suffix(" kg").decimals(1).range(0.0..=300.0).label("Weight").size(ControlSize::Lg));
-                        });
                     });
                 });
             },
@@ -383,42 +272,6 @@ ui.add(Checkbox::new(&mut tasks[0]).label("Write documentation"));"##,
                                 ui.add(Checkbox::new(terms).label("Accept terms and conditions").description("You agree to our Terms of Service and Privacy Policy."));
                                 ui.add(Checkbox::new(&mut true).label("Disabled").disabled(true));
                                 ui.add(Checkbox::new(&mut true).label("Custom color").color(Theme::of(ui).success));
-                            });
-                        });
-                    });
-                });
-            },
-        },
-        Demo {
-            id: "radio-group",
-            name: "Radio Group",
-            category: C,
-            description: "Single choice with a springy dot; also as selectable cards with descriptions.",
-            covers: &["shadcn/ui: Radio Group", "Animate UI: Radio Group", "Origin UI: Radio cards"],
-            code: r##"ui.add(RadioGroup::new(&mut density, ["Default", "Comfortable", "Compact"]));
-ui.add(RadioGroup::new(&mut plan, [
-    RadioOption::new("Starter", "$9/mo · 1 project"),
-    RadioOption::new("Pro", "$29/mo · Unlimited projects"),
-]).cards(true));"##,
-            show: |ui| {
-                ui.add_space(50.0);
-                with(ui, "radio", || (0usize, 1usize), |ui, (density, plan)| {
-                    center(ui, 600.0, |ui| {
-                        ui.horizontal_top(|ui| {
-                            ui.spacing_mut().item_spacing.x = 40.0;
-                            col(ui, 180.0, |ui| {
-                                caption(ui, "Density");
-                                ui.add_space(4.0);
-                                ui.add(RadioGroup::new(density, ["Default", "Comfortable", "Compact"]));
-                            });
-                            col(ui, 360.0, |ui| {
-                                caption(ui, "Plan");
-                                ui.add_space(4.0);
-                                ui.add(
-                                    RadioGroup::new(plan, [RadioOption::new("Starter", "$9 / month · 1 project · Community support"), RadioOption::new("Pro", "$29 / month · Unlimited projects · Priority support"), RadioOption::new("Enterprise", "Custom pricing · SSO · Dedicated success manager")])
-                                        .cards(true)
-                                        .card_width(360.0),
-                                );
                             });
                         });
                     });
@@ -517,12 +370,12 @@ ui.add(Combobox::new(&mut framework, ["Next.js", "SvelteKit", "Nuxt", "Remix", "
                         ui.spacing_mut().item_spacing.y = 10.0;
                         ui.add(FieldLabel::new("Verification code"));
                         ui.add(OtpInput::new(a).length(6).separator_after(3));
-                        ui.add(FieldDescription::new("Enter the 6-digit code we sent to ada@lovelace.dev"));
+                        super::field::field_description(ui, "Enter the 6-digit code we sent to ada@lovelace.dev");
                         ui.add_space(12.0);
                         ui.add(OtpInput::new(b).length(4).joined(true).box_size(vec2(44.0, 44.0)));
                         ui.add_space(12.0);
                         ui.add(OtpInput::new(c).length(4).error(true).masked(true));
-                        ui.add(FieldError::new("Incorrect PIN. 2 attempts left."));
+                        super::field::field_error(ui, "Incorrect PIN. 2 attempts left.");
                     });
                 });
             },
@@ -648,45 +501,6 @@ ui.add(DatePicker::range(&mut from, &mut to));"##,
                             });
                             col(ui, 370.0, |ui| {
                                 ui.add(FileDropzone::new(&mut Vec::new()).title("Drop files here").hint("Drag-hover state").force_active(true).width(370.0));
-                            });
-                        });
-                    });
-                });
-            },
-        },
-        Demo {
-            id: "form",
-            name: "Form",
-            category: C,
-            description: "A complete account form composed from labels, inputs, selects, checkboxes, validation messages and buttons.",
-            covers: &["shadcn/ui: Form", "shadcn/ui: Label", "shadcn/ui: Field", "Origin UI: Form fields"],
-            code: r##"ui.add(Input::new(&mut name).label("Full name").required(true));
-ui.add(Input::new(&mut email).label("Email").icon(UiIcon::Mail)
-    .error_opt((!email.contains('@')).then(|| "Enter a valid email address.".into())));
-ui.add(Select::new(&mut role, ["Developer", "Designer", "Manager"]).label("Role"));
-ui.add(Checkbox::new(&mut agree).label("I agree to the terms"));
-if ui.add(Button::new("Create account").width(f32::INFINITY)).clicked() { /* submit */ }"##,
-            show: |ui| {
-                ui.add_space(4.0);
-                with(ui, "form", || ("Ada Lovelace".to_string(), "ada@".to_string(), Some(0usize), false, String::new()), |ui, (name, email, role, agree, pw)| {
-                    center(ui, 420.0, |ui| {
-                        panel(ui, 420.0, |ui| {
-                            ui.spacing_mut().item_spacing.y = 14.0;
-                            title(ui, "Create an account", "Enter your details below to get started.");
-                            ui.add_space(2.0);
-                            let w = 380.0;
-                            ui.add(Input::new(name).label("Full name").required(true).width(w));
-                            let err = (!email.contains('@') || !email.contains('.')).then(|| "Enter a valid email address.".to_string());
-                            ui.add(Input::new(email).label("Email").required(true).icon(UiIcon::Mail).placeholder("you@example.com").error_opt(err).width(w));
-                            ui.horizontal_top(|ui| {
-                                ui.spacing_mut().item_spacing.x = 12.0;
-                                ui.add(Select::new(role, ["Developer", "Designer", "Product manager", "Founder"]).label("Role").width((w - 12.0) / 2.0).id_salt("role"));
-                                ui.add(PasswordInput::new(pw).label("Password").width((w - 12.0) / 2.0).placeholder("••••••••"));
-                            });
-                            ui.add(Checkbox::new(agree).label("I agree to the Terms and Privacy Policy"));
-                            ui.horizontal(|ui| {
-                                ui.add(Button::new("Cancel").variant(ButtonVariant::Outline).width((w - 8.0) / 2.0));
-                                ui.add(Button::new("Create account").disabled(!*agree).width((w - 8.0) / 2.0));
                             });
                         });
                     });
