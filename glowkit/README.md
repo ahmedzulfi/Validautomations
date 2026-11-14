@@ -20,7 +20,7 @@ Aceternity, Motion Primitives, shadcn/ui, AI Elements, Evil Charts, ...). Rust d
 had nothing like it. glowkit brings that whole world to Rust:
 
 * **Hundreds of components** across text animations, backgrounds, buttons, cards & borders,
-  cursor effects, motion & layout, inputs, navigation, overlays, data display, loaders, charts, AI, 3D and page blocks.
+  cursor effects, motion & layout, inputs, navigation, overlays, data display, loaders, charts, AI, 3D, canvas editors, page sections, dashboards and full app templates.
 * **A real motion engine.** Springs, keyframes, GSAP-style timelines, variants with stagger, enter/exit presence, layout animations, drag with inertia.
 * **3D without the setup.** A built-in software 3D renderer draws lit, depth-sorted meshes straight into egui: no wgpu boilerplate.
 * **Native everywhere.** One codebase runs as a native app on Windows, macOS and Linux, and in
@@ -94,6 +94,8 @@ cargo run --release -p glowkit-gallery  # every component
 | `glowkit-blocks` | `blocks` | Hero sections, feature grids, bento, pricing, testimonials, terminals, globes, device mockups |
 | `glowkit-motion` | `motion` | Framer-Motion-style engine: animated values, keyframes, timelines, variants, presence, layout (FLIP), drag & gestures, scroll-linked motion, path motion, shape morphing |
 | `glowkit-3d` | `three-d` | Real-time 3D inside egui: camera, orbit controls, meshes & OBJ loading, lighting & materials, particle clouds, terrains, 3D cards, globes, voxel text |
+| `glowkit-canvas` | `canvas` | Infinite canvas, node editor (React Flow style), whiteboard, kanban, gantt, mind map, timeline editor, data grid, org chart, signature pad |
+| `glowkit-templates` | `templates` | MVP-Blocks-style sections, full pages (landing, auth, 404, pricing...), dashboard shells and 15 app templates |
 
 Browse everything in the **[live gallery](https://glowkit-rs.github.io/glowkit/gallery/)**, or run it locally:
 
