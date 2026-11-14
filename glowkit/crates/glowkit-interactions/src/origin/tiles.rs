@@ -327,7 +327,7 @@ impl Widget for CorollaGleam {
         painter.rect_filled(rect, 0.0, bg);
         let film = self.film.clone().unwrap_or_else(|| vec![hex("#FF8AD8"), hex("#8B5CF6"), hex("#4F46E5"), hex("#14B8A6"), hex("#F59E0B"), hex("#F472B6")]);
         let unit = rect.height().min(rect.width() * 0.55);
-        let cam = Cam { center: pos2(rect.center().x, rect.max.y - unit * 0.06), focal: unit * 3.5, dist: 7.0 };
+        let cam = Cam { center: pos2(rect.center().x, rect.max.y + unit * 0.04), focal: unit * 3.5, dist: 7.0 };
         let yaw = time * 0.18 * self.speed + lean.x * 0.4;
         let pitch = 0.62 + lean.y * 0.12;
         let breathe = 1.0 + (time * 0.9).sin() * 0.04;

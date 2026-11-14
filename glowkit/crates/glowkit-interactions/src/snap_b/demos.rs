@@ -387,12 +387,12 @@ ui.add(ArcCarousel::new(&items).curve(1.0).autoplay(2.8));"##,
             category: Category::ThreeD,
             description: "An endless 3D corridor with pictures on all four walls and a fine wireframe gliding toward you; click to pause, hold to rush.",
             covers: &["Snapblocks: Image Tunnel"],
-            code: r##"ui.add(ImageTunnel::new().title("Into the archive").speed(1.0).density(1.0));"##,
+            code: r##"ui.add(ImageTunnel::new().title("Into the archive").speed(1.0).density(1.4));"##,
             show: |ui| {
                 bench(
                     ui,
                     380.0,
-                    [1.0, 1.0],
+                    [1.0, 1.4],
                     |ui, p| {
                         ui.add(ImageTunnel::new().speed(p[0]).density(p[1]));
                     },

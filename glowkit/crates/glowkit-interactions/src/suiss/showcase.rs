@@ -98,6 +98,9 @@ impl egui::Widget for HoverImageList {
         let idle = idle_for(ui, id, response.hovered());
         let mut pointer = response.hover_pos();
         let mut ghost = None;
+        if self.autoplay && !response.hovered() {
+            ui.ctx().request_repaint_after(std::time::Duration::from_millis(150));
+        }
         if self.autoplay && !response.hovered() && idle > GHOST_DELAY {
             let e = (idle - GHOST_DELAY) % 8.0;
             let ky = keys(e, &[(0.0, -0.3), (0.6, 0.5), (1.8, 0.5), (2.6, 1.5), (3.6, 1.5), (4.4, 2.5), (5.6, 2.4), (6.6, 0.6), (7.2, -0.4)]);
@@ -294,6 +297,9 @@ impl egui::Widget for SplitShowcase {
         let idle = idle_for(ui, id, response.hovered());
         let mut pointer = response.hover_pos();
         let mut ghost = None;
+        if self.autoplay && !response.hovered() {
+            ui.ctx().request_repaint_after(std::time::Duration::from_millis(150));
+        }
         if self.autoplay && !response.hovered() && idle > GHOST_DELAY {
             let e = (idle - GHOST_DELAY) % 6.0;
             let kx = keys(e, &[(0.0, 0.5), (0.5, 0.27), (2.2, 0.3), (2.9, 0.72), (4.6, 0.7), (5.4, 0.5)]);

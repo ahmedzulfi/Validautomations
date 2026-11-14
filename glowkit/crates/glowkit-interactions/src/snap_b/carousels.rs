@@ -554,7 +554,7 @@ impl ImageTunnel {
             textures: Vec::new(),
             height: 380.0,
             speed: 1.0,
-            density: 1.0,
+            density: 1.4,
             title: "Into the archive".into(),
             subtitle: "Click to pause · hold to rush ahead".into(),
         }

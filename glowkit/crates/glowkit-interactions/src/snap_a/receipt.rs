@@ -213,7 +213,7 @@ fn paint_sea(painter: &egui::Painter, r: Rect, hour: f32, time: f32) {
     });
     // sun / moon
     let night = (hour - 1.0).clamp(0.0, 1.0);
-    let sun = pos2(r.min.x + r.width() * 0.22, r.min.y + r.height() * (0.5 - 0.22 * (1.0 - (hour - 0.9).abs().min(1.0))));
+    let sun = pos2(r.min.x + r.width() * 0.84, r.min.y + r.height() * (0.5 - 0.22 * (1.0 - (hour - 0.9).abs().min(1.0))));
     paint::glow(painter, sun, 40.0, with_alpha(lerp_c(hex("#FFE7C2"), hex("#DDE6FF"), night), 0.5));
     painter.circle_filled(sun, 11.0, lerp_c(hex("#FFF4DF"), hex("#F2F4FF"), night));
     if night > 0.3 {
@@ -314,7 +314,7 @@ impl Widget for ReceiptPrinter {
                         s.plan = (s.plan + 1) % n;
                         s.rewinding = s.feed > 0.0;
                     }
-                    s.auto_t = 3.6;
+                    s.auto_t = 4.6;
                 }
             }
             // drag the paper down to tear it off
@@ -341,7 +341,7 @@ impl Widget for ReceiptPrinter {
                     s.shown = s.plan;
                 }
                 if s.torn.is_none_or(|(tt, _, _)| tt > 0.5) {
-                    s.feed = (s.feed + dt * 0.42 * speed).min(1.0);
+                    s.feed = (s.feed + dt * 0.62 * speed).min(1.0);
                 }
             }
             if let Some((tt, v, a)) = s.torn.as_mut() {

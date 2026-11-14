@@ -93,6 +93,9 @@ impl egui::Widget for FlipLetters {
         let idle = idle_for(ui, id, response.hovered());
         let mut pointer = response.hover_pos();
         let mut ghost = None;
+        if self.autoplay && !response.hovered() {
+            ui.ctx().request_repaint_after(std::time::Duration::from_millis(150));
+        }
         if self.autoplay && !response.hovered() && idle > GHOST_DELAY {
             let e = (idle - GHOST_DELAY) % 4.0;
             let u = ramp(e, 0.4, 1.8);
@@ -263,19 +266,19 @@ impl egui::Widget for TextReel {
             return response;
         }
         let painter = ui.painter_at(rect);
-        let cy = rect.center().y + self.size * 0.25;
-        let label_y = cy - self.size * 0.95;
+        let cy = rect.center().y - self.size * 0.6;
+        let label_y = cy - self.size * 0.85;
         // label, spaced
         let spaced: String = self.label.chars().flat_map(|c| [c, '\u{2009}', '\u{2009}']).collect();
         text(&painter, pos2(rect.center().x, label_y), Align2::CENTER_CENTER, spaced.trim_end(), 12.5, t.muted_foreground);
-        let reel = Rect::from_min_max(pos2(rect.min.x, label_y + 12.0), rect.max);
+        let reel = Rect::from_min_max(pos2(rect.min.x, cy - self.size * 0.62), rect.max);
         let clip = painter.with_clip_rect(reel);
         let k0 = s.pos.floor() as i32 - 4;
         let speed_blur = (s.vel.abs() * spacing / 900.0).clamp(0.0, 1.0);
         for k in k0..k0 + 9 {
             let rel = k as f32 - s.pos;
             let y = cy + rel * spacing;
-            let d = (rel.abs() / 2.6).clamp(0.0, 1.0);
+            let d = (rel.max(rel * -3.0) / 3.2).clamp(0.0, 1.0);
             let word = &self.words[k.rem_euclid(self.words.len() as i32) as usize];
             let sc = 1.0 - 0.3 * d;
             let a = (1.0 - d).powf(1.3);

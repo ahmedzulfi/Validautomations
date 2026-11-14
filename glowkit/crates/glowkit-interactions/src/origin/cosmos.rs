@@ -324,7 +324,7 @@ impl ParticleSaturn {
     pub fn new() -> Self {
         Self {
             size: None,
-            body: 2400,
+            body: 3000,
             ring: 4200,
             tilt: 0.24,
             roll: -0.12,
@@ -418,13 +418,13 @@ impl ParticleSaturn {
             if let Some((s, _, _)) = cam.project(p) {
                 let lit = 0.45 + 0.55 * p.z.max(0.0);
                 let band = 0.75 + 0.25 * (y * 14.0).sin();
-                front.add(s, 0.8 * ds, lum(core, (lit * band * 1.1).min(1.0), add));
+                front.add(s, 0.9 * ds, lum(core, (lit * band * 1.25).min(1.0), add));
             }
         }
         // rings: radii with divisions
         for i in 0..self.ring {
             let seed = i as u64 * 104_729 + 3;
-            let mut r = 1.36 + h01(seed) * 0.92;
+            let mut r = 1.36 + h01(seed).powf(0.85) * 0.92;
             // carve the gaps (push particles out of them)
             if (1.86..1.96).contains(&r) {
                 r += 0.1;
@@ -460,6 +460,7 @@ impl ParticleSaturn {
         back.paint(&painter);
         // faint body disc so the back of the rings reads as hidden
         painter.circle_filled(center, disc_r, with_alpha(bg, 0.55));
+        painter.circle_filled(center, disc_r, if add { lum(core, 0.06, true) } else { with_alpha(core, 0.06) });
         front.paint(&painter);
     }
 }
@@ -850,6 +851,9 @@ impl CosmicOrb {
             painter.circle_stroke(c - off, r - 2.0, egui::Stroke::new(1.4, lum(hex("#4DA3FF"), 0.35 * lens, true)));
         }
         rim(r - 0.6, 1.2, lum(Color32::WHITE, 0.55, true));
+        if !t.dark {
+            painter.circle_stroke(c, r + 0.5, egui::Stroke::new(1.0, with_alpha(hex("#1E1B4B"), 0.3)));
+        }
         // specular
         paint::glow_ellipse(painter, c + vec2(-r * 0.38, -r * 0.48), vec2(r * 0.34, r * 0.16), lum(Color32::WHITE, 0.22, true));
         paint::glow(painter, c + vec2(-r * 0.45, -r * 0.5), r * 0.08, lum(Color32::WHITE, 0.55, true));

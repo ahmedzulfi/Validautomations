@@ -577,7 +577,7 @@ pub(crate) fn poly_shadow(painter: &Painter, pts: &[Pos2], offset: Vec2, spread:
 
 /// Real time since the last frame (clamped).
 pub(crate) fn wall_dt(ui: &Ui) -> f32 {
-    ui.input(|i| i.unstable_dt).clamp(0.0, 0.1)
+    ui.input(|i| i.unstable_dt).clamp(0.0, 0.25)
 }
 
 /// Seconds since the pointer last interacted with `response` (0 while interacting).
