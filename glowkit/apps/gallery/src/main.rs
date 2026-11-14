@@ -46,7 +46,7 @@ fn dump_json() -> String {
         }
         format!("\"{o}\"")
     }
-    let items: Vec<String> = glowkit::all_demos()
+    let items: Vec<String> = ui::showcase(glowkit::all_demos())
         .iter()
         .map(|d| {
             let covers: Vec<String> = d.covers.iter().map(|c| esc(c)).collect();

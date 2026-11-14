@@ -248,12 +248,54 @@ fn dot_field(p: &egui::Painter, area: Rect, t: &Theme, time: f32) {
     }
 }
 
+
+/// Gallery order: blocks and rich interactions first, primitives last.
+pub const CATEGORY_ORDER: [Category; 20] = [
+    Category::Blocks,
+    Category::MicroInteractions,
+    Category::Templates,
+    Category::Dashboards,
+    Category::Ai,
+    Category::Charts,
+    Category::Canvas,
+    Category::CardsAndBorders,
+    Category::TextAnimations,
+    Category::Backgrounds,
+    Category::Buttons,
+    Category::CursorAndInteraction,
+    Category::Motion,
+    Category::MotionEngine,
+    Category::ThreeD,
+    Category::Navigation,
+    Category::Overlays,
+    Category::DataDisplay,
+    Category::Inputs,
+    Category::Loaders,
+];
+
+/// Plain primitives that stay in the library (templates are built from them) but are not
+/// showcased in the gallery, which shows blocks and distinctive components only.
+pub const PRIMITIVES: [&str; 18] = [
+    "button", "input", "password-input", "switch", "checkbox", "slider", "select", "tag-input",
+    "segmented-control", "accordion", "avatar", "tooltip", "dialog", "sheet", "dropdown-menu", "navbar",
+    "stepper", "tabs",
+];
+
+/// Showcased demos in gallery order.
+pub fn showcase(mut demos: Vec<Demo>) -> Vec<Demo> {
+    demos.retain(|d| !PRIMITIVES.contains(&d.id));
+    let rank = |c: Category| CATEGORY_ORDER.iter().position(|x| *x == c).unwrap_or(usize::MAX);
+    demos.sort_by_key(|d| rank(d.category));
+    demos
+}
+
 // --------------------------------------------------------------------------------------------
 // Gallery
 // --------------------------------------------------------------------------------------------
 
 impl Gallery {
     pub fn new(ctx: &egui::Context, demos: Vec<Demo>, initial: Option<String>) -> Self {
+        let demos = showcase(demos);
         install_fonts(ctx);
         let themes = Theme::presets();
         // Light first.
@@ -365,11 +407,11 @@ impl Gallery {
         x += 140.0;
         if !narrow {
             let links: [(&str, Option<Category>); 5] = [
-                ("Components", None),
+                ("Blocks", Some(Category::Blocks)),
+                ("Interactions", Some(Category::MicroInteractions)),
                 ("Templates", Some(Category::Templates)),
                 ("Charts", Some(Category::Charts)),
                 ("AI", Some(Category::Ai)),
-                ("3D", Some(Category::ThreeD)),
             ];
             for (label, cat) in links {
                 let active = self.page == Page::Home && self.filter == cat && (cat.is_some() || self.search.is_empty());
@@ -504,14 +546,14 @@ impl Gallery {
                 dot_field(ui.painter(), deco, &t, time);
                 dot_field(ui.painter(), deco.translate(vec2(-(full.width() - 460.0), 60.0)), &t, time + 2.0);
                 let title = if ui.available_width() > 760.0 { 60.0 } else { 40.0 };
-                centered_text(ui, "Animated UI Components", display(title), t.foreground);
+                centered_text(ui, "Animated UI Blocks", display(title), t.foreground);
                 centered_text(ui, "for Rust", display(title), t.muted_foreground.lerp_to_gamma(t.foreground, 0.35));
                 ui.add_space(18.0);
                 centered_rich(
                     ui,
                     &[
                         ("A library of ", false),
-                        ("animated egui components", true),
+                        ("animated blocks", true),
                         (" and ", false),
                         ("micro-interactions", true),
                         (" you can ship in native Windows, macOS and Linux apps, or on the web.", false),
@@ -591,7 +633,7 @@ impl Gallery {
                         if chip(ui, "All", Some(self.demos.len()), self.filter.is_none()).clicked() {
                             self.filter = None;
                         }
-                        for cat in Category::ALL {
+                        for cat in CATEGORY_ORDER {
                             let n = self.demos.iter().filter(|d| d.category == cat).count();
                             if n == 0 {
                                 continue;
