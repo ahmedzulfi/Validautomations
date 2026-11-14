@@ -6,9 +6,9 @@
 # Requires: rustup target add wasm32-unknown-unknown && cargo install wasm-bindgen-cli
 set -euo pipefail
 cd "$(dirname "$0")/.."
-PROFILE="${PROFILE:-release}"
+PROFILE="${PROFILE:-web}"
 PKG="${PKG:-pkg}"
-FLAG="--release"; DIR="release"
+FLAG="--profile $PROFILE"; DIR="$PROFILE"
 if [ "$PROFILE" = "dev" ]; then FLAG=""; DIR="debug"; fi
 FEAT_ARGS=()
 if [ -n "${FEATURES:-}" ]; then FEAT_ARGS=(--no-default-features --features "$FEATURES"); fi
