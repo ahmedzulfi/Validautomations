@@ -116,5 +116,37 @@ app.show(ui);"##,
 app.show(ui);"##,
         show: |ui| run_demo(ui, || embedded::<ChatApp>(|a| a.scoped_theme = true), ChatApp::show),
     },
+    Demo {
+        id: "app-assistant",
+        name: "AI Assistant",
+        category: Category::Templates,
+        description: "Chat history in the sidebar, a conversation with streamed reasoning and Markdown answers, message actions, suggestions, attachments and a model picker in the composer.",
+        covers: &["ChatGPT: App layout", "Vercel AI Chatbot template", "shadcn/ui: AI chat"],
+        code: r##"let mut app = AssistantApp::default();
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<AssistantApp>(|a| a.scoped_theme = true), AssistantApp::show),
+    },
+    Demo {
+        id: "app-settings",
+        name: "Settings Pages",
+        category: Category::Templates,
+        description: "Profile, account, notifications, appearance (a theme picker that installs real themes, radius and density), billing plan cards with yearly pricing, and team roles.",
+        covers: &["shadcn/ui: Forms / Settings example", "Tailwind UI: Settings screens", "Vercel: Team settings"],
+        code: r##"let mut app = SettingsApp::default();
+app.route = "settings/billing".into();
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<SettingsApp>(|a| a.scoped_theme = true), SettingsApp::show),
+    },
+    Demo {
+        id: "app-settings-billing",
+        name: "Billing & Plans",
+        category: Category::Templates,
+        description: "The settings billing page: plan cards with a monthly / yearly switch, upgrade and downgrade actions, payment method and downloadable invoices.",
+        covers: &["Stripe: Customer portal", "Tailwind UI: Billing settings"],
+        code: r##"let mut app = SettingsApp::default();
+app.route = "settings/billing".into();
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<SettingsApp>(|a| { a.scoped_theme = true; a.route = "settings/billing".into(); }), SettingsApp::show),
+    },
     ]
 }

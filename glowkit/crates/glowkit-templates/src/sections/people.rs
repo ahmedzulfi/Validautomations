@@ -457,7 +457,7 @@ pub(crate) fn email_form(ui: &mut Ui, id: egui::Id, placeholder: &str, button: &
         ui.add_space(4.0);
         submit |= ui.add(Button::new(button).size(ControlSize::Lg).width(f32::INFINITY).fill(t.accent)).clicked();
     } else {
-        ui.horizontal(|ui| {
+        ui.with_layout(egui::Layout::left_to_right(Align::Min), |ui| {
             ui.spacing_mut().item_spacing.x = 8.0;
             let w = ui.available_width() - bw - 8.0;
             let r = field(ui, &mut st, w);

@@ -118,8 +118,7 @@ impl HeaderSection {
                 let fill = if t.dark { mix(t.card, t.popover, 0.5) } else { t.card };
                 painter.rect(bar, CornerRadius::same((h / 2.0) as u8), with_alpha(fill, 0.92), Stroke::new(1.0, t.border), StrokeKind::Inside);
             } else {
-                let full = Rect::from_min_max(pos2(bar.min.x - 2000.0, bar.max.y - 0.5), pos2(bar.max.x + 2000.0, bar.max.y + 0.5));
-                ui.painter().with_clip_rect(ui.clip_rect()).rect_filled(full, 0.0, t.border);
+                ui.painter().with_clip_rect(ui.clip_rect()).hline(sec.full_x, bar.max.y - 0.5, Stroke::new(1.0, t.border));
             }
             let inner = bar.shrink2(vec2(if floating { 10.0 } else { 0.0 }, 0.0));
             let mut clicked: Option<String> = None;

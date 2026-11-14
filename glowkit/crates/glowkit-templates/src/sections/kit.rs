@@ -327,6 +327,8 @@ pub(crate) struct Sec {
     pub elapsed: f32,
     /// The section has been on screen at least once.
     pub seen: bool,
+    /// Horizontal extent of the whole (full-bleed) section.
+    pub full_x: egui::Rangef,
 }
 
 impl Sec {
@@ -455,7 +457,7 @@ pub(crate) fn section(ui: &mut Ui, f: Frame, add: impl FnOnce(&mut Ui, &mut Sec)
     let cw = (full_w - gutter * 2.0).min(f.max_w).max(10.0);
     let cx = origin.x + full_w / 2.0;
     let content_rect = Rect::from_min_size(pos2(cx - cw / 2.0, origin.y + pad_y), vec2(cw, f32::INFINITY));
-    let mut sec = Sec { t: t.clone(), id: f.id, w: cw, narrow: cw < SECTION_STACK_BELOW, clicked: None, submitted: None, elapsed, seen };
+    let mut sec = Sec { t: t.clone(), id: f.id, w: cw, narrow: cw < SECTION_STACK_BELOW, clicked: None, submitted: None, elapsed, seen, full_x: bg_rect.x_range() };
     let mut child = ui.new_child(UiBuilder::new().max_rect(content_rect).layout(Layout::top_down(Align::Min)).id_salt(f.id));
     add(&mut child, &mut sec);
     let used = child.min_rect();

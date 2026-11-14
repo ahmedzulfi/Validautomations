@@ -200,7 +200,7 @@ impl MailApp {
         let title = folder[..1].to_uppercase() + &folder[1..];
         kit::text_at(&p, pos2(lr.min.x + 18.0, lr.min.y + 28.0), Align2::LEFT_CENTER, &title, 18.0, t.foreground, 160.0);
         let mut compose = false;
-        kit::child(ui, Rect::from_min_max(pos2(lr.max.x - 210.0, lr.min.y + 12.0), pos2(lr.max.x - 14.0, lr.min.y + 44.0)), |ui| {
+        kit::child(ui, Rect::from_min_max(pos2(lr.max.x - 280.0, lr.min.y + 12.0), pos2(lr.max.x - 14.0, lr.min.y + 44.0)), |ui| {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
                 let b = ui.add(Button::new("Compose").icon(UiIcon::Plus).size(ControlSize::Sm));
                 kit::tip(&b, "New message", Some("C"));
@@ -313,7 +313,7 @@ impl MailApp {
             }
         }
         let mut rx = tb.max.x - 12.0;
-        for (k, (icon, label)) in [(AppIcon::Ui(UiIcon::MoreHorizontal), "More"), (AppIcon::Reply, "Forward"), (AppIcon::Reply, "Reply all"), (AppIcon::Reply, "Reply")].iter().enumerate() {
+        for (k, (icon, label)) in [(AppIcon::Ui(UiIcon::MoreHorizontal), "More"), (AppIcon::Forward, "Forward"), (AppIcon::ReplyAll, "Reply all"), (AppIcon::Reply, "Reply")].iter().enumerate() {
             let br = Rect::from_center_size(pos2(rx - 16.0, tb.center().y), vec2(32.0, 32.0));
             let b = kit::icon_button(ui, br, id.with(("tr", k)), *icon, false);
             kit::tip(&b, label, None);

@@ -351,8 +351,9 @@ impl IntegrationsSection {
                         let painter = ui.painter_at(rect);
                         let time = glowkit_core::time(ui);
                         let slow = glowkit_core::anim::follow(ui, id.with("slow"), if resp.hovered() { 0.25 } else { 1.0 }, 4.0);
+                        let dt = glowkit_core::dt(ui);
                         let clock = glowkit_core::with_state(ui, id.with("clock"), || 0.0f32, |c| {
-                            *c += glowkit_core::dt(ui) * slow;
+                            *c += dt * slow;
                             *c
                         });
                         let r1 = h * 0.26;
@@ -850,10 +851,11 @@ fn post_meta(ui: &mut Ui, p: &BlogPost, i: usize, t: &Theme) {
 
 /// A post card with cover art; returns true when clicked.
 fn post_card(ui: &mut Ui, id: egui::Id, p: &BlogPost, i: usize, row_h: f32, cover_h: f32, t: &Theme) -> bool {
-    let out = card(ui, id, CardLook::of(t).pad(0.0).min_h(row_h).clickable(true), |ui| {
+    let out = card(ui, id, CardLook::of(t).pad(8.0).min_h(row_h).clickable(true), |ui| {
         let w = ui.available_width();
         let (r, _) = ui.allocate_exact_size(vec2(w, cover_h), Sense::hover());
-        let mut inner = ui.new_child(egui::UiBuilder::new().max_rect(Rect::from_min_size(pos2(r.min.x + 20.0, r.max.y + 18.0), vec2(w - 40.0, f32::INFINITY))).layout(egui::Layout::top_down(Align::Min)));
+        ui.add_space(10.0);
+        let mut inner = ui.new_child(egui::UiBuilder::new().max_rect(Rect::from_min_size(pos2(r.min.x + 12.0, ui.cursor().min.y), vec2(w - 24.0, f32::INFINITY))).layout(egui::Layout::top_down(Align::Min)));
         post_meta(&mut inner, p, i, t);
         inner.add_space(8.0);
         Tx::new(&p.title).size(18.0).semi().line(1.3).color(t.foreground).show(&mut inner);
@@ -865,22 +867,15 @@ fn post_card(ui: &mut Ui, id: egui::Id, p: &BlogPost, i: usize, row_h: f32, cove
             Tx::new(&p.author).size(13.0).color(t.foreground).show_inline(ui);
         });
         let used = inner.min_rect();
-        ui.advance_cursor_after_rect(Rect::from_min_max(r.min, pos2(r.max.x, used.max.y + 20.0)));
+        ui.advance_cursor_after_rect(Rect::from_min_max(r.min, pos2(r.max.x, used.max.y + 12.0)));
         r
     });
-    let lift = vec2(0.0, -2.0 * out.hover);
-    let r = out.inner.translate(lift);
-    let rad = ((t.radius * 1.4).round()) as u8;
+    let r = out.inner.translate(vec2(0.0, -2.0 * out.hover));
     let clip = ui.painter().with_clip_rect(r.intersect(ui.clip_rect()));
-    // zoom the art slightly on hover
-    let zoomed = r.expand(6.0 * out.hover);
-    paint_art(&clip, zoomed, i + 3, t, 0.0, glowkit_core::time(ui) * 0.2);
-    // round the top corners by painting the card fill over the corners' outside: simpler,
-    // re-stroke the card outline on top so the art sits inside the rounded frame
-    let card_r = out.rect.translate(lift);
-    ui.painter().rect_stroke(card_r, CornerRadius::same(rad), Stroke::new(6.0, t.card), StrokeKind::Outside);
-    ui.painter().rect_stroke(card_r, CornerRadius::same(rad), Stroke::new(1.0, mix(t.border, t.accent, 0.45 * out.hover)), StrokeKind::Inside);
-    ui.painter().hline(r.x_range(), r.max.y, Stroke::new(1.0, t.border));
+    // the cover zooms in slightly on hover
+    let rad = (t.radius * 1.4 - 8.0).max(4.0);
+    clip.rect_filled(r, CornerRadius::same(rad as u8), t.muted);
+    paint_art(&clip, r.expand(6.0 * out.hover), i + 3, t, rad + 6.0 * out.hover, glowkit_core::time(ui) * 0.2);
     out.response.clicked()
 }
 
@@ -1353,7 +1348,7 @@ impl StepsSection {
                 if lit > 0.5 {
                     p.circle_stroke(c, 30.0, Stroke::new(1.0, with_alpha(t.accent, 0.25 * lit)));
                 }
-                let g = p.layout_no_wrap(format!("{}", i + 1), FontId::proportional(18.0), Color32::WHITE);
+                let g = p.layout_no_wrap(format!("{}", i + 1), FontId::proportional(18.0), Color32::PLACEHOLDER);
                 let col = mix(t.muted_foreground, t.accent, lit);
                 p.galley(c - g.size() / 2.0, g.clone(), col);
                 p.galley(c - g.size() / 2.0 + vec2(0.7, 0.0), g, col);
