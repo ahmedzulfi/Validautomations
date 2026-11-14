@@ -13,10 +13,10 @@ First release.
 - `glowkit-core`: theme tokens with five presets, 31 easing curves, springs, clocks and
   triggers, gradient/glow/shadow painting, gradient text, fake blur, shader-style vertex grids,
   noise, OKLab color mixing and ligature-safe per-glyph text layout.
-- `glowkit-text`: 27 animated text effects.
-- `glowkit-backgrounds`: 36 animated backgrounds.
-- `glowkit-effects`: 21 animated buttons, 18 card and border effects, 14 cursor and interaction
-  effects, 23 motion and layout components.
+- `glowkit-text`: animated text effects (41 gallery entries).
+- `glowkit-backgrounds`: animated backgrounds (51 gallery entries across crates).
+- `glowkit-effects`: animated buttons, cards and borders, cursor effects, motion layouts, menus,
+  glass surfaces and scroll/reveal effects.
 - `glowkit-components`: everyday components (inputs and forms, loaders, data display,
   navigation, overlays and toasts).
 - `glowkit-charts`: 18 animated chart types.
@@ -27,5 +27,5 @@ First release.
 - `glowkit-canvas`: infinite canvas, node editor, whiteboard, kanban, gantt, mind map, timeline
   editor, data grid, org chart and signature pad.
 - `glowkit-templates`: marketing sections, pages, dashboard shells and app templates.
-- Gallery app (native and WebAssembly), landing website, generated parity catalog, examples,
-  and a customization guide.
+- Gallery app (native and WebAssembly) with 457 entries, landing website, generated parity catalog
+  (476/476 tracked components), examples, and a doc-tested customization guide.

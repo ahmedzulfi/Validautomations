@@ -19,7 +19,7 @@ The web has an incredible ecosystem of copy-paste animated components (React Bit
 Aceternity, Motion Primitives, shadcn/ui, AI Elements, Evil Charts, ...). Rust desktop apps have
 had nothing like it. glowkit brings that whole world to Rust:
 
-* **Hundreds of components** across text animations, backgrounds, buttons, cards & borders,
+* **457 gallery entries** across text animations, backgrounds, buttons, cards & borders,
   cursor effects, motion & layout, inputs, navigation, overlays, data display, loaders, charts, AI, 3D, canvas editors, page sections, dashboards and full app templates.
 * **A real motion engine.** Springs, keyframes, GSAP-style timelines, variants with stagger, enter/exit presence, layout animations, drag with inertia.
 * **3D without the setup.** A built-in software 3D renderer draws lit, depth-sorted meshes straight into egui: no wgpu boilerplate.
@@ -31,8 +31,12 @@ had nothing like it. glowkit brings that whole world to Rust:
 * **Animation engine included.** 31 easing curves, springs, staggering, triggers
   (on appear / loop / hover / click), noise, gradients, glows and per-glyph text layout.
 * **Modular.** Each category is its own crate behind a cargo feature, so you only compile what you use.
+* **Parity with the web, measured.** [CATALOG.md](CATALOG.md) is generated from the code and maps
+  476 components from 12 popular web libraries (React Bits, Magic UI, Aceternity, Motion Primitives,
+  shadcn/ui, AI Elements, prompt-kit, ElevenLabs UI, Evil Charts, MVP Blocks, React Flow, Tremor) to
+  their glowkit equivalents: every one currently has a match. The lists are a snapshot; those
+  libraries keep growing, and PRs that update them are welcome.
 * **Original implementations.** glowkit recreates well-known UI *patterns* in Rust from scratch.
-  See [CATALOG.md](CATALOG.md) for a generated parity table against the popular web libraries.
 
 ## Quick start
 
