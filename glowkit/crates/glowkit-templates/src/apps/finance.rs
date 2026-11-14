@@ -3,14 +3,14 @@
 use egui::{pos2, vec2, Align2, Color32, Rect, Ui};
 use glowkit_charts::{BarChart, Datum, ProgressList, Series, Sparkline};
 use glowkit_components::{
-    toast, Button, ButtonVariant, ControlSize, Dialog, LineIcon, NumberInput, SegmentedControl, Select, Toast, UiIcon,
+    toast, Button, ButtonVariant, ControlSize, Dialog, LineIcon, SegmentedControl, Select, Toast, UiIcon,
 };
 use glowkit_core::color::with_alpha;
 use glowkit_core::{paint, Theme};
 
 use super::analytics::placeholder;
 use super::common::{demo_notes, demo_user, demo_workspaces, page_header, series};
-use crate::shells::kit;
+use crate::shells::{controls, kit};
 use crate::shells::{AppIcon, AppShell, NavItem, NavSection, ShellLayout, ShellNotification};
 
 /// A bank account in the [`FinanceApp`].
@@ -386,15 +386,7 @@ impl FinanceApp {
                 let w = ui.available_width();
                 ui.add(Select::new(&mut tr.0, names.clone()).label("From").width(w).id_salt("fin_from"));
                 ui.add(Select::new(&mut tr.1, names.clone()).label("To").width(w).id_salt("fin_to"));
-                ui.add(
-                    NumberInput::new(&mut tr.2)
-                        .label("Amount")
-                        .prefix("$")
-                        .range(1.0..=100_000.0)
-                        .step(50.0)
-                        .decimals(2)
-                        .width(w),
-                );
+                controls::amount_field(ui, &mut tr.2, "Amount", "$", 1.0..=100_000.0, w, "fin_amount");
             });
         if r.primary_clicked {
             let (f, to, amt) = self.transfer;

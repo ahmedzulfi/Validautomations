@@ -2,15 +2,15 @@
 
 use egui::{pos2, vec2, Align2, Color32, CursorIcon, Rect, Sense, Stroke, StrokeKind, Ui};
 use glowkit_components::{
-    toast, AvatarGroup, Breadcrumb, Button, ButtonVariant, ControlSize, Input, LineIcon, Toast, ToggleGroup, UiIcon,
+    toast, AvatarGroup, Button, ButtonVariant, ControlSize, Input, LineIcon, SegmentedControl, Toast, UiIcon,
 };
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
 
 use super::analytics::placeholder;
 use super::common::{demo_notes, demo_user, demo_workspaces};
-use crate::shells::kit;
 use crate::shells::sidebar_chevron;
+use crate::shells::{controls, kit};
 use crate::shells::{AppIcon, AppShell, NavItem, NavSection, ShellLayout, ShellNotification};
 
 /// One file or folder in the [`FileManagerApp`] tree.
@@ -218,7 +218,7 @@ impl FileManagerApp {
                 pos2(tb.min.x + 18.0, tb.center().y - 13.0),
                 pos2(tb.max.x - right_w - 10.0, tb.center().y + 13.0),
             ),
-            |ui| Breadcrumb::new(&items).size(14.0).max_items(3).show(ui),
+            |ui| controls::breadcrumb(ui, &items, 14.0, 3),
         );
         if let Some(i) = clicked {
             self.open(if i == 0 { None } else { Some(path[i - 1]) });
@@ -271,7 +271,7 @@ impl FileManagerApp {
         kit::put(
             ui,
             Rect::from_min_size(pos2(x - 72.0, cy - 16.0), vec2(72.0, 32.0)),
-            ToggleGroup::single(&mut self.view, [UiIcon::Grid, UiIcon::List]).size(ControlSize::Sm),
+            SegmentedControl::new(&mut self.view, [UiIcon::Grid, UiIcon::List]).size(ControlSize::Sm).width(72.0),
         );
         x -= 80.0;
         let sw = (x - (tb.max.x - right_w)).max(0.0);

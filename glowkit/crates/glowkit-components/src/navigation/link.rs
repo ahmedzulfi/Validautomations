@@ -1,8 +1,7 @@
 use crate::overlays::kit;
-use crate::overlays::LineIcon;
-use egui::{pos2, vec2, Align2, Color32, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget};
-use glowkit_core::color::{mix, with_alpha};
-use glowkit_core::{paint, Theme};
+use egui::{pos2, vec2, Align2, Color32, CursorIcon, FontId, Rect, Response, Sense, Stroke, Ui, Widget};
+use glowkit_core::color::with_alpha;
+use glowkit_core::Theme;
 
 /// Hover effect of an [`UnderlineLink`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]

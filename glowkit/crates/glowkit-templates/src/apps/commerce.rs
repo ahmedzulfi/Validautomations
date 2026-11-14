@@ -2,8 +2,8 @@
 
 use egui::{pos2, vec2, Align2, Color32, CursorIcon, Rect, Sense, Stroke, StrokeKind, Ui};
 use glowkit_components::{
-    toast, Alert, AlertVariant, Button, ButtonVariant, ControlSize, Input, LineIcon, Select, Tabs, TabsStyle, Toast,
-    ToggleGroup, UiIcon,
+    toast, Alert, AlertVariant, Button, ButtonVariant, ControlSize, Input, LineIcon, SegmentedControl, Select, Tabs,
+    TabsStyle, Toast, UiIcon,
 };
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{paint, Theme};
@@ -507,7 +507,7 @@ impl CommerceApp {
             kit::put(
                 ui,
                 Rect::from_min_size(pos2(bar.max.x - 72.0, cy - 16.0), vec2(72.0, 32.0)),
-                ToggleGroup::single(&mut self.view, [UiIcon::Grid, UiIcon::List]).size(ControlSize::Sm),
+                SegmentedControl::new(&mut self.view, [UiIcon::Grid, UiIcon::List]).size(ControlSize::Sm).width(72.0),
             );
             kit::put(
                 ui,

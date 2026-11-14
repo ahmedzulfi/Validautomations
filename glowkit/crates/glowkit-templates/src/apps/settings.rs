@@ -3,12 +3,13 @@
 use egui::{pos2, vec2, Align2, Color32, CursorIcon, Rect, Sense, Stroke, StrokeKind, Ui};
 use glowkit_components::{
     toast, AlertDialog, Badge, BadgeVariant, Button, ButtonVariant, CalendarDate, Checkbox, ControlSize, DatePicker,
-    Input, LineIcon, RadioGroup, RadioOption, SegmentedControl, Select, Slider, Switch, Textarea, Toast, UiIcon,
+    Input, LineIcon, SegmentedControl, Select, Slider, Switch, Toast, UiIcon,
 };
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{paint, Theme};
 
 use super::common::{demo_notes, demo_user, demo_workspaces};
+use crate::shells::controls::{self, MultilineField};
 use crate::shells::kit;
 use crate::shells::{AppIcon, AppShell, NavItem, NavSection, ShellContext, ShellLayout, ShellNotification};
 
@@ -259,7 +260,7 @@ impl SettingsApp {
                 .id_salt("set_email"),
         );
         ui.add(
-            Textarea::new(&mut self.bio)
+            MultilineField::new(&mut self.bio)
                 .label("Bio")
                 .description("You can @mention other users and organizations.")
                 .rows(3)
@@ -340,14 +341,15 @@ impl SettingsApp {
         let t = Theme::of(ui);
         let w = ui.available_width().min(640.0);
         ui.add(glowkit_components::FieldLabel::new("Notify me about…"));
-        ui.add(RadioGroup::new(
+        controls::radio_list(
+            ui,
             &mut self.notify,
-            [
-                RadioOption::new("All new messages", "Every message in every channel."),
-                RadioOption::new("Direct messages and mentions", "Only when someone talks to you."),
-                RadioOption::new("Nothing", "Turn off all notifications."),
+            &[
+                ("All new messages", "Every message in every channel."),
+                ("Direct messages and mentions", "Only when someone talks to you."),
+                ("Nothing", "Turn off all notifications."),
             ],
-        ));
+        );
         let r = kit::alloc_row(ui, 22.0);
         kit::text_at(ui.painter(), r.left_center(), Align2::LEFT_CENTER, "Email notifications", 15.0, t.foreground, w);
         let items = [

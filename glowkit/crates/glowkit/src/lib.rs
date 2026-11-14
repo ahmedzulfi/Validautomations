@@ -38,6 +38,8 @@ pub use glowkit_effects as effects;
 pub use glowkit_motion as motion;
 #[cfg(feature = "templates")]
 pub use glowkit_templates as templates;
+#[cfg(feature = "interactions")]
+pub use glowkit_interactions as interactions;
 #[cfg(feature = "text")]
 pub use glowkit_text as text;
 
@@ -82,6 +84,8 @@ pub fn all_demos() -> Vec<glowkit_core::demo::Demo> {
     v.extend(glowkit_canvas::demos());
     #[cfg(feature = "templates")]
     v.extend(glowkit_templates::demos());
+    #[cfg(feature = "interactions")]
+    v.extend(glowkit_interactions::demos());
     v.sort_by_key(|d| d.category);
     v
 }

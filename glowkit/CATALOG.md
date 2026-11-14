@@ -14,19 +14,19 @@ Some items are hard or impossible in an immediate-mode GPU painter without image
 | [React Bits](https://reactbits.dev) | 114 / 114 | 100% |
 | [Magic UI](https://magicui.design) | 69 / 69 | 100% |
 | [Aceternity UI](https://ui.aceternity.com) | 79 / 79 | 100% |
-| [Motion Primitives](https://motion-primitives.com) | 33 / 33 | 100% |
-| [shadcn/ui](https://ui.shadcn.com) | 58 / 58 | 100% |
+| [Motion Primitives](https://motion-primitives.com) | 31 / 33 | 94% |
+| [shadcn/ui](https://ui.shadcn.com) | 34 / 58 | 59% |
 | [Vercel AI Elements](https://ai-sdk.dev/elements) | 33 / 33 | 100% |
 | [prompt-kit](https://www.prompt-kit.com) | 19 / 19 | 100% |
 | [ElevenLabs UI](https://ui.elevenlabs.io) | 16 / 16 | 100% |
 | [Evil Charts](https://evilcharts.com) | 6 / 6 | 100% |
 | [MVP Blocks](https://blocks.mvp-subha.me) | 25 / 25 | 100% |
 | [React Flow](https://reactflow.dev) | 12 / 12 | 100% |
-| [Bencho](https://bencho.dev) | 47 / 47 | 100% |
+| [Bencho](https://bencho.dev) | 45 / 47 | 96% |
 | [Tremor](https://tremor.so) | 12 / 12 | 100% |
-| **Total** | **523 / 523** | **100%** |
+| **Total** | **495 / 523** | **95%** |
 
-glowkit itself ships **489** gallery entries.
+glowkit itself ships **458** gallery entries.
 
 ## React Bits
 
@@ -282,7 +282,7 @@ glowkit itself ships **489** gallery entries.
 | Meteors | ✅ `meteors` |
 | Moving Border | ✅ `moving-border-button` |
 | Multi Step Loader | ✅ `multi-step-loader` |
-| Navbar Menu | ✅ `navbar`, `navigation-menu` |
+| Navbar Menu | ✅ `navbar` |
 | Parallax Scroll | ✅ `scroll-linked` |
 | Placeholders And Vanish Input | ✅ `vanish-input` |
 | Pointer Highlight | ✅ `pointer-highlight` |
@@ -310,7 +310,7 @@ glowkit itself ships **489** gallery entries.
 | Gradient text | ✅ `gradient-text` |
 ## Motion Primitives
 
-33 of 33 covered.
+31 of 33 covered.
 
 | Component | glowkit |
 |---|---|
@@ -322,7 +322,7 @@ glowkit itself ships **489** gallery entries.
 | Carousel | ✅ `carousel` |
 | Cursor | ✅ `smooth-cursor` |
 | Dialog | ✅ `dialog` |
-| Disclosure | ✅ `collapsible` |
+| Disclosure | ⬜ open |
 | Dock | ✅ `dock` |
 | Glow Effect | ✅ `shiny-button` |
 | Image Comparison | ✅ `compare-slider` |
@@ -330,7 +330,7 @@ glowkit itself ships **489** gallery entries.
 | Infinite Slider | ✅ `marquee` |
 | Magnetic | ✅ `magnet`, `magnetic-button` |
 | Morphing Dialog | ✅ `expandable-card`, `shared-element` |
-| Morphing Popover | ✅ `popover` |
+| Morphing Popover | ⬜ open |
 | Progressive Blur | ✅ `gradual-blur` |
 | Scroll Progress | ✅ `scroll-linked` |
 | Sliding Number | ✅ `sliding-number` |
@@ -349,66 +349,66 @@ glowkit itself ships **489** gallery entries.
 | Transition Panel | ✅ `spring-presence` |
 ## shadcn/ui
 
-58 of 58 covered.
+34 of 58 covered.
 
 | Component | glowkit |
 |---|---|
 | Accordion | ✅ `accordion` |
-| Alert | ✅ `alert` |
+| Alert | ⬜ open |
 | Alert Dialog | ✅ `alert-dialog` |
-| Aspect Ratio | ✅ `aspect-ratio` |
+| Aspect Ratio | ⬜ open |
 | Avatar | ✅ `avatar` |
-| Badge | ✅ `badge` |
-| Breadcrumb | ✅ `breadcrumb` |
+| Badge | ⬜ open |
+| Breadcrumb | ⬜ open |
 | Button | ✅ `button` |
-| Button Group | ✅ `button-group` |
+| Button Group | ⬜ open |
 | Calendar | ✅ `calendar` |
-| Card | ✅ `card`, `hover-lift-card` |
+| Card | ✅ `hover-lift-card` |
 | Carousel | ✅ `carousel` |
 | Chart | ✅ `line-chart` |
 | Checkbox | ✅ `checkbox` |
-| Collapsible | ✅ `collapsible` |
+| Collapsible | ⬜ open |
 | Combobox | ✅ `select` |
-| Command | ✅ `command-palette`, `search-input` |
-| Context Menu | ✅ `context-menu` |
+| Command | ✅ `command-palette` |
+| Context Menu | ⬜ open |
 | Data Table | ✅ `data-table` |
 | Date Picker | ✅ `calendar` |
 | Dialog | ✅ `dialog` |
 | Drawer | ✅ `sheet` |
 | Dropdown Menu | ✅ `dropdown-menu` |
 | Empty | ✅ `empty-state` |
-| Field | ✅ `form` |
-| Form | ✅ `form` |
-| Hover Card | ✅ `hover-card` |
+| Field | ⬜ open |
+| Form | ⬜ open |
+| Hover Card | ⬜ open |
 | Input | ✅ `input` |
 | Input Group | ✅ `input` |
 | Input OTP | ✅ `otp-input` |
-| Item | ✅ `item` |
-| Kbd | ✅ `kbd` |
-| Label | ✅ `form` |
-| Menubar | ✅ `menubar` |
-| Navigation Menu | ✅ `navigation-menu` |
-| Pagination | ✅ `pagination` |
-| Popover | ✅ `popover` |
-| Progress | ✅ `bar-list`, `progress` |
-| Radio Group | ✅ `radio-group` |
+| Item | ⬜ open |
+| Kbd | ⬜ open |
+| Label | ⬜ open |
+| Menubar | ⬜ open |
+| Navigation Menu | ⬜ open |
+| Pagination | ⬜ open |
+| Popover | ⬜ open |
+| Progress | ✅ `bar-list` |
+| Radio Group | ⬜ open |
 | Resizable | ✅ `resizable` |
-| Scroll Area | ✅ `scroll-area` |
+| Scroll Area | ⬜ open |
 | Select | ✅ `select` |
-| Separator | ✅ `kbd` |
+| Separator | ⬜ open |
 | Sheet | ✅ `sheet` |
 | Sidebar | ✅ `shell-sidebar`, `sidebar` |
-| Skeleton | ✅ `skeleton` |
+| Skeleton | ⬜ open |
 | Slider | ✅ `slider` |
 | Sonner | ✅ `toast` |
 | Spinner | ✅ `spinner` |
 | Switch | ✅ `switch` |
-| Table | ✅ `data-table`, `table` |
+| Table | ✅ `data-table` |
 | Tabs | ✅ `animated-tabs`, `tabs` |
-| Textarea | ✅ `textarea` |
+| Textarea | ⬜ open |
 | Toast | ✅ `toast` |
-| Toggle | ✅ `toggle-group` |
-| Toggle Group | ✅ `toggle-group` |
+| Toggle | ⬜ open |
+| Toggle Group | ⬜ open |
 | Tooltip | ✅ `tooltip` |
 | Typography | ✅ `blog-post-page` |
 ## Vercel AI Elements
@@ -560,7 +560,7 @@ glowkit itself ships **489** gallery entries.
 | Undo Redo | ✅ `node-editor` |
 ## Bencho
 
-47 of 47 covered.
+45 of 47 covered.
 
 | Component | glowkit |
 |---|---|
@@ -608,9 +608,9 @@ glowkit itself ships **489** gallery entries.
 | Action node | ✅ `action-node` |
 | Assignees | ✅ `picker` |
 | Palette | ✅ `palette` |
-| Aspect ratio | ✅ `aspect-ratio` |
+| Aspect ratio | ⬜ open |
 | Dragging ball | ✅ `drag-ball` |
-| Search | ✅ `search-input` |
+| Search | ⬜ open |
 ## Tremor
 
 12 of 12 covered.
@@ -635,7 +635,7 @@ glowkit itself ships **489** gallery entries.
 * **21st.dev**: Pointer trail
 * **8bitcn**: Button
 * **Animata**: Wave Text
-* **Animate UI**: Accordion, Alert Dialog, Bottom Navigation, Button, Checkbox, Collapsible, Context Menu, Counter, Counting Number, Dialog, Dropdown Menu, Hover Card, Input, Input OTP, Loading, Menubar, Popover, Radio Group, Sheet, Sidebar, Slider, Switch, Tabs, Toast, Toggle Group, Tooltip
+* **Animate UI**: Accordion, Alert Dialog, Button, Checkbox, Dialog, Dropdown Menu, Input, Input OTP, Sheet, Sidebar, Slider, Switch, Tabs, Toast, Tooltip
 * **Anime.js**: timeline
 * **Apple**: Dynamic Island
 * **Apple Mail**: Three-pane layout
@@ -650,10 +650,10 @@ glowkit itself ships **489** gallery entries.
 * **Clerk**: Sign-in
 * **CodePen**: Liquid button, Matrix Digital Rain, Neon button
 * **Codrops**: Image Trail, elastic trails
-* **Cult UI**: Animated Link, Animated link, Dynamic Island, Expandable Tabs, Floating Nav, Glitch Text, Text Roll, Text Scramble, Text Wave
+* **Cult UI**: Animated Link, Animated link, Dynamic Island, Floating Nav, Glitch Text, Text Roll, Text Scramble, Text Wave
 * **DaVinci Resolve**: Edit page
 * **Datadog**: Live tail
-* **Dice UI**: Data Table, File Upload, Stepper, Tags Input
+* **Dice UI**: Data Table, File Upload, Tags Input
 * **Discord**: Server rail, Text channel
 * **Docusaurus**: TOC
 * **Dropbox**: Files
@@ -674,15 +674,14 @@ glowkit itself ships **489** gallery entries.
 * **Jira**: Board, Kanban
 * **Josh Comeau**: 3D button
 * **Kendo**: OrgChart
-* **Kibo UI**: AI Image, AI Loader, AI Response, AI Sources, AI Tool, Announcement, Avatar Stack, Banner, Breadcrumb, Card, Code Block, Color Picker, Combobox, Command, Description List, Dropzone, Empty, KPI, Kanban, Link, Mini Calendar, Number field, Pagination, Pill, Progress, Rating, Search, Status, Stepper, Table, Table of Contents, Tags, Timeline, Tour / Coachmark, Tree
+* **Kibo UI**: AI Image, AI Loader, AI Response, AI Sources, AI Tool, Avatar Stack, Code Block, Color Picker, Combobox, Command, Dropzone, Empty, KPI, Kanban, Link, Mini Calendar, Progress, Rating, Stepper, Table, Table of Contents, Tags, Timeline, Tour / Coachmark, Tree
 * **Kokonut UI**: AI Input
 * **LangGraph Studio**: Graph view
 * **Linear**: Board, Board view, Dual navigation, Project issues, Timeline, Upgrade prompt
 * **Lucidchart**: Org chart
 * **MUI**: Stepper
 * **Mantine**: Stepper
-* **Material**: Bottom navigation, Chips, Navigation rail, Ripple
-* **Material 3**: Navigation Bar
+* **Material**: Bottom navigation, Navigation rail, Ripple
 * **Media Chrome**: Time Range
 * **Medusa**: Admin dashboard
 * **Mercury**: Accounts home
@@ -694,13 +693,12 @@ glowkit itself ships **489** gallery entries.
 * **Nextra**: Docs theme, TOC
 * **Nivo**: Bar, Bar + Line, Calendar, Candlestick, Funnel, HeatMap, Line, Pie, Radar, Radial Bar, ScatterPlot, Stream, Swarm/Bubble, TimeRange, TreeMap
 * **Notion**: Timeline view
-* **Origin UI**: Accordion, Alert Dialog, Alerts, Avatar, Avatar group, Badges, Banner, Breadcrumb, Button groups, Buttons, Cards, Checkbox, Circular progress, Color picker, Command, Date range picker, Dialog, Drawer, Dropdown, Empty states, File upload, Form fields, Hover Card, Input with tags, Inputs, Kbd, Key-value, Link, List items, Navbar, Navbar with dropdown, Number input, OTP input, Pagination, Password input, Password strength, Popover, Progress, Radio cards, Range slider, Rating, Search input, Segmented control, Select, Sidebar, Skeleton, Slider, Spinner, Stats, Stepper, Switch, Tab bar, Table, Tables, Tabs, Tags / Chips, Textarea, Textarea with character limit, Timeline, Toast, Tooltip, Tour, Tree
+* **Origin UI**: Accordion, Alert Dialog, Avatar, Avatar group, Buttons, Checkbox, Circular progress, Color picker, Command, Date range picker, Dialog, Drawer, Dropdown, Empty states, File upload, Input with tags, Inputs, Link, Navbar, OTP input, Password input, Password strength, Range slider, Rating, Segmented control, Select, Sidebar, Slider, Spinner, Stats, Stepper, Switch, Tables, Tabs, Timeline, Toast, Tooltip, Tour, Tree
 * **Paper Shaders**: Grain Gradient, Mesh Gradient
 * **Pipedrive**: Pipeline
 * **Plotly**: 3D bars
 * **Premiere Pro**: Timeline
-* **Radix**: Context Menu, Dialog, Dropdown Menu, Hover Card, Menubar, Navigation Menu, Popover, Tooltip
-* **Radix UI**: Aspect Ratio, Scroll Area
+* **Radix**: Dialog, Dropdown Menu, Tooltip
 * **React Spring**: useSpring
 * **Recharts**: AreaChart, BarChart, ComposedChart, LineChart, PieChart, RadarChart, RadialBarChart, ScatterChart, Tiny Line/Area/Bar, Treemap
 * **Remotion**: Timeline
@@ -719,12 +717,12 @@ glowkit itself ships **489** gallery entries.
 * **Superhuman**: Inbox
 * **Swiper**: Coverflow
 * **Tailark**: About, Announcement, Blog, Call to Action, Contact, FAQs, Features, Footer, Header, Hero Section, Hero with Image, Integrations, Landing, Login, Logo Cloud, Newsletter, Not Found, Pricing, Sign Up, Stats, Steps, Team, Testimonials
-* **Tailwind UI**: Billing settings, CRM, Calendars, Chat, Description lists, Ecommerce admin, Empty states, File grid, Finance dashboard, Kanban, Mobile app shell, Product lists, Project list, Settings screens, Sidebar layout, Sign-in forms, Stacked layout, Stats + charts dashboard, Sticky header
+* **Tailwind UI**: Billing settings, CRM, Calendars, Chat, Ecommerce admin, Empty states, File grid, Finance dashboard, Kanban, Mobile app shell, Product lists, Project list, Settings screens, Sidebar layout, Sign-in forms, Stacked layout, Stats + charts dashboard, Sticky header
 * **TanStack Table**: Virtualized
 * **TradingView Lightweight Charts**: Candlestick
 * **Trello**: Board
 * **Twenty**: People table
-* **Uiverse**: 3D button, Animated border button, Animated border card, Arrow button, Confetti button, Dashed border animation, Day night toggle, File input, Glass card, Glow button, Gradient border button, Hover card, Liquid fill button, Loaders, Loading button, Loading text, Magnetic button, Neon button, Progress bars, Pulse button, Ripple button, Shimmer button, Skeleton loaders, Star rating
+* **Uiverse**: 3D button, Animated border button, Animated border card, Arrow button, Confetti button, Dashed border animation, Day night toggle, File input, Glass card, Glow button, Gradient border button, Hover card, Liquid fill button, Loaders, Loading button, Magnetic button, Neon button, Pulse button, Ripple button, Shimmer button, Star rating
 * **Unovis**: Area, Candlestick, Donut, Funnel, Grouped Bar / Stacked Bar, Heatmap, Line, Scatter, Treemap
 * **Unreal**: Material editor
 * **Vaul**: Drawer
@@ -745,7 +743,7 @@ glowkit itself ships **489** gallery entries.
 * **react-resizable-panels**: PanelGroup
 * **react-three-fiber**: Canvas, data viz
 * **rough.js**: Sketchy shapes
-* **shadcn blocks**: Announcement Bar, Navbar
+* **shadcn blocks**: Navbar
 * **shadcn-chatbot-kit**: Chat, Chat Message, Markdown Renderer, Message Input, Prompt Suggestions, Typing Indicator
 * **shadcnblocks**: 404, Banner, Blog, Blog Post, CTA, Changelog, Coming Soon, Compare, Contact, Error page, FAQ, Feature, Footer, Forgot Password, Gallery, Hero, Hero with Screenshot, Landing Page, Multi-step form, Order confirmation, Pricing, Pricing Page, Process, Profile, Stats, Team, Timeline
 * **simple-ai**: Chat, Chat Input, Workflow

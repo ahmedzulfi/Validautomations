@@ -1475,8 +1475,7 @@
     {
      "name": "Navbar Menu",
      "glowkit": [
-      "navbar",
-      "navigation-menu"
+      "navbar"
      ]
     },
     {
@@ -1638,7 +1637,7 @@
   {
    "name": "Motion Primitives",
    "url": "https://motion-primitives.com",
-   "have": 33,
+   "have": 31,
    "total": 33,
    "items": [
     {
@@ -1693,9 +1692,7 @@
     },
     {
      "name": "Disclosure",
-     "glowkit": [
-      "collapsible"
-     ]
+     "glowkit": []
     },
     {
      "name": "Dock",
@@ -1743,9 +1740,7 @@
     },
     {
      "name": "Morphing Popover",
-     "glowkit": [
-      "popover"
-     ]
+     "glowkit": []
     },
     {
      "name": "Progressive Blur",
@@ -1850,7 +1845,7 @@
   {
    "name": "shadcn/ui",
    "url": "https://ui.shadcn.com",
-   "have": 58,
+   "have": 34,
    "total": 58,
    "items": [
     {
@@ -1861,9 +1856,7 @@
     },
     {
      "name": "Alert",
-     "glowkit": [
-      "alert"
-     ]
+     "glowkit": []
     },
     {
      "name": "Alert Dialog",
@@ -1873,9 +1866,7 @@
     },
     {
      "name": "Aspect Ratio",
-     "glowkit": [
-      "aspect-ratio"
-     ]
+     "glowkit": []
     },
     {
      "name": "Avatar",
@@ -1885,15 +1876,11 @@
     },
     {
      "name": "Badge",
-     "glowkit": [
-      "badge"
-     ]
+     "glowkit": []
     },
     {
      "name": "Breadcrumb",
-     "glowkit": [
-      "breadcrumb"
-     ]
+     "glowkit": []
     },
     {
      "name": "Button",
@@ -1903,9 +1890,7 @@
     },
     {
      "name": "Button Group",
-     "glowkit": [
-      "button-group"
-     ]
+     "glowkit": []
     },
     {
      "name": "Calendar",
@@ -1916,8 +1901,7 @@
     {
      "name": "Card",
      "glowkit": [
-      "hover-lift-card",
-      "card"
+      "hover-lift-card"
      ]
     },
     {
@@ -1940,9 +1924,7 @@
     },
     {
      "name": "Collapsible",
-     "glowkit": [
-      "collapsible"
-     ]
+     "glowkit": []
     },
     {
      "name": "Combobox",
@@ -1953,15 +1935,12 @@
     {
      "name": "Command",
      "glowkit": [
-      "search-input",
       "command-palette"
      ]
     },
     {
      "name": "Context Menu",
-     "glowkit": [
-      "context-menu"
-     ]
+     "glowkit": []
     },
     {
      "name": "Data Table",
@@ -2001,21 +1980,15 @@
     },
     {
      "name": "Field",
-     "glowkit": [
-      "form"
-     ]
+     "glowkit": []
     },
     {
      "name": "Form",
-     "glowkit": [
-      "form"
-     ]
+     "glowkit": []
     },
     {
      "name": "Hover Card",
-     "glowkit": [
-      "hover-card"
-     ]
+     "glowkit": []
     },
     {
      "name": "Input",
@@ -2037,58 +2010,41 @@
     },
     {
      "name": "Item",
-     "glowkit": [
-      "item"
-     ]
+     "glowkit": []
     },
     {
      "name": "Kbd",
-     "glowkit": [
-      "kbd"
-     ]
+     "glowkit": []
     },
     {
      "name": "Label",
-     "glowkit": [
-      "form"
-     ]
+     "glowkit": []
     },
     {
      "name": "Menubar",
-     "glowkit": [
-      "menubar"
-     ]
+     "glowkit": []
     },
     {
      "name": "Navigation Menu",
-     "glowkit": [
-      "navigation-menu"
-     ]
+     "glowkit": []
     },
     {
      "name": "Pagination",
-     "glowkit": [
-      "pagination"
-     ]
+     "glowkit": []
     },
     {
      "name": "Popover",
-     "glowkit": [
-      "popover"
-     ]
+     "glowkit": []
     },
     {
      "name": "Progress",
      "glowkit": [
-      "progress",
       "bar-list"
      ]
     },
     {
      "name": "Radio Group",
-     "glowkit": [
-      "radio-group"
-     ]
+     "glowkit": []
     },
     {
      "name": "Resizable",
@@ -2098,9 +2054,7 @@
     },
     {
      "name": "Scroll Area",
-     "glowkit": [
-      "scroll-area"
-     ]
+     "glowkit": []
     },
     {
      "name": "Select",
@@ -2110,9 +2064,7 @@
     },
     {
      "name": "Separator",
-     "glowkit": [
-      "kbd"
-     ]
+     "glowkit": []
     },
     {
      "name": "Sheet",
@@ -2129,9 +2081,7 @@
     },
     {
      "name": "Skeleton",
-     "glowkit": [
-      "skeleton"
-     ]
+     "glowkit": []
     },
     {
      "name": "Slider",
@@ -2160,8 +2110,7 @@
     {
      "name": "Table",
      "glowkit": [
-      "data-table",
-      "table"
+      "data-table"
      ]
     },
     {
@@ -2173,9 +2122,7 @@
     },
     {
      "name": "Textarea",
-     "glowkit": [
-      "textarea"
-     ]
+     "glowkit": []
     },
     {
      "name": "Toast",
@@ -2185,15 +2132,11 @@
     },
     {
      "name": "Toggle",
-     "glowkit": [
-      "toggle-group"
-     ]
+     "glowkit": []
     },
     {
      "name": "Toggle Group",
-     "glowkit": [
-      "toggle-group"
-     ]
+     "glowkit": []
     },
     {
      "name": "Tooltip",
@@ -2929,7 +2872,7 @@
   {
    "name": "Bencho",
    "url": "https://bencho.dev",
-   "have": 47,
+   "have": 45,
    "total": 47,
    "items": [
     {
@@ -3198,9 +3141,7 @@
     },
     {
      "name": "Aspect ratio",
-     "glowkit": [
-      "aspect-ratio"
-     ]
+     "glowkit": []
     },
     {
      "name": "Dragging ball",
@@ -3210,9 +3151,7 @@
     },
     {
      "name": "Search",
-     "glowkit": [
-      "search-input"
-     ]
+     "glowkit": []
     }
    ]
   },
@@ -6250,19 +6189,6 @@
    "code": "ui.add(Spinner::new(SpinnerKind::Orbit).size(32.0));\nui.add(Spinner::new(SpinnerKind::Gradient).size(32.0).speed(1.5));\nui.add(Spinner::new(SpinnerKind::Bars).color(hex(\"#22C55E\")));"
   },
   {
-   "id": "progress",
-   "name": "Progress",
-   "category": "Loaders & Progress",
-   "description": "Linear progress bars that ease to their value, with labels, stripes, gradients and an indeterminate mode.",
-   "covers": [
-    "shadcn/ui: Progress",
-    "Origin UI: Progress",
-    "Uiverse: Progress bars",
-    "Kibo UI: Progress"
-   ],
-   "code": "ui.add(Progress::new(0.66).label(\"Uploading files\").show_percent(true));\nui.add(Progress::new(0.4).striped(true).gradient(true));\nui.add(Progress::indeterminate().height(4.0));"
-  },
-  {
    "id": "progress-ring",
    "name": "Progress Ring",
    "category": "Loaders & Progress",
@@ -6273,43 +6199,6 @@
     "Magic UI: Animated Circular Progress Bar"
    ],
    "code": "ui.add(ProgressRing::new(0.72).size(110.0).thickness(10.0).gradient(true).sublabel(\"Complete\"));\nui.add(ProgressRing::new(0.45).size(72.0));\nui.add(ProgressRing::indeterminate().size(40.0).thickness(4.0));"
-  },
-  {
-   "id": "skeleton",
-   "name": "Skeleton",
-   "category": "Loaders & Progress",
-   "description": "Placeholder blocks with one synchronized shimmer sweeping across the whole layout.",
-   "covers": [
-    "shadcn/ui: Skeleton",
-    "Origin UI: Skeleton",
-    "Uiverse: Skeleton loaders"
-   ],
-   "code": "ui.horizontal(|ui| {\n    ui.add(Skeleton::circle(44.0));\n    ui.vertical(|ui| {\n        ui.add(Skeleton::line(180.0));\n        ui.add(Skeleton::line(120.0));\n    });\n});\nui.add(Skeleton::new(egui::vec2(320.0, 160.0)));"
-  },
-  {
-   "id": "step-progress",
-   "name": "Step Progress",
-   "category": "Loaders & Progress",
-   "description": "A stepper whose connectors fill and check marks draw as you advance; the current step pulses.",
-   "covers": [
-    "Origin UI: Stepper",
-    "Kibo UI: Stepper",
-    "Dice UI: Stepper",
-    "shadcn/ui: Stepper"
-   ],
-   "code": "ui.add(StepProgress::new(&[\"Account\", \"Profile\", \"Billing\", \"Confirm\"], step)\n    .descriptions(&[\"Create login\", \"Your details\", \"Payment\", \"Review\"]));"
-  },
-  {
-   "id": "loading-dots",
-   "name": "Loading Dots",
-   "category": "Loaders & Progress",
-   "description": "Inline busy text with bouncing ellipsis dots, plus spinners inside buttons and status rows.",
-   "covers": [
-    "Uiverse: Loading text",
-    "Magic UI: Typing dots",
-    "Animate UI: Loading"
-   ],
-   "code": "ui.add(LoadingDots::new(\"Generating response\"));\nui.add(Button::new(\"Deploying\").loading(true));"
   },
   {
    "id": "multi-step-loader",
@@ -6332,29 +6221,6 @@
     "Animate UI: Button"
    ],
    "code": "ui.add(Button::new(\"Save changes\"));\nui.add(Button::new(\"Secondary\").variant(ButtonVariant::Secondary));\nui.add(Button::new(\"Delete\").variant(ButtonVariant::Destructive).icon(UiIcon::Trash));\nui.add(Button::new(\"Continue\").variant(ButtonVariant::Outline).trailing_icon(UiIcon::ArrowRight));\nui.add(Button::new(\"Please wait\").loading(true));\nui.add(Button::icon_only(UiIcon::Settings).variant(ButtonVariant::Outline));"
-  },
-  {
-   "id": "button-group",
-   "name": "Button Group",
-   "category": "Inputs & Forms",
-   "description": "Buttons joined into one control with shared borders, for related actions.",
-   "covers": [
-    "shadcn/ui: Button Group",
-    "Origin UI: Button groups"
-   ],
-   "code": "if let Some(i) = ButtonGroup::new(vec![\n    Button::new(\"Archive\").icon(UiIcon::Inbox),\n    Button::new(\"Report\"),\n    Button::new(\"Snooze\").icon(UiIcon::Clock),\n]).show(ui) {\n    // handle click on button `i`\n}"
-  },
-  {
-   "id": "toggle-group",
-   "name": "Toggle & Toggle Group",
-   "category": "Inputs & Forms",
-   "description": "Pressed-state buttons, alone or joined into single- and multi-select groups: an editor toolbar.",
-   "covers": [
-    "shadcn/ui: Toggle",
-    "shadcn/ui: Toggle Group",
-    "Animate UI: Toggle Group"
-   ],
-   "code": "ui.add(ToggleGroup::multi(&mut styles, [UiIcon::Bold, UiIcon::Italic, UiIcon::Underline]));\nui.add(ToggleGroup::single(&mut align, [UiIcon::AlignLeft, UiIcon::AlignCenter, UiIcon::AlignRight]));\nui.add(Toggle::new(&mut starred, ToggleItem::new(UiIcon::Star, \"Star\")).outline(true));"
   },
   {
    "id": "segmented-control",
@@ -6394,43 +6260,6 @@
    "code": "ui.add(PasswordInput::new(&mut pw).label(\"Password\").strength_meter(true));"
   },
   {
-   "id": "search-input",
-   "name": "Search Input",
-   "category": "Inputs & Forms",
-   "description": "Search fields with a magnifier, clear button and keyboard shortcut hint; square or pill.",
-   "covers": [
-    "Origin UI: Search input",
-    "shadcn/ui: Command (search field)",
-    "Kibo UI: Search",
-    "Bencho: Search"
-   ],
-   "code": "ui.add(SearchInput::new(&mut query).shortcut(\"\u2318K\"));\nui.add(SearchInput::new(&mut query).pill(true).placeholder(\"Search docs\u2026\"));"
-  },
-  {
-   "id": "textarea",
-   "name": "Textarea",
-   "category": "Inputs & Forms",
-   "description": "A multi-line field that grows with its content, with a live character counter.",
-   "covers": [
-    "shadcn/ui: Textarea",
-    "Origin UI: Textarea",
-    "Origin UI: Textarea with character limit"
-   ],
-   "code": "ui.add(Textarea::new(&mut bio).label(\"Bio\").placeholder(\"Tell us a little about yourself\")\n    .max_len(180).description(\"Shown on your public profile.\"));"
-  },
-  {
-   "id": "number-input",
-   "name": "Number Input",
-   "category": "Inputs & Forms",
-   "description": "A stepper with \u2212 / + buttons; the value slides when it changes and can be typed directly.",
-   "covers": [
-    "Origin UI: Number input",
-    "Kibo UI: Number field",
-    "Animate UI: Counter"
-   ],
-   "code": "ui.add(NumberInput::new(&mut qty).range(0.0..=99.0).label(\"Quantity\"));\nui.add(NumberInput::new(&mut price).step(0.5).prefix(\"$\").decimals(2).label(\"Price\"));"
-  },
-  {
    "id": "switch",
    "name": "Switch",
    "category": "Inputs & Forms",
@@ -6453,18 +6282,6 @@
     "Origin UI: Checkbox"
    ],
    "code": "let all = tasks.iter().all(|t| *t);\nlet some = tasks.iter().any(|t| *t);\nlet mut parent = all;\nif ui.add(Checkbox::new(&mut parent).label(\"Select all\").indeterminate(some && !all)).changed() {\n    tasks.iter_mut().for_each(|t| *t = parent);\n}\nui.add(Checkbox::new(&mut tasks[0]).label(\"Write documentation\"));"
-  },
-  {
-   "id": "radio-group",
-   "name": "Radio Group",
-   "category": "Inputs & Forms",
-   "description": "Single choice with a springy dot; also as selectable cards with descriptions.",
-   "covers": [
-    "shadcn/ui: Radio Group",
-    "Animate UI: Radio Group",
-    "Origin UI: Radio cards"
-   ],
-   "code": "ui.add(RadioGroup::new(&mut density, [\"Default\", \"Comfortable\", \"Compact\"]));\nui.add(RadioGroup::new(&mut plan, [\n    RadioOption::new(\"Starter\", \"$9/mo \u00b7 1 project\"),\n    RadioOption::new(\"Pro\", \"$29/mo \u00b7 Unlimited projects\"),\n]).cards(true));"
   },
   {
    "id": "slider",
@@ -6570,19 +6387,6 @@
    "code": "ui.add(FileDropzone::new(&mut files)\n    .hint(\"PNG, JPG or PDF up to 10 MB\")\n    .on_drop(|f| println!(\"got {:?}\", f.path())));"
   },
   {
-   "id": "form",
-   "name": "Form",
-   "category": "Inputs & Forms",
-   "description": "A complete account form composed from labels, inputs, selects, checkboxes, validation messages and buttons.",
-   "covers": [
-    "shadcn/ui: Form",
-    "shadcn/ui: Label",
-    "shadcn/ui: Field",
-    "Origin UI: Form fields"
-   ],
-   "code": "ui.add(Input::new(&mut name).label(\"Full name\").required(true));\nui.add(Input::new(&mut email).label(\"Email\").icon(UiIcon::Mail)\n    .error_opt((!email.contains('@')).then(|| \"Enter a valid email address.\".into())));\nui.add(Select::new(&mut role, [\"Developer\", \"Designer\", \"Manager\"]).label(\"Role\"));\nui.add(Checkbox::new(&mut agree).label(\"I agree to the terms\"));\nif ui.add(Button::new(\"Create account\").width(f32::INFINITY)).clicked() { /* submit */ }"
-  },
-  {
    "id": "vanish-input",
    "name": "Placeholders & Vanish Input",
    "category": "Inputs & Forms",
@@ -6668,30 +6472,6 @@
    "code": "ui.add(Tabs::new(&mut tab, &[\"Account\", \"Password\", \"Settings\"]));\nui.add(Tabs::new(&mut tab2, &[\"Overview\", \"Analytics\", \"Reports\"])\n    .icons(&[LineIcon::Home, LineIcon::Chart, LineIcon::File])\n    .style(TabsStyle::Underline));\nui.add(Tabs::new(&mut tab3, &[\"All\", \"Active\", \"Archived\"]).style(TabsStyle::Pill));"
   },
   {
-   "id": "breadcrumb",
-   "name": "Breadcrumb",
-   "category": "Navigation",
-   "description": "Breadcrumb trails with chevron, slash or dot separators, animated hover underlines and a collapsible \u201c\u2026\u201d that opens a menu of hidden items.",
-   "covers": [
-    "shadcn/ui: Breadcrumb",
-    "Origin UI: Breadcrumb",
-    "Kibo UI: Breadcrumb"
-   ],
-   "code": "Breadcrumb::new(&[\"Home\", \"Components\", \"Breadcrumb\"]).home_icon(true).show(ui);\nBreadcrumb::new(&[\"Home\", \"Docs\", \"Building\", \"Data\", \"Fetching\"])\n    .max_items(3)\n    .separator(BreadcrumbSeparator::Slash)\n    .show(ui);"
-  },
-  {
-   "id": "pagination",
-   "name": "Pagination",
-   "category": "Navigation",
-   "description": "Previous / numbered pages / Next with smart ellipses; the active page indicator slides between numbers.",
-   "covers": [
-    "shadcn/ui: Pagination",
-    "Origin UI: Pagination",
-    "Kibo UI: Pagination"
-   ],
-   "code": "ui.add(Pagination::new(&mut page, 20));\nui.add(Pagination::new(&mut page2, 8).labels(false).filled(true));"
-  },
-  {
    "id": "sidebar",
    "name": "Sidebar",
    "category": "Navigation",
@@ -6740,31 +6520,6 @@
     "Tailwind UI: Sticky header"
    ],
    "code": "ResizableNavbar::new(&mut active, &[\"Features\", \"Pricing\", \"Contact\"])\n    .brand(\"glowkit\")\n    .cta(\"Book a call\")\n    .show(ui, content_rect, scroll_offset_y);"
-  },
-  {
-   "id": "navigation-menu",
-   "name": "Navigation Menu",
-   "category": "Navigation",
-   "description": "Website navigation: hovering a trigger opens a panel of rich link cards that morphs size and slides content as you move between triggers.",
-   "covers": [
-    "shadcn/ui: Navigation Menu",
-    "Radix: Navigation Menu",
-    "Aceternity: Navbar Menu",
-    "Origin UI: Navbar with dropdown"
-   ],
-   "code": "NavigationMenu::new()\n    .featured_panel(\"Getting started\", (\"glowkit\", \"Beautiful components for egui.\"), vec![\n        NavMenuLink::new(\"Introduction\", \"Re-usable components built with egui.\"),\n        NavMenuLink::new(\"Installation\", \"How to add glowkit to your app.\"),\n    ])\n    .panel(\"Components\", 2, vec![NavMenuLink::new(\"Dialog\", \"A window overlaid on the page.\").icon(LineIcon::Layers)])\n    .link(\"Docs\")\n    .show(ui);"
-  },
-  {
-   "id": "menubar",
-   "name": "Menubar",
-   "category": "Navigation",
-   "description": "A desktop-style menubar: click a title, then glide across titles to switch menus; \u2190 \u2192 \u2191 \u2193 Enter work too. Supports submenus, checkboxes and radios.",
-   "covers": [
-    "shadcn/ui: Menubar",
-    "Radix: Menubar",
-    "Animate UI: Menubar"
-   ],
-   "code": "let picked = Menubar::new()\n    .menu(\"File\", vec![\n        MenuEntry::item(\"New Tab\").shortcut(\"Ctrl+T\"),\n        MenuEntry::item(\"New Window\").shortcut(\"Ctrl+N\"),\n        MenuEntry::separator(),\n        MenuEntry::submenu(\"Share\", vec![MenuEntry::item(\"Email link\"), MenuEntry::item(\"Messages\")]),\n    ])\n    .menu(\"Edit\", vec![MenuEntry::item(\"Undo\").shortcut(\"Ctrl+Z\")])\n    .show(ui);"
   },
   {
    "id": "stepper",
@@ -6817,19 +6572,6 @@
     "Nextra: TOC"
    ],
    "code": "if let Some(i) = TableOfContents::new(&[\n    (0, \"Introduction\"), (0, \"Installation\"), (1, \"With cargo\"), (0, \"Usage\"),\n], active).show(ui) {\n    jump_to_section(i);\n}"
-  },
-  {
-   "id": "bottom-nav",
-   "name": "Bottom Navigation",
-   "category": "Navigation",
-   "description": "A mobile tab bar where the active item grows into a tinted pill revealing its label, gliding between items on a spring.",
-   "covers": [
-    "Animate UI: Bottom Navigation",
-    "Material 3: Navigation Bar",
-    "Cult UI: Expandable Tabs",
-    "Origin UI: Tab bar"
-   ],
-   "code": "ui.add(BottomNav::new(&mut tab, &[\n    (LineIcon::Home, \"Home\"),\n    (LineIcon::Search, \"Search\"),\n    (LineIcon::Bell, \"Alerts\"),\n    (LineIcon::User, \"Profile\"),\n]));"
   },
   {
    "id": "link-preview",
@@ -6921,33 +6663,6 @@
    "code": "let r = ui.button(\"Hover\");\ntooltip(&r, \"Add to library\");\nTooltip::new(\"Opens on the right\").placement(Placement::Right).show(&r);"
   },
   {
-   "id": "popover",
-   "name": "Popover",
-   "category": "Overlays & Feedback",
-   "description": "A card anchored to its trigger that scales in from the trigger side with an arrow; closes on outside click or Escape.",
-   "covers": [
-    "shadcn/ui: Popover",
-    "Animate UI: Popover",
-    "Origin UI: Popover",
-    "Radix: Popover",
-    "Motion Primitives: Morphing Popover"
-   ],
-   "code": "let trigger = ui.button(\"Open popover\");\nPopover::new().width(300.0).show(&trigger, |ui| {\n    ui.label(\"Dimensions\");\n    ui.text_edit_singleline(&mut width);\n});"
-  },
-  {
-   "id": "hover-card",
-   "name": "Hover Card",
-   "category": "Overlays & Feedback",
-   "description": "A rich preview card that appears after hovering a link for a moment and stays while you move onto it.",
-   "covers": [
-    "shadcn/ui: Hover Card",
-    "Origin UI: Hover Card",
-    "Animate UI: Hover Card",
-    "Radix: Hover Card"
-   ],
-   "code": "let link = ui.link(\"@glowkit\");\nHoverCard::new().show(&link, |ui| {\n    ui.label(\"glowkit\");\n    ui.label(\"Animated components for egui.\");\n});"
-  },
-  {
    "id": "dropdown-menu",
    "name": "Dropdown Menu",
    "category": "Overlays & Feedback",
@@ -6959,31 +6674,6 @@
     "Radix: Dropdown Menu"
    ],
    "code": "let trigger = ui.button(\"Open\");\nlet picked = DropdownMenu::new(vec![\n    MenuEntry::label(\"My Account\"),\n    MenuEntry::item(\"Profile\").icon(LineIcon::User).shortcut(\"Ctrl+P\"),\n    MenuEntry::submenu(\"Invite users\", vec![MenuEntry::item(\"Email\"), MenuEntry::item(\"Message\")]),\n    MenuEntry::separator(),\n    MenuEntry::item(\"Log out\").icon(LineIcon::LogOut).destructive(),\n]).show(&trigger);"
-  },
-  {
-   "id": "context-menu",
-   "name": "Context Menu",
-   "category": "Overlays & Feedback",
-   "description": "Right-click anywhere in the area to open a menu at the pointer, with submenus, checkbox and radio items.",
-   "covers": [
-    "shadcn/ui: Context Menu",
-    "Animate UI: Context Menu",
-    "Radix: Context Menu"
-   ],
-   "code": "let area = ui.allocate_response(size, Sense::click());\nif let Some(item) = ContextMenu::new(vec![\n    MenuEntry::item(\"Back\").shortcut(\"Ctrl+[\"),\n    MenuEntry::item(\"Reload\").shortcut(\"Ctrl+R\"),\n    MenuEntry::separator(),\n    MenuEntry::checkbox(\"Show Bookmarks\", true),\n]).show(&area) { /* \u2026 */ }"
-  },
-  {
-   "id": "notice-banner",
-   "name": "Announcement Banner",
-   "category": "Overlays & Feedback",
-   "description": "A dismissible top-of-page banner with a badge and an action link; gradient, subtle, accent and warning styles. Collapses smoothly when closed.",
-   "covers": [
-    "Origin UI: Banner",
-    "shadcn blocks: Announcement Bar",
-    "Kibo UI: Announcement",
-    "Magic UI: Announcement"
-   ],
-   "code": "NoticeBanner::new(&mut visible, \"glowkit 1.0 is here, with 150+ components\")\n    .badge(\"New\")\n    .action(\"Read the changelog\")\n    .style(BannerStyle::Gradient)\n    .show(ui);"
   },
   {
    "id": "spotlight-tour",
@@ -7025,31 +6715,6 @@
    "code": "ui.add(StickyBanner::new(&mut open, \"glowkit 1.0 is out! 30 new components.\")\n    .link(\"Read the announcement\"));"
   },
   {
-   "id": "badge",
-   "name": "Badge",
-   "category": "Data Display",
-   "description": "Status labels in solid, soft and outline styles, with dots, icons and rolling animated counts.",
-   "covers": [
-    "shadcn/ui: Badge",
-    "Origin UI: Badges",
-    "Kibo UI: Status",
-    "Animate UI: Counting Number (badge)"
-   ],
-   "code": "ui.add(Badge::new(\"New\"));\nui.add(Badge::new(\"Active\").variant(BadgeVariant::Success).dot(true));\nui.add(Badge::new(\"Verified\").variant(BadgeVariant::Info).icon(UiIcon::CheckCircle));\nui.add(Badge::count(unread));"
-  },
-  {
-   "id": "chip",
-   "name": "Chip",
-   "category": "Data Display",
-   "description": "Compact tags: removable chips, filter chips that draw a check when selected, and avatar chips.",
-   "covers": [
-    "Origin UI: Tags / Chips",
-    "Kibo UI: Pill",
-    "Material: Chips"
-   ],
-   "code": "if ui.add(Chip::new(name).removable(true)).clicked() { remove(name) }\nif ui.add(Chip::new(\"Rust\").selected(on)).clicked() { on = !on }\nui.add(Chip::new(\"Ada Lovelace\").avatar(\"Ada Lovelace\"));"
-  },
-  {
    "id": "avatar",
    "name": "Avatar & Avatar Group",
    "category": "Data Display",
@@ -7073,42 +6738,6 @@
    "code": "ui.add(AvatarCircles::new(&[\"Ada Lovelace\", \"Alan Turing\", \"Grace Hopper\", \"Linus Torvalds\", \"Hedy Lamarr\"], 99));"
   },
   {
-   "id": "card",
-   "name": "Card",
-   "category": "Data Display",
-   "description": "Cards with header, description, action, body and footer slots; hoverable cards lift their shadow.",
-   "covers": [
-    "shadcn/ui: Card",
-    "Origin UI: Cards",
-    "Kibo UI: Card"
-   ],
-   "code": "Card::new()\n    .title(\"Create project\")\n    .description(\"Deploy your new project in one click.\")\n    .footer(|ui| {\n        ui.add(Button::new(\"Cancel\").variant(ButtonVariant::Outline));\n        ui.add(Button::new(\"Deploy\"));\n    })\n    .show(ui, |ui| {\n        ui.add(Input::new(&mut name).label(\"Name\").placeholder(\"Name of your project\"));\n    });"
-  },
-  {
-   "id": "alert",
-   "name": "Alert",
-   "category": "Data Display",
-   "description": "Callouts with an icon, title and description in neutral, info, success, warning and destructive styles.",
-   "covers": [
-    "shadcn/ui: Alert",
-    "Origin UI: Alerts",
-    "Kibo UI: Banner (inline)"
-   ],
-   "code": "ui.add(Alert::new(\"Heads up!\").description(\"You can add components to your app using the CLI.\"));\nui.add(Alert::new(\"Payment failed\").description(\"Your card was declined.\").variant(AlertVariant::Destructive));"
-  },
-  {
-   "id": "kbd",
-   "name": "Kbd & Separator",
-   "category": "Data Display",
-   "description": "Keyboard key caps for shortcuts, and hairline separators (horizontal, vertical, labeled).",
-   "covers": [
-    "shadcn/ui: Kbd",
-    "shadcn/ui: Separator",
-    "Origin UI: Kbd"
-   ],
-   "code": "ui.horizontal(|ui| { ui.add(Kbd::new(\"\u2318\")); ui.add(Kbd::new(\"K\")); });\nui.add(Separator::horizontal().label(\"or continue with\"));\nui.add(Separator::vertical());"
-  },
-  {
    "id": "data-table",
    "name": "Data Table",
    "category": "Data Display",
@@ -7121,17 +6750,6 @@
     "Dice UI: Data Table"
    ],
    "code": "let cols = vec![\n    TableColumn::new(\"User\").flex(2.2),\n    TableColumn::new(\"Role\"),\n    TableColumn::new(\"Status\"),\n    TableColumn::new(\"Spend\").right(),\n];\nui.add(DataTable::new(cols, &rows).selection(&mut selected).page_size(5));"
-  },
-  {
-   "id": "table",
-   "name": "Table",
-   "category": "Data Display",
-   "description": "A simple striped invoice table with badges and right-aligned amounts.",
-   "covers": [
-    "shadcn/ui: Table",
-    "Origin UI: Table (striped)"
-   ],
-   "code": "ui.add(DataTable::new(cols, &invoices).striped(true));"
   },
   {
    "id": "timeline",
@@ -7210,53 +6828,6 @@
    "code": "Accordion::new(\"faq\")\n    .item_text(\"Is it accessible?\", \"Yes. It supports keyboard focus and screen readers.\")\n    .item_text(\"Is it styled?\", \"Yes. It comes with default styles that match the other components.\")\n    .item_text(\"Is it animated?\", \"Yes. Height and opacity animate when sections open.\")\n    .show(ui);"
   },
   {
-   "id": "collapsible",
-   "name": "Collapsible",
-   "category": "Data Display",
-   "description": "A header with a toggle that reveals more rows with an animated height.",
-   "covers": [
-    "shadcn/ui: Collapsible",
-    "Animate UI: Collapsible",
-    "Motion Primitives: Disclosure"
-   ],
-   "code": "Collapsible::new(\"@peduarte starred 3 repositories\").show(ui, |ui| {\n    for repo in [\"@radix-ui/colors\", \"@stitches/react\"] { ui.label(repo); }\n});"
-  },
-  {
-   "id": "description-list",
-   "name": "Description List",
-   "category": "Data Display",
-   "description": "Label / value rows separated by hairlines, side by side or stacked, for detail pages.",
-   "covers": [
-    "Tailwind UI: Description lists",
-    "Origin UI: Key-value",
-    "Kibo UI: Description List"
-   ],
-   "code": "ui.add(DescriptionList::new(&[\n    (\"Full name\", \"Ada Lovelace\"),\n    (\"Role\", \"Lead engineer\"),\n    (\"Email\", \"ada@analytical.io\"),\n]));"
-  },
-  {
-   "id": "aspect-ratio",
-   "name": "Aspect Ratio",
-   "category": "Data Display",
-   "description": "A container that locks content to a ratio (16:9, 1:1, 4:3) and clips it to rounded corners, for media, maps and embeds.",
-   "covers": [
-    "shadcn/ui: Aspect Ratio",
-    "Radix UI: Aspect Ratio",
-    "Bencho: Aspect ratio"
-   ],
-   "code": "AspectRatio::new(16.0 / 9.0).max_width(420.0).show(ui, |ui| {\n    let r = ui.max_rect();\n    // paint an image, video frame or map into r\n});"
-  },
-  {
-   "id": "item",
-   "name": "Item",
-   "category": "Data Display",
-   "description": "Flexible list rows with an icon, avatar or thumbnail, a title and description, and trailing actions, in default, outline and muted styles.",
-   "covers": [
-    "shadcn/ui: Item",
-    "Origin UI: List items"
-   ],
-   "code": "Item::new(\"Two-factor authentication\")\n    .description(\"Verify via email or phone number.\")\n    .icon(UiIcon::Lock)\n    .variant(ItemVariant::Outline)\n    .actions(|ui| { ui.add(Button::new(\"Enable\").small()); })\n    .show(ui);"
-  },
-  {
    "id": "resizable",
    "name": "Resizable",
    "category": "Data Display",
@@ -7266,17 +6837,6 @@
     "react-resizable-panels: PanelGroup"
    ],
    "code": "ResizablePanels::horizontal(&mut sizes).height(300.0).min(0.15).show(ui, |ui, i| {\n    if i == 1 {\n        ResizablePanels::vertical(&mut inner).frame(false).show(ui, |ui, j| { /* ... */ });\n    }\n});"
-  },
-  {
-   "id": "scroll-area",
-   "name": "Scroll Area",
-   "category": "Data Display",
-   "description": "A themed scroll container with a thin overlay scrollbar that fades in on hover or scroll, widens under the pointer and can be dragged.",
-   "covers": [
-    "shadcn/ui: Scroll Area",
-    "Radix UI: Scroll Area"
-   ],
-   "code": "StyledScrollArea::vertical().max_height(280.0).show(ui, |ui| {\n    for tag in &tags {\n        ui.label(tag);\n    }\n});"
   },
   {
    "id": "code-comparison",
@@ -8972,6 +8532,6 @@
    "code": "let mut app = AuthGateApp::default();\napp.signed_in = true;\napp.route = \"reports\".into(); // \"reports\" | \"admin\" | \"projects\"\napp.show(ui);"
   }
  ],
- "total_have": 523,
+ "total_have": 495,
  "total_all": 523
 }

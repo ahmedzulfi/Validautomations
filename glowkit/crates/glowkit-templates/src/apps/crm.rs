@@ -3,13 +3,14 @@
 use egui::{pos2, vec2, Align2, CursorIcon, Id, Rect, Sense, Stroke, StrokeKind, Ui};
 use glowkit_components::{
     toast, AlertDialog, Button, ButtonVariant, Checkbox, ControlSize, DescriptionList, Dialog, DropdownMenu, Input,
-    LineIcon, MenuEntry, Pagination, SegmentedControl, Select, Sheet, SheetSide, Timeline, TimelineItem, Toast, UiIcon,
+    LineIcon, MenuEntry, SegmentedControl, Select, Sheet, SheetSide, Timeline, TimelineItem, Toast, UiIcon,
 };
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
 use super::analytics::placeholder;
 use super::common::{demo_notes, demo_user, demo_workspaces, page_header};
+use crate::shells::controls;
 use crate::shells::kit::{self, Tone};
 use crate::shells::{AppIcon, AppShell, NavItem, NavSection, ShellLayout, ShellNotification};
 
@@ -649,7 +650,7 @@ impl CrmApp {
         );
         kit::child(ui, Rect::from_min_max(pos2(fr.min.x + 220.0, fr.min.y), fr.max), |ui| {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                ui.add(Pagination::new(&mut self.page, pages));
+                controls::pagination(ui, &mut self.page, pages);
             });
         });
         self.overlays(ui, bounds);

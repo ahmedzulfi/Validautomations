@@ -126,6 +126,51 @@ SOURCES = OrderedDict([
         "Eye tracker", "Upload dropzone", "One-time code", "Todo tower", "Action node", "Assignees",
         "Palette", "Aspect ratio", "Dragging ball", "Search",
     ]}),
+    ("Transitions.dev", {"url": "https://transitions.dev", "items": [
+        "Card Resize", "Number Pop In", "Number Subtle Change", "Notification Badge", "Text States Swap", "Menu Dropdown",
+        "Dropdown Menu Morph", "Modal Open Close", "Panel Reveal", "Page Side By Side", "Icon Swap", "Success Check",
+        "Avatar Group Hover", "Error State Shake", "Input Clear With Dissolve", "Skeleton Loader And Reveal", "Texts Reveal",
+        "Tooltip Open Close", "Toast Open Close", "Learn More Hover", "Banner Stacking", "Checkbox Check", "Spinning Counter",
+        "Matrix Dot Loader", "Thinking States", "Reasoning Stream", "Streaming Text", "Toggle", "Shimmer Text", "Tabs Sliding",
+        "3D Tilt", "Accordion", "Like Button",
+    ]}),
+    ("suiss/ui", {"url": "https://suiss.app/ui", "note": "interactions and patterns", "items": [
+        "Card Stack", "Image Viewer", "Island", "OTP Autofill", "Preview Menu", "Pull To Refresh", "Reorder List",
+        "Search Reveal", "Section Index", "Selection List", "Stepper", "Swipe Actions", "Tip", "Top Banner", "Trail",
+        "Undo Bar", "Action Bar", "Confirm", "Command Palette", "App Shell",
+    ]}),
+    ("ObsidianUI", {"url": "https://obsidianui.dev", "note": "free showcase components", "items": [
+        "Draggable Marquee", "Flip Text", "Hover Image", "Parallax Slider", "Split Showcase", "V Prism", "Status Bars",
+        "Text Stream", "Art Gallery", "Active Sessions",
+    ]}),
+    ("beUI", {"url": "https://beui.dev", "note": "distinctive motion, blocks and agent components", "items": [
+        "Arc Picker", "Wheel Picker", "Sortable Stack", "Card Dealer", "Bloom Menu", "Cylinder Carousel",
+        "Expandable Action Bar", "Expandable Control", "Morphing Search", "Morphing Modal", "Center Morph Modal",
+        "Shared Layout Background", "Knockout Bracket", "Availability Scheduler", "Project Folder", "Wallet Card",
+        "Prediction Market", "File Diff", "Bouncy Accordion", "Bounce Sidebar", "Expanding Arrow Button", "Overflow Actions",
+        "Feedback Widget", "Swipeable List", "Notification Stack", "Adaptive Stepper", "Before After Slider", "Dynamic Island",
+        "Voice Orb", "Image Viewer", "Infinite Masonry", "Card Folder",
+    ]}),
+    ("Originkit", {"url": "https://originkit.dev", "note": "featured creative components", "items": [
+        "Tornado", "Light Cables", "Particle Saturn", "Accretion Disc", "Cosmic Orb", "Cursor Ring Field", "Wire Terrain",
+        "Ribbon Glow", "Venom Button", "Spider Button", "Single Glass Keyboard", "Plush Tile", "Velour Bolster",
+        "Gallery Tunnel", "Spiral Images", "Coverflow Gallery", "Matrix Junction", "Cloud Sky", "Still Sunset Meadow",
+        "Glimmer Vale", "Corolla Gleam", "Fluid Trail", "Hover Image Reveal", "Cobalt Sprite", "Globe", "Glass Icon",
+    ]}),
+    ("Snapblocks", {"url": "https://www.snapblocks.site", "note": "selected distinctive components", "items": [
+        "Crumple Reveal", "Crumple Carousel", "Tear Ticket", "Receipt Printer", "Pour", "Tuner", "Turtle Password",
+        "Cookie Frog", "Clothes Line", "Unfurl", "Pleated Strip", "Elastic Frame", "Fluted Glass", "Meniscus", "Ink Reveal",
+        "Ink Trail", "Petal Dissolve", "Aperture Zoom", "Zoom Reveal", "Card Bookmark", "Molten Text", "Chrome Text",
+        "Grain Text", "Dither Text", "Dither Lens", "Halftone Logo", "Holo Card", "Glass Tabs", "Morph Navbar",
+        "Liquid Glass Button", "DNA Carousel", "Arc Carousel", "Wave Gallery", "Image Tunnel", "Spiral Slider", "Warp Grid",
+        "Marble Scroll", "Mosaic Trail", "Step Path", "Quote Deck", "Story Deck", "Particle Globe",
+    ]}),
+    ("BoardUI", {"url": "https://boardui.com", "note": "dashboard cards and AI components (plain controls excluded)", "items": [
+        "Sankey Chart Card", "Activity Rings Card", "Sleep Score Card", "Contributions Card", "Earnings Chart Card",
+        "Most Active Days Card", "Stage Bars Card", "Orders Chart Card", "Agent Limits Card", "Agent Progress",
+        "Agent Thinking", "Composer Loader", "Web Search", "Meter", "Steps Card", "Questionnaire", "Notification Center",
+        "AI Profile",
+    ]}),
     ("Tremor", {"url": "https://tremor.so", "items": [
         "Area Chart", "Bar Chart", "Line Chart", "Donut Chart", "Bar List", "Spark Chart", "Tracker",
         "Category Bar", "Progress Bar", "Progress Circle", "Combo Chart", "Scatter Chart",
@@ -141,7 +186,7 @@ ALIASES = {  # library name variants used in `covers`
     "shadcnui": "shadcn/ui", "aielements": "Vercel AI Elements", "vercelaielements": "Vercel AI Elements",
     "promptkit": "prompt-kit", "elevenlabsui": "ElevenLabs UI", "elevenlabs": "ElevenLabs UI",
     "evilcharts": "Evil Charts", "tremor": "Tremor", "mvpblocks": "MVP Blocks", "reactflow": "React Flow",
-    "xyflow": "React Flow", "bencho": "Bencho",
+    "xyflow": "React Flow", "bencho": "Bencho", "transitionsdev": "Transitions.dev", "suissui": "suiss/ui", "suiss": "suiss/ui",
 }
 
 def main():

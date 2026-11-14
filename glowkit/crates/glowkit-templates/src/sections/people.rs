@@ -1,9 +1,10 @@
 //! Team, newsletter / waitlist and contact sections.
 
 use super::kit::*;
+use crate::shells::controls::MultilineField;
 use egui::{pos2, vec2, Align, Color32, CornerRadius, Rect, Sense, Stroke, StrokeKind, Ui, Vec2};
 use glowkit_components::{
-    Avatar, AvatarCircles, AvatarStyle, Button, ButtonVariant, ControlSize, Input, Select, Textarea, UiIcon,
+    Avatar, AvatarCircles, AvatarStyle, Button, ButtonVariant, ControlSize, Input, Select, UiIcon,
 };
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{paint, Theme};
@@ -915,7 +916,7 @@ impl ContactSection {
                 .id_salt(id.with("t")),
         );
         ui.add_space(8.0);
-        let mut ta = Textarea::new(&mut st.message)
+        let mut ta = MultilineField::new(&mut st.message)
             .label("Message")
             .placeholder("Tell us a little about your project...")
             .rows(5)

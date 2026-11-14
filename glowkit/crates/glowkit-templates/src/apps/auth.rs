@@ -2,13 +2,13 @@
 
 use egui::{pos2, vec2, Align2, Color32, Rect, Stroke, StrokeKind, Ui};
 use glowkit_components::{
-    toast, Button, ButtonVariant, Checkbox, ControlSize, EmptyState, Input, LineIcon, PasswordInput, Separator, Toast,
-    UiIcon,
+    toast, Button, ButtonVariant, Checkbox, ControlSize, EmptyState, Input, LineIcon, PasswordInput, Toast, UiIcon,
 };
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{paint, Theme};
 
 use super::common::{demo_notes, demo_user, demo_workspaces};
+use crate::shells::controls as kit_controls;
 use crate::shells::kit;
 use crate::shells::{AppIcon, AppShell, NavItem, NavSection, ShellLayout, ShellNotification};
 
@@ -178,7 +178,7 @@ impl AuthGateApp {
                     self.signing_in = Some(ui.input(|i| i.time));
                 }
             }
-            ui.add(Separator::horizontal().label("or continue with email"));
+            kit_controls::labeled_divider(ui, "or continue with email");
             let email_err = if self.tried && !self.email.contains('@') {
                 Some("Enter a valid email address".to_string())
             } else {

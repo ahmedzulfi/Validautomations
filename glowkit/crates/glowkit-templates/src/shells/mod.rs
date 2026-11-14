@@ -1,6 +1,7 @@
 //! Dashboard shells: [`AppShell`] lays out a sidebar, a topbar and your content in seven
 //! layouts ([`ShellLayout`]), driven by a caller-owned [`NavSection`] / [`NavItem`] tree.
 
+pub(crate) mod controls;
 mod icon;
 pub(crate) mod kit;
 mod nav;

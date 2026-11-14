@@ -1,6 +1,5 @@
 use super::field::{field_description, field_error, FieldLabel};
 use super::kit::{self, control_radius, ControlSize, UiIcon};
-use egui::emath::Numeric;
 use egui::{
     pos2, vec2, Align, Color32, CornerRadius, CursorIcon, FontId, Id, Layout, Rect, Response, RichText, Sense, Shape,
     Stroke, StrokeKind, TextEdit, Ui, UiBuilder, Widget,

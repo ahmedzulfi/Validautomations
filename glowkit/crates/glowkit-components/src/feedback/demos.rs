@@ -1,7 +1,6 @@
 use super::*;
-use crate::inputs::demos::{caption, center, col, panel, with};
-use crate::inputs::{Button, ButtonVariant, UiIcon};
-use egui::{vec2, Align, Layout, RichText, Ui};
+use crate::inputs::demos::center;
+use egui::{vec2, Ui};
 use glowkit_core::demo::{Category::Loaders as C, Demo};
 use glowkit_core::Theme;
 

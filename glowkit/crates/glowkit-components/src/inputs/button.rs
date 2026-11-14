@@ -114,7 +114,7 @@ impl Button {
         self.width = Some(w);
         self
     }
-    /// Override corner radii (used by [`ButtonGroup`] to join buttons).
+    /// Override corner radii (e.g. to join several buttons into one segmented row).
     pub fn corners(mut self, c: CornerRadius) -> Self {
         self.corners = Some(c);
         self

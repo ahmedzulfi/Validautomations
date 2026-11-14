@@ -1,12 +1,11 @@
 use crate::inputs::kit::{self, UiIcon};
 use crate::inputs::{Button, ButtonVariant};
 use egui::{
-    pos2, vec2, Align, Color32, CornerRadius, FontId, InnerResponse, Layout, Pos2, Rect, Response, RichText, Sense,
-    Shape, Stroke, StrokeKind, Ui, Widget,
+    pos2, vec2, Align, Color32, CornerRadius, FontId, Layout, Pos2, Rect, Response, RichText, Sense, Shape, Stroke,
+    StrokeKind, Ui, Widget,
 };
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
-
 
 /// Visual style of an [`Alert`].
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
@@ -576,7 +575,6 @@ pub struct DescriptionList {
     width: Option<f32>,
     stacked: bool,
 }
-
 
 impl DescriptionList {
     /// Rows of `(label, value)`.

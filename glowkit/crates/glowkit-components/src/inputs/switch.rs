@@ -3,7 +3,6 @@ use egui::{
     pos2, vec2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget,
 };
 use glowkit_core::anim::spring;
-use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
 /// Lay out `[control] label / description` and return (control rect, full response).

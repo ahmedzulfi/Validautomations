@@ -1302,6 +1302,7 @@ dependencies = [
  "glowkit-components",
  "glowkit-core",
  "glowkit-effects",
+ "glowkit-interactions",
  "glowkit-motion",
  "glowkit-templates",
  "glowkit-text",
@@ -1404,6 +1405,15 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+]
+
+[[package]]
+name = "glowkit-interactions"
+version = "0.1.0"
+dependencies = [
+ "egui",
+ "glowkit-core",
+ "glowkit-effects",
 ]
 
 [[package]]

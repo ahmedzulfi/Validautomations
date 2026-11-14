@@ -1,4 +1,4 @@
-use egui::{pos2, vec2, Color32, CornerRadius, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Widget};
+use egui::{pos2, vec2, Color32, CornerRadius, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Widget};
 use glowkit_core::color::with_alpha;
 use glowkit_core::paint;
 use glowkit_core::Theme;

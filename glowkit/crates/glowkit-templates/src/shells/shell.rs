@@ -2,12 +2,13 @@
 
 use egui::{pos2, vec2, Align2, Color32, CursorIcon, Id, Key, Modifiers, Order, Rect, Sense, Stroke, StrokeKind, Ui};
 use glowkit_components::{
-    toast, Breadcrumb, CommandItem, CommandPalette, DropdownMenu, LineIcon, MenuEntry, Placement, Popover, Toast,
-    ToastPosition, Toaster, Tooltip,
+    toast, CommandItem, CommandPalette, DropdownMenu, LineIcon, MenuEntry, Placement, Toast, ToastPosition, Toaster,
+    Tooltip,
 };
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{paint, Theme};
 
+use super::controls;
 use super::icon::AppIcon;
 use super::kit;
 use super::nav::{nav_find, nav_leaves, nav_path, NavSection, ShellNotification, ShellUser, Workspace};
@@ -1012,7 +1013,7 @@ impl<'a> AppShell<'a> {
                 let cr = Rect::from_min_size(pos2(x, cy - 13.0), vec2(cw, 26.0));
                 let items: Vec<&str> = crumbs.iter().map(|s| s.as_str()).collect();
                 let clicked = kit::child(ui, cr, |ui| {
-                    Breadcrumb::new(&items).max_items(if r.width() < 560.0 { 2 } else { 4 }).size(13.5).show(ui)
+                    controls::breadcrumb(ui, &items, 13.5, if r.width() < 560.0 { 2 } else { 4 })
                 });
                 if let Some(i) = clicked {
                     // navigate to the first leaf under the clicked crumb
@@ -1361,7 +1362,7 @@ fn theme_button(ui: &mut Ui, r: Rect, id: Id) -> egui::Response {
 /// Notifications bell with an unread badge and a dropdown. Returns a clicked notification.
 fn bell(ui: &mut Ui, r: Rect, id: Id, notes: &mut [ShellNotification], bounds: Rect) -> Option<usize> {
     let t = Theme::of(ui);
-    let open = Popover::is_open(ui.ctx(), id);
+    let open = controls::panel_is_open(ui.ctx(), id);
     kit::icon_button(ui, r, id, LineIcon::Bell.into(), open);
     let resp = ui.interact(r, id, Sense::click());
     let unread = notes.iter().filter(|n| n.unread).count();
@@ -1379,7 +1380,7 @@ fn bell(ui: &mut Ui, r: Rect, id: Id, notes: &mut [ShellNotification], bounds: R
         kit::tip(&resp, "Notifications", None);
     }
     let mut clicked = None;
-    Popover::new().width(360.0).placement(Placement::Bottom).arrow(false).within(bounds).show(&resp, |ui| {
+    controls::floating_panel(&resp, 360.0, bounds, |ui| {
         let t = Theme::of(ui);
         ui.spacing_mut().item_spacing = vec2(0.0, 0.0);
         let w = ui.available_width();
@@ -1489,7 +1490,7 @@ fn bell(ui: &mut Ui, r: Rect, id: Id, notes: &mut [ShellNotification], bounds: R
         ui.add_space(6.0);
         let fr = kit::alloc_row(ui, 32.0);
         if kit::button_at(ui, fr, "View all notifications", glowkit_components::ButtonVariant::Outline).clicked() {
-            Popover::set_open(ui.ctx(), id, false);
+            controls::set_panel_open(ui.ctx(), id, false);
             toast(ui.ctx(), Toast::info("Opening inbox").description("All notifications live in your inbox."));
         }
         let _ = w;

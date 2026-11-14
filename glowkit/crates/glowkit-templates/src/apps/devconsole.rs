@@ -3,13 +3,14 @@
 use egui::{pos2, vec2, Align2, CursorIcon, Rect, Sense, Stroke, StrokeKind, Ui};
 use glowkit_charts::{AreaChart, BarChart, Series, Status, Tracker, TrackerBlock};
 use glowkit_components::{
-    toast, AlertDialog, Button, ButtonVariant, ControlSize, Dialog, Input, LineIcon, Select, Toast, ToggleGroup, UiIcon,
+    toast, AlertDialog, Button, ButtonVariant, ControlSize, Dialog, Input, LineIcon, Select, Toast, UiIcon,
 };
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
 use super::analytics::placeholder;
 use super::common::{demo_notes, demo_user, page_header, series};
+use crate::shells::controls;
 use crate::shells::kit::{self, Tone};
 use crate::shells::{AppIcon, AppShell, NavItem, NavSection, ShellLayout, ShellNotification, Workspace};
 
@@ -601,7 +602,7 @@ impl DevConsoleApp {
         );
         let mut lv = self.levels.clone();
         kit::child(ui, Rect::from_min_size(bar.min + vec2(292.0, 0.0), vec2(230.0, 32.0)), |ui| {
-            ui.add(ToggleGroup::multi(&mut lv, ["Info", "Warn", "Error"]).size(ControlSize::Sm))
+            controls::toggle_row(ui, &mut lv, &["Info", "Warn", "Error"], ControlSize::Sm)
         });
         self.levels = lv;
         let pr = Rect::from_min_size(pos2(bar.max.x - 110.0, bar.min.y), vec2(110.0, 32.0));

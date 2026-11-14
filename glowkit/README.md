@@ -19,7 +19,7 @@ The web has an incredible ecosystem of copy-paste animated components (React Bit
 Aceternity, Motion Primitives, shadcn/ui, AI Elements, Evil Charts, ...). Rust desktop apps have
 had nothing like it. glowkit brings that whole world to Rust:
 
-* **457 gallery entries** across text animations, backgrounds, buttons, cards & borders,
+* **458 gallery entries** across text animations, backgrounds, buttons, cards & borders,
   cursor effects, motion & layout, inputs, navigation, overlays, data display, loaders, charts, AI, 3D, canvas editors, page sections, dashboards and full app templates.
 * **A real motion engine.** Springs, keyframes, GSAP-style timelines, variants with stagger, enter/exit presence, layout animations, drag with inertia.
 * **3D without the setup.** A built-in software 3D renderer draws lit, depth-sorted meshes straight into egui: no wgpu boilerplate.

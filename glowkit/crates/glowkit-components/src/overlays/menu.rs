@@ -1,11 +1,11 @@
 use super::kit;
 use super::LineIcon;
 use crate::Icon;
-use egui::{pos2, vec2, Align2, Context, CursorIcon, FontId, Id, Key, Order, Pos2, Rect, Response, Sense, Stroke};
+use egui::{pos2, vec2, Align2, Context, CursorIcon, FontId, Id, Key, Order, Rect, Response, Sense, Stroke};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
-/// One row of a [`DropdownMenu`], [`ContextMenu`] or menubar menu.
+/// One row of a [`DropdownMenu`].
 ///
 /// ```no_run
 /// use glowkit_components::{LineIcon, MenuEntry};
@@ -596,90 +596,6 @@ impl DropdownMenu {
             result = out.activated;
         }
         Self::set_open(&ctx, trigger.id, open);
-        result
-    }
-}
-
-/// A menu that opens at the pointer on right-click (or long-press) over any widget.
-///
-/// ```no_run
-/// # let ui: &mut egui::Ui = todo!();
-/// use glowkit_components::{ContextMenu, MenuEntry};
-/// let area = ui.label("Right click here");
-/// ContextMenu::new(vec![MenuEntry::item("Back"), MenuEntry::item("Reload")]).show(&area);
-/// ```
-#[must_use = "call `.show(&response)`"]
-pub struct ContextMenu {
-    entries: Vec<MenuEntry>,
-    within: Option<Rect>,
-}
-
-impl ContextMenu {
-    /// A context menu with the given entries.
-    pub fn new(entries: Vec<MenuEntry>) -> Self {
-        Self { entries, within: None }
-    }
-    /// Keep the menu inside `rect`.
-    pub fn within(mut self, rect: Rect) -> Self {
-        self.within = Some(rect);
-        self
-    }
-    /// Open the menu programmatically at `pos` for the area with id `area_id`.
-    pub fn open_at(ctx: &Context, area_id: Id, pos: Pos2) {
-        ctx.data_mut(|d| {
-            d.insert_temp(area_id.with("glowkit_ctx_open"), true);
-            d.insert_temp(area_id.with("glowkit_ctx_pos"), pos);
-        });
-    }
-    /// Attach to `response` (it should sense clicks). Returns the label of an activated item.
-    pub fn show(self, response: &Response) -> Option<String> {
-        let ctx = response.ctx.clone();
-        let id = response.id.with("glowkit_ctxmenu");
-        let (mut open, mut pos) = ctx.data_mut(|d| {
-            (
-                d.get_temp::<bool>(response.id.with("glowkit_ctx_open")).unwrap_or(false),
-                d.get_temp::<Pos2>(response.id.with("glowkit_ctx_pos")),
-            )
-        });
-        let mut just_opened = false;
-        if response.secondary_clicked() || response.long_touched() {
-            open = true;
-            just_opened = true;
-            pos = ctx.input(|i| i.pointer.interact_pos()).or(pos);
-            reset_menu(&ctx, id);
-            // restart the pop animation from the new position
-            ctx.data_mut(|d| {
-                d.insert_temp(id.with("p").with("kit_follow"), 0.0f32);
-            });
-        }
-        let rects: Vec<Rect> = ctx.data_mut(|d| d.get_temp(id.with("rects")).unwrap_or_default());
-        if open && !just_opened && outside_click(&ctx, &rects, None) {
-            open = false;
-        }
-        let p = kit::follow_ctx(&ctx, id.with("p"), if open { 1.0 } else { 0.0 }, 20.0);
-        let pop = kit::spring_ctx(&ctx, id.with("pop"), if open { 1.0 } else { 0.0 }, 420.0, 28.0);
-        let mut result = None;
-        if let Some(pos) = pos {
-            if p > 0.01 || open {
-                let bounds = self.within.unwrap_or_else(|| ctx.content_rect());
-                let clip = self.within.map(|w| w.expand(40.0)).unwrap_or(bounds);
-                let anchor = Rect::from_min_size(pos - vec2(0.0, 6.0), vec2(0.0, 0.0));
-                let out = menu_panel(&ctx, id, anchor, false, &self.entries, p, pop, open, bounds, clip, 0.0);
-                if open {
-                    ctx.data_mut(|d| d.insert_temp(id.with("rects"), out.rects.clone()));
-                }
-                if out.close {
-                    open = false;
-                }
-                result = out.activated;
-            }
-        }
-        ctx.data_mut(|d| {
-            d.insert_temp(response.id.with("glowkit_ctx_open"), open);
-            if let Some(p) = pos {
-                d.insert_temp(response.id.with("glowkit_ctx_pos"), p);
-            }
-        });
         result
     }
 }

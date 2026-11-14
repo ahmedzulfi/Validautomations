@@ -27,5 +27,5 @@ First release.
 - `glowkit-canvas`: infinite canvas, node editor, whiteboard, kanban, gantt, mind map, timeline
   editor, data grid, org chart and signature pad.
 - `glowkit-templates`: marketing sections, pages, dashboard shells and app templates.
-- Gallery app (native and WebAssembly) with 457 entries, landing website, generated parity catalog
-  (476/476 tracked components), examples, and a doc-tested customization guide.
+- Gallery app (native and WebAssembly) with 458 entries, landing website, generated parity catalog,
+  examples, and a doc-tested customization guide.

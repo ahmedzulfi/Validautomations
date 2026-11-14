@@ -7,7 +7,7 @@ license.workspace = true
 publish = false
 
 [features]
-default = ["text", "backgrounds", "effects", "components", "charts", "ai", "blocks", "motion", "three-d", "canvas", "templates"]
+default = ["text", "backgrounds", "effects", "components", "charts", "ai", "blocks", "motion", "three-d", "canvas", "templates", "interactions"]
 text = ["glowkit/text"]
 backgrounds = ["glowkit/backgrounds"]
 effects = ["glowkit/effects"]
@@ -19,6 +19,7 @@ motion = ["glowkit/motion"]
 three-d = ["glowkit/three-d"]
 canvas = ["glowkit/canvas"]
 templates = ["glowkit/templates"]
+interactions = ["glowkit/interactions"]
 
 [dependencies]
 glowkit = { workspace = true, default-features = false, features = ["demos"] }

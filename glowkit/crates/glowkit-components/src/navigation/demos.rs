@@ -1,6 +1,6 @@
 use super::*;
 use crate::overlays::kit::{self, Btn};
-use crate::overlays::{LineIcon, MenuEntry};
+use crate::overlays::LineIcon;
 use egui::{pos2, vec2, Align2, FontId, Rect, RichText, Stroke, Ui, UiBuilder};
 use glowkit_core::color::mix;
 use glowkit_core::demo::{Category::Navigation as C, Demo};
@@ -12,14 +12,6 @@ fn st<T: Clone + Send + Sync + 'static>(ui: &Ui, key: &str, init: impl FnOnce() 
 
 fn set<T: Clone + Send + Sync + 'static>(ui: &Ui, key: &str, v: T) {
     glowkit_core::set_state(ui, ui.scope_id().with(key), v);
-}
-
-fn once(ui: &Ui, key: &str) -> bool {
-    let done = st(ui, key, || false);
-    if !done {
-        set(ui, key, true);
-    }
-    !done
 }
 
 fn caption(ui: &mut Ui, text: &str) {
