@@ -217,8 +217,7 @@ ui.add(Input::new(&mut user).label("Username").required(true)
                                 ui.spacing_mut().item_spacing.y = 16.0;
                                 ui.add(Input::new(user).label("Username").required(true).icon(UiIcon::User).error("This username is already taken.").width(320.0));
                                 ui.add(Input::new(price).label("Price").prefix("$").suffix("USD").description("Charged monthly, cancel anytime.").width(320.0));
-                                ui.horizontal(|ui| {
-                                    ui.set_min_height(40.0);
+                                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                                     ui.spacing_mut().item_spacing.x = 10.0;
                                     ui.add(Input::new(&mut String::new()).placeholder("Small").size(ControlSize::Sm).width(100.0).id_salt("s"));
                                     ui.add(Input::new(&mut String::new()).placeholder("Medium").width(100.0).id_salt("m"));

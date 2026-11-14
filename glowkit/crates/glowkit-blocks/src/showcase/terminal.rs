@@ -253,8 +253,15 @@ impl Widget for Terminal {
                         None => muted,
                     };
                     if let Some(pre) = &l.prefix {
-                        let pr = clip.text(pos2(x, yy), Align2::LEFT_TOP, pre, font.clone(), col.gamma_multiply(k));
-                        x = pr.max.x + 8.0;
+                        if pre == "✔" {
+                            // Same vector check as resolved spinner lines, so they line up exactly.
+                            let c = pos2(x0 + self.font_size * 0.45, yy + lh * 0.38);
+                            check(&clip, c, self.font_size * 0.9, Stroke::new(1.8, col), k);
+                            x = x0 + self.font_size * 1.4;
+                        } else {
+                            let pr = clip.text(pos2(x, yy), Align2::LEFT_TOP, pre, font.clone(), col.gamma_multiply(k));
+                            x = pr.max.x + 8.0;
+                        }
                     }
                     let txt_col = if l.color == Some(Color32::PLACEHOLDER) { fg } else { col };
                     clip.text(pos2(x, yy), Align2::LEFT_TOP, &l.text, font.clone(), txt_col.gamma_multiply(k));

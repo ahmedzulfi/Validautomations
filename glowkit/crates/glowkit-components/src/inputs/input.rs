@@ -263,7 +263,7 @@ impl Widget for Input<'_> {
     fn ui(self, ui: &mut Ui) -> Response {
         let width = field_width(ui, self.width);
         let decor = self.decor.clone();
-        ui.allocate_ui_with_layout(vec2(width, 0.0), Layout::top_down(Align::Min), |ui| {
+        ui.allocate_ui_with_layout(vec2(width, self.size.height()), Layout::top_down(Align::Min), |ui| {
             ui.spacing_mut().item_spacing.y = 6.0;
             decor.top(ui);
             let r = self.field(ui, width);
@@ -744,7 +744,7 @@ impl<N: Numeric> Widget for NumberInput<'_, N> {
     fn ui(self, ui: &mut Ui) -> Response {
         let decor = self.decor.clone();
         let width = self.width;
-        ui.allocate_ui_with_layout(vec2(width, 0.0), Layout::top_down(Align::Min), |ui| {
+        ui.allocate_ui_with_layout(vec2(width, self.size.height()), Layout::top_down(Align::Min), |ui| {
             ui.spacing_mut().item_spacing.y = 6.0;
             decor.top(ui);
             let r = self.field(ui);
