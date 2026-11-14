@@ -185,9 +185,10 @@ impl Widget for ComicText {
                     let r = r_max * (0.35 + 0.65 * u);
                     // only where the whole dot sits inside the letter, so the outline stays crisp
                     let probe = r + 1.0;
-                    let inside = [vec2(0.0, 0.0), vec2(probe, 0.0), vec2(-probe, 0.0), vec2(0.0, probe), vec2(0.0, -probe)]
-                        .iter()
-                        .all(|d| cov.sample(local + *d) > 0.55);
+                    let inside =
+                        [vec2(0.0, 0.0), vec2(probe, 0.0), vec2(-probe, 0.0), vec2(0.0, probe), vec2(0.0, -probe)]
+                            .iter()
+                            .all(|d| cov.sample(local + *d) > 0.55);
                     if inside {
                         painter.circle_filled(xf(local + vec2(bold * 0.5, 0.0)), r * scale, dc);
                     }

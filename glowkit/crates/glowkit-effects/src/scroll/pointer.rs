@@ -552,7 +552,7 @@ impl egui::Widget for TextRevealCard {
             [t.foreground, mix(t.foreground, t.gradient[1], 0.7)]
         };
         let rr = Rect::from_min_size(pos_r, gr.size());
-        paint::blurred_galley(&lp, pos_r, &gr, with_alpha(t.gradient[1], if t.dark { 0.35 } else { 0.18 }), 5.0);
+        paint::glow_ellipse(&lp, rr.center(), rr.size() * vec2(0.6, 0.9), with_alpha(t.gradient[1], if t.dark { 0.16 } else { 0.1 }));
         paint::galley_with(&lp, pos_r, &gr, |q| paint::linear_fn(rr, 90.0, &stops)(q));
         // stars over the revealed part
         for i in 0..44u64 {

@@ -81,8 +81,7 @@ impl PrismaticBurst {
     pub fn paint(&self, ui: &Ui, rect: Rect) {
         let Some(f) = self.base.begin(ui, rect, "glowkit_prismatic_burst") else { return };
         let dark = f.dark();
-        let stops: Vec<Color32> =
-            if self.colors.len() >= 2 { self.colors.clone() } else { palettes::RAINBOW.to_vec() };
+        let stops: Vec<Color32> = if self.colors.len() >= 2 { self.colors.clone() } else { palettes::RAINBOW.to_vec() };
         let lut = Lut::new(&stops, true);
         let time = f.time * self.speed;
         let target = if self.follow { pointer(ui, rect) } else { None };
@@ -106,7 +105,8 @@ impl PrismaticBurst {
                 let base_a = (i as f32 + r1 * 0.6) / n as f32 * TAU + spin;
                 let wobble = 0.03 * (time * (0.6 + r2) + r3 * TAU).sin();
                 let a = base_a + wobble;
-                let width = if layer == 0 { (0.10 + r2 * 0.12) * (24.0 / n as f32).min(1.4) } else { 0.012 + r3 * 0.03 };
+                let width =
+                    if layer == 0 { (0.10 + r2 * 0.12) * (24.0 / n as f32).min(1.4) } else { 0.012 + r3 * 0.03 };
                 let len = reach * (0.55 + 0.45 * r3) * (0.85 + 0.15 * (time * (1.0 + r1) + r2 * 9.0).sin()) * breathe;
                 let flick = 0.6 + 0.4 * (time * (2.0 + r2 * 3.0) + r1 * 20.0).sin().abs();
                 let hue = a / TAU + time * 0.04;
@@ -135,8 +135,9 @@ impl PrismaticBurst {
                 let r = 20.0 + ph * reach * 0.8;
                 let a = (1.0 - ph).powf(1.6) * 0.5 * k;
                 let segs = 96;
-                let pts: Vec<Pos2> =
-                    (0..=segs).map(|s| c + vec2((s as f32 / segs as f32 * TAU).cos(), (s as f32 / segs as f32 * TAU).sin()) * r).collect();
+                let pts: Vec<Pos2> = (0..=segs)
+                    .map(|s| c + vec2((s as f32 / segs as f32 * TAU).cos(), (s as f32 / segs as f32 * TAU).sin()) * r)
+                    .collect();
                 glowkit_core::paint::gradient_polyline(p, &pts, true, 1.5 + 4.0 * (1.0 - ph), |u| {
                     light(lut.sample(u + time * 0.1).to_color(), a, dark)
                 });

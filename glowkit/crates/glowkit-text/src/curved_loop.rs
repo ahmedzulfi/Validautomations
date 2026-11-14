@@ -187,11 +187,8 @@ impl Widget for CurvedLoopText {
         // path: a gentle arc across the widget, extending past both ends so letters enter and
         // leave smoothly
         let over = self.size * 1.5;
-        let y0 = if self.curve >= 0.0 {
-            rect.min.y + self.size * 0.8 + 6.0
-        } else {
-            rect.max.y - self.size * 0.8 - 6.0
-        };
+        let y0 =
+            if self.curve >= 0.0 { rect.min.y + self.size * 0.8 + 6.0 } else { rect.max.y - self.size * 0.8 - 6.0 };
         let a = pos2(rect.min.x - over, y0);
         let b = pos2(rect.max.x + over, y0);
         let c = pos2(rect.center().x, y0 + self.curve * 2.0);
@@ -226,11 +223,8 @@ impl Widget for CurvedLoopText {
                 // glyph centered over the path: baseline sits on it
                 let n = vec2(-ang.sin(), ang.cos());
                 let center = p - n * (g.size.y * 0.32);
-                let color = if self.colors.is_empty() {
-                    solid
-                } else {
-                    gradient_cyclic(&self.colors, s / 900.0 - time * 0.08)
-                };
+                let color =
+                    if self.colors.is_empty() { solid } else { gradient_cyclic(&self.colors, s / 900.0 - time * 0.08) };
                 util::paint_char_xf(&painter, g.ch, &font, center, 1.0, ang, color.gamma_multiply(alpha), bold);
             }
         }

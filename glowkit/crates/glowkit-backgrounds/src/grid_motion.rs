@@ -40,10 +40,13 @@ impl GridMotion {
     pub fn new() -> Self {
         Self {
             base: Base::default(),
-            items: ["✦", "Rust", "egui", "◆", "wasm", "60 fps", "glowkit", "★", "GPU", "pure", "native", "●", "UI", "motion"]
-                .iter()
-                .map(|s| s.to_string())
-                .collect(),
+            items: [
+                "✦", "Rust", "egui", "◆", "wasm", "60 fps", "glowkit", "★", "GPU", "pure", "native", "●", "UI",
+                "motion",
+            ]
+            .iter()
+            .map(|s| s.to_string())
+            .collect(),
             rows: 5,
             cols: 8,
             angle: -15.0,
@@ -158,7 +161,11 @@ impl GridMotion {
                 closed.push(outline[0]);
                 p.add(egui::Shape::line(closed, egui::Stroke::new(1.0, border)));
                 let label = &self.items[idx];
-                let fg = if special { glowkit_core::color::contrast_text(accent) } else { t.foreground.gamma_multiply(0.85) };
+                let fg = if special {
+                    glowkit_core::color::contrast_text(accent)
+                } else {
+                    t.foreground.gamma_multiply(0.85)
+                };
                 let size = (tile_h * 0.2).clamp(12.0, 28.0);
                 glowkit_core::text::paint_rotated(p, label, rot(tile.center()), FontId::proportional(size), fg, ang);
             }

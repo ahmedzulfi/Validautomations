@@ -99,7 +99,11 @@ fn scene_color(scene: VideoScene, stops: &[Color32], u: f32, v: f32, aspect: f32
             let crest = ((x * 5.0 + v * 9.0 + swell * 4.5 - t * 1.6).sin() * 0.5 + 0.5).powf(6.0);
             let depth = (v * 0.8 + swell * 0.35 + 0.1).clamp(0.0, 1.0);
             let water = gradient(&stops[..stops.len() - 1], 1.0 - depth);
-            glowkit_core::mix(water, stops[stops.len() - 1], (crest * 0.9 + (swell * 0.5 + 0.5).powf(5.0) * 0.6).min(1.0))
+            glowkit_core::mix(
+                water,
+                stops[stops.len() - 1],
+                (crest * 0.9 + (swell * 0.5 + 0.5).powf(5.0) * 0.6).min(1.0),
+            )
         }
         VideoScene::Lava => {
             let flow = fbm3(x * 1.6, v * 2.2 + t * 0.35, t * 0.18, 4);
@@ -133,10 +137,9 @@ impl Widget for VideoText {
                 &self.colors,
                 &[hex("#1E1B4B"), hex("#3B2F7A"), hex("#22D3EE"), hex("#34D399"), hex("#A78BFA"), hex("#F472B6")],
             ),
-            VideoScene::Ocean => pal(
-                &self.colors,
-                &[hex("#082F49"), hex("#0369A1"), hex("#0EA5E9"), hex("#67E8F9"), hex("#F0FDFF")],
-            ),
+            VideoScene::Ocean => {
+                pal(&self.colors, &[hex("#082F49"), hex("#0369A1"), hex("#0EA5E9"), hex("#67E8F9"), hex("#F0FDFF")])
+            }
             VideoScene::Lava => pal(
                 &self.colors,
                 &[hex("#1C0A05"), hex("#7F1D1D"), hex("#DC2626"), hex("#F97316"), hex("#FDE047"), hex("#FFFBEB")],

@@ -86,7 +86,10 @@ impl BackgroundLines {
             let pts: Vec<Pos2> = cubic_bezier(a, c1, c2, b, 72);
             let color = colors[i % colors.len()];
             if self.ghost_lines {
-                p.add(egui::Shape::line(pts.clone(), egui::Stroke::new(1.0, color.gamma_multiply(if t.dark { 0.06 } else { 0.08 }))));
+                p.add(egui::Shape::line(
+                    pts.clone(),
+                    egui::Stroke::new(1.0, color.gamma_multiply(if t.dark { 0.06 } else { 0.08 })),
+                ));
             }
             // draw in, linger, erase (head and tail both travel left to right)
             let period = 5.0 + r(7) * 4.0;

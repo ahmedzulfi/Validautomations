@@ -152,11 +152,8 @@ impl TextCursor {
                             s.seed = s.seed.wrapping_add(1);
                             let mut r = Rng::new(s.seed);
                             let p = last + dir * spacing * k as f32;
-                            let drift = if float {
-                                vec2(r.range(-30.0, 30.0), r.range(-55.0, -15.0))
-                            } else {
-                                Vec2::ZERO
-                            };
+                            let drift =
+                                if float { vec2(r.range(-30.0, 30.0), r.range(-55.0, -15.0)) } else { Vec2::ZERO };
                             s.stamps.push(Stamp {
                                 pos: p,
                                 vel: drift,

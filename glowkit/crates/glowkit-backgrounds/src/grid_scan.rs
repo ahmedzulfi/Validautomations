@@ -183,12 +183,22 @@ impl GridScan {
         let edge = rect.height() * 0.18;
         glowkit_core::paint::quad(
             p,
-            [rect.left_top(), rect.right_top(), pos2(rect.max.x, rect.min.y + edge), pos2(rect.min.x, rect.min.y + edge)],
+            [
+                rect.left_top(),
+                rect.right_top(),
+                pos2(rect.max.x, rect.min.y + edge),
+                pos2(rect.min.x, rect.min.y + edge),
+            ],
             [f.bg, f.bg, clear, clear],
         );
         glowkit_core::paint::quad(
             p,
-            [pos2(rect.min.x, rect.max.y - edge), pos2(rect.max.x, rect.max.y - edge), rect.right_bottom(), rect.left_bottom()],
+            [
+                pos2(rect.min.x, rect.max.y - edge),
+                pos2(rect.max.x, rect.max.y - edge),
+                rect.right_bottom(),
+                rect.left_bottom(),
+            ],
             [clear, clear, f.bg, f.bg],
         );
     }

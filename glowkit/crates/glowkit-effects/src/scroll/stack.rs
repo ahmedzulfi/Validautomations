@@ -347,18 +347,6 @@ impl egui::Widget for FlyingPosters<'_> {
             let shade_k = 1.0 - 0.55 * depth;
             let tint = Color32::from_gray((255.0 * shade_k) as u8).gamma_multiply(alpha);
             let map = |l: egui::Vec2| project(world + l).0;
-            // soft shadow under the poster
-            let sh = if t.dark { Color32::BLACK } else { Color32::from_rgb(40, 40, 80) };
-            warp_card(
-                &painter,
-                self.poster,
-                14.0,
-                1,
-                None,
-                Rect::ZERO,
-                |l| map(l) + vec2(0.0, 10.0 * (1.0 - depth)),
-                |_| with_alpha(sh, 0.18 * alpha),
-            );
             warp_card(&painter, self.poster, 12.0, 4, Some(texs[idx]), uv, map, |l| {
                 // a little top sheen
                 let k = 1.0 - (l.y / self.poster.y);
@@ -640,7 +628,7 @@ impl egui::Widget for HeroParallax<'_> {
             painter.galley(pos2(x, y + h + 12.0), b, t.muted_foreground);
         }
         let e = smoothstep(0.0, 0.55, p);
-        let block_top = rect.min.y + 190.0 - scroll * 0.55;
+        let block_top = rect.min.y + 250.0 - scroll * 0.7;
         let (cw, chh) = (self.card.x, self.card.y);
         let gap = 22.0;
         let block_h = 3.0 * chh + 2.0 * gap;
@@ -648,7 +636,7 @@ impl egui::Widget for HeroParallax<'_> {
         persp.rx = 15f32.to_radians() * (1.0 - e);
         persp.rz = 16f32.to_radians() * (1.0 - e);
         persp.focal = 900.0;
-        persp.translate = vec2(0.0, -40.0 * (1.0 - e));
+        persp.translate = vec2(0.0, 30.0 * (1.0 - e));
         let alpha = 0.25 + 0.75 * e;
         let n = self.products.len();
         let per_row = n.div_ceil(3).max(1);

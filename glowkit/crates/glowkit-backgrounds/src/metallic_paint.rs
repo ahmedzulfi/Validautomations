@@ -182,7 +182,14 @@ impl MetallicPaint {
             let tint = self.tint.unwrap_or(f.theme.accent);
             glow(p, center, r * 1.5, glowkit_core::color::with_alpha(tint, 0.12));
         } else {
-            soft_shadow(p, size.translate(vec2(0.0, r * 0.12)), r * 0.6, r * 0.25, Vec2::ZERO, Color32::from_black_alpha(30));
+            soft_shadow(
+                p,
+                size.translate(vec2(0.0, r * 0.12)),
+                r * 0.6,
+                r * 0.25,
+                Vec2::ZERO,
+                Color32::from_black_alpha(30),
+            );
         }
         let stops = [
             hex("#2A2D34"),
@@ -206,7 +213,11 @@ impl MetallicPaint {
             // bevel: rim lit from the light side, shadowed opposite
             let bevel = smoothstep(0.78, 1.0, k);
             let lit = normal.dot(vec2(-0.5 - light_dir.x * 0.6, -0.8 - light_dir.y * 0.6).normalized());
-            c = if lit > 0.0 { c.lerp(Rgb(1.0, 1.0, 1.0), bevel * lit * 0.8) } else { c.scale(1.0 + bevel * lit * 0.65) };
+            c = if lit > 0.0 {
+                c.lerp(Rgb(1.0, 1.0, 1.0), bevel * lit * 0.8)
+            } else {
+                c.scale(1.0 + bevel * lit * 0.65)
+            };
             // a broad sheen sweeping across
             let sweep = ((q.x - q.y) * 0.7 - (time * 0.35).rem_euclid(4.0) + 2.0).abs();
             c = c.lerp(Rgb(1.0, 1.0, 1.0), (1.0 - sweep / 0.35).max(0.0) * 0.35);

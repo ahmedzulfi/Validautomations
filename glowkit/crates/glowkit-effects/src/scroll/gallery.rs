@@ -500,14 +500,16 @@ impl egui::Widget for ImagesSlider<'_> {
                 });
             }
         }
-        // dots
-        let dots_w = n as f32 * 16.0;
-        for k in 0..n {
-            let active = k == st.index;
-            let w = glowkit_core::anim::follow(ui, id.with(("dot", k)), if active { 22.0 } else { 7.0 }, 10.0);
-            let x = rect.center().x - dots_w / 2.0 + k as f32 * 16.0 + 8.0;
-            let d = Rect::from_center_size(pos2(x, rect.max.y - 20.0), vec2(w, 7.0));
-            painter.rect_filled(d, CornerRadius::same(99), with_alpha(Color32::WHITE, if active { 0.95 } else { 0.45 }));
+        // dots (laid out with their animated widths so the active pill never overlaps)
+        let widths: Vec<f32> = (0..n)
+            .map(|k| glowkit_core::anim::follow(ui, id.with(("dot", k)), if k == st.index { 22.0 } else { 7.0 }, 10.0))
+            .collect();
+        let total: f32 = widths.iter().sum::<f32>() + 7.0 * (n as f32 - 1.0);
+        let mut x = rect.center().x - total / 2.0;
+        for (k, w) in widths.iter().enumerate() {
+            let d = Rect::from_min_size(pos2(x, rect.max.y - 24.0), vec2(*w, 7.0));
+            painter.rect_filled(d, CornerRadius::same(99), with_alpha(Color32::WHITE, if k == st.index { 0.95 } else { 0.45 }));
+            x += w + 7.0;
         }
         response
     }

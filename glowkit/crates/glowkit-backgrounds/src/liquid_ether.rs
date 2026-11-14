@@ -149,8 +149,8 @@ impl Fluid {
         let div = &mut self.tmp;
         for y in 1..ny - 1 {
             for x in 1..nx - 1 {
-                div[idx(x, y)] =
-                    0.5 * (self.u[idx(x + 1, y)] - self.u[idx(x - 1, y)] + self.v[idx(x, y + 1)] - self.v[idx(x, y - 1)]);
+                div[idx(x, y)] = 0.5
+                    * (self.u[idx(x + 1, y)] - self.u[idx(x - 1, y)] + self.v[idx(x, y + 1)] - self.v[idx(x, y - 1)]);
             }
         }
         for _ in 0..18 {
@@ -300,7 +300,17 @@ impl LiquidEther {
                 for y in 1..ny - 1 {
                     for x in 1..nx - 1 {
                         let (mut b, mut hw, mut wsum) = (0.0, 0.0, 0.0);
-                        for (dx, dy, w) in [(0i32, 0i32, 4.0f32), (1, 0, 2.0), (-1, 0, 2.0), (0, 1, 2.0), (0, -1, 2.0), (1, 1, 1.0), (-1, 1, 1.0), (1, -1, 1.0), (-1, -1, 1.0)] {
+                        for (dx, dy, w) in [
+                            (0i32, 0i32, 4.0f32),
+                            (1, 0, 2.0),
+                            (-1, 0, 2.0),
+                            (0, 1, 2.0),
+                            (0, -1, 2.0),
+                            (1, 1, 1.0),
+                            (-1, 1, 1.0),
+                            (1, -1, 1.0),
+                            (-1, -1, 1.0),
+                        ] {
                             let (h, v) = src[(y as i32 + dy) as usize * nx + (x as i32 + dx) as usize];
                             b += v * w;
                             let ww = w * (v + 0.02);

@@ -181,7 +181,8 @@ impl Widget for AsciiText {
                 let local = pos2(cx, cy) + d - origin;
                 let v = cov.sample(local);
                 // subtle flicker so the texture feels alive
-                let flick = 0.06 * ((c as f32 * 12.9898 + r as f32 * 78.233 + (time * 8.0).floor()).sin() * 43758.5).fract();
+                let flick =
+                    0.06 * ((c as f32 * 12.9898 + r as f32 * 78.233 + (time * 8.0).floor()).sin() * 43758.5).fract();
                 let v = (v + flick * (v > 0.05) as u8 as f32).clamp(0.0, 1.0);
                 let idx = ((v * (ramp.len() - 1) as f32).round() as usize).min(ramp.len() - 1);
                 if idx > 0 {

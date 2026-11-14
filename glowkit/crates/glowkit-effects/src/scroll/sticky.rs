@@ -173,7 +173,7 @@ impl<'a> StickyScrollReveal<'a> {
         let radius = (t.radius * 1.6).round();
         painter.rect(rect, CornerRadius::same(radius as u8), bg, Stroke::new(1.0, t.border), StrokeKind::Inside);
         // text column
-        let text_clip = Rect::from_min_max(pos2(rect.min.x, rect.min.y + 1.0), pos2(text_x + text_w + 10.0, rect.max.y - 1.0));
+        let text_clip = Rect::from_min_max(pos2(rect.min.x + radius, rect.min.y + 1.0), pos2(text_x + text_w + 10.0, rect.max.y - 1.0));
         let tp = painter.with_clip_rect(text_clip.intersect(ui.clip_rect()));
         for (i, (g, b)) in galleys.iter().enumerate() {
             let y = rect.min.y + tops[i] - s;

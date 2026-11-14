@@ -122,7 +122,8 @@ impl LaserFlow {
         soft_ribbon(p, &beam, 1.2 * beam_w, 1.5, |u| light(core, 0.95 * along(u), dark));
         // impact: a flat flare along the surface plus a hot spot
         let flare_w = rect.width() * 0.48;
-        let line: Vec<Pos2> = (0..=40).map(|i| pos2(hit.x - flare_w + flare_w * 2.0 * i as f32 / 40.0, hit.y)).collect();
+        let line: Vec<Pos2> =
+            (0..=40).map(|i| pos2(hit.x - flare_w + flare_w * 2.0 * i as f32 / 40.0, hit.y)).collect();
         soft_ribbon(p, &line, 1.6, 7.0, |u| {
             let k = (1.0 - (u - 0.5).abs() * 2.0).powf(2.2);
             light(if dark { glowkit_core::mix(color, Color32::WHITE, 0.5) } else { color }, k * flick, dark)

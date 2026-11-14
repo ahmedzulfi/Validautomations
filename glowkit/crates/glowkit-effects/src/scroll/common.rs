@@ -369,7 +369,7 @@ impl PaintedScene {
         if let Some(h) = ctx.data(|d| d.get_temp::<TextureHandle>(id)) {
             return h.id();
         }
-        let img = scene_image(index, 320, 200);
+        let img = scene_image(index, 480, 300);
         let h = ctx.load_texture(format!("glowkit-scene-{index}"), img, egui::TextureOptions::LINEAR);
         let tid = h.id();
         ctx.data_mut(|d| d.insert_temp(id, h));
@@ -402,16 +402,19 @@ fn hash2(x: i32, y: i32) -> f32 {
 }
 
 fn ridge(u: f32, seed: f32, freq: f32, sharp: bool) -> f32 {
+    // a smooth 1D fractal made of sines with pseudo-random phases
     let mut s = 0.0;
     let mut amp = 1.0;
     let mut f = freq;
-    for _ in 0..4 {
-        let n = noise2(u * f, seed);
+    for k in 0..5 {
+        let ph = hash2(k, (seed * 1000.0) as i32) * std::f32::consts::TAU;
+        let n = (u * f * std::f32::consts::TAU * 0.5 + ph).sin() * 0.7
+            + (u * f * 1.73 * std::f32::consts::TAU * 0.5 + ph * 1.9).sin() * 0.3;
         s += amp * if sharp { 1.0 - n.abs() * 2.0 } else { n };
         amp *= 0.5;
         f *= 2.1;
     }
-    s / 1.875
+    s / 1.94
 }
 
 struct SceneSpec {
@@ -538,8 +541,8 @@ fn sky_at(s: &SceneSpec, u: f32, v: f32, aspect: f32) -> [f32; 3] {
         }
     }
     if s.stars && v < 0.6 {
-        let gx = (u * 320.0) as i32;
-        let gy = (v * 200.0) as i32;
+        let gx = (u * 480.0) as i32;
+        let gy = (v * 300.0) as i32;
         let h = hash2(gx, gy);
         if h > 0.985 {
             let b = (h - 0.985) / 0.015 * (1.0 - v / 0.6);
