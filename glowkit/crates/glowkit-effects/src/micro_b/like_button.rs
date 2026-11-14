@@ -49,7 +49,17 @@ pub struct LikeButton<'a> {
 impl<'a> LikeButton<'a> {
     /// A like button for `liked`; `count` is the number of likes without this one.
     pub fn new(liked: &'a mut bool, count: u64) -> Self {
-        Self { liked, count, color: None, burst: LikeBurst::Bloom, burst_size: 0.5, corner: 22.0, dark: false, stroke: false, autoplay: false }
+        Self {
+            liked,
+            count,
+            color: None,
+            burst: LikeBurst::Bloom,
+            burst_size: 0.5,
+            corner: 22.0,
+            dark: false,
+            stroke: false,
+            autoplay: false,
+        }
     }
     /// Heart color (default a warm red). Pass the foreground for an "ink" heart.
     pub fn color(mut self, c: Color32) -> Self {
@@ -133,7 +143,13 @@ impl Widget for LikeButton<'_> {
         let st = glowkit_core::with_state(
             ui,
             id,
-            || LikeState { pop: Spring::new(1.0).with(380.0, 13.0), since: -10.0, was: liked, from: new_total, to: new_total },
+            || LikeState {
+                pop: Spring::new(1.0).with(380.0, 13.0),
+                since: -10.0,
+                was: liked,
+                from: new_total,
+                to: new_total,
+            },
             |s| {
                 if s.was != liked {
                     s.was = liked;
@@ -219,7 +235,10 @@ impl Widget for LikeButton<'_> {
         let up = st.to >= st.from;
         let roll = ease(Easing::OutBack, (age / 0.42).clamp(0.0, 1.0));
         let x_end = pill.min.x + 44.0 + text_w(&to);
-        let clip = painter.with_clip_rect(Rect::from_min_max(pos2(pill.min.x + 38.0, pill.min.y + 6.0), pos2(pill.max.x, pill.max.y - 6.0)));
+        let clip = painter.with_clip_rect(Rect::from_min_max(
+            pos2(pill.min.x + 38.0, pill.min.y + 6.0),
+            pos2(pill.max.x, pill.max.y - 6.0),
+        ));
         let cy = pill.center().y;
         let travel = 16.0;
         let fc: Vec<char> = from.chars().rev().collect();
@@ -238,10 +257,22 @@ impl Widget for LikeButton<'_> {
             } else {
                 let dir = if up { -1.0 } else { 1.0 };
                 if let Some(c) = oc {
-                    clip.text(pos2(cx, cy + dir * travel * roll), Align2::CENTER_CENTER, c, font.clone(), with_alpha(fg, (1.0 - roll).clamp(0.0, 1.0)));
+                    clip.text(
+                        pos2(cx, cy + dir * travel * roll),
+                        Align2::CENTER_CENTER,
+                        c,
+                        font.clone(),
+                        with_alpha(fg, (1.0 - roll).clamp(0.0, 1.0)),
+                    );
                 }
                 if let Some(c) = nc {
-                    clip.text(pos2(cx, cy - dir * travel * (1.0 - roll)), Align2::CENTER_CENTER, c, font.clone(), with_alpha(fg, roll.clamp(0.0, 1.0)));
+                    clip.text(
+                        pos2(cx, cy - dir * travel * (1.0 - roll)),
+                        Align2::CENTER_CENTER,
+                        c,
+                        font.clone(),
+                        with_alpha(fg, roll.clamp(0.0, 1.0)),
+                    );
                 }
             }
         }

@@ -119,7 +119,11 @@ impl Widget for Slingshot {
         let ball_rect = egui::Rect::from_center_size(home + st0.pos, Vec2::splat(r * 2.6));
         let b_resp = ui.interact(ball_rect, id.with("ball"), Sense::drag());
         if b_resp.hovered() || b_resp.dragged() {
-            ui.ctx().set_cursor_icon(if b_resp.dragged() { egui::CursorIcon::Grabbing } else { egui::CursorIcon::Grab });
+            ui.ctx().set_cursor_icon(if b_resp.dragged() {
+                egui::CursorIcon::Grabbing
+            } else {
+                egui::CursorIcon::Grab
+            });
         }
         let dt = glowkit_core::dt(ui);
         let time = glowkit_core::time(ui);
@@ -129,97 +133,103 @@ impl Widget for Slingshot {
         let auto = self.autoplay && idle > 2.0;
         let (max_pull, power, rest) = (self.max_pull, self.power, 0.35 + 0.6 * self.bounce);
         let half = stage.size() / 2.0 - Vec2::splat(r);
-        let st = glowkit_core::with_state(ui, id, || st0, |s| {
-            s.t += dt;
-            s.burst += dt;
-            s.hit += dt;
-            let mut launch = false;
-            if started && matches!(s.mode, Mode::Rest | Mode::Home) {
-                s.mode = Mode::Pull;
-                s.t = 0.0;
-                s.ghost = -1.0;
-                s.grab = ptr.map(|p| p - (home + s.pos)).unwrap_or_default();
-            }
-            if s.mode == Mode::Pull && dragging {
-                if let Some(p) = ptr {
-                    let raw = p - s.grab - home;
-                    let len = raw.length();
-                    // resist more as the band stretches, lock at the limit
-                    let eased = max_pull * (1.0 - (-len / (max_pull * 0.8)).exp()) / (1.0 - (-1.25f32).exp());
-                    s.pos = if len > 0.1 { raw / len * eased.min(max_pull) } else { Vec2::ZERO };
-                }
-            }
-            if s.mode == Mode::Pull && released {
-                launch = true;
-            }
-            // ghost: pull back along an aim, tremble, let go
-            if auto && s.mode == Mode::Rest && s.ghost < 0.0 && s.t > 0.6 {
-                s.ghost = 0.0;
-                let a = (time * 1.7).sin() * 1.2 + 2.3;
-                s.ghost_aim = vec2(a.cos(), a.sin());
-            }
-            if s.ghost >= 0.0 {
-                s.ghost += dt;
-                let g = s.ghost;
-                if (0.5..1.5).contains(&g) {
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0,
+            |s| {
+                s.t += dt;
+                s.burst += dt;
+                s.hit += dt;
+                let mut launch = false;
+                if started && matches!(s.mode, Mode::Rest | Mode::Home) {
                     s.mode = Mode::Pull;
-                    s.pos = s.ghost_aim * max_pull * smoothstep(0.5, 1.4, g);
-                } else if g >= 1.5 && s.mode == Mode::Pull {
+                    s.t = 0.0;
+                    s.ghost = -1.0;
+                    s.grab = ptr.map(|p| p - (home + s.pos)).unwrap_or_default();
+                }
+                if s.mode == Mode::Pull && dragging {
+                    if let Some(p) = ptr {
+                        let raw = p - s.grab - home;
+                        let len = raw.length();
+                        // resist more as the band stretches, lock at the limit
+                        let eased = max_pull * (1.0 - (-len / (max_pull * 0.8)).exp()) / (1.0 - (-1.25f32).exp());
+                        s.pos = if len > 0.1 { raw / len * eased.min(max_pull) } else { Vec2::ZERO };
+                    }
+                }
+                if s.mode == Mode::Pull && released {
                     launch = true;
                 }
-                if g > 1.9 {
-                    s.ghost = -1.0;
+                // ghost: pull back along an aim, tremble, let go
+                if auto && s.mode == Mode::Rest && s.ghost < 0.0 && s.t > 0.6 {
+                    s.ghost = 0.0;
+                    let a = (time * 1.7).sin() * 1.2 + 2.3;
+                    s.ghost_aim = vec2(a.cos(), a.sin());
                 }
-            }
-            if launch {
-                let stretch = s.pos.length() / max_pull;
-                s.vel = -s.pos * (9.0 + 5.0 * stretch) * power;
-                s.mode = Mode::Fly;
-                s.t = 0.0;
-                s.burst = 0.0;
-            }
-            match s.mode {
-                Mode::Fly => {
-                    let steps = 4;
-                    let h = dt / steps as f32;
-                    for _ in 0..steps {
-                        s.pos += s.vel * h;
-                        s.vel *= (-1.1 * h).exp();
-                        for (p, v, lim, axis) in
-                            [(&mut s.pos.x, &mut s.vel.x, half.x, Vec2::X), (&mut s.pos.y, &mut s.vel.y, half.y, Vec2::Y)]
-                        {
-                            if p.abs() > lim {
-                                *p = p.signum() * lim;
-                                if v.abs() > 60.0 {
-                                    s.hit = 0.0;
-                                    s.hit_dir = axis;
+                if s.ghost >= 0.0 {
+                    s.ghost += dt;
+                    let g = s.ghost;
+                    if (0.5..1.5).contains(&g) {
+                        s.mode = Mode::Pull;
+                        s.pos = s.ghost_aim * max_pull * smoothstep(0.5, 1.4, g);
+                    } else if g >= 1.5 && s.mode == Mode::Pull {
+                        launch = true;
+                    }
+                    if g > 1.9 {
+                        s.ghost = -1.0;
+                    }
+                }
+                if launch {
+                    let stretch = s.pos.length() / max_pull;
+                    s.vel = -s.pos * (9.0 + 5.0 * stretch) * power;
+                    s.mode = Mode::Fly;
+                    s.t = 0.0;
+                    s.burst = 0.0;
+                }
+                match s.mode {
+                    Mode::Fly => {
+                        let steps = 4;
+                        let h = dt / steps as f32;
+                        for _ in 0..steps {
+                            s.pos += s.vel * h;
+                            s.vel *= (-1.1 * h).exp();
+                            for (p, v, lim, axis) in [
+                                (&mut s.pos.x, &mut s.vel.x, half.x, Vec2::X),
+                                (&mut s.pos.y, &mut s.vel.y, half.y, Vec2::Y),
+                            ] {
+                                if p.abs() > lim {
+                                    *p = p.signum() * lim;
+                                    if v.abs() > 60.0 {
+                                        s.hit = 0.0;
+                                        s.hit_dir = axis;
+                                    }
+                                    *v = -*v * rest;
                                 }
-                                *v = -*v * rest;
                             }
                         }
+                        if s.t > 0.4 && (s.vel.length() < 140.0 || s.t > 2.4) {
+                            s.mode = Mode::Home;
+                            s.t = 0.0;
+                        }
                     }
-                    if s.t > 0.4 && (s.vel.length() < 140.0 || s.t > 2.4) {
-                        s.mode = Mode::Home;
-                        s.t = 0.0;
+                    Mode::Home => {
+                        // critically damped pull back to the socket
+                        let k = 90.0;
+                        let acc = -s.pos * k - s.vel * 2.0 * k.sqrt() * 0.8;
+                        s.vel += acc * dt;
+                        s.pos += s.vel * dt;
+                        if s.pos.length() < 0.3 && s.vel.length() < 2.0 {
+                            s.pos = Vec2::ZERO;
+                            s.vel = Vec2::ZERO;
+                            s.mode = Mode::Rest;
+                            s.t = 0.0;
+                        }
                     }
+                    _ => {}
                 }
-                Mode::Home => {
-                    // critically damped pull back to the socket
-                    let k = 90.0;
-                    let acc = -s.pos * k - s.vel * 2.0 * k.sqrt() * 0.8;
-                    s.vel += acc * dt;
-                    s.pos += s.vel * dt;
-                    if s.pos.length() < 0.3 && s.vel.length() < 2.0 {
-                        s.pos = Vec2::ZERO;
-                        s.vel = Vec2::ZERO;
-                        s.mode = Mode::Rest;
-                        s.t = 0.0;
-                    }
-                }
-                _ => {}
-            }
-            *s
-        });
+                *s
+            },
+        );
         if st.mode != Mode::Rest || st.ghost >= 0.0 || auto || st.burst < 0.6 {
             glowkit_core::animate(ui);
         }
@@ -289,7 +299,14 @@ impl Widget for Slingshot {
                 ball + axis * along + axis.rot90() * across
             })
             .collect();
-        paint::soft_shadow(&painter, egui::Rect::from_center_size(ball, Vec2::splat(r * 2.0)), r, 12.0, vec2(0.0, 5.0), shadow_color(&t, 0.9));
+        paint::soft_shadow(
+            &painter,
+            egui::Rect::from_center_size(ball, Vec2::splat(r * 2.0)),
+            r,
+            12.0,
+            vec2(0.0, 5.0),
+            shadow_color(&t, 0.9),
+        );
         painter.add(egui::Shape::convex_polygon(pts, ball_c, Stroke::NONE));
         let ang = if heading.length() > 0.01 { heading.angle() } else { -std::f32::consts::FRAC_PI_4 };
         let a_s = glowkit_core::anim::follow(ui, id.with("ang_s"), ang.sin(), 18.0);

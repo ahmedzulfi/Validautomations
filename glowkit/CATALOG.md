@@ -22,10 +22,11 @@ Some items are hard or impossible in an immediate-mode GPU painter without image
 | [Evil Charts](https://evilcharts.com) | 6 / 6 | 100% |
 | [MVP Blocks](https://blocks.mvp-subha.me) | 25 / 25 | 100% |
 | [React Flow](https://reactflow.dev) | 12 / 12 | 100% |
+| [Bencho](https://bencho.dev) | 47 / 47 | 100% |
 | [Tremor](https://tremor.so) | 12 / 12 | 100% |
-| **Total** | **476 / 476** | **100%** |
+| **Total** | **523 / 523** | **100%** |
 
-glowkit itself ships **457** gallery entries.
+glowkit itself ships **489** gallery entries.
 
 ## React Bits
 
@@ -557,6 +558,59 @@ glowkit itself ships **457** gallery entries.
 | Snap to Grid | ✅ `node-editor` |
 | Auto Layout | ✅ `node-editor` |
 | Undo Redo | ✅ `node-editor` |
+## Bencho
+
+47 of 47 covered.
+
+| Component | glowkit |
+|---|---|
+| Card stack | ✅ `card-stack` |
+| ASCII wake | ✅ `ascii-wake` |
+| Wake slider | ✅ `wake-slider` |
+| Folding bill | ✅ `folding-bill` |
+| Heat map | ✅ `heat-word` |
+| Signature pad | ✅ `signature-pad` |
+| Dynamic island | ✅ `morphing-island` |
+| Particles | ✅ `particles` |
+| Generate | ✅ `generate` |
+| Image accordion | ✅ `image-accordion` |
+| Magnetic select | ✅ `magnet-select` |
+| Checklist | ✅ `checklist` |
+| Liquid toggle | ✅ `liq-toggle` |
+| Now playing | ✅ `sound` |
+| Tilt card | ✅ `tilt-card` |
+| Slosh slider | ✅ `slosh` |
+| Context meter | ✅ `ai-context-meter` |
+| Card swap | ✅ `card-swap` |
+| Stacked bars | ✅ `stacked-bars` |
+| Emoji reactions | ✅ `emoji-reactions` |
+| Image compare | ✅ `compare-slider` |
+| Voice note | ✅ `voice-note` |
+| Time scrubber | ✅ `time-scrubber` |
+| Label input | ✅ `label-input` |
+| Step player | ✅ `step-player` |
+| Glass bubble | ✅ `glass-bubble` |
+| Slide to confirm | ✅ `slide-confirm` |
+| Carousel | ✅ `carousel` |
+| Magnifying dock | ✅ `dock` |
+| Pull to refresh | ✅ `pull` |
+| Escape button | ✅ `escape` |
+| Create menu | ✅ `liq-create` |
+| Slingshot | ✅ `slingshot` |
+| Rolling counter | ✅ `sliding-number` |
+| Toast stack | ✅ `toast` |
+| Asset swap | ✅ `asset-swap` |
+| Like | ✅ `like` |
+| Eye tracker | ✅ `eye-tracker` |
+| Upload dropzone | ✅ `file-dropzone` |
+| One-time code | ✅ `otp-input` |
+| Todo tower | ✅ `todo-tower` |
+| Action node | ✅ `action-node` |
+| Assignees | ✅ `picker` |
+| Palette | ✅ `palette` |
+| Aspect ratio | ✅ `aspect-ratio` |
+| Dragging ball | ✅ `drag-ball` |
+| Search | ✅ `search-input` |
 ## Tremor
 
 12 of 12 covered.

@@ -2,7 +2,9 @@
 
 use super::common::idle_for;
 use egui::epaint::{Mesh, Vertex};
-use egui::{pos2, vec2, Color32, ColorImage, Context, CursorIcon, Id, Pos2, Response, Sense, Shape, Stroke, TextureId, Ui, Vec2};
+use egui::{
+    pos2, vec2, Color32, ColorImage, Context, CursorIcon, Id, Pos2, Response, Sense, Shape, Stroke, TextureId, Ui, Vec2,
+};
 use glowkit_core::anim::{ease, lerp, Easing};
 use glowkit_core::noise::noise2;
 use glowkit_core::Theme;
@@ -49,7 +51,14 @@ impl Default for FoldingBill {
 impl FoldingBill {
     /// A plain 300 x 130 sheet.
     pub fn new() -> Self {
-        Self { print: BillPrint::Plain, size: vec2(300.0, 130.0), stiffness: 40.0, settle: 0.0, texture: None, autoplay: false }
+        Self {
+            print: BillPrint::Plain,
+            size: vec2(300.0, 130.0),
+            stiffness: 40.0,
+            settle: 0.0,
+            texture: None,
+            autoplay: false,
+        }
     }
     /// Face print.
     pub fn print(mut self, p: BillPrint) -> Self {
@@ -100,7 +109,11 @@ impl Cloth {
         let mut rest = Vec::with_capacity(NX * NY);
         for j in 0..NY {
             for i in 0..NX {
-                rest.push([(i as f32 / (NX - 1) as f32 - 0.5) * size.x, (j as f32 / (NY - 1) as f32 - 0.5) * size.y, 0.0]);
+                rest.push([
+                    (i as f32 / (NX - 1) as f32 - 0.5) * size.x,
+                    (j as f32 / (NY - 1) as f32 - 0.5) * size.y,
+                    0.0,
+                ]);
             }
         }
         // start slightly rotated, like the reference sheet tossed on a table
@@ -213,10 +226,19 @@ fn bill_texture(ctx: &Context, print: BillPrint) -> TextureId {
                     if m > 12.0 && r > 0.31 {
                         k = k.max(wave * 0.35);
                     }
-                    [paper[0] + (ink[0] - paper[0]) * k, paper[1] + (ink[1] - paper[1]) * k, paper[2] + (ink[2] - paper[2]) * k]
+                    [
+                        paper[0] + (ink[0] - paper[0]) * k,
+                        paper[1] + (ink[1] - paper[1]) * k,
+                        paper[2] + (ink[2] - paper[2]) * k,
+                    ]
                 }
             };
-            px.extend_from_slice(&[(c[0].clamp(0.0, 1.0) * 255.0) as u8, (c[1].clamp(0.0, 1.0) * 255.0) as u8, (c[2].clamp(0.0, 1.0) * 255.0) as u8, 255]);
+            px.extend_from_slice(&[
+                (c[0].clamp(0.0, 1.0) * 255.0) as u8,
+                (c[1].clamp(0.0, 1.0) * 255.0) as u8,
+                (c[2].clamp(0.0, 1.0) * 255.0) as u8,
+                255,
+            ]);
         }
     }
     let img = ColorImage::from_rgba_unmultiplied([w, h], &px);
@@ -244,7 +266,8 @@ fn satisfy(p: &mut [[f32; 3]], a: usize, b: usize, rest: f32, k: f32, pinned: Op
 impl egui::Widget for FoldingBill {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
-        let (outer, response) = ui.allocate_exact_size(vec2(ui.available_width(), self.size.y * 1.9 + 40.0), Sense::click_and_drag());
+        let (outer, response) =
+            ui.allocate_exact_size(vec2(ui.available_width(), self.size.y * 1.9 + 40.0), Sense::click_and_drag());
         let id = response.id;
         let c = outer.center() + vec2(0.0, 10.0);
         let dt = glowkit_core::dt(ui).min(1.0 / 30.0);
@@ -442,9 +465,11 @@ impl egui::Widget for FoldingBill {
             for j in (1..NY - 1).rev() {
                 outline.push(idx(0, j));
             }
-            let flat: Vec<Pos2> = outline.iter().map(|&k| project(c, [pts[k][0], pts[k][1], 0.0]).0 + vec2(0.0, 5.0)).collect();
+            let flat: Vec<Pos2> =
+                outline.iter().map(|&k| project(c, [pts[k][0], pts[k][1], 0.0]).0 + vec2(0.0, 5.0)).collect();
             let hull = convex_hull(flat);
-            let sc = if t.dark { Color32::from_black_alpha(26) } else { Color32::from_rgba_unmultiplied(30, 30, 50, 9) };
+            let sc =
+                if t.dark { Color32::from_black_alpha(26) } else { Color32::from_rgba_unmultiplied(30, 30, 50, 9) };
             for g in [10.0f32, 6.0, 3.0, 0.0] {
                 let cen = hull.iter().fold(Vec2::ZERO, |a, p| a + p.to_vec2()) / hull.len().max(1) as f32;
                 let grown: Vec<Pos2> = hull.iter().map(|p| *p + (p.to_vec2() - cen).normalized() * g).collect();
@@ -484,7 +509,11 @@ impl egui::Widget for FoldingBill {
             let col = glowkit_core::color::mix(col, Color32::WHITE, spec * 0.75);
             let i = k % NX;
             let j = k / NX;
-            mesh.vertices.push(Vertex { pos: q.0, uv: pos2(i as f32 / (NX - 1) as f32, j as f32 / (NY - 1) as f32), color: col });
+            mesh.vertices.push(Vertex {
+                pos: q.0,
+                uv: pos2(i as f32 / (NX - 1) as f32, j as f32 / (NY - 1) as f32),
+                color: col,
+            });
         }
         // painter's algorithm: far quads first
         let mut quads: Vec<(f32, usize, usize)> = Vec::with_capacity((NX - 1) * (NY - 1));
@@ -496,7 +525,8 @@ impl egui::Widget for FoldingBill {
         }
         quads.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
         for (_, i, j) in quads {
-            let (a, b, cc, d) = (idx(i, j) as u32, idx(i + 1, j) as u32, idx(i + 1, j + 1) as u32, idx(i, j + 1) as u32);
+            let (a, b, cc, d) =
+                (idx(i, j) as u32, idx(i + 1, j) as u32, idx(i + 1, j + 1) as u32, idx(i, j + 1) as u32);
             mesh.add_triangle(a, b, cc);
             mesh.add_triangle(a, cc, d);
         }
@@ -506,7 +536,11 @@ impl egui::Widget for FoldingBill {
 }
 
 fn convex_hull(mut pts: Vec<Pos2>) -> Vec<Pos2> {
-    pts.sort_by(|a, b| a.x.partial_cmp(&b.x).unwrap_or(std::cmp::Ordering::Equal).then(a.y.partial_cmp(&b.y).unwrap_or(std::cmp::Ordering::Equal)));
+    pts.sort_by(|a, b| {
+        a.x.partial_cmp(&b.x)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then(a.y.partial_cmp(&b.y).unwrap_or(std::cmp::Ordering::Equal))
+    });
     if pts.len() < 3 {
         return pts;
     }
@@ -530,4 +564,3 @@ fn convex_hull(mut pts: Vec<Pos2>) -> Vec<Pos2> {
     lower.extend(upper);
     lower
 }
-

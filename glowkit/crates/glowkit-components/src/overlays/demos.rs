@@ -167,7 +167,7 @@ if r.confirmed { delete(); }"##,
             name: "Toast (Sonner)",
             category: C,
             description: "Stacked toasts that fan out on hover, auto-dismiss with a progress line, swipe away, and come in success / error / info / warning / loading flavours.",
-            covers: &["Sonner: Toaster", "shadcn/ui: Sonner", "shadcn/ui: Toast", "Animate UI: Toast", "Origin UI: Toast"],
+            covers: &["Sonner: Toaster", "shadcn/ui: Sonner", "shadcn/ui: Toast", "Animate UI: Toast", "Origin UI: Toast", "Bencho: Toast stack"],
             code: r##"if ui.button("Save").clicked() {
     toast(ui.ctx(), Toast::success("Event created")
         .description("Sunday, December 03 at 9:00 AM")
@@ -560,7 +560,7 @@ if let Some(item) = ContextMenu::new(vec![
             name: "Dynamic Island",
             category: C,
             description: "A black pill that morphs between idle, compact status, call, media player and notification layouts with springy resizing and cross-faded content.",
-            covers: &["Cult UI: Dynamic Island", "Aceternity: Dynamic Island", "Apple: Dynamic Island (pattern)", "Motion Primitives: Toolbar Dynamic", "Motion Primitives: Toolbar Expandable"],
+            covers: &["Cult UI: Dynamic Island", "Aceternity: Dynamic Island", "Apple: Dynamic Island (pattern)", "Motion Primitives: Toolbar Dynamic", "Motion Primitives: Toolbar Expandable", "Bencho: Dynamic island"],
             code: r##"ui.add(MorphingIsland::new(IslandView::Music {
     title: "Midnight City".into(),
     artist: "M83".into(),

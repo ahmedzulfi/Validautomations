@@ -214,7 +214,7 @@ ui.add(CountUp::new(100.0).from(0.0).duration(3.0).trigger(Trigger::OnClick));"#
             name: "Sliding Number",
             category: C,
             description: "An odometer: each digit rolls vertically on a spring when the value changes, carrying past 9 like a real counter.",
-            covers: &["Motion Primitives: Sliding Number", "React Bits: Counter", "Magic UI: Number Ticker (rolling)"],
+            covers: &["Motion Primitives: Sliding Number", "React Bits: Counter", "Magic UI: Number Ticker (rolling)", "Bencho: Rolling counter"],
             code: r##"let mut value = 1234.0;
 ui.add(SlidingNumber::new(value).size(72.0));
 if ui.button("+1").clicked() { value += 1.0; }"##,

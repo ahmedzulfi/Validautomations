@@ -61,7 +61,17 @@ pub struct AssigneePicker<'a> {
 impl<'a> AssigneePicker<'a> {
     /// A picker over `people`; `selected[i]` says whether person `i` is assigned.
     pub fn new(people: &'a [Assignee], selected: &'a mut Vec<bool>) -> Self {
-        Self { people, selected, layout: AvatarLayout::Stack, overlap: 10.0, width: 236.0, corner: 20.0, dark: false, stroke: true, autoplay: false }
+        Self {
+            people,
+            selected,
+            layout: AvatarLayout::Stack,
+            overlap: 10.0,
+            width: 236.0,
+            corner: 20.0,
+            dark: false,
+            stroke: true,
+            autoplay: false,
+        }
     }
     /// Avatar arrangement in the pill.
     pub fn layout(mut self, l: AvatarLayout) -> Self {
@@ -122,7 +132,9 @@ impl Widget for AssigneePicker<'_> {
             AvatarLayout::Row => av_r * 2.0 + 4.0,
             AvatarLayout::Grid => av_r * 2.0 + 2.0,
         };
-        let ks: Vec<f32> = (0..n).map(|i| spring(ui, id.with(("av", i)), if self.selected[i] { 1.0 } else { 0.0 }, 380.0, 19.0)).collect();
+        let ks: Vec<f32> = (0..n)
+            .map(|i| spring(ui, id.with(("av", i)), if self.selected[i] { 1.0 } else { 0.0 }, 380.0, 19.0))
+            .collect();
         let count: f32 = ks.iter().map(|k| k.clamp(0.0, 1.0)).sum();
         let slots = if self.layout == AvatarLayout::Grid { (count / 2.0).ceil() } else { count };
         let content_w = if count < 0.01 { 0.0 } else { (slots - 1.0).max(0.0) * step + av_r * 2.0 };
@@ -136,11 +148,15 @@ impl Widget for AssigneePicker<'_> {
         let mut hovered_row = None;
         let idle = idle_for(ui, id, ui.rect_contains_pointer(rect));
         for i in 0..n {
-            let rr = Rect::from_min_size(pos2(list.min.x + pad, list.min.y + pad + i as f32 * row_h), vec2(list.width() - pad * 2.0, row_h));
+            let rr = Rect::from_min_size(
+                pos2(list.min.x + pad, list.min.y + pad + i as f32 * row_h),
+                vec2(list.width() - pad * 2.0, row_h),
+            );
             if openk < 0.9 {
                 break;
             }
-            let r = ui.interact(rr, id.with(("row", i)), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+            let r =
+                ui.interact(rr, id.with(("row", i)), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
             if r.hovered() {
                 hovered_row = Some(i);
             }
@@ -171,7 +187,13 @@ impl Widget for AssigneePicker<'_> {
         let line = if self.stroke { hairline(&t) } else { Stroke::NONE };
         // pill
         paint::soft_shadow(painter, pill, pill_h / 2.0, 12.0, vec2(0.0, 3.0), shadow_color(&t, 0.5));
-        painter.rect(pill, cr(pill_h / 2.0), if p_resp.hovered() && !self.dark { surface_hover(&t).lerp_to_gamma(bg, 0.5) } else { bg }, line, egui::StrokeKind::Inside);
+        painter.rect(
+            pill,
+            cr(pill_h / 2.0),
+            if p_resp.hovered() && !self.dark { surface_hover(&t).lerp_to_gamma(bg, 0.5) } else { bg },
+            line,
+            egui::StrokeKind::Inside,
+        );
         let mut slot = 0.0;
         let mut j = 0usize;
         let x0 = pill.min.x + 12.0 + av_r;
@@ -209,8 +231,15 @@ impl Widget for AssigneePicker<'_> {
             let hy = spring(ui, id.with("hy"), hovered_row.unwrap_or(0) as f32, 500.0, 34.0);
             let ha = spring(ui, id.with("ha"), if hovered_row.is_some() { 1.0 } else { 0.0 }, 400.0, 30.0);
             if ha > 0.01 {
-                let hr = Rect::from_min_size(pos2(list.min.x + pad, list.min.y + pad + hy * row_h), vec2(list.width() - pad * 2.0, row_h));
-                clip.rect_filled(hr, cr((self.corner - pad).max(8.0)), with_alpha(if self.dark { with_alpha(fg, 0.1) } else { surface_hover(&t) }, ha));
+                let hr = Rect::from_min_size(
+                    pos2(list.min.x + pad, list.min.y + pad + hy * row_h),
+                    vec2(list.width() - pad * 2.0, row_h),
+                );
+                clip.rect_filled(
+                    hr,
+                    cr((self.corner - pad).max(8.0)),
+                    with_alpha(if self.dark { with_alpha(fg, 0.1) } else { surface_hover(&t) }, ha),
+                );
             }
             for (i, p) in self.people.iter().enumerate() {
                 let y = list.min.y + pad + (i as f32 + 0.5) * row_h;
@@ -220,7 +249,13 @@ impl Widget for AssigneePicker<'_> {
                 clip.text(pos2(x + 34.0, y + 9.0), Align2::LEFT_CENTER, &p.role, FontId::proportional(11.5), sub);
                 let k = ks[i].clamp(0.0, 1.0);
                 let b = Rect::from_center_size(pos2(list.max.x - pad - 22.0, y), vec2(17.0, 17.0));
-                clip.rect(b, cr(5.0), with_alpha(fg, k), Stroke::new(1.2, with_alpha(sub, 0.6 * (1.0 - k))), egui::StrokeKind::Inside);
+                clip.rect(
+                    b,
+                    cr(5.0),
+                    with_alpha(fg, k),
+                    Stroke::new(1.2, with_alpha(sub, 0.6 * (1.0 - k))),
+                    egui::StrokeKind::Inside,
+                );
                 if k > 0.05 {
                     icon(&clip, MicroIcon::Check, b.center(), 10.0 * (0.6 + 0.4 * k), with_alpha(bg, k), 1.6);
                 }

@@ -39,7 +39,15 @@ pub struct CreateMenu {
 impl CreateMenu {
     /// A pill labelled `label` with no items yet.
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), items: Vec::new(), width: 200.0, corner: 20.0, dark: false, stroke: true, autoplay: true }
+        Self {
+            label: label.into(),
+            items: Vec::new(),
+            width: 200.0,
+            corner: 20.0,
+            dark: false,
+            stroke: true,
+            autoplay: true,
+        }
     }
     /// Add a menu item.
     pub fn item(mut self, icon: MicroIcon, label: impl Into<String>) -> Self {
@@ -90,7 +98,8 @@ impl CreateMenu {
         let card_now = Rect::from_center_size(center, if st0.open { open_size } else { pill_size });
         let hovering = ui.rect_contains_pointer(card_now);
         let idle = idle_for(ui, id, ui.rect_contains_pointer(outer));
-        let pill_click = !st0.open && resp.clicked() && card_now.contains(resp.interact_pointer_pos().unwrap_or(center));
+        let pill_click =
+            !st0.open && resp.clicked() && card_now.contains(resp.interact_pointer_pos().unwrap_or(center));
         // which row is under the pointer
         let rows_top = center.y - open_size.y / 2.0 + pad;
         let row_at = |y: f32| -> Option<usize> {
@@ -105,34 +114,52 @@ impl CreateMenu {
         let outside_click = st0.open && ui.input(|i| i.pointer.any_click()) && !hovering && !resp.clicked();
         let auto = self.autoplay && idle > 2.0;
         let time = glowkit_core::time(ui);
-        let st = glowkit_core::with_state(ui, id, || st0, |s| {
-            let close = picked.is_some() || outside_click || (st0.open && resp.clicked() && picked.is_none() && !hovering);
-            if pill_click {
-                s.open = true;
-                s.since = now;
-            } else if close && s.open {
-                s.open = false;
-                s.since = now;
-            }
-            if auto {
-                let held = now - s.since;
-                if s.open && held > 2.8 {
-                    s.open = false;
-                    s.since = now;
-                } else if !s.open && held > 1.6 {
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0,
+            |s| {
+                let close =
+                    picked.is_some() || outside_click || (st0.open && resp.clicked() && picked.is_none() && !hovering);
+                if pill_click {
                     s.open = true;
                     s.since = now;
+                } else if close && s.open {
+                    s.open = false;
+                    s.since = now;
                 }
-            }
-            *s
-        });
+                if auto {
+                    let held = now - s.since;
+                    if s.open && held > 2.8 {
+                        s.open = false;
+                        s.since = now;
+                    } else if !s.open && held > 1.6 {
+                        s.open = true;
+                        s.since = now;
+                    }
+                }
+                *s
+            },
+        );
         if auto {
             glowkit_core::animate(ui);
         }
         let open = st.open;
         // width pours open first, height follows; closing reverses the order
-        let w = spring(ui, id.with("w"), if open { open_size.x } else { pill_size.x }, if open { 340.0 } else { 260.0 }, if open { 19.0 } else { 24.0 });
-        let h = spring(ui, id.with("h"), if open { open_size.y } else { pill_size.y }, if open { 200.0 } else { 380.0 }, if open { 17.0 } else { 26.0 });
+        let w = spring(
+            ui,
+            id.with("w"),
+            if open { open_size.x } else { pill_size.x },
+            if open { 340.0 } else { 260.0 },
+            if open { 19.0 } else { 24.0 },
+        );
+        let h = spring(
+            ui,
+            id.with("h"),
+            if open { open_size.y } else { pill_size.y },
+            if open { 200.0 } else { 380.0 },
+            if open { 17.0 } else { 26.0 },
+        );
         let r = spring(ui, id.with("r"), if open { self.corner } else { pill_size.y / 2.0 }, 260.0, 24.0);
         let k = ((h - pill_size.y) / (open_size.y - pill_size.y).max(1.0)).clamp(0.0, 1.2);
         let rect = Rect::from_center_size(center, vec2(w.max(10.0), h.max(10.0)));
@@ -140,11 +167,27 @@ impl CreateMenu {
             return picked;
         }
         let (ink_bg, ink_fg) = ink(&t);
-        let (bg, fg, sub) =
-            if self.dark { (ink_bg, ink_fg, with_alpha(ink_fg, 0.6)) } else { (surface(&t), t.foreground, t.muted_foreground) };
+        let (bg, fg, sub) = if self.dark {
+            (ink_bg, ink_fg, with_alpha(ink_fg, 0.6))
+        } else {
+            (surface(&t), t.foreground, t.muted_foreground)
+        };
         let elev = 0.5 + 0.5 * k.min(1.0);
-        paint::soft_shadow(&painter, rect, r.min(rect.height() / 2.0), 12.0 + 16.0 * elev, vec2(0.0, 3.0 + 6.0 * elev), shadow_color(&t, elev));
-        painter.rect(rect, cr(r.min(rect.height() / 2.0)), bg, if self.stroke { hairline(&t) } else { Stroke::NONE }, egui::StrokeKind::Inside);
+        paint::soft_shadow(
+            &painter,
+            rect,
+            r.min(rect.height() / 2.0),
+            12.0 + 16.0 * elev,
+            vec2(0.0, 3.0 + 6.0 * elev),
+            shadow_color(&t, elev),
+        );
+        painter.rect(
+            rect,
+            cr(r.min(rect.height() / 2.0)),
+            bg,
+            if self.stroke { hairline(&t) } else { Stroke::NONE },
+            egui::StrokeKind::Inside,
+        );
         let clip = painter.with_clip_rect(rect.shrink(1.0));
         // pill label melts away as the card grows
         let pa = (1.0 - k * 3.0).clamp(0.0, 1.0);
@@ -159,24 +202,35 @@ impl CreateMenu {
                 let v = vec2(d.x * cs - d.y * sn, d.x * sn + d.y * cs) * s;
                 clip.line_segment([ic - v, ic + v], Stroke::new(1.6, with_alpha(fg, pa)));
             }
-            clip.text(pos2(x0 + 22.0, center.y), Align2::LEFT_CENTER, &self.label, FontId::proportional(14.0), with_alpha(fg, pa));
+            clip.text(
+                pos2(x0 + 22.0, center.y),
+                Align2::LEFT_CENTER,
+                &self.label,
+                FontId::proportional(14.0),
+                with_alpha(fg, pa),
+            );
         }
         // items stagger in from slightly below
         let since = (now - st.since) as f32;
         let hover_target = if open { ptr_row.map(|i| i as f32).unwrap_or(-1.0) } else { -1.0 };
-        let hover_target = if auto && open && ptr_row.is_none() {
-            ((time * 1.3) as usize % n.max(1)) as f32
-        } else {
-            hover_target
-        };
+        let hover_target =
+            if auto && open && ptr_row.is_none() { ((time * 1.3) as usize % n.max(1)) as f32 } else { hover_target };
         let hy = spring(ui, id.with("hy"), hover_target.max(0.0), 420.0, 30.0);
         let ha = spring(ui, id.with("ha"), if hover_target >= 0.0 { 1.0 } else { 0.0 }, 300.0, 26.0);
         if open && ha > 0.01 {
-            let hr = Rect::from_min_size(pos2(rect.min.x + pad, rows_top + hy * row_h), vec2(rect.width() - pad * 2.0, row_h));
-            clip.rect_filled(hr, cr((self.corner - pad).max(6.0)), with_alpha(if self.dark { ink_fg } else { surface_hover(&t) }, if self.dark { 0.1 * ha } else { ha }));
+            let hr = Rect::from_min_size(
+                pos2(rect.min.x + pad, rows_top + hy * row_h),
+                vec2(rect.width() - pad * 2.0, row_h),
+            );
+            clip.rect_filled(
+                hr,
+                cr((self.corner - pad).max(6.0)),
+                with_alpha(if self.dark { ink_fg } else { surface_hover(&t) }, if self.dark { 0.1 * ha } else { ha }),
+            );
         }
         for (i, (ic, label)) in self.items.iter().enumerate() {
-            let e = if open { stagger(since - 0.06, i, 0.045, 0.28) } else { 1.0 - stagger(since, n - 1 - i, 0.02, 0.12) };
+            let e =
+                if open { stagger(since - 0.06, i, 0.045, 0.28) } else { 1.0 - stagger(since, n - 1 - i, 0.02, 0.12) };
             let a = e * k.min(1.0);
             if a <= 0.01 {
                 continue;

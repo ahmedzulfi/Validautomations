@@ -508,7 +508,7 @@ if ui.add(VoiceButton::new(listening).amplitude(mic_level)).clicked() {
             name: "Context Meter",
             category: C,
             description: "Token usage of the model's context window as a compact ring with a hover breakdown, or a segmented bar with legend and cost.",
-            covers: &["Vercel AI Elements: Context", "assistant-ui: Context usage"],
+            covers: &["Vercel AI Elements: Context", "assistant-ui: Context usage", "Bencho: Context meter"],
             code: r##"ui.add(ContextMeter::new(48_200, 128_000)
     .segment("Input", 30_100)
     .segment("Output", 12_900)

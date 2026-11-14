@@ -5,7 +5,10 @@ use super::common::{cr, idle_for, soft_card, surface, track};
 use crate::motion::common::polygon_shadow;
 use crate::scroll::common::{cover_uv, image_rect, warp_card};
 use crate::PaintedScene;
-use egui::{pos2, vec2, Align2, Color32, ColorImage, Context, CursorIcon, FontId, Id, Pos2, Rect, Response, Sense, TextureId, Ui, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, ColorImage, Context, CursorIcon, FontId, Id, Pos2, Rect, Response, Sense, TextureId,
+    Ui, Vec2,
+};
 use glowkit_core::anim::{ease, lerp, Easing, Spring};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::noise::noise2;
@@ -32,7 +35,13 @@ struct CardSpring {
 
 impl CardSpring {
     fn new() -> Self {
-        Self { x: Spring::new(0.0), y: Spring::new(0.0), angle: Spring::new(0.0), scale: Spring::new(1.0), flip: Spring::new(0.0) }
+        Self {
+            x: Spring::new(0.0),
+            y: Spring::new(0.0),
+            angle: Spring::new(0.0),
+            scale: Spring::new(1.0),
+            flip: Spring::new(0.0),
+        }
     }
     fn springs(&mut self) -> [&mut Spring; 5] {
         [&mut self.x, &mut self.y, &mut self.angle, &mut self.scale, &mut self.flip]
@@ -228,7 +237,13 @@ impl egui::Widget for PhotoFan {
             let cycle = 7.0;
             let p = (idle - 1.2) % cycle;
             let lap = ((idle - 1.2) / cycle) as u32;
-            let phase = if p < 2.6 { 0 } else if p < 5.4 { 1 } else { 2 };
+            let phase = if p < 2.6 {
+                0
+            } else if p < 5.4 {
+                1
+            } else {
+                2
+            };
             match phase {
                 0 => {
                     open_target = 1.0;
@@ -320,12 +335,20 @@ impl egui::Widget for PhotoFan {
         for &i in order(&st).iter() {
             let pose = pose_of(&st, i);
             let corner = self.corner.min(card_size.min_elem() * 0.3);
-            let outline: Vec<Pos2> = glowkit_core::paint::rounded_rect_points(Rect::from_min_size(Pos2::ZERO, card_size), corner, 5)
-                .into_iter()
-                .map(|p| pose.map(p.to_vec2()))
-                .collect();
+            let outline: Vec<Pos2> =
+                glowkit_core::paint::rounded_rect_points(Rect::from_min_size(Pos2::ZERO, card_size), corner, 5)
+                    .into_iter()
+                    .map(|p| pose.map(p.to_vec2()))
+                    .collect();
             let lift = (st.cards[i].scale.value - 1.0).max(0.0) * 4.0 + 0.6;
-            polygon_shadow(&painter, &outline, pose.center, vec2(0.0, 7.0 * lift), 7.0 * lift, shadow_col.gamma_multiply(0.55));
+            polygon_shadow(
+                &painter,
+                &outline,
+                pose.center,
+                vec2(0.0, 7.0 * lift),
+                7.0 * lift,
+                shadow_col.gamma_multiply(0.55),
+            );
             let front = (pose.flip * TAU).cos() >= 0.0;
             let shade = 0.82 + 0.18 * (pose.flip * TAU).cos().abs();
             let tint = Color32::from_gray((255.0 * shade) as u8);
@@ -340,11 +363,20 @@ impl egui::Widget for PhotoFan {
             } else {
                 let acc = PaintedScene::accent(i * 3 + 1);
                 let back = mix(acc, Color32::from_rgb(20, 20, 30), 0.35);
-                warp_card(&painter, card_size, corner, 3, None, Rect::ZERO, |l| pose.map(l), |l| {
-                    let u = (l.x + l.y) / 14.0;
-                    let stripe = ((u * PI).sin() * 0.5 + 0.5).powi(6) * 0.25;
-                    mix(back, Color32::WHITE, stripe).gamma_multiply(shade)
-                });
+                warp_card(
+                    &painter,
+                    card_size,
+                    corner,
+                    3,
+                    None,
+                    Rect::ZERO,
+                    |l| pose.map(l),
+                    |l| {
+                        let u = (l.x + l.y) / 14.0;
+                        let stripe = ((u * PI).sin() * 0.5 + 0.5).powi(6) * 0.25;
+                        mix(back, Color32::WHITE, stripe).gamma_multiply(shade)
+                    },
+                );
             }
             // rim
             let mut rim = outline.clone();
@@ -541,7 +573,11 @@ impl egui::Widget for ImageAccordion {
                     painter,
                     &glowkit_core::paint::rounded_rect_points(shade_r, radius.min(w / 2.0).min(20.0), 4),
                     3,
-                    glowkit_core::paint::linear_fn(shade_r, 90.0, &[Color32::TRANSPARENT, Color32::from_black_alpha((120.0 * show) as u8)]),
+                    glowkit_core::paint::linear_fn(
+                        shade_r,
+                        90.0,
+                        &[Color32::TRANSPARENT, Color32::from_black_alpha((120.0 * show) as u8)],
+                    ),
                 );
                 let a = ease(Easing::OutCubic, show);
                 painter.text(
@@ -617,13 +653,18 @@ fn art_levels(ctx: &Context, seed: u32) -> [TextureId; ART_LEVELS] {
         }
     }
     let to_img = |px: &[[f32; 3]], w: usize, h: usize| {
-        let bytes: Vec<u8> = px.iter().flat_map(|c| [(c[0] * 255.0) as u8, (c[1] * 255.0) as u8, (c[2] * 255.0) as u8, 255]).collect();
+        let bytes: Vec<u8> =
+            px.iter().flat_map(|c| [(c[0] * 255.0) as u8, (c[1] * 255.0) as u8, (c[2] * 255.0) as u8, 255]).collect();
         ColorImage::from_rgba_unmultiplied([w, h], &bytes)
     };
     let mut handles = Vec::with_capacity(ART_LEVELS);
     let (mut cur, mut w, mut h) = (base, ART_W, ART_H);
     for lvl in 0..ART_LEVELS {
-        handles.push(ctx.load_texture(format!("glowkit-micro-art-{seed}-{lvl}"), to_img(&cur, w, h), egui::TextureOptions::LINEAR));
+        handles.push(ctx.load_texture(
+            format!("glowkit-micro-art-{seed}-{lvl}"),
+            to_img(&cur, w, h),
+            egui::TextureOptions::LINEAR,
+        ));
         if lvl + 1 < ART_LEVELS {
             let (nw, nh) = ((w / 2).max(1), (h / 2).max(1));
             let mut next = vec![[0.0f32; 3]; nw * nh];
@@ -689,7 +730,15 @@ impl Default for GenerateCard {
 impl GenerateCard {
     /// A 270 x 330 card.
     pub fn new() -> Self {
-        Self { size: vec2(250.0, 310.0), pace: 5.0, ripple: 50.0, corner: 20.0, stroke: false, label: "Generate".into(), autoplay: false }
+        Self {
+            size: vec2(250.0, 310.0),
+            pace: 5.0,
+            ripple: 50.0,
+            corner: 20.0,
+            stroke: false,
+            label: "Generate".into(),
+            autoplay: false,
+        }
     }
     /// Card size in points.
     pub fn size(mut self, s: Vec2) -> Self {
@@ -731,7 +780,8 @@ impl GenerateCard {
 impl egui::Widget for GenerateCard {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
-        let (outer, outer_resp) = ui.allocate_exact_size(vec2(ui.available_width(), self.size.y + 10.0), Sense::hover());
+        let (outer, outer_resp) =
+            ui.allocate_exact_size(vec2(ui.available_width(), self.size.y + 10.0), Sense::hover());
         let rect = Rect::from_center_size(outer.center(), self.size);
         let id = outer_resp.id;
         let now = glowkit_core::time(ui);
@@ -761,7 +811,19 @@ impl egui::Widget for GenerateCard {
         if running || self.autoplay {
             glowkit_core::animate(ui);
         }
-        let press = glowkit_core::anim::spring(ui, id.with("press"), if resp.is_pointer_button_down_on() { 0.92 } else if resp.hovered() { 1.04 } else { 1.0 }, 400.0, 18.0);
+        let press = glowkit_core::anim::spring(
+            ui,
+            id.with("press"),
+            if resp.is_pointer_button_down_on() {
+                0.92
+            } else if resp.hovered() {
+                1.04
+            } else {
+                1.0
+            },
+            400.0,
+            18.0,
+        );
         let btn_alpha = glowkit_core::anim::follow(ui, id.with("btn_a"), if running { 0.0 } else { 1.0 }, 10.0);
         if resp.hovered() && !running {
             ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
@@ -792,7 +854,9 @@ impl egui::Widget for GenerateCard {
             let full = Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0));
             let alpha_lo = (reveal * 255.0) as u8;
             let tint_lo = Color32::from_white_alpha(alpha_lo);
-            warp_card(painter, size, self.corner, 4, Some(levels[(lo + 1).min(ART_LEVELS - 1)]), full, map, |_| tint_lo);
+            warp_card(painter, size, self.corner, 4, Some(levels[(lo + 1).min(ART_LEVELS - 1)]), full, map, |_| {
+                tint_lo
+            });
             let tint_hi = Color32::from_white_alpha(((1.0 - frac) * reveal * 255.0) as u8);
             warp_card(painter, size, self.corner, 4, Some(levels[lo]), full, map, |_| tint_hi);
             // frosted glass + ripple of light
@@ -801,16 +865,28 @@ impl egui::Widget for GenerateCard {
                 let glass = if t.dark { Color32::from_gray(40) } else { Color32::WHITE };
                 painter.rect_filled(rect, cr(self.corner), with_alpha(glass, frost));
                 let band = (now * 0.6).fract() * 1.6 - 0.3;
-                warp_card(painter, size, self.corner, 1, None, Rect::ZERO, |l| rect.min + l, |l| {
-                    let u = (l.x / size.x + l.y / size.y) * 0.5;
-                    let k = (1.0 - ((u - band) / 0.12).abs()).clamp(0.0, 1.0);
-                    with_alpha(Color32::WHITE, k * k * 0.35 * frost / 0.55 * (self.ripple / 100.0 + 0.3))
-                });
+                warp_card(
+                    painter,
+                    size,
+                    self.corner,
+                    1,
+                    None,
+                    Rect::ZERO,
+                    |l| rect.min + l,
+                    |l| {
+                        let u = (l.x / size.x + l.y / size.y) * 0.5;
+                        let k = (1.0 - ((u - band) / 0.12).abs()).clamp(0.0, 1.0);
+                        with_alpha(Color32::WHITE, k * k * 0.35 * frost / 0.55 * (self.ripple / 100.0 + 0.3))
+                    },
+                );
             }
             if running {
                 let pct = format!("{}%", (progress * 100.0) as u32);
                 let g = painter.layout_no_wrap(pct, FontId::proportional(11.5), t.foreground);
-                let br = Rect::from_min_size(pos2(rect.min.x + 12.0, rect.max.y - 12.0 - 22.0), vec2(g.size().x + 16.0, 22.0));
+                let br = Rect::from_min_size(
+                    pos2(rect.min.x + 12.0, rect.max.y - 12.0 - 22.0),
+                    vec2(g.size().x + 16.0, 22.0),
+                );
                 painter.rect_filled(br, cr(11.0), with_alpha(surface(&t), 0.92));
                 painter.galley(br.center() - g.size() / 2.0, g, t.foreground);
             }
@@ -819,10 +895,23 @@ impl egui::Widget for GenerateCard {
             let b = Rect::from_center_size(btn.center(), btn.size() * press);
             let fill = if st.start.is_some() { surface(&t) } else { track(&t) };
             if st.start.is_some() {
-                glowkit_core::paint::soft_shadow(painter, b, b.height() / 2.0, 12.0, vec2(0.0, 3.0), Color32::from_black_alpha((40.0 * btn_alpha) as u8));
+                glowkit_core::paint::soft_shadow(
+                    painter,
+                    b,
+                    b.height() / 2.0,
+                    12.0,
+                    vec2(0.0, 3.0),
+                    Color32::from_black_alpha((40.0 * btn_alpha) as u8),
+                );
             }
             painter.rect_filled(b, cr(b.height() / 2.0), with_alpha(fill, btn_alpha));
-            painter.text(b.center(), Align2::CENTER_CENTER, &self.label, FontId::proportional(14.5 * press), with_alpha(t.foreground, btn_alpha));
+            painter.text(
+                b.center(),
+                Align2::CENTER_CENTER,
+                &self.label,
+                FontId::proportional(14.5 * press),
+                with_alpha(t.foreground, btn_alpha),
+            );
         }
         resp
     }

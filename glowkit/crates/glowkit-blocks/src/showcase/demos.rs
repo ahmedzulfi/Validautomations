@@ -969,7 +969,7 @@ if out.just_revealed { celebrate(); }"##,
             name: "Compare Slider",
             category: Category::CursorAndInteraction,
             description: "Before / after comparison of two painted scenes with a draggable divider and grab handle; sweeps on its own when idle.",
-            covers: &["Aceternity: Compare", "Motion Primitives: Image Comparison", "Magic UI: Image comparison"],
+            covers: &["Aceternity: Compare", "Motion Primitives: Image Comparison", "Magic UI: Image comparison", "Bencho: Image compare"],
             code: r##"ui.add(CompareSlider::new(
     |p, r| paint_raw_photo(p, r),
     |p, r| paint_graded_photo(p, r),

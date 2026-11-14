@@ -46,7 +46,7 @@ Aurora::new().colors(&[hex("#3A29FF"), hex("#FF94B4"), hex("#FF3232")]).paint(ui
             name: "Particles",
             category: C,
             description: "Drifting particles with depth, optional constellation links and pointer repulsion.",
-            covers: &["React Bits: Particles", "Magic UI: Particles", "Aceternity: Sparkles", "tsParticles: Links"],
+            covers: &["React Bits: Particles", "Magic UI: Particles", "Aceternity: Sparkles", "tsParticles: Links", "Bencho: Particles"],
             code: r##"ui.add(Particles::new().count(140).links(true));
 ui.add(Particles::new().count(260).twinkle(true)); // sparkles"##,
             show: |ui| hero(ui, "Particles", "Move the pointer to push them around", None, |ui, r| Particles::new().count(140).links(true).paint(ui, r)),

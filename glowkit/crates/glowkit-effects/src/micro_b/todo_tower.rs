@@ -118,7 +118,8 @@ impl Widget for TodoTower {
         let g = 900.0 + 2600.0 * self.gravity;
         let auto = self.autoplay && idle > 2.5;
         let cx = stage.center().x;
-        let brick_rect = |b: &Brick| Rect::from_center_size(pos2(cx + b.x, b.y), vec2(widths[b.item % n_items], BRICK_H));
+        let brick_rect =
+            |b: &Brick| Rect::from_center_size(pos2(cx + b.x, b.y), vec2(widths[b.item % n_items], BRICK_H));
         let mut hovered_brick: Option<usize> = None;
         let st = glowkit_core::with_state(ui, id, TowerState::default, |s| {
             // (re)fill: bricks tumble in from above, one after another
@@ -132,7 +133,8 @@ impl Widget for TodoTower {
                         item: i % n_items,
                         y: stage.min.y - 40.0 - i as f32 * 70.0,
                         vy: 0.0,
-                        x: ((if i % 2 == 0 { -1.0 } else { 1.0 }) * (2.0 + 6.0 * h) + (h - 0.5) * 6.0) * (0.4 + slip * 1.6),
+                        x: ((if i % 2 == 0 { -1.0 } else { 1.0 }) * (2.0 + 6.0 * h) + (h - 0.5) * 6.0)
+                            * (0.4 + slip * 1.6),
                         angle: 0.0,
                         spin: 0.0,
                         checked: None,
@@ -229,7 +231,8 @@ impl Widget for TodoTower {
             let alpha = b.leave.map_or(1.0, |(at, _)| (1.0 - (now - at) as f32 / 0.6).clamp(0.0, 1.0));
             let a = b.angle;
             let rect = Rect::from_center_size(c, vec2(w, BRICK_H));
-            let pts: Vec<Pos2> = paint::rounded_rect_points(rect, 11.0, 5).into_iter().map(|p| rotated(c, p - c, a)).collect();
+            let pts: Vec<Pos2> =
+                paint::rounded_rect_points(rect, 11.0, 5).into_iter().map(|p| rotated(c, p - c, a)).collect();
             paint::soft_shadow(&painter, rect, 11.0, 10.0, vec2(0.0, 2.0), shadow_color(&t, 0.4 * alpha));
             painter.add(Shape::convex_polygon(pts.clone(), with_alpha(bg, alpha), Stroke::NONE));
             if line.width > 0.0 {
@@ -257,7 +260,10 @@ impl Widget for TodoTower {
             if tick > 0.0 {
                 let half = (w - 52.0) / 2.0 * tick;
                 painter.line_segment(
-                    [rotated(text_c, vec2(-(w - 52.0) / 2.0, 0.5), a), rotated(text_c, vec2(-(w - 52.0) / 2.0 + half * 2.0, 0.5), a)],
+                    [
+                        rotated(text_c, vec2(-(w - 52.0) / 2.0, 0.5), a),
+                        rotated(text_c, vec2(-(w - 52.0) / 2.0 + half * 2.0, 0.5), a),
+                    ],
                     Stroke::new(1.2, with_alpha(fg, alpha * 0.6)),
                 );
             }

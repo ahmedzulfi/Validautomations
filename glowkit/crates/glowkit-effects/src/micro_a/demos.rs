@@ -1,9 +1,9 @@
-use super::*;
 use super::common::{cr, raised, track};
+use super::*;
 use egui::{pos2, vec2, Align, Align2, CursorIcon, FontId, Layout, Rect, Sense, Ui, UiBuilder};
 use glowkit_core::color::mix;
-use glowkit_core::Theme;
 use glowkit_core::demo::{Category::MicroInteractions as C, Demo};
+use glowkit_core::Theme;
 
 fn mem<T: Clone + Send + Sync + 'static>(ui: &Ui, key: &str, init: impl FnOnce() -> T) -> T {
     glowkit_core::state(ui, ui.scope_id().with(key), init)
@@ -30,7 +30,13 @@ fn centered(ui: &mut Ui, rect: Rect, key: &str, f: impl FnOnce(&mut Ui)) {
 
 /// The block layout: the live component on the left, a column of parameter sliders on the right
 /// (stacked below on narrow screens).
-fn bench<P>(ui: &mut Ui, height: f32, p: &mut P, component: impl FnOnce(&mut Ui, &P), controls: impl FnOnce(&mut Ui, &mut P)) {
+fn bench<P>(
+    ui: &mut Ui,
+    height: f32,
+    p: &mut P,
+    component: impl FnOnce(&mut Ui, &mut P),
+    controls: impl FnOnce(&mut Ui, &mut P),
+) {
     let w = ui.available_width();
     let wide = w > 620.0;
     if wide {
@@ -63,9 +69,16 @@ fn choice(ui: &mut Ui, label: &str, value: &mut f32, options: &[&str]) {
     let w = ui.available_width();
     let (rect, _) = ui.allocate_exact_size(vec2(w, 34.0), Sense::hover());
     let font = FontId::proportional(13.0);
-    ui.painter().text(pos2(rect.min.x + 2.0, rect.center().y), Align2::LEFT_CENTER, label, font.clone(), mix(t.muted_foreground, t.foreground, 0.55));
+    ui.painter().text(
+        pos2(rect.min.x + 2.0, rect.center().y),
+        Align2::LEFT_CENTER,
+        label,
+        font.clone(),
+        mix(t.muted_foreground, t.foreground, 0.55),
+    );
     let label_w = ui.painter().layout_no_wrap(label.into(), font.clone(), t.foreground).size().x;
-    let text_w: Vec<f32> = options.iter().map(|o| ui.painter().layout_no_wrap((*o).into(), font.clone(), t.foreground).size().x).collect();
+    let text_w: Vec<f32> =
+        options.iter().map(|o| ui.painter().layout_no_wrap((*o).into(), font.clone(), t.foreground).size().x).collect();
     let room = w - label_w - 14.0 - 6.0 - text_w.iter().sum::<f32>();
     let pad = (room / options.len() as f32).clamp(10.0, 22.0);
     let opt_w: Vec<f32> = text_w.iter().map(|x| x + pad).collect();
@@ -176,14 +189,13 @@ ui.add(WakeSlider::new(&mut value).bars(36).wake(60.0));"##,
                     |ui, p| {
                         let mut v = p[2];
                         ui.add(WakeSlider::new(&mut v).wake(p[0]).bars(p[1] as usize).autoplay(true));
-                        set_mem(ui, "v", v);
+                        p[2] = v;
                     },
                     |ui, p| {
                         ui.add(ControlSlider::new("Wake", &mut p[0], 0.0..=100.0));
                         ui.add(ControlSlider::new("Bars", &mut p[1], 8.0..=72.0));
                     },
                 );
-                p[2] = mem(ui, "v", || 50.0);
                 set_mem(ui, "p", p);
             },
         },
@@ -309,7 +321,7 @@ ui.add(MagneticSelect::new(&mut choice).options(7).pull(55.0).bounce(55.0).give(
                         let mut sel = p[4] as usize;
                         let r = if p[0] as usize == 0 { 16.0 } else { 24.0 };
                         ui.add(MagneticSelect::new(&mut sel).radius(r).pull(p[1]).bounce(p[2]).give(p[3]).autoplay(true));
-                        set_mem(ui, "sel", sel);
+                        p[4] = sel as f32;
                     },
                     |ui, p| {
                         choice(ui, "Size", &mut p[0], &["Small", "Large"]);
@@ -318,7 +330,6 @@ ui.add(MagneticSelect::new(&mut choice).options(7).pull(55.0).bounce(55.0).give(
                         ui.add(ControlSlider::new("Give", &mut p[3], 0.0..=100.0));
                     },
                 );
-                p[4] = mem(ui, "sel", || 0usize) as f32;
                 set_mem(ui, "p", p);
             },
         },
@@ -369,14 +380,13 @@ ui.add(LiquidToggle::new(&mut on).speed(50.0).stretch(36.0));"##,
                     |ui, p| {
                         let mut on = p[2] > 0.5;
                         ui.add(LiquidToggle::new(&mut on).speed(p[0]).stretch(p[1]).autoplay(true));
-                        set_mem(ui, "on", on);
+                        p[2] = if on { 1.0 } else { 0.0 };
                     },
                     |ui, p| {
                         ui.add(ControlSlider::new("Speed", &mut p[0], 0.0..=100.0));
                         ui.add(ControlSlider::new("Stretch", &mut p[1], 0.0..=100.0));
                     },
                 );
-                p[2] = if mem(ui, "on", || false) { 1.0 } else { 0.0 };
                 set_mem(ui, "p", p);
             },
         },
@@ -421,7 +431,7 @@ ui.add(SloshSlider::new(&mut level).viscosity(15.0).momentum(55.0).tilt(45.0));"
                     |ui, p| {
                         let mut v = p[4];
                         ui.add(SloshSlider::new(&mut v).viscosity(p[0]).momentum(p[1]).corner(p[2]).tilt(p[3]).autoplay(true));
-                        set_mem(ui, "v", v);
+                        p[4] = v;
                     },
                     |ui, p| {
                         ui.add(ControlSlider::new("Viscosity", &mut p[0], 0.0..=100.0));
@@ -430,7 +440,6 @@ ui.add(SloshSlider::new(&mut level).viscosity(15.0).momentum(55.0).tilt(45.0));"
                         ui.add(ControlSlider::new("Tilt", &mut p[3], 0.0..=100.0));
                     },
                 );
-                p[4] = mem(ui, "v", || 0.6);
                 set_mem(ui, "p", p);
             },
         },
@@ -521,16 +530,16 @@ ui.add(SloshSlider::new(&mut level).viscosity(15.0).momentum(55.0).tilt(45.0));"
             code: r##"let mut minutes = 9 * 60 + 30;
 ui.add(TimeScrubber::new(&mut minutes).step(15).twenty_four_hour(false).momentum(50.0));"##,
             show: |ui| {
-                let mut p = params(ui, "p", [1.0, 0.0, 50.0, 20.0]);
+                let mut p = params(ui, "p", [1.0, 0.0, 50.0, 20.0, (9 * 60 + 30) as f32]);
                 bench(
                     ui,
                     380.0,
                     &mut p,
                     |ui, p| {
-                        let mut m: u32 = mem(ui, "m", || 9 * 60 + 30);
+                        let mut m = p[4] as u32;
                         let step = [5, 15, 30][p[0] as usize % 3];
                         ui.add(TimeScrubber::new(&mut m).step(step).twenty_four_hour(p[1] as usize == 1).momentum(p[2]).corner(p[3]).autoplay(true));
-                        set_mem(ui, "m", m);
+                        p[4] = m as f32;
                     },
                     |ui, p| {
                         choice(ui, "Step", &mut p[0], &["5", "15", "30"]);

@@ -116,12 +116,20 @@ impl PullToRefresh {
         let (outer, _) = ui.allocate_exact_size(total, Sense::hover());
         let base = Rect::from_min_size(outer.min, self.size);
         let id = ui.scope_id().with(("glowkit_pull", outer.min.x as i32));
-        let st0: PullState =
-            glowkit_core::state(ui, id, || PullState { pull: Spring::new(0.0), grab: false, refreshing: None, ghost: -1.0 });
+        let st0: PullState = glowkit_core::state(ui, id, || PullState {
+            pull: Spring::new(0.0),
+            grab: false,
+            refreshing: None,
+            ghost: -1.0,
+        });
         let card = Rect::from_min_size(base.min, vec2(base.width(), base.height() + st0.pull.value.max(0.0)));
         let response = ui.interact(card, id.with("card"), Sense::drag());
         if response.hovered() {
-            ui.ctx().set_cursor_icon(if response.dragged() { egui::CursorIcon::Grabbing } else { egui::CursorIcon::Grab });
+            ui.ctx().set_cursor_icon(if response.dragged() {
+                egui::CursorIcon::Grabbing
+            } else {
+                egui::CursorIcon::Grab
+            });
         }
         let now = ui.input(|i| i.time);
         let dt = glowkit_core::dt(ui);
@@ -132,57 +140,62 @@ impl PullToRefresh {
         let max = self.max_pull;
         let auto = self.autoplay && idle > 3.0;
         let mut refreshed = false;
-        let st = glowkit_core::with_state(ui, id, || st0, |s| {
-            if started && s.refreshing.is_none() {
-                s.grab = true;
-                s.ghost = -1.0;
-                s.pull.target = -max * (1.0 - (s.pull.value.max(0.0) / max).min(0.99)).ln();
-            }
-            if s.grab && dragging {
-                // rubber band: track the raw pull distance in `target`, show a resisted value
-                s.pull.target += drag;
-                let raw = s.pull.target.max(0.0);
-                s.pull.value = max * (1.0 - (-raw / max).exp());
-                s.pull.velocity = 0.0;
-            } else if s.refreshing.is_none() && s.ghost < 0.0 && auto {
-                s.ghost = 0.0;
-            }
-            if s.ghost >= 0.0 && !s.grab {
-                s.ghost += dt;
-                let g = s.ghost;
-                if (0.6..1.6).contains(&g) {
-                    let k = smoothstep(0.6, 1.6, g);
-                    s.pull.value = max * 0.72 * k;
-                    s.pull.target = s.pull.value;
-                    s.pull.velocity = 0.0;
-                } else if g >= 1.6 && s.refreshing.is_none() && g < 1.7 {
-                    s.refreshing = Some(now);
-                }
-                if g > 4.6 {
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0,
+            |s| {
+                if started && s.refreshing.is_none() {
+                    s.grab = true;
                     s.ghost = -1.0;
+                    s.pull.target = -max * (1.0 - (s.pull.value.max(0.0) / max).min(0.99)).ln();
                 }
-            }
-            if released && s.grab {
-                s.grab = false;
-                if s.pull.value > line {
-                    s.refreshing = Some(now);
+                if s.grab && dragging {
+                    // rubber band: track the raw pull distance in `target`, show a resisted value
+                    s.pull.target += drag;
+                    let raw = s.pull.target.max(0.0);
+                    s.pull.value = max * (1.0 - (-raw / max).exp());
+                    s.pull.velocity = 0.0;
+                } else if s.refreshing.is_none() && s.ghost < 0.0 && auto {
+                    s.ghost = 0.0;
                 }
-            }
-            if let Some(at) = s.refreshing {
-                if now - at > 1.3 {
-                    s.refreshing = None;
-                    refreshed = true;
+                if s.ghost >= 0.0 && !s.grab {
+                    s.ghost += dt;
+                    let g = s.ghost;
+                    if (0.6..1.6).contains(&g) {
+                        let k = smoothstep(0.6, 1.6, g);
+                        s.pull.value = max * 0.72 * k;
+                        s.pull.target = s.pull.value;
+                        s.pull.velocity = 0.0;
+                    } else if g >= 1.6 && s.refreshing.is_none() && g < 1.7 {
+                        s.refreshing = Some(now);
+                    }
+                    if g > 4.6 {
+                        s.ghost = -1.0;
+                    }
                 }
-            }
-            let ghost_holding = (0.6..1.6).contains(&s.ghost);
-            if !s.grab && !ghost_holding {
-                s.pull.target = if s.refreshing.is_some() { line * 0.62 } else { 0.0 };
-                s.pull.stiffness = 260.0;
-                s.pull.damping = if s.refreshing.is_some() { 20.0 } else { 15.0 };
-                s.pull.step(dt);
-            }
-            *s
-        });
+                if released && s.grab {
+                    s.grab = false;
+                    if s.pull.value > line {
+                        s.refreshing = Some(now);
+                    }
+                }
+                if let Some(at) = s.refreshing {
+                    if now - at > 1.3 {
+                        s.refreshing = None;
+                        refreshed = true;
+                    }
+                }
+                let ghost_holding = (0.6..1.6).contains(&s.ghost);
+                if !s.grab && !ghost_holding {
+                    s.pull.target = if s.refreshing.is_some() { line * 0.62 } else { 0.0 };
+                    s.pull.stiffness = 260.0;
+                    s.pull.damping = if s.refreshing.is_some() { 20.0 } else { 15.0 };
+                    s.pull.step(dt);
+                }
+                *s
+            },
+        );
         if !st.pull.is_settled() || st.refreshing.is_some() || st.ghost >= 0.0 || st.grab || auto {
             glowkit_core::animate(ui);
         }
@@ -192,7 +205,13 @@ impl PullToRefresh {
         let (ink_bg, ink_fg) = ink(&t);
         let (bg, fg) = if self.dark { (ink_bg, ink_fg) } else { (surface(&t), t.foreground) };
         paint::soft_shadow(&painter, card, self.corner, 20.0, vec2(0.0, 5.0), shadow_color(&t, 0.7));
-        painter.rect(card, cr(self.corner), bg, if self.stroke { hairline(&t) } else { Stroke::NONE }, egui::StrokeKind::Inside);
+        painter.rect(
+            card,
+            cr(self.corner),
+            bg,
+            if self.stroke { hairline(&t) } else { Stroke::NONE },
+            egui::StrokeKind::Inside,
+        );
         // spinner of dots in the opening gap
         let progress = (pull / line).clamp(0.0, 1.0);
         let spin_c = pos2(card.center().x, card.min.y + 8.0 + pull * 0.5);

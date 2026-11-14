@@ -125,11 +125,16 @@ impl Widget for SlideToConfirm {
             since: 0.0,
             ghost: -1.0,
         });
-        let knob_rect = |p: f32| Rect::from_min_size(pos2(rect.min.x + pad + p * travel, rect.min.y + pad), vec2(knob_d, knob_d));
+        let knob_rect =
+            |p: f32| Rect::from_min_size(pos2(rect.min.x + pad + p * travel, rect.min.y + pad), vec2(knob_d, knob_d));
         let kr = knob_rect(st0.knob.value);
         let k_resp = ui.interact(kr, id.with("knob"), Sense::drag());
         if k_resp.hovered() || k_resp.dragged() {
-            ui.ctx().set_cursor_icon(if k_resp.dragged() { egui::CursorIcon::Grabbing } else { egui::CursorIcon::Grab });
+            ui.ctx().set_cursor_icon(if k_resp.dragged() {
+                egui::CursorIcon::Grabbing
+            } else {
+                egui::CursorIcon::Grab
+            });
         }
         let now = ui.input(|i| i.time);
         let dt = glowkit_core::dt(ui);
@@ -141,66 +146,71 @@ impl Widget for SlideToConfirm {
         let auto = self.autoplay && idle > 2.5;
         let (threshold, reset_after) = (self.threshold, self.reset_after);
         let mut just_confirmed = false;
-        let st = glowkit_core::with_state(ui, id, || st0, |s| {
-            if s.confirmed {
-                s.grab = None;
-                if s.ghost >= 0.0 {
-                    s.ghost += dt;
-                    if s.ghost > 2.6 {
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0,
+            |s| {
+                if s.confirmed {
+                    s.grab = None;
+                    if s.ghost >= 0.0 {
+                        s.ghost += dt;
+                        if s.ghost > 2.6 {
+                            s.ghost = -1.0;
+                        }
+                    }
+                    if reset_after.is_some_and(|r| now - s.since > r as f64) {
+                        s.confirmed = false;
+                    }
+                } else {
+                    if started {
+                        if let Some(p) = ptr {
+                            s.grab = Some(p.x - (rect.min.x + pad + s.knob.value * travel));
+                        }
+                    }
+                    if let (true, Some(g), Some(p)) = (dragging, s.grab, ptr) {
+                        let raw = (p.x - g - rect.min.x - pad) / travel.max(1.0);
+                        // rubber band before the start
+                        let v = if raw < 0.0 { raw * 0.15 } else { raw.min(1.0) };
+                        s.knob.velocity = (v - s.knob.value) / dt.max(1e-3);
+                        s.knob.value = v;
+                        s.knob.target = v;
                         s.ghost = -1.0;
+                    } else if s.ghost >= 0.0 || (auto && s.grab.is_none()) {
+                        // ghost demo: ease out to just past the mark, then let go
+                        if s.ghost < 0.0 {
+                            s.ghost = 0.0;
+                        }
+                        s.ghost += dt;
+                        let g = s.ghost;
+                        if (1.0..2.1).contains(&g) {
+                            let k = smoothstep(1.0, 2.1, g);
+                            s.knob.value = k * (threshold + 0.06);
+                            s.knob.target = s.knob.value;
+                            s.knob.velocity = 0.0;
+                        } else if g >= 2.1 {
+                            s.knob.target = 1.0;
+                        }
+                    }
+                    if released {
+                        s.grab = None;
+                    }
+                    if s.knob.value >= threshold && !s.confirmed {
+                        s.confirmed = true;
+                        s.since = now;
+                        s.grab = None;
+                        just_confirmed = true;
                     }
                 }
-                if reset_after.is_some_and(|r| now - s.since > r as f64) {
-                    s.confirmed = false;
+                if s.grab.is_none() && !(1.0..2.1).contains(&s.ghost) {
+                    s.knob.target = if s.confirmed { 1.0 } else { 0.0 };
+                    s.knob.stiffness = stiff;
+                    s.knob.damping = if s.confirmed { 22.0 } else { 13.0 };
+                    s.knob.step(dt);
                 }
-            } else {
-                if started {
-                    if let Some(p) = ptr {
-                        s.grab = Some(p.x - (rect.min.x + pad + s.knob.value * travel));
-                    }
-                }
-                if let (true, Some(g), Some(p)) = (dragging, s.grab, ptr) {
-                    let raw = (p.x - g - rect.min.x - pad) / travel.max(1.0);
-                    // rubber band before the start
-                    let v = if raw < 0.0 { raw * 0.15 } else { raw.min(1.0) };
-                    s.knob.velocity = (v - s.knob.value) / dt.max(1e-3);
-                    s.knob.value = v;
-                    s.knob.target = v;
-                    s.ghost = -1.0;
-                } else if s.ghost >= 0.0 || (auto && s.grab.is_none()) {
-                    // ghost demo: ease out to just past the mark, then let go
-                    if s.ghost < 0.0 {
-                        s.ghost = 0.0;
-                    }
-                    s.ghost += dt;
-                    let g = s.ghost;
-                    if (1.0..2.1).contains(&g) {
-                        let k = smoothstep(1.0, 2.1, g);
-                        s.knob.value = k * (threshold + 0.06);
-                        s.knob.target = s.knob.value;
-                        s.knob.velocity = 0.0;
-                    } else if g >= 2.1 {
-                        s.knob.target = 1.0;
-                    }
-                }
-                if released {
-                    s.grab = None;
-                }
-                if s.knob.value >= threshold && !s.confirmed {
-                    s.confirmed = true;
-                    s.since = now;
-                    s.grab = None;
-                    just_confirmed = true;
-                }
-            }
-            if s.grab.is_none() && !(1.0..2.1).contains(&s.ghost) {
-                s.knob.target = if s.confirmed { 1.0 } else { 0.0 };
-                s.knob.stiffness = stiff;
-                s.knob.damping = if s.confirmed { 22.0 } else { 13.0 };
-                s.knob.step(dt);
-            }
-            *s
-        });
+                *s
+            },
+        );
         if just_confirmed {
             response.mark_changed();
         }
@@ -209,7 +219,8 @@ impl Widget for SlideToConfirm {
             glowkit_core::animate(ui);
         }
         let done = glowkit_core::anim::spring(ui, id.with("done"), if st.confirmed { 1.0 } else { 0.0 }, 220.0, 20.0);
-        let press = glowkit_core::anim::spring(ui, id.with("press"), if st.grab.is_some() { 1.0 } else { 0.0 }, 400.0, 24.0);
+        let press =
+            glowkit_core::anim::spring(ui, id.with("press"), if st.grab.is_some() { 1.0 } else { 0.0 }, 400.0, 24.0);
         if !ui.is_rect_visible(rect) {
             return response;
         }
@@ -220,7 +231,13 @@ impl Widget for SlideToConfirm {
             if self.dark { (ink_bg, ink_fg, ink_fg, ink_bg) } else { (surface(&t), t.foreground, ink_bg, ink_fg) };
         let radius = self.corner.min(self.height / 2.0);
         paint::soft_shadow(painter, rect, radius, 16.0, vec2(0.0, 4.0), shadow_color(&t, 0.7));
-        painter.rect(rect, cr(radius), track, if self.stroke { hairline(&t) } else { Stroke::NONE }, egui::StrokeKind::Inside);
+        painter.rect(
+            rect,
+            cr(radius),
+            track,
+            if self.stroke { hairline(&t) } else { Stroke::NONE },
+            egui::StrokeKind::Inside,
+        );
         let kr = knob_rect(p.max(0.0)).expand(press * 1.5);
         // trail behind the handle
         let trail = Rect::from_min_max(rect.min + vec2(pad, pad), pos2(kr.max.x, rect.max.y - pad));
@@ -248,7 +265,13 @@ impl Widget for SlideToConfirm {
         }
         if done > 0.01 {
             let c = pos2(rect.center().x - knob_d * 0.35, rect.center().y + (1.0 - done) * 6.0);
-            painter.text(c, Align2::CENTER_CENTER, &self.done_label, FontId::proportional(14.5), with_alpha(track_fg, done.min(1.0)));
+            painter.text(
+                c,
+                Align2::CENTER_CENTER,
+                &self.done_label,
+                FontId::proportional(14.5),
+                with_alpha(track_fg, done.min(1.0)),
+            );
         }
         // handle
         paint::soft_shadow(painter, kr, kr.width() / 2.0, 8.0, vec2(0.0, 2.0), shadow_color(&t, 0.8));

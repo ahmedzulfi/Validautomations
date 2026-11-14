@@ -115,7 +115,13 @@ fn home(i: usize, n: usize, r: f32) -> Vec2 {
         return Vec2::ZERO;
     }
     let ring = n - 1;
-    let (k, per, rr) = if ring <= 6 { (i - 1, ring, 2.25 * r) } else if i <= 6 { (i - 1, 6, 2.25 * r) } else { (i - 7, ring - 6, 4.4 * r) };
+    let (k, per, rr) = if ring <= 6 {
+        (i - 1, ring, 2.25 * r)
+    } else if i <= 6 {
+        (i - 1, 6, 2.25 * r)
+    } else {
+        (i - 7, ring - 6, 4.4 * r)
+    };
     let off = if i > 6 { 0.5 } else { 0.0 };
     let a = TAU * (k as f32 + off) / per as f32 - TAU / 4.0 + TAU / 12.0;
     vec2(a.cos(), a.sin()) * rr
@@ -143,7 +149,8 @@ impl egui::Widget for MagneticSelect<'_> {
         let n = self.options;
         let r = self.radius;
         let extent = if n > 7 { 5.6 * r } else { 3.6 * r };
-        let (rect, mut response) = ui.allocate_exact_size(vec2(ui.available_width(), extent * 2.0 + 20.0), Sense::click());
+        let (rect, mut response) =
+            ui.allocate_exact_size(vec2(ui.available_width(), extent * 2.0 + 20.0), Sense::click());
         let id = response.id;
         let c = rect.center();
         let dt = glowkit_core::dt(ui);
@@ -157,9 +164,8 @@ impl egui::Widget for MagneticSelect<'_> {
                 .map(|i| Node { pos: home(i, n, r), vel: Vec2::ZERO, radius: Spring::new(r), glow: 0.0 })
                 .collect();
         }
-        let hit = ptr.and_then(|p| {
-            (0..n).rev().find(|&i| (p - (c + st.nodes[i].pos)).length() <= st.nodes[i].radius.value)
-        });
+        let hit =
+            ptr.and_then(|p| (0..n).rev().find(|&i| (p - (c + st.nodes[i].pos)).length() <= st.nodes[i].radius.value));
         if pressing && response.is_pointer_button_down_on() {
             if let Some(h) = hit {
                 if *self.selected != h {
@@ -220,7 +226,13 @@ impl egui::Widget for MagneticSelect<'_> {
                         let overlap = min - dist;
                         let k = lerp(0.9, 0.25, give);
                         // the selected (heavier) node yields less
-                        let (wa, wb) = if i == sel { (0.15, 0.85) } else if j == sel { (0.85, 0.15) } else { (0.5, 0.5) };
+                        let (wa, wb) = if i == sel {
+                            (0.15, 0.85)
+                        } else if j == sel {
+                            (0.85, 0.15)
+                        } else {
+                            (0.5, 0.5)
+                        };
                         st.nodes[i].pos -= nrm * overlap * k * wa;
                         st.nodes[j].pos += nrm * overlap * k * wb;
                         let push = overlap * lerp(40.0, 14.0, give);
@@ -255,7 +267,8 @@ impl egui::Widget for MagneticSelect<'_> {
             let nd = nodes[i];
             let p = c + nd.pos;
             let rr = nd.radius.value.max(1.0);
-            let sc = if t.dark { Color32::from_black_alpha(90) } else { Color32::from_rgba_unmultiplied(30, 30, 60, 16) };
+            let sc =
+                if t.dark { Color32::from_black_alpha(90) } else { Color32::from_rgba_unmultiplied(30, 30, 60, 16) };
             paint::soft_shadow(painter, Rect::from_center_size(p, Vec2::splat(rr * 2.0)), rr, 10.0, vec2(0.0, 3.0), sc);
             painter.circle_filled(p, rr, base);
             if nd.glow > 0.003 {
@@ -391,7 +404,14 @@ impl egui::Widget for LiquidToggle<'_> {
         let track_col = mix(off_col, on_col, ease(Easing::InOutSine, fillk));
         let radius = rect.height() / 2.0;
         if !t.dark {
-            paint::soft_shadow(painter, rect, radius, 10.0, vec2(0.0, 2.0), Color32::from_rgba_unmultiplied(30, 30, 60, 12));
+            paint::soft_shadow(
+                painter,
+                rect,
+                radius,
+                10.0,
+                vec2(0.0, 2.0),
+                Color32::from_rgba_unmultiplied(30, 30, 60, 12),
+            );
         }
         painter.rect_filled(rect, cr(radius), track_col);
         if self.stroke || t.dark {
@@ -404,7 +424,11 @@ impl egui::Widget for LiquidToggle<'_> {
         let stretch = ((x1 - x0) / (rect.width() - 2.0 * radius)).clamp(0.0, 1.0);
         let ry = kr * (1.0 - 0.16 * stretch);
         let knob = Rect::from_min_max(pos2(x0 - kr, rect.center().y - ry), pos2(x1 + kr, rect.center().y + ry));
-        let knob_col = mix(track_fill(&t), if t.dark { Color32::from_gray(245) } else { Color32::WHITE }, ease(Easing::InOutSine, fillk));
+        let knob_col = mix(
+            track_fill(&t),
+            if t.dark { Color32::from_gray(245) } else { Color32::WHITE },
+            ease(Easing::InOutSine, fillk),
+        );
         painter.rect_filled(knob, cr(ry), knob_col);
         response
     }
@@ -550,7 +574,10 @@ impl egui::Widget for TaskChecklist<'_> {
         let mut add_clicked = false;
         let mut rows_geo = Vec::new();
         for i in 0..rows {
-            let r = Rect::from_min_size(pos2(rect.min.x + 6.0, rect.min.y + pad - 4.0 + i as f32 * row_h), vec2(rect.width() - 12.0, row_h));
+            let r = Rect::from_min_size(
+                pos2(rect.min.x + 6.0, rect.min.y + pad - 4.0 + i as f32 * row_h),
+                vec2(rect.width() - 12.0, row_h),
+            );
             let resp = ui.interact(r, id.with(("row", i)), Sense::click());
             if resp.hovered() {
                 ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
@@ -593,14 +620,29 @@ impl egui::Widget for TaskChecklist<'_> {
         let bs = self.box_size;
         for (i, (r, hovered)) in rows_geo.iter().enumerate() {
             if *hovered {
-                painter.rect_filled(r.shrink2(vec2(0.0, 2.0)), cr((self.corner - 6.0).max(4.0)), with_alpha(track(&t), 0.6));
+                painter.rect_filled(
+                    r.shrink2(vec2(0.0, 2.0)),
+                    cr((self.corner - 6.0).max(4.0)),
+                    with_alpha(track(&t), 0.6),
+                );
             }
             let bc = pos2(r.min.x + 10.0 + bs / 2.0, r.center().y);
             let text_x = bc.x + bs / 2.0 + 12.0;
             if i >= self.items.len() {
                 let br = Rect::from_center_size(bc, Vec2::splat(bs));
-                painter.rect_stroke(br, cr(bs * 0.28), Stroke::new(1.3, with_alpha(t.muted_foreground, 0.35)), egui::StrokeKind::Inside);
-                painter.text(pos2(text_x, r.center().y), Align2::LEFT_CENTER, self.add_label.as_deref().unwrap_or(""), font.clone(), with_alpha(t.muted_foreground, 0.7));
+                painter.rect_stroke(
+                    br,
+                    cr(bs * 0.28),
+                    Stroke::new(1.3, with_alpha(t.muted_foreground, 0.35)),
+                    egui::StrokeKind::Inside,
+                );
+                painter.text(
+                    pos2(text_x, r.center().y),
+                    Align2::LEFT_CENTER,
+                    self.add_label.as_deref().unwrap_or(""),
+                    font.clone(),
+                    with_alpha(t.muted_foreground, 0.7),
+                );
                 continue;
             }
             let (pop, tick, strike) = anims[i];
@@ -608,7 +650,12 @@ impl egui::Widget for TaskChecklist<'_> {
             let over = (pop - 1.0).abs().min(0.4) * if pop > 0.02 { 1.0 } else { 0.0 };
             let scale = 1.0 + (pop - pop.clamp(0.0, 1.0)).abs() * 0.8 + over * 0.15 * (1.0 - fill).max(0.0);
             let br = Rect::from_center_size(bc, Vec2::splat(bs * scale));
-            painter.rect_stroke(br, cr(bs * 0.28), Stroke::new(1.3, mix(with_alpha(t.muted_foreground, 0.6), ink, fill)), egui::StrokeKind::Inside);
+            painter.rect_stroke(
+                br,
+                cr(bs * 0.28),
+                Stroke::new(1.3, mix(with_alpha(t.muted_foreground, 0.6), ink, fill)),
+                egui::StrokeKind::Inside,
+            );
             if fill > 0.01 {
                 let fr = Rect::from_center_size(bc, Vec2::splat(bs * scale * (0.4 + 0.6 * fill)));
                 painter.rect_filled(fr, cr(bs * 0.28 * scale), with_alpha(ink, fill));
@@ -638,7 +685,10 @@ impl egui::Widget for TaskChecklist<'_> {
             let sk = ease(Easing::InOutCubic, strike);
             if sk > 0.01 {
                 let y = r.center().y + 0.5;
-                painter.line_segment([pos2(text_x - 1.0, y), pos2(text_x - 1.0 + (tw + 2.0) * sk, y)], Stroke::new(1.3, text_col));
+                painter.line_segment(
+                    [pos2(text_x - 1.0, y), pos2(text_x - 1.0 + (tw + 2.0) * sk, y)],
+                    Stroke::new(1.3, text_col),
+                );
             }
         }
         response

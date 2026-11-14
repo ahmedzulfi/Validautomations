@@ -33,7 +33,15 @@ pub struct StepPlayer {
 impl StepPlayer {
     /// A player with `steps` steps.
     pub fn new(steps: usize) -> Self {
-        Self { steps: steps.clamp(1, 12), pace: 3.0, dark: false, stroke: false, bar: 30.0, looping: false, autoplay: true }
+        Self {
+            steps: steps.clamp(1, 12),
+            pace: 3.0,
+            dark: false,
+            stroke: false,
+            bar: 30.0,
+            looping: false,
+            autoplay: true,
+        }
     }
     /// Seconds each step takes to fill.
     pub fn pace(mut self, secs: f32) -> Self {
@@ -81,7 +89,8 @@ impl Widget for StepPlayer {
         let id = response.id;
         let pill = Rect::from_min_size(pos2(rect.min.x, rect.center().y - h / 2.0), vec2(pill_w, h));
         let btn_rect = Rect::from_center_size(pos2(rect.max.x - btn / 2.0, rect.center().y), vec2(btn, btn));
-        let b_resp = ui.interact(btn_rect, id.with("btn"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+        let b_resp =
+            ui.interact(btn_rect, id.with("btn"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
         let p_resp = ui.interact(pill, id.with("pill"), Sense::click());
         let dt = glowkit_core::dt(ui);
         let idle = idle_for(ui, id, b_resp.hovered() || p_resp.hovered());
@@ -134,7 +143,8 @@ impl Widget for StepPlayer {
         if st.playing {
             glowkit_core::animate(ui);
         }
-        let press = spring(ui, id.with("press"), if b_resp.is_pointer_button_down_on() { 1.0 } else { 0.0 }, 500.0, 28.0);
+        let press =
+            spring(ui, id.with("press"), if b_resp.is_pointer_button_down_on() { 1.0 } else { 0.0 }, 500.0, 28.0);
         let play_morph = spring(ui, id.with("morph"), if st.playing { 1.0 } else { 0.0 }, 320.0, 22.0);
         let fill_vis = glowkit_core::anim::follow(ui, id.with("fv"), st.progress, 30.0);
         if !ui.is_rect_visible(rect) {

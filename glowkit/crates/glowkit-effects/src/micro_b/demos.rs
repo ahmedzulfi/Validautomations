@@ -76,13 +76,25 @@ fn price_card(ui: &mut Ui, rect: Rect, seed: u64) {
     let whole = format!("${}", asset_swap_money(price.floor()));
     let r = p.text(pos2(x0, rect.min.y + 30.0), Align2::LEFT_CENTER, &whole, FontId::proportional(24.0), t.foreground);
     let cents = format!(".{:02}", ((price.fract()) * 100.0) as u32);
-    p.text(pos2(r.max.x, rect.min.y + 32.0), Align2::LEFT_CENTER, cents, FontId::proportional(15.0), t.muted_foreground);
+    p.text(
+        pos2(r.max.x, rect.min.y + 32.0),
+        Align2::LEFT_CENTER,
+        cents,
+        FontId::proportional(15.0),
+        t.muted_foreground,
+    );
     let up = change >= 0.0;
     let col = if up { t.success } else { t.destructive };
     let abs = price * change as f64 / 100.0;
     let line = format!("{}{} · {:.1}%", if up { "+" } else { "-" }, asset_swap_money(abs.abs()), change.abs());
     let r2 = p.text(pos2(x0, rect.min.y + 54.0), Align2::LEFT_CENTER, line, FontId::proportional(11.5), col);
-    p.text(pos2(r2.max.x + 6.0, rect.min.y + 54.0), Align2::LEFT_CENTER, "today", FontId::proportional(11.5), t.muted_foreground);
+    p.text(
+        pos2(r2.max.x + 6.0, rect.min.y + 54.0),
+        Align2::LEFT_CENTER,
+        "today",
+        FontId::proportional(11.5),
+        t.muted_foreground,
+    );
     // chart
     let chart = Rect::from_min_max(pos2(x0, rect.min.y + 70.0), pos2(rect.max.x - 16.0, rect.max.y - 44.0));
     let n = 28;
@@ -96,7 +108,12 @@ fn price_card(ui: &mut Ui, rect: Rect, seed: u64) {
     let (lo, hi) = pts.iter().fold((f32::MAX, f32::MIN), |(a, b), q| (a.min(q.y), b.max(q.y)));
     let pts: Vec<egui::Pos2> = pts
         .iter()
-        .map(|q| pos2(chart.min.x + q.x / (n - 1) as f32 * chart.width(), chart.max.y - (q.y - lo) / (hi - lo).max(1e-3) * chart.height()))
+        .map(|q| {
+            pos2(
+                chart.min.x + q.x / (n - 1) as f32 * chart.width(),
+                chart.max.y - (q.y - lo) / (hi - lo).max(1e-3) * chart.height(),
+            )
+        })
         .collect();
     let smooth = paint::catmull_rom(&pts, 6);
     paint::area_fill(p, &smooth, chart.max.y, with_alpha(col, 0.16), with_alpha(col, 0.0));
@@ -112,7 +129,13 @@ fn price_card(ui: &mut Ui, rect: Rect, seed: u64) {
         if i == 2 {
             p.rect_filled(tr.shrink2(vec2(4.0, 0.0)), cr(8.0), surface_hover(&t));
         }
-        p.text(tr.center(), Align2::CENTER_CENTER, *s, FontId::proportional(11.0), if i == 2 { t.foreground } else { t.muted_foreground });
+        p.text(
+            tr.center(),
+            Align2::CENTER_CENTER,
+            *s,
+            FontId::proportional(11.0),
+            if i == 2 { t.foreground } else { t.muted_foreground },
+        );
     }
 }
 

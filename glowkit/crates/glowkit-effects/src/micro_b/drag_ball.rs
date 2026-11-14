@@ -108,79 +108,98 @@ impl Widget for DragBall {
         let time = glowkit_core::time(ui);
         let idle = idle_for(ui, id, b.hovered() || b.dragged());
         let ptr = b.interact_pointer_pos();
-        let (pressed, dragging, released) = (b.drag_started() || (b.is_pointer_button_down_on() && st0.grab.is_none()), b.dragged() || b.is_pointer_button_down_on(), b.drag_stopped());
+        let (pressed, dragging, released) = (
+            b.drag_started() || (b.is_pointer_button_down_on() && st0.grab.is_none()),
+            b.dragged() || b.is_pointer_button_down_on(),
+            b.drag_stopped(),
+        );
         let auto = self.autoplay && idle > 2.0;
         let grip = 140.0 + 700.0 * self.grip;
         let give = self.give;
         let half = stage.size() / 2.0 - Vec2::splat(r);
-        let st = glowkit_core::with_state(ui, id, || st0, |s| {
-            let mut target: Option<Pos2> = None;
-            if pressed {
-                if let Some(p) = ptr {
-                    s.grab = Some(p - (home + s.pos));
-                    s.ghost = -1.0;
-                    s.squish.velocity -= 4.0;
-                }
-            }
-            if let (Some(g), true, Some(p)) = (s.grab, dragging, ptr) {
-                target = Some(p - g);
-            }
-            if released || (!dragging && s.grab.is_some()) {
-                s.grab = None;
-                s.squish.velocity += 6.0;
-            }
-            // ghost: grab, swing in a loop, let go
-            if auto && s.grab.is_none() && s.ghost < 0.0 && s.vel.length() < 5.0 {
-                s.ghost = 0.0;
-            }
-            if s.ghost >= 0.0 {
-                s.ghost += dt;
-                let g = s.ghost;
-                if (0.6..2.2).contains(&g) {
-                    let k = smoothstep(0.6, 1.0, g);
-                    let a = (g - 0.6) * 4.2;
-                    let orbit = vec2(a.cos() - 1.0, a.sin() * 0.6) * 70.0 * k;
-                    target = Some(home + orbit);
-                    if g < 0.7 {
-                        s.squish.velocity -= 30.0 * dt;
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0,
+            |s| {
+                let mut target: Option<Pos2> = None;
+                if pressed {
+                    if let Some(p) = ptr {
+                        s.grab = Some(p - (home + s.pos));
+                        s.ghost = -1.0;
+                        s.squish.velocity -= 4.0;
                     }
-                } else if (2.2..2.25).contains(&g) {
-                    s.squish.velocity += 6.0 * dt * 20.0;
                 }
-                if g > 3.4 {
-                    s.ghost = -1.0;
+                if let (Some(g), true, Some(p)) = (s.grab, dragging, ptr) {
+                    target = Some(p - g);
                 }
-            }
-            let holding = target.is_some();
-            s.held = if holding { s.held + dt } else { 0.0 };
-            let (k, damp) = if holding {
-                (grip, 2.0 * grip.sqrt() * 0.9)
-            } else {
-                // looser and wobblier with more give
-                let k = 160.0 - 60.0 * give;
-                (k, 2.0 * k.sqrt() * (0.55 - 0.4 * give))
-            };
-            let goal = target.map_or(Vec2::ZERO, |p| p - home);
-            let steps = 4;
-            let h = dt / steps as f32;
-            for _ in 0..steps {
-                let acc = (goal - s.pos) * k - s.vel * damp;
-                s.vel += acc * h;
-                s.pos += s.vel * h;
-            }
-            s.pos = vec2(s.pos.x.clamp(-half.x, half.x), s.pos.y.clamp(-half.y, half.y));
-            // squeeze while held (a slow pulse), jelly wobble after
-            s.squish.target = if holding { 0.08 + 0.03 * (s.held * 7.0).sin() } else { 0.0 };
-            s.squish.stiffness = 260.0;
-            s.squish.damping = 7.0 + 10.0 * (1.0 - give);
-            s.squish.step(dt);
-            *s
-        });
-        let moving = st.vel.length() > 0.5 || st.pos.length() > 0.5 || !st.squish.is_settled() || st.grab.is_some() || st.ghost >= 0.0;
+                if released || (!dragging && s.grab.is_some()) {
+                    s.grab = None;
+                    s.squish.velocity += 6.0;
+                }
+                // ghost: grab, swing in a loop, let go
+                if auto && s.grab.is_none() && s.ghost < 0.0 && s.vel.length() < 5.0 {
+                    s.ghost = 0.0;
+                }
+                if s.ghost >= 0.0 {
+                    s.ghost += dt;
+                    let g = s.ghost;
+                    if (0.6..2.2).contains(&g) {
+                        let k = smoothstep(0.6, 1.0, g);
+                        let a = (g - 0.6) * 4.2;
+                        let orbit = vec2(a.cos() - 1.0, a.sin() * 0.6) * 70.0 * k;
+                        target = Some(home + orbit);
+                        if g < 0.7 {
+                            s.squish.velocity -= 30.0 * dt;
+                        }
+                    } else if (2.2..2.25).contains(&g) {
+                        s.squish.velocity += 6.0 * dt * 20.0;
+                    }
+                    if g > 3.4 {
+                        s.ghost = -1.0;
+                    }
+                }
+                let holding = target.is_some();
+                s.held = if holding { s.held + dt } else { 0.0 };
+                let (k, damp) = if holding {
+                    (grip, 2.0 * grip.sqrt() * 0.9)
+                } else {
+                    // looser and wobblier with more give
+                    let k = 160.0 - 60.0 * give;
+                    (k, 2.0 * k.sqrt() * (0.55 - 0.4 * give))
+                };
+                let goal = target.map_or(Vec2::ZERO, |p| p - home);
+                let steps = 4;
+                let h = dt / steps as f32;
+                for _ in 0..steps {
+                    let acc = (goal - s.pos) * k - s.vel * damp;
+                    s.vel += acc * h;
+                    s.pos += s.vel * h;
+                }
+                s.pos = vec2(s.pos.x.clamp(-half.x, half.x), s.pos.y.clamp(-half.y, half.y));
+                // squeeze while held (a slow pulse), jelly wobble after
+                s.squish.target = if holding { 0.08 + 0.03 * (s.held * 7.0).sin() } else { 0.0 };
+                s.squish.stiffness = 260.0;
+                s.squish.damping = 7.0 + 10.0 * (1.0 - give);
+                s.squish.step(dt);
+                *s
+            },
+        );
+        let moving = st.vel.length() > 0.5
+            || st.pos.length() > 0.5
+            || !st.squish.is_settled()
+            || st.grab.is_some()
+            || st.ghost >= 0.0;
         if moving || auto {
             glowkit_core::animate(ui);
         }
-        let swell = glowkit_core::anim::spring(ui, id.with("swell"), if b.hovered() || st.grab.is_some() || (0.6..2.2).contains(&st.ghost) { 1.0 } else { 0.0 }, 300.0, 16.0);
+        let swell = glowkit_core::anim::spring(
+            ui,
+            id.with("swell"),
+            if b.hovered() || st.grab.is_some() || (0.6..2.2).contains(&st.ghost) { 1.0 } else { 0.0 },
+            300.0,
+            16.0,
+        );
         if !ui.is_rect_visible(stage) {
             return response;
         }
@@ -216,10 +235,18 @@ impl Widget for DragBall {
         );
         let lit = shade(bg, if t.dark { 0.05 } else { 0.0 });
         let dim = shade(bg, -0.06);
-        paint::fill_convex_fn(&painter, &pts, 6, paint::radial_fn(c - vec2(rad * 0.35, rad * 0.45), rad * 1.9, &[lit, dim]));
+        paint::fill_convex_fn(
+            &painter,
+            &pts,
+            6,
+            paint::radial_fn(c - vec2(rad * 0.35, rad * 0.45), rad * 1.9, &[lit, dim]),
+        );
         let mut rim = pts.clone();
         rim.push(pts[0]);
-        painter.add(egui::Shape::line(rim, Stroke::new(1.0, if t.dark { with_alpha(egui::Color32::WHITE, 0.06) } else { with_alpha(t.border, 0.6) })));
+        painter.add(egui::Shape::line(
+            rim,
+            Stroke::new(1.0, if t.dark { with_alpha(egui::Color32::WHITE, 0.06) } else { with_alpha(t.border, 0.6) }),
+        ));
         if st.ghost >= 0.0 {
             let g = st.ghost;
             let a = smoothstep(0.1, 0.5, g) * (1.0 - smoothstep(2.15, 2.35, g));

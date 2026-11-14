@@ -61,7 +61,17 @@ pub struct WakeSlider<'a> {
 impl<'a> WakeSlider<'a> {
     /// A slider editing `value` in `0..=100`.
     pub fn new(value: &'a mut f32) -> Self {
-        Self { value, range: (0.0, 100.0), bars: 36, wake: 60.0, width: 260.0, bar_height: 20.0, show_value: true, color: None, autoplay: false }
+        Self {
+            value,
+            range: (0.0, 100.0),
+            bars: 36,
+            wake: 60.0,
+            width: 260.0,
+            bar_height: 20.0,
+            show_value: true,
+            color: None,
+            autoplay: false,
+        }
     }
     /// Value range.
     pub fn range(mut self, lo: f32, hi: f32) -> Self {
@@ -304,7 +314,8 @@ fn rounded_span(rect: Rect, r: f32, y: f32) -> (f32, f32) {
 impl egui::Widget for SloshSlider<'_> {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
-        let (outer, mut response) = ui.allocate_exact_size(vec2(ui.available_width(), self.size.y + 16.0), Sense::click_and_drag());
+        let (outer, mut response) =
+            ui.allocate_exact_size(vec2(ui.available_width(), self.size.y + 16.0), Sense::click_and_drag());
         let rect = Rect::from_center_size(outer.center(), self.size);
         let id = response.id;
         let dt = glowkit_core::dt(ui);
@@ -326,7 +337,8 @@ impl egui::Widget for SloshSlider<'_> {
         let hand = x_of(*self.value);
         let stiffness = lerp(260.0, 90.0, self.momentum / 100.0);
         let damping = 2.0 * stiffness.sqrt() * lerp(0.12, 0.9, self.viscosity / 100.0);
-        let mut st: SloshState = glowkit_core::state(ui, id.with("slosh"), || SloshState { edge: Spring::new(hand), last_hand: hand });
+        let mut st: SloshState =
+            glowkit_core::state(ui, id.with("slosh"), || SloshState { edge: Spring::new(hand), last_hand: hand });
         st.edge.target = hand;
         st.edge.stiffness = stiffness;
         st.edge.damping = damping;
@@ -350,7 +362,8 @@ impl egui::Widget for SloshSlider<'_> {
         // liquid: surface leans with velocity and bulges forward
         let lean = (vel * 0.02 * self.tilt / 45.0).clamp(-40.0, 40.0);
         let bulge = (edge - hand).clamp(-60.0, 60.0) * 0.35;
-        let fill = self.fill.unwrap_or_else(|| if t.dark { glowkit_core::color::shade(t.muted, 0.2) } else { surface(&t) });
+        let fill =
+            self.fill.unwrap_or_else(|| if t.dark { glowkit_core::color::shade(t.muted, 0.2) } else { surface(&t) });
         let rows = 28;
         let mut m = Mesh::default();
         for k in 0..=rows {
@@ -395,6 +408,7 @@ struct ScrubState {
     prev: String,
     changed_at: f32,
     last_value: u32,
+    auto_step: i32,
 }
 
 /// A time picker made of a horizontal ruler: drag the ruler under the red needle to set a
@@ -504,7 +518,8 @@ impl egui::Widget for TimeScrubber<'_> {
         let (outer, response) = ui.allocate_exact_size(vec2(ui.available_width(), self.size.y + 10.0), Sense::hover());
         let rect = Rect::from_center_size(outer.center(), self.size);
         let id = response.id;
-        let ruler = Rect::from_min_max(pos2(rect.min.x + 16.0, rect.min.y + 66.0), pos2(rect.max.x - 16.0, rect.max.y - 14.0));
+        let ruler =
+            Rect::from_min_max(pos2(rect.min.x + 16.0, rect.min.y + 66.0), pos2(rect.max.x - 16.0, rect.max.y - 14.0));
         let resp = ui.interact(ruler.expand2(vec2(0.0, 12.0)), id.with("ruler"), Sense::drag());
         let dt = glowkit_core::dt(ui);
         let now = glowkit_core::time(ui);
@@ -526,6 +541,7 @@ impl egui::Widget for TimeScrubber<'_> {
             prev: String::new(),
             changed_at: -10.0,
             last_value: ext,
+            auto_step: -1,
         });
         if ext != st.last_value && !dragging {
             st.pos = ext as f32;
@@ -535,10 +551,8 @@ impl egui::Widget for TimeScrubber<'_> {
         // autoplay: a fling every few seconds
         if self.autoplay && !dragging && idle > 1.5 {
             let k = ((idle - 1.5) / 3.2) as i32;
-            let key = id.with(("fling", k));
-            let fired: bool = ui.data(|d| d.get_temp(key)).unwrap_or(false);
-            if !fired {
-                ui.data_mut(|d| d.insert_temp(key, true));
+            if k != st.auto_step {
+                st.auto_step = k;
                 let dir = if k % 3 == 1 { -1.0 } else { 1.0 };
                 st.vel = dir * (60.0 + 30.0 * ((k % 4) as f32));
                 st.snapping = false;
@@ -599,9 +613,14 @@ impl egui::Widget for TimeScrubber<'_> {
         let small = FontId::proportional(14.0);
         let chars: Vec<char> = txt.chars().collect();
         let pchars: Vec<char> = prev.chars().collect();
-        let widths: Vec<f32> = chars.iter().map(|c| painter.layout_no_wrap(c.to_string(), font.clone(), t.foreground).size().x).collect();
+        let widths: Vec<f32> =
+            chars.iter().map(|c| painter.layout_no_wrap(c.to_string(), font.clone(), t.foreground).size().x).collect();
         let total: f32 = widths.iter().sum();
-        let ampm_w = if ampm.is_empty() { 0.0 } else { painter.layout_no_wrap(ampm.into(), small.clone(), t.foreground).size().x + 6.0 };
+        let ampm_w = if ampm.is_empty() {
+            0.0
+        } else {
+            painter.layout_no_wrap(ampm.into(), small.clone(), t.foreground).size().x + 6.0
+        };
         let mut x = rect.center().x - (total + ampm_w) / 2.0;
         let base_y = rect.min.y + 36.0;
         let e = ease(Easing::OutCubic, roll);
@@ -609,9 +628,21 @@ impl egui::Widget for TimeScrubber<'_> {
             let cx = x + widths[i] / 2.0;
             let changed = pchars.get(i) != Some(c) && roll < 1.0;
             if changed {
-                painter.text(pos2(cx, base_y + (1.0 - e) * 12.0 ), Align2::CENTER_CENTER, c.to_string(), font.clone(), with_alpha(t.foreground, e));
+                painter.text(
+                    pos2(cx, base_y + (1.0 - e) * 12.0),
+                    Align2::CENTER_CENTER,
+                    c.to_string(),
+                    font.clone(),
+                    with_alpha(t.foreground, e),
+                );
                 if let Some(pc) = pchars.get(i) {
-                    painter.text(pos2(cx, base_y - e * 12.0 ), Align2::CENTER_CENTER, pc.to_string(), font.clone(), with_alpha(t.foreground, 1.0 - e));
+                    painter.text(
+                        pos2(cx, base_y - e * 12.0),
+                        Align2::CENTER_CENTER,
+                        pc.to_string(),
+                        font.clone(),
+                        with_alpha(t.foreground, 1.0 - e),
+                    );
                 }
             } else {
                 painter.text(pos2(cx, base_y), Align2::CENTER_CENTER, c.to_string(), font.clone(), t.foreground);

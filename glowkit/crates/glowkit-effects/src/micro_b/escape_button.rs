@@ -136,7 +136,8 @@ impl Widget for EscapeButton {
         let center = stage.center() + vec2(st0.x.value, st0.y.value);
         let btn = Rect::from_center_size(center, size);
         let resp = ui.interact(btn, id.with("btn"), Sense::click());
-        let real = ui.input(|i| i.pointer.hover_pos()).filter(|p| stage.contains(*p) && ui.rect_contains_pointer(stage));
+        let real =
+            ui.input(|i| i.pointer.hover_pos()).filter(|p| stage.contains(*p) && ui.rect_contains_pointer(stage));
         let idle = idle_for(ui, id, real.is_some());
         let ghost_on = self.autoplay && idle > 2.0;
         let clicked = resp.clicked() && tired;
@@ -145,63 +146,69 @@ impl Widget for EscapeButton {
         }
         let half = stage.size() / 2.0 - size / 2.0 - vec2(12.0, 12.0);
         let (radius, skittish, patience) = (self.radius, self.skittish, self.patience);
-        let st = glowkit_core::with_state(ui, id, || st0, |s| {
-            if clicked && s.caught.is_none() {
-                s.caught = Some(now);
-            }
-            if let Some(at) = s.caught {
-                if now - at > 1.8 {
-                    // start over from the middle
-                    s.caught = None;
-                    s.dodges = 0;
-                    s.x.target = 0.0;
-                    s.y.target = 0.0;
-                }
-            }
-            s.ghost_on = ghost_on;
-            let pos = stage.center() + vec2(s.x.value, s.y.value);
-            if ghost_on {
-                // the ghost chases the button; once it is tired it goes in for the click
-                let to = pos - s.ghost;
-                let speed = if s.dodges >= patience { 160.0 } else { 210.0 + 90.0 * skittish };
-                let step = to.length().min(speed * dt);
-                if to.length() > 1.0 {
-                    s.ghost += to.normalized() * step;
-                }
-                if s.dodges >= patience && to.length() < 6.0 && s.caught.is_none() {
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0,
+            |s| {
+                if clicked && s.caught.is_none() {
                     s.caught = Some(now);
                 }
-            }
-            let pointer = real.or(if ghost_on { Some(s.ghost) } else { None });
-            let inside = pointer.is_some_and(|p| p.distance(pos) < radius * if ghost_on && real.is_none() { 0.45 } else { 1.0 });
-            if inside && s.dodges < patience && s.caught.is_none() {
-                let p = pointer.unwrap_or(pos);
-                let mut away = pos - p;
-                if away.length() < 1.0 {
-                    away = vec2(1.0, -0.4);
+                if let Some(at) = s.caught {
+                    if now - at > 1.8 {
+                        // start over from the middle
+                        s.caught = None;
+                        s.dodges = 0;
+                        s.x.target = 0.0;
+                        s.y.target = 0.0;
+                    }
                 }
-                let jump = radius * (0.9 + 0.9 * skittish);
-                let mut target = (pos - stage.center()) + away.normalized() * jump;
-                // cornered: leap to the far side of the stage instead
-                if target.x.abs() > half.x || target.y.abs() > half.y {
-                    let mirrored = -(p - stage.center()) * 0.85;
-                    target = vec2(mirrored.x.clamp(-half.x, half.x), mirrored.y.clamp(-half.y, half.y));
+                s.ghost_on = ghost_on;
+                let pos = stage.center() + vec2(s.x.value, s.y.value);
+                if ghost_on {
+                    // the ghost chases the button; once it is tired it goes in for the click
+                    let to = pos - s.ghost;
+                    let speed = if s.dodges >= patience { 160.0 } else { 210.0 + 90.0 * skittish };
+                    let step = to.length().min(speed * dt);
+                    if to.length() > 1.0 {
+                        s.ghost += to.normalized() * step;
+                    }
+                    if s.dodges >= patience && to.length() < 6.0 && s.caught.is_none() {
+                        s.caught = Some(now);
+                    }
                 }
-                s.x.target = target.x.clamp(-half.x, half.x);
-                s.y.target = target.y.clamp(-half.y, half.y);
-                if !s.inside {
-                    s.dodges += 1;
+                let pointer = real.or(if ghost_on { Some(s.ghost) } else { None });
+                let inside = pointer
+                    .is_some_and(|p| p.distance(pos) < radius * if ghost_on && real.is_none() { 0.45 } else { 1.0 });
+                if inside && s.dodges < patience && s.caught.is_none() {
+                    let p = pointer.unwrap_or(pos);
+                    let mut away = pos - p;
+                    if away.length() < 1.0 {
+                        away = vec2(1.0, -0.4);
+                    }
+                    let jump = radius * (0.9 + 0.9 * skittish);
+                    let mut target = (pos - stage.center()) + away.normalized() * jump;
+                    // cornered: leap to the far side of the stage instead
+                    if target.x.abs() > half.x || target.y.abs() > half.y {
+                        let mirrored = -(p - stage.center()) * 0.85;
+                        target = vec2(mirrored.x.clamp(-half.x, half.x), mirrored.y.clamp(-half.y, half.y));
+                    }
+                    s.x.target = target.x.clamp(-half.x, half.x);
+                    s.y.target = target.y.clamp(-half.y, half.y);
+                    if !s.inside {
+                        s.dodges += 1;
+                    }
                 }
-            }
-            s.inside = inside;
-            let k = 140.0 + 260.0 * skittish;
-            for sp in [&mut s.x, &mut s.y] {
-                sp.stiffness = k;
-                sp.damping = 2.0 * k.sqrt() * 0.62;
-                sp.step(dt);
-            }
-            *s
-        });
+                s.inside = inside;
+                let k = 140.0 + 260.0 * skittish;
+                for sp in [&mut s.x, &mut s.y] {
+                    sp.stiffness = k;
+                    sp.damping = 2.0 * k.sqrt() * 0.62;
+                    sp.step(dt);
+                }
+                *s
+            },
+        );
         let moving = !(st.x.is_settled() && st.y.is_settled());
         if moving || ghost_on || st.caught.is_some() {
             glowkit_core::animate(ui);
@@ -212,12 +219,16 @@ impl Widget for EscapeButton {
         let squash = (speed / 1800.0).min(0.22);
         let sz = if speed > 1.0 {
             let d = vel / speed;
-            vec2(size.x * (1.0 + squash * d.x.abs()) / (1.0 + squash * d.y.abs() * 0.5), size.y * (1.0 + squash * d.y.abs() * 0.6) / (1.0 + squash * d.x.abs() * 0.6))
+            vec2(
+                size.x * (1.0 + squash * d.x.abs()) / (1.0 + squash * d.y.abs() * 0.5),
+                size.y * (1.0 + squash * d.y.abs() * 0.6) / (1.0 + squash * d.x.abs() * 0.6),
+            )
         } else {
             size
         };
         let pressed = resp.is_pointer_button_down_on() && tired;
-        let caught_k = glowkit_core::anim::spring(ui, id.with("caught"), if st.caught.is_some() { 1.0 } else { 0.0 }, 300.0, 14.0);
+        let caught_k =
+            glowkit_core::anim::spring(ui, id.with("caught"), if st.caught.is_some() { 1.0 } else { 0.0 }, 300.0, 14.0);
         let scale = if pressed { 0.95 } else { 1.0 } + caught_k * 0.06;
         let btn = Rect::from_center_size(center, sz * scale);
         let (ink_bg, ink_fg) = ink(&t);
@@ -228,7 +239,14 @@ impl Widget for EscapeButton {
             fg = fg.lerp_to_gamma(egui::Color32::WHITE, caught_k.clamp(0.0, 1.0));
         }
         let r = self.corner.min(btn.height() / 2.0);
-        paint::soft_shadow(&painter, btn, r, 14.0 + squash * 40.0, vec2(-vel.x, -vel.y) * 0.004 + vec2(0.0, 4.0), shadow_color(&t, 0.7));
+        paint::soft_shadow(
+            &painter,
+            btn,
+            r,
+            14.0 + squash * 40.0,
+            vec2(-vel.x, -vel.y) * 0.004 + vec2(0.0, 4.0),
+            shadow_color(&t, 0.7),
+        );
         painter.rect(btn, cr(r), bg, if self.stroke { hairline(&t) } else { Stroke::NONE }, egui::StrokeKind::Inside);
         painter.text(btn.center(), Align2::CENTER_CENTER, label, FontId::proportional(14.0), fg);
         // patience pips under the button

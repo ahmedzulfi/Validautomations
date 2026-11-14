@@ -2927,6 +2927,296 @@
    ]
   },
   {
+   "name": "Bencho",
+   "url": "https://bencho.dev",
+   "have": 47,
+   "total": 47,
+   "items": [
+    {
+     "name": "Card stack",
+     "glowkit": [
+      "card-stack"
+     ]
+    },
+    {
+     "name": "ASCII wake",
+     "glowkit": [
+      "ascii-wake"
+     ]
+    },
+    {
+     "name": "Wake slider",
+     "glowkit": [
+      "wake-slider"
+     ]
+    },
+    {
+     "name": "Folding bill",
+     "glowkit": [
+      "folding-bill"
+     ]
+    },
+    {
+     "name": "Heat map",
+     "glowkit": [
+      "heat-word"
+     ]
+    },
+    {
+     "name": "Signature pad",
+     "glowkit": [
+      "signature-pad"
+     ]
+    },
+    {
+     "name": "Dynamic island",
+     "glowkit": [
+      "morphing-island"
+     ]
+    },
+    {
+     "name": "Particles",
+     "glowkit": [
+      "particles"
+     ]
+    },
+    {
+     "name": "Generate",
+     "glowkit": [
+      "generate"
+     ]
+    },
+    {
+     "name": "Image accordion",
+     "glowkit": [
+      "image-accordion"
+     ]
+    },
+    {
+     "name": "Magnetic select",
+     "glowkit": [
+      "magnet-select"
+     ]
+    },
+    {
+     "name": "Checklist",
+     "glowkit": [
+      "checklist"
+     ]
+    },
+    {
+     "name": "Liquid toggle",
+     "glowkit": [
+      "liq-toggle"
+     ]
+    },
+    {
+     "name": "Now playing",
+     "glowkit": [
+      "sound"
+     ]
+    },
+    {
+     "name": "Tilt card",
+     "glowkit": [
+      "tilt-card"
+     ]
+    },
+    {
+     "name": "Slosh slider",
+     "glowkit": [
+      "slosh"
+     ]
+    },
+    {
+     "name": "Context meter",
+     "glowkit": [
+      "ai-context-meter"
+     ]
+    },
+    {
+     "name": "Card swap",
+     "glowkit": [
+      "card-swap"
+     ]
+    },
+    {
+     "name": "Stacked bars",
+     "glowkit": [
+      "stacked-bars"
+     ]
+    },
+    {
+     "name": "Emoji reactions",
+     "glowkit": [
+      "emoji-reactions"
+     ]
+    },
+    {
+     "name": "Image compare",
+     "glowkit": [
+      "compare-slider"
+     ]
+    },
+    {
+     "name": "Voice note",
+     "glowkit": [
+      "voice-note"
+     ]
+    },
+    {
+     "name": "Time scrubber",
+     "glowkit": [
+      "time-scrubber"
+     ]
+    },
+    {
+     "name": "Label input",
+     "glowkit": [
+      "label-input"
+     ]
+    },
+    {
+     "name": "Step player",
+     "glowkit": [
+      "step-player"
+     ]
+    },
+    {
+     "name": "Glass bubble",
+     "glowkit": [
+      "glass-bubble"
+     ]
+    },
+    {
+     "name": "Slide to confirm",
+     "glowkit": [
+      "slide-confirm"
+     ]
+    },
+    {
+     "name": "Carousel",
+     "glowkit": [
+      "carousel"
+     ]
+    },
+    {
+     "name": "Magnifying dock",
+     "glowkit": [
+      "dock"
+     ]
+    },
+    {
+     "name": "Pull to refresh",
+     "glowkit": [
+      "pull"
+     ]
+    },
+    {
+     "name": "Escape button",
+     "glowkit": [
+      "escape"
+     ]
+    },
+    {
+     "name": "Create menu",
+     "glowkit": [
+      "liq-create"
+     ]
+    },
+    {
+     "name": "Slingshot",
+     "glowkit": [
+      "slingshot"
+     ]
+    },
+    {
+     "name": "Rolling counter",
+     "glowkit": [
+      "sliding-number"
+     ]
+    },
+    {
+     "name": "Toast stack",
+     "glowkit": [
+      "toast"
+     ]
+    },
+    {
+     "name": "Asset swap",
+     "glowkit": [
+      "asset-swap"
+     ]
+    },
+    {
+     "name": "Like",
+     "glowkit": [
+      "like"
+     ]
+    },
+    {
+     "name": "Eye tracker",
+     "glowkit": [
+      "eye-tracker"
+     ]
+    },
+    {
+     "name": "Upload dropzone",
+     "glowkit": [
+      "file-dropzone"
+     ]
+    },
+    {
+     "name": "One-time code",
+     "glowkit": [
+      "otp-input"
+     ]
+    },
+    {
+     "name": "Todo tower",
+     "glowkit": [
+      "todo-tower"
+     ]
+    },
+    {
+     "name": "Action node",
+     "glowkit": [
+      "action-node"
+     ]
+    },
+    {
+     "name": "Assignees",
+     "glowkit": [
+      "picker"
+     ]
+    },
+    {
+     "name": "Palette",
+     "glowkit": [
+      "palette"
+     ]
+    },
+    {
+     "name": "Aspect ratio",
+     "glowkit": [
+      "aspect-ratio"
+     ]
+    },
+    {
+     "name": "Dragging ball",
+     "glowkit": [
+      "drag-ball"
+     ]
+    },
+    {
+     "name": "Search",
+     "glowkit": [
+      "search-input"
+     ]
+    }
+   ]
+  },
+  {
    "name": "Tremor",
    "url": "https://tremor.so",
    "have": 12,
@@ -3118,7 +3408,8 @@
    "covers": [
     "Motion Primitives: Sliding Number",
     "React Bits: Counter",
-    "Magic UI: Number Ticker (rolling)"
+    "Magic UI: Number Ticker (rolling)",
+    "Bencho: Rolling counter"
    ],
    "code": "let mut value = 1234.0;\nui.add(SlidingNumber::new(value).size(72.0));\nif ui.button(\"+1\").clicked() { value += 1.0; }"
   },
@@ -3486,7 +3777,8 @@
     "React Bits: Particles",
     "Magic UI: Particles",
     "Aceternity: Sparkles",
-    "tsParticles: Links"
+    "tsParticles: Links",
+    "Bencho: Particles"
    ],
    "code": "ui.add(Particles::new().count(140).links(true));\nui.add(Particles::new().count(260).twinkle(true)); // sparkles"
   },
@@ -4325,7 +4617,8 @@
     "Aceternity: 3D Card Effect",
     "Vanilla Tilt",
     "Motion Primitives: Tilt",
-    "Aceternity UI: 3D Card"
+    "Aceternity UI: 3D Card",
+    "Bencho: Tilt card"
    ],
    "code": "TiltCard::new().size(vec2(260.0, 300.0)).show(ui, |ui| {\n    ui.heading(\"Tilt\");\n});"
   },
@@ -4813,9 +5106,330 @@
    "covers": [
     "Aceternity: Compare",
     "Motion Primitives: Image Comparison",
-    "Magic UI: Image comparison"
+    "Magic UI: Image comparison",
+    "Bencho: Image compare"
    ],
    "code": "ui.add(CompareSlider::new(\n    |p, r| paint_raw_photo(p, r),\n    |p, r| paint_graded_photo(p, r),\n).size(640.0, 340.0));"
+  },
+  {
+   "id": "card-stack",
+   "name": "Card Stack",
+   "category": "Micro-interactions",
+   "description": "A deck of photos that fans out as you reach it: hover draws a card up, click flips it into the middle.",
+   "covers": [
+    "Bencho: Card stack"
+   ],
+   "code": "ui.add(PhotoFan::new().cards(5).spread(85.0).bounce(5.0).corner(14.0));"
+  },
+  {
+   "id": "ascii-wake",
+   "name": "ASCII Wake",
+   "category": "Micro-interactions",
+   "description": "A cube drawn in ink dots; the pointer drags a wake of characters through it that cools back to dots, and a press sends a ring out.",
+   "covers": [
+    "Bencho: ASCII wake"
+   ],
+   "code": "ui.add(AsciiWake::new().glyphs(GlyphSet::Ascii).reach(60.0).trail(1.2).pull(40.0).cell(10.0));"
+  },
+  {
+   "id": "wake-slider",
+   "name": "Wake Slider",
+   "category": "Micro-interactions",
+   "description": "A range made of thin bars with no thumb; drag fast and the bars you sweep past spring up in a wake behind the hand.",
+   "covers": [
+    "Bencho: Wake slider"
+   ],
+   "code": "let mut value = 50.0;\nui.add(WakeSlider::new(&mut value).bars(36).wake(60.0));"
+  },
+  {
+   "id": "folding-bill",
+   "name": "Folding Bill",
+   "category": "Micro-interactions",
+   "description": "A banknote simulated as cloth: grab it, drag it and fold it over itself; plain or with an engraved print.",
+   "covers": [
+    "Bencho: Folding bill"
+   ],
+   "code": "ui.add(FoldingBill::new().print(BillPrint::Plain).stiffness(40.0).settle(0.0));"
+  },
+  {
+   "id": "heat-word",
+   "name": "Heat Map",
+   "category": "Micro-interactions",
+   "description": "Gray dots that melt into a glowing heat map under your cursor; press for the next shape.",
+   "covers": [
+    "Bencho: Heat map"
+   ],
+   "code": "ui.add(HeatBlobs::new().palette(HeatPalette::Neon).heat(60.0).area(50.0).softness(40.0));"
+  },
+  {
+   "id": "generate",
+   "name": "Generate",
+   "category": "Micro-interactions",
+   "description": "Press Generate and an image resolves under frosted glass, broad shapes first.",
+   "covers": [
+    "Bencho: Generate"
+   ],
+   "code": "ui.add(GenerateCard::new().pace(5.0).ripple(50.0).corner(20.0));"
+  },
+  {
+   "id": "image-accordion",
+   "name": "Image Accordion",
+   "category": "Micro-interactions",
+   "description": "Hover a photo strip and it opens wide while its neighbours give way around it.",
+   "covers": [
+    "Bencho: Image accordion"
+   ],
+   "code": "ui.add(ImageAccordion::new().open(50.0).reach(35.0).bounce(10.0).gap(8.0));"
+  },
+  {
+   "id": "magnet-select",
+   "name": "Magnetic Select",
+   "category": "Micro-interactions",
+   "description": "Press an option and it swells into an iridescent orb as the rest are pushed out of its way.",
+   "covers": [
+    "Bencho: Magnetic select"
+   ],
+   "code": "let mut choice = 0;\nui.add(MagneticSelect::new(&mut choice).options(7).pull(55.0).bounce(55.0).give(50.0));"
+  },
+  {
+   "id": "checklist",
+   "name": "Checklist",
+   "category": "Micro-interactions",
+   "description": "Tick a task and the box pops full, the check draws itself in and the words strike out.",
+   "covers": [
+    "Bencho: Checklist"
+   ],
+   "code": "let mut tasks = vec![TodoItem::new(\"Water the ferns\"), TodoItem::new(\"Reply to Ana\")];\nui.add(TaskChecklist::new(&mut tasks).bounce(50.0).corner(20.0).box_size(18.0));"
+  },
+  {
+   "id": "liq-toggle",
+   "name": "Liquid Toggle",
+   "category": "Micro-interactions",
+   "description": "A switch whose droplet stretches as it slides across the track and snaps round at the end.",
+   "covers": [
+    "Bencho: Liquid toggle"
+   ],
+   "code": "let mut on = false;\nui.add(LiquidToggle::new(&mut on).speed(50.0).stretch(36.0));"
+  },
+  {
+   "id": "sound",
+   "name": "Now Playing",
+   "category": "Micro-interactions",
+   "description": "A now-playing bar that opens into a full player and folds back as one piece.",
+   "covers": [
+    "Bencho: Now playing"
+   ],
+   "code": "ui.add(NowPlaying::new(\"Glass Harbor\", \"Side A\").morph(50.0).corner(16.0));"
+  },
+  {
+   "id": "slosh",
+   "name": "Slosh Slider",
+   "category": "Micro-interactions",
+   "description": "A slider whose fill has weight: drag fast and the liquid sloshes past the handle before settling.",
+   "covers": [
+    "Bencho: Slosh slider"
+   ],
+   "code": "let mut level = 0.6;\nui.add(SloshSlider::new(&mut level).viscosity(15.0).momentum(55.0).tilt(45.0));"
+  },
+  {
+   "id": "stacked-bars",
+   "name": "Stacked Bars",
+   "category": "Micro-interactions",
+   "description": "A month of visits as stacked bars: run along them and one day is ringed while a tooltip glides beside it; Day / Week regrows the bars.",
+   "covers": [
+    "Bencho: Stacked bars"
+   ],
+   "code": "ui.add(StackedBars::new().bars(20).gap(6.0).monochrome(false));"
+  },
+  {
+   "id": "emoji-reactions",
+   "name": "Emoji Reactions",
+   "category": "Micro-interactions",
+   "description": "Press the button and the message turns into a pill of emoji; pick one and it flies down to its chip as the count rolls up.",
+   "covers": [
+    "Bencho: Emoji reactions"
+   ],
+   "code": "ui.add(EmojiReactions::new(\"Merged the dark mode PR\").set(ReactionSet::Work).magnify(50.0));"
+  },
+  {
+   "id": "voice-note",
+   "name": "Voice Note",
+   "category": "Micro-interactions",
+   "description": "Hold to record a waveform, slide left to bin it, let go to play it back.",
+   "covers": [
+    "Bencho: Voice note"
+   ],
+   "code": "ui.add(VoiceNote::new().sensitivity(60.0).bounce(40.0).bars(28).corner(28.0));"
+  },
+  {
+   "id": "time-scrubber",
+   "name": "Time Scrubber",
+   "category": "Micro-interactions",
+   "description": "Drag the ruler to set a time; fling it and it coasts with momentum to the nearest step.",
+   "covers": [
+    "Bencho: Time scrubber"
+   ],
+   "code": "let mut minutes = 9 * 60 + 30;\nui.add(TimeScrubber::new(&mut minutes).step(15).twenty_four_hour(false).momentum(50.0));"
+  },
+  {
+   "id": "label-input",
+   "name": "Label Input",
+   "category": "Micro-interactions",
+   "description": "A field whose label rests inside like a placeholder and lifts into the top edge, opening a notch in the outline, when you focus it.",
+   "covers": [
+    "Bencho: Label input"
+   ],
+   "code": "let mut email = String::new();\nui.add(LabelInput::new(&mut email, \"Email\").corner(20.0));\nui.add(LabelInput::new(&mut password, \"Password\").password(true));"
+  },
+  {
+   "id": "step-player",
+   "name": "Step Player",
+   "category": "Micro-interactions",
+   "description": "Press play and each step fills as a bar, then eases on to the next dot.",
+   "covers": [
+    "Bencho: Step player"
+   ],
+   "code": "ui.add(StepPlayer::new(5).pace(3.0));\nui.add(StepPlayer::new(4).dark(true).pace(1.6).looping(true));"
+  },
+  {
+   "id": "glass-bubble",
+   "name": "Glass Bubble",
+   "category": "Micro-interactions",
+   "description": "Drag a ball of glass over a picture: it magnifies the middle, bends the rim and splits the colours at the edge.",
+   "covers": [
+    "Bencho: Glass bubble"
+   ],
+   "code": "ui.add(GlassBubble::new().size(300.0).bend(0.6).fringe(0.3));\nui.add(GlassBubble::new().texture(my_texture, 1.5)); // your own picture"
+  },
+  {
+   "id": "slide-confirm",
+   "name": "Slide to Confirm",
+   "category": "Micro-interactions",
+   "description": "Push the handle across; past the mark it takes over, finishes itself and turns into a check.",
+   "covers": [
+    "Bencho: Slide to confirm"
+   ],
+   "code": "if ui.add(SlideToConfirm::new(\"Slide to confirm\")).changed() {\n    // confirmed\n}\nui.add(SlideToConfirm::new(\"Slide to pay\").dark(true).confirmed_label(\"Paid\"));"
+  },
+  {
+   "id": "pull",
+   "name": "Pull to Refresh",
+   "category": "Micro-interactions",
+   "description": "Pull the card down and it stretches while a ring of dots fills in; let go past the line to refresh.",
+   "covers": [
+    "Bencho: Pull to refresh"
+   ],
+   "code": "let out = PullToRefresh::new().size(egui::vec2(300.0, 196.0)).show(ui, |ui, rect| {\n    // paint or lay out the card content in `rect`\n});\nif out.refreshed { /* reload */ }"
+  },
+  {
+   "id": "escape",
+   "name": "Escape Button",
+   "category": "Micro-interactions",
+   "description": "A button that slides away from your cursor a few times, and then gives up.",
+   "covers": [
+    "Bencho: Escape button"
+   ],
+   "code": "if ui.add(EscapeButton::new(\"Touch me\").patience(4).radius(120.0)).clicked() {\n    // finally\n}"
+  },
+  {
+   "id": "liq-create",
+   "name": "Create Menu",
+   "category": "Micro-interactions",
+   "description": "Press the pill and it pours open into the create menu it was all along, items rising in one by one.",
+   "covers": [
+    "Bencho: Create menu"
+   ],
+   "code": "let picked = CreateMenu::new(\"Create\")\n    .item(MicroIcon::Doc, \"Document\")\n    .item(MicroIcon::Sheet, \"Spreadsheet\")\n    .item(MicroIcon::Board, \"Board\")\n    .item(MicroIcon::Folder, \"Folder\")\n    .show(ui);"
+  },
+  {
+   "id": "slingshot",
+   "name": "Slingshot",
+   "category": "Micro-interactions",
+   "description": "Pull the ball back: the band stretches, locks and trembles at its limit; let go and it flies, bounces off the walls and comes home.",
+   "covers": [
+    "Bencho: Slingshot"
+   ],
+   "code": "ui.add(Slingshot::new().power(1.0).bounce(0.3));"
+  },
+  {
+   "id": "asset-swap",
+   "name": "Asset Swap",
+   "category": "Micro-interactions",
+   "description": "Flip the arrow to reverse the swap on a bouncy spring; tap a coin to pick another asset.",
+   "covers": [
+    "Bencho: Asset swap"
+   ],
+   "code": "let assets = vec![\n    SwapAsset::new(\"BTC\", \"Bitcoin\", hex(\"#F7931A\"), 97_700.0),\n    SwapAsset::new(\"ETH\", \"Ether\", hex(\"#627EEA\"), 3_412.0),\n];\nui.add(AssetSwap::new(assets).amount(0.05));"
+  },
+  {
+   "id": "like",
+   "name": "Like",
+   "category": "Micro-interactions",
+   "description": "Press the heart: it pops with a burst while the count rolls up a digit.",
+   "covers": [
+    "Bencho: Like"
+   ],
+   "code": "let mut liked = false;\nui.add(LikeButton::new(&mut liked, 1_299));\nui.add(LikeButton::new(&mut liked, 99).burst(LikeBurst::Firework).color(theme.foreground));"
+  },
+  {
+   "id": "eye-tracker",
+   "name": "Eye Tracker",
+   "category": "Micro-interactions",
+   "description": "Two eyes on a soft cube turn to follow your cursor around the block, and blink now and then.",
+   "covers": [
+    "Bencho: Eye tracker"
+   ],
+   "code": "ui.add(EyeTracker::new().size(100.0));\nui.add(EyeTracker::new().shape(EyeShape::Slant).dark(true));"
+  },
+  {
+   "id": "todo-tower",
+   "name": "Todo Tower",
+   "category": "Micro-interactions",
+   "description": "A to-do list stacked like bricks; tick one off and it slides out while the rest drop into the gap.",
+   "covers": [
+    "Bencho: Todo tower"
+   ],
+   "code": "ui.add(TodoTower::new([\"Water the plants\", \"Ship the release\", \"Call the bank\"]).gravity(0.5));"
+  },
+  {
+   "id": "action-node",
+   "name": "Action Node",
+   "category": "Micro-interactions",
+   "description": "An automation step card with its controls folded into the corner; hover and they fan out one by one.",
+   "covers": [
+    "Bencho: Action node"
+   ],
+   "code": "if let Some(i) = ActionNode::new(\"Node 07\", \"Reads the thread, writes a summary.\").show(ui) {\n    // action button i was pressed\n}"
+  },
+  {
+   "id": "picker",
+   "name": "Assignees",
+   "category": "Micro-interactions",
+   "description": "Assign people from a list and their faces stack up in the pill above it.",
+   "covers": [
+    "Bencho: Assignees"
+   ],
+   "code": "ui.add(AssigneePicker::new(&people, &mut chosen).layout(AvatarLayout::Stack).overlap(10.0));"
+  },
+  {
+   "id": "palette",
+   "name": "Palette",
+   "category": "Micro-interactions",
+   "description": "A set of colours that go together; press for a new palette and it washes across, swatch by swatch.",
+   "covers": [
+    "Bencho: Palette"
+   ],
+   "code": "ui.add(PaletteSwatches::new().colors(4).corner(14.0));"
+  },
+  {
+   "id": "drag-ball",
+   "name": "Dragging Ball",
+   "category": "Micro-interactions",
+   "description": "A ball you grab: it swells under the pointer, squeezes as you hold it and wobbles home when you let go.",
+   "covers": [
+    "Bencho: Dragging ball"
+   ],
+   "code": "ui.add(DragBall::new().size(56.0).stretch(0.36).give(0.5));"
   },
   {
    "id": "dock",
@@ -4826,7 +5440,8 @@
     "Magic UI: Dock",
     "React Bits: Dock",
     "Aceternity: Floating Dock",
-    "Motion Primitives: Dock"
+    "Motion Primitives: Dock",
+    "Bencho: Magnifying dock"
    ],
    "code": "let items = [DockItem::new(\"\ud83c\udfe0\", \"Home\").active(true), DockItem::new(\"\u2709\", \"Mail\")];\nlet r = Dock::new(&items).magnification(1.75).show(ui);\nif let Some(i) = r.clicked { /* open items[i] */ }"
   },
@@ -4872,7 +5487,8 @@
    "category": "Motion & Layout",
    "description": "A skewed 3D stack that cycles: the front card drops away and reappears at the back.",
    "covers": [
-    "React Bits: Card Swap"
+    "React Bits: Card Swap",
+    "Bencho: Card swap"
    ],
    "code": "ui.add(CardSwap::new(&faces).interval(3.0).skew(6.0));"
   },
@@ -4896,7 +5512,8 @@
     "Embla-style carousel",
     "Motion Primitives: Carousel",
     "Aceternity UI: Carousel",
-    "shadcn/ui: Carousel"
+    "shadcn/ui: Carousel",
+    "Bencho: Carousel"
    ],
    "code": "Carousel::new(5).autoplay(3.0).looping(true).show(ui, |ui, i| {\n    ui.heading(format!(\"Slide {i}\"));\n});"
   },
@@ -5784,7 +6401,8 @@
    "covers": [
     "Origin UI: Search input",
     "shadcn/ui: Command (search field)",
-    "Kibo UI: Search"
+    "Kibo UI: Search",
+    "Bencho: Search"
    ],
    "code": "ui.add(SearchInput::new(&mut query).shortcut(\"\u2318K\"));\nui.add(SearchInput::new(&mut query).pill(true).placeholder(\"Search docs\u2026\"));"
   },
@@ -5882,7 +6500,8 @@
    "covers": [
     "shadcn/ui: Input OTP",
     "Origin UI: OTP input",
-    "Animate UI: Input OTP"
+    "Animate UI: Input OTP",
+    "Bencho: One-time code"
    ],
    "code": "ui.add(OtpInput::new(&mut code).length(6).separator_after(3));"
   },
@@ -5945,7 +6564,8 @@
     "Kibo UI: Dropzone",
     "Dice UI: File Upload",
     "Uiverse: File input",
-    "Aceternity UI: File Upload"
+    "Aceternity UI: File Upload",
+    "Bencho: Upload dropzone"
    ],
    "code": "ui.add(FileDropzone::new(&mut files)\n    .hint(\"PNG, JPG or PDF up to 10 MB\")\n    .on_drop(|f| println!(\"got {:?}\", f.path())));"
   },
@@ -6282,7 +6902,8 @@
     "shadcn/ui: Sonner",
     "shadcn/ui: Toast",
     "Animate UI: Toast",
-    "Origin UI: Toast"
+    "Origin UI: Toast",
+    "Bencho: Toast stack"
    ],
    "code": "if ui.button(\"Save\").clicked() {\n    toast(ui.ctx(), Toast::success(\"Event created\")\n        .description(\"Sunday, December 03 at 9:00 AM\")\n        .action(\"Undo\"));\n}\nlet id = toast(ui.ctx(), Toast::loading(\"Uploading\u2026\"));\n// later: Toaster::update(ui.ctx(), id, Toast::success(\"Uploaded\"));\n\n// once per frame, e.g. at the end of your app:\nlet action_clicks = Toaster::new().position(ToastPosition::BottomRight).show(ui);"
   },
@@ -6387,7 +7008,8 @@
     "Aceternity: Dynamic Island",
     "Apple: Dynamic Island (pattern)",
     "Motion Primitives: Toolbar Dynamic",
-    "Motion Primitives: Toolbar Expandable"
+    "Motion Primitives: Toolbar Expandable",
+    "Bencho: Dynamic island"
    ],
    "code": "ui.add(MorphingIsland::new(IslandView::Music {\n    title: \"Midnight City\".into(),\n    artist: \"M83\".into(),\n    progress: 0.42,\n}));"
   },
@@ -6618,7 +7240,8 @@
    "description": "A container that locks content to a ratio (16:9, 1:1, 4:3) and clips it to rounded corners, for media, maps and embeds.",
    "covers": [
     "shadcn/ui: Aspect Ratio",
-    "Radix UI: Aspect Ratio"
+    "Radix UI: Aspect Ratio",
+    "Bencho: Aspect ratio"
    ],
    "code": "AspectRatio::new(16.0 / 9.0).max_width(420.0).show(ui, |ui| {\n    let r = ui.max_rect();\n    // paint an image, video frame or map into r\n});"
   },
@@ -7143,7 +7766,8 @@
    "description": "Token usage of the model's context window as a compact ring with a hover breakdown, or a segmented bar with legend and cost.",
    "covers": [
     "Vercel AI Elements: Context",
-    "assistant-ui: Context usage"
+    "assistant-ui: Context usage",
+    "Bencho: Context meter"
    ],
    "code": "ui.add(ContextMeter::new(48_200, 128_000)\n    .segment(\"Input\", 30_100)\n    .segment(\"Output\", 12_900)\n    .segment(\"Reasoning\", 5_200)\n    .cost(0.0241));"
   },
@@ -7825,7 +8449,8 @@
     "signature_pad",
     "react-signature-canvas",
     "perfect-freehand",
-    "shadcn: Signature"
+    "shadcn: Signature",
+    "Bencho: Signature pad"
    ],
    "code": "let mut ink = Ink::default();\nui.add(SignaturePad::new(&mut ink).size(vec2(520.0, 200.0)));\nif !ink.is_empty() {\n    let json = ink.to_json();       // [[[x, y, t], ...], ...]\n    let svg = ink.to_svg_path();    // \"M1 2 L3 4 ...\"\n}"
   },
@@ -8347,6 +8972,6 @@
    "code": "let mut app = AuthGateApp::default();\napp.signed_in = true;\napp.route = \"reports\".into(); // \"reports\" | \"admin\" | \"projects\"\napp.show(ui);"
   }
  ],
- "total_have": 476,
- "total_all": 476
+ "total_have": 523,
+ "total_all": 523
 }

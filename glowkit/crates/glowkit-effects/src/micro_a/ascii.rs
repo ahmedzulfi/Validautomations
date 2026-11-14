@@ -73,7 +73,17 @@ impl Default for AsciiWake {
 impl AsciiWake {
     /// A 280 pt cube.
     pub fn new() -> Self {
-        Self { size: 280.0, glyphs: GlyphSet::Ascii, reach: 60.0, trail: 1.2, pull: 40.0, cell: 10.0, spin: 1.0, color: None, autoplay: false }
+        Self {
+            size: 280.0,
+            glyphs: GlyphSet::Ascii,
+            reach: 60.0,
+            trail: 1.2,
+            pull: 40.0,
+            cell: 10.0,
+            spin: 1.0,
+            color: None,
+            autoplay: false,
+        }
     }
     /// Size of the square canvas in points.
     pub fn size(mut self, s: f32) -> Self {
@@ -224,7 +234,13 @@ impl egui::Widget for AsciiWake {
         let ring_speed = self.size * 0.9;
         let mut f: WakeField = glowkit_core::state(ui, id.with("field"), WakeField::default);
         if f.cols != cols || f.rows != rows {
-            f = WakeField { cols, rows, heat: vec![0.0; cols * rows], disp: vec![Vec2::ZERO; cols * rows], ..Default::default() };
+            f = WakeField {
+                cols,
+                rows,
+                heat: vec![0.0; cols * rows],
+                disp: vec![Vec2::ZERO; cols * rows],
+                ..Default::default()
+            };
         }
         if let Some(p) = press {
             f.rings.push((p, now));
@@ -244,7 +260,8 @@ impl egui::Widget for AsciiWake {
                 if let (Some(a), Some(b)) = (hand, prev) {
                     // distance to the segment the hand swept this frame
                     let ab = a - b;
-                    let tt = if ab.length_sq() > 0.0 { ((c - b).dot(ab) / ab.length_sq()).clamp(0.0, 1.0) } else { 1.0 };
+                    let tt =
+                        if ab.length_sq() > 0.0 { ((c - b).dot(ab) / ab.length_sq()).clamp(0.0, 1.0) } else { 1.0 };
                     let d = (c - (b + ab * tt)).length();
                     if d < reach {
                         let w = 1.0 - d / reach;
@@ -305,7 +322,8 @@ impl egui::Widget for AsciiWake {
                     let r = cell * (0.13 + 0.25 * dark) * (1.0 + h * 0.9);
                     painter.circle_filled(p, r.min(cell * 0.62), with_alpha(ink, 0.92));
                 } else {
-                    let lvl = (((h - 0.28) / 0.72 * 0.8 + dark * 0.3).min(1.0) * (chars.len() - 1) as f32).round() as usize;
+                    let lvl =
+                        (((h - 0.28) / 0.72 * 0.8 + dark * 0.3).min(1.0) * (chars.len() - 1) as f32).round() as usize;
                     let ch = if self.glyphs == GlyphSet::Binary {
                         chars[(i * 7 + j * 13 + (now * 6.0) as usize) % 2]
                     } else {

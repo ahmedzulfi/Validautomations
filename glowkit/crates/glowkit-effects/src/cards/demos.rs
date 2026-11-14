@@ -170,6 +170,7 @@ SpotlightCard::new().dots(true).show(ui, |ui| { /* ... */ });"##,
                 "Vanilla Tilt",
                 "Motion Primitives: Tilt",
                 "Aceternity UI: 3D Card",
+                "Bencho: Tilt card",
             ],
             code: r##"TiltCard::new().size(vec2(260.0, 300.0)).show(ui, |ui| {
     ui.heading("Tilt");

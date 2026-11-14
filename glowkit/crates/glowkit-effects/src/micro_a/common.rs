@@ -1,7 +1,10 @@
 //! Shared helpers for the micro-interaction blocks: the [`ControlSlider`] parameter row, soft
 //! surfaces, small painted icons and an idle-autoplay clock.
 
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Id, Painter, Pos2, Rect, Response, Sense, Shape, Stroke, Ui};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Id, Painter, Pos2, Rect, Response, Sense, Shape,
+    Stroke, Ui,
+};
 use glowkit_core::color::{mix, shade, with_alpha};
 use glowkit_core::{paint, Theme};
 use std::ops::RangeInclusive;
@@ -63,7 +66,11 @@ pub(crate) fn soft_card_fill(
         let sc = if t.dark { Color32::from_black_alpha(110) } else { Color32::from_rgba_unmultiplied(30, 30, 50, 18) };
         paint::soft_shadow(painter, rect, radius, 16.0 * elevation, vec2(0.0, 4.0 * elevation), sc);
     }
-    let s = if stroke || t.dark { Stroke::new(1.0, with_alpha(t.border, if stroke { 1.0 } else { 0.6 })) } else { Stroke::NONE };
+    let s = if stroke || t.dark {
+        Stroke::new(1.0, with_alpha(t.border, if stroke { 1.0 } else { 0.6 }))
+    } else {
+        Stroke::NONE
+    };
     painter.rect(rect, cr(radius), fill, s, egui::StrokeKind::Inside);
 }
 
@@ -71,12 +78,17 @@ pub(crate) fn soft_card_fill(
 /// only while the user leaves the component alone.
 pub(crate) fn idle_for(ui: &Ui, id: Id, interacting: bool) -> f32 {
     let now = glowkit_core::time(ui);
-    let since = glowkit_core::with_state(ui, id.with("micro_idle"), || now, |t| {
-        if interacting {
-            *t = now;
-        }
-        *t
-    });
+    let since = glowkit_core::with_state(
+        ui,
+        id.with("micro_idle"),
+        || now,
+        |t| {
+            if interacting {
+                *t = now;
+            }
+            *t
+        },
+    );
     now - since
 }
 
@@ -86,7 +98,8 @@ pub(crate) fn idle_for(ui: &Ui, id: Id, interacting: bool) -> f32 {
 /// Solid play triangle centered in a box of `size`.
 pub(crate) fn icon_play(painter: &Painter, c: Pos2, size: f32, color: Color32) {
     let h = size * 0.5;
-    let pts = vec![pos2(c.x - h * 0.55, c.y - h * 0.62), pos2(c.x + h * 0.7, c.y), pos2(c.x - h * 0.55, c.y + h * 0.62)];
+    let pts =
+        vec![pos2(c.x - h * 0.55, c.y - h * 0.62), pos2(c.x + h * 0.7, c.y), pos2(c.x - h * 0.55, c.y + h * 0.62)];
     painter.add(Shape::convex_polygon(pts, color, Stroke::NONE));
 }
 
@@ -323,7 +336,11 @@ impl egui::Widget for ControlSlider<'_> {
         let mut new_value = None;
         if response.drag_started() {
             if let Some(p) = ptr {
-                glowkit_core::set_state(ui, id.with("drag"), SliderDrag { anchor_value: cur, anchor_x: p.x, moved: false });
+                glowkit_core::set_state(
+                    ui,
+                    id.with("drag"),
+                    SliderDrag { anchor_value: cur, anchor_x: p.x, moved: false },
+                );
             }
         }
         if response.dragged() {
@@ -352,7 +369,12 @@ impl egui::Widget for ControlSlider<'_> {
         let v = *self.value;
         let frac = ((v - lo) / span).clamp(0.0, 1.0);
         let shown = glowkit_core::anim::spring(ui, id.with("fill"), frac, 420.0, 34.0).clamp(0.0, 1.0);
-        let active = glowkit_core::anim::follow(ui, id.with("hover"), if response.hovered() || response.dragged() { 1.0 } else { 0.0 }, 14.0);
+        let active = glowkit_core::anim::follow(
+            ui,
+            id.with("hover"),
+            if response.hovered() || response.dragged() { 1.0 } else { 0.0 },
+            14.0,
+        );
         if !ui.is_rect_visible(rect) {
             return response;
         }

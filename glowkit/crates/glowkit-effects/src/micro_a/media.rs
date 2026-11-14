@@ -2,8 +2,8 @@
 //! recorder.
 
 use super::common::{
-    cr, icon_add_reaction, icon_heart, icon_mic, icon_pause, icon_play, icon_skip, icon_x, idle_for, mmss, soft_card, surface,
-    track, track_fill,
+    cr, icon_add_reaction, icon_heart, icon_mic, icon_pause, icon_play, icon_skip, icon_x, idle_for, mmss, soft_card,
+    surface, track, track_fill,
 };
 use crate::scroll::common::{cover_uv, image_rect};
 use crate::PaintedScene;
@@ -133,8 +133,12 @@ impl egui::Widget for NowPlaying {
         let card = Rect::from_center_size(outer.center(), vec2(w, card_h));
         let o = card.min;
         // element layouts: compact → expanded (local coordinates)
-        let art = lerp_rect(Rect::from_min_size(pos2(10.0, 10.0), vec2(42.0, 42.0)), Rect::from_min_size(pos2(12.0, 12.0), vec2(56.0, 56.0)), m)
-            .translate(o.to_vec2());
+        let art = lerp_rect(
+            Rect::from_min_size(pos2(10.0, 10.0), vec2(42.0, 42.0)),
+            Rect::from_min_size(pos2(12.0, 12.0), vec2(56.0, 56.0)),
+            m,
+        )
+        .translate(o.to_vec2());
         let title_p = lerp_pos(pos2(62.0, 23.0), pos2(80.0, 30.0), m) + o.to_vec2();
         let sub_p = lerp_pos(pos2(62.0, 40.0), pos2(80.0, 49.0), m) + o.to_vec2();
         let play_c = lerp_pos(pos2(w - 64.0, 31.0), pos2(w / 2.0, 155.0), m) + o.to_vec2();
@@ -142,14 +146,22 @@ impl egui::Widget for NowPlaying {
         let prev_c = lerp_pos(pos2(w - 96.0, 31.0), pos2(w / 2.0 - 46.0, 155.0), m) + o.to_vec2();
         let next_c = lerp_pos(pos2(w - 32.0, 31.0), pos2(w / 2.0 + 46.0, 155.0), m) + o.to_vec2();
         let bar_y = lerp(66.0, 92.0, m) + o.y;
-        let bar = Rect::from_min_max(pos2(o.x + lerp(10.0, 12.0, m), bar_y - 1.5), pos2(o.x + w - lerp(10.0, 12.0, m), bar_y + 1.5));
+        let bar = Rect::from_min_max(
+            pos2(o.x + lerp(10.0, 12.0, m), bar_y - 1.5),
+            pos2(o.x + w - lerp(10.0, 12.0, m), bar_y + 1.5),
+        );
         let heart_c = pos2(o.x + w - 24.0, o.y + 24.0 + (1.0 - m) * 6.0);
 
         let card_resp = ui.interact(card, id.with("card"), Sense::click());
-        let play_resp = ui.interact(Rect::from_center_size(play_c, Vec2::splat(play_r * 2.0 + 4.0)), id.with("play"), Sense::click());
+        let play_resp = ui.interact(
+            Rect::from_center_size(play_c, Vec2::splat(play_r * 2.0 + 4.0)),
+            id.with("play"),
+            Sense::click(),
+        );
         let prev_resp = ui.interact(Rect::from_center_size(prev_c, Vec2::splat(30.0)), id.with("prev"), Sense::click());
         let next_resp = ui.interact(Rect::from_center_size(next_c, Vec2::splat(30.0)), id.with("next"), Sense::click());
-        let heart_resp = ui.interact(Rect::from_center_size(heart_c, Vec2::splat(28.0)), id.with("heart"), Sense::click());
+        let heart_resp =
+            ui.interact(Rect::from_center_size(heart_c, Vec2::splat(28.0)), id.with("heart"), Sense::click());
         let any_hover = card_resp.hovered() || play_resp.hovered();
         let idle = idle_for(ui, id, any_hover);
         if play_resp.clicked() {
@@ -164,13 +176,15 @@ impl egui::Widget for NowPlaying {
         } else if card_resp.clicked() {
             st.expanded = !st.expanded;
         }
-        if self.autoplay && !any_hover && idle > 1.0 {
-            let k = ((idle - 1.0) / 2.6) as i32;
+        if self.autoplay && !any_hover && idle > 0.6 {
+            // open for a few seconds, fold for two, repeat
+            let u = (idle - 0.6) % 6.0;
+            let k = ((idle - 0.6) / 6.0) as i32 * 2 + i32::from(u >= 3.8);
             if k != st.auto_step {
                 st.auto_step = k;
                 st.expanded = k % 2 == 0;
                 st.playing = true;
-                if k % 4 == 2 {
+                if k % 4 == 0 {
                     st.liked = !st.liked;
                 }
             }
@@ -185,7 +199,13 @@ impl egui::Widget for NowPlaying {
         st.morph.step(dt);
         glowkit_core::set_state(ui, id.with("player"), st);
         let like = glowkit_core::anim::spring(ui, id.with("like"), if st.liked { 1.0 } else { 0.0 }, 300.0, 12.0);
-        let play_press = glowkit_core::anim::spring(ui, id.with("pp"), if play_resp.is_pointer_button_down_on() { 0.88 } else { 1.0 }, 500.0, 20.0);
+        let play_press = glowkit_core::anim::spring(
+            ui,
+            id.with("pp"),
+            if play_resp.is_pointer_button_down_on() { 0.88 } else { 1.0 },
+            500.0,
+            20.0,
+        );
         if !st.morph.is_settled() || st.playing || self.autoplay {
             glowkit_core::animate(ui);
         }
@@ -199,8 +219,20 @@ impl egui::Widget for NowPlaying {
         soft_card(painter, &t, card, self.corner, 1.0 + m * 0.6, self.stroke);
         let tex = self.cover.unwrap_or_else(|| PaintedScene::texture(ui.ctx(), 7));
         image_rect(painter, art, lerp(8.0, 12.0, m), tex, cover_uv(PaintedScene::ASPECT, 1.0), Color32::WHITE);
-        painter.text(title_p, Align2::LEFT_CENTER, &self.title, FontId::proportional(lerp(14.0, 15.5, m)), t.foreground);
-        painter.text(sub_p, Align2::LEFT_CENTER, &self.subtitle, FontId::proportional(lerp(11.5, 12.5, m)), t.muted_foreground);
+        painter.text(
+            title_p,
+            Align2::LEFT_CENTER,
+            &self.title,
+            FontId::proportional(lerp(14.0, 15.5, m)),
+            t.foreground,
+        );
+        painter.text(
+            sub_p,
+            Align2::LEFT_CENTER,
+            &self.subtitle,
+            FontId::proportional(lerp(11.5, 12.5, m)),
+            t.muted_foreground,
+        );
         let ink = t.foreground;
         let fade_full = ((m - 0.5) * 2.0).clamp(0.0, 1.0);
         icon_skip(painter, prev_c, lerp(20.0, 24.0, m), -1.0, ink);
@@ -218,7 +250,13 @@ impl egui::Widget for NowPlaying {
         painter.rect_filled(Rect::from_min_max(bar.min, pos2(lerp(bar.min.x, bar.max.x, f), bar.max.y)), cr(1.5), ink);
         if fade_full > 0.0 {
             let tc = with_alpha(t.muted_foreground, fade_full);
-            painter.text(pos2(bar.min.x, bar.max.y + 12.0), Align2::LEFT_CENTER, mmss(st.position), FontId::proportional(11.0), tc);
+            painter.text(
+                pos2(bar.min.x, bar.max.y + 12.0),
+                Align2::LEFT_CENTER,
+                mmss(st.position),
+                FontId::proportional(11.0),
+                tc,
+            );
             painter.text(
                 pos2(bar.max.x, bar.max.y + 12.0),
                 Align2::RIGHT_CENTER,
@@ -325,7 +363,15 @@ pub struct EmojiReactions {
 impl EmojiReactions {
     /// A message bubble showing `message`.
     pub fn new(message: impl Into<String>) -> Self {
-        Self { message: message.into(), set: ReactionSet::Work, magnify: 50.0, bounce: 45.0, corner: 20.0, stroke: false, autoplay: false }
+        Self {
+            message: message.into(),
+            set: ReactionSet::Work,
+            magnify: 50.0,
+            bounce: 45.0,
+            corner: 20.0,
+            stroke: false,
+            autoplay: false,
+        }
     }
     /// Emoji palette.
     pub fn set(mut self, s: ReactionSet) -> Self {
@@ -529,7 +575,13 @@ impl egui::Widget for EmojiReactions {
             let tip = Rect::from_center_size(slot_c(k) - vec2(0.0, 44.0), g.size() + vec2(14.0, 8.0));
             let tip_bg = if t.dark { Color32::from_gray(240) } else { Color32::from_gray(24) };
             painter.rect_filled(tip, cr(6.0), tip_bg);
-            painter.text(tip.center(), Align2::CENTER_CENTER, label, FontId::proportional(11.5), glowkit_core::color::contrast_text(tip_bg));
+            painter.text(
+                tip.center(),
+                Align2::CENTER_CENTER,
+                label,
+                FontId::proportional(11.5),
+                glowkit_core::color::contrast_text(tip_bg),
+            );
         }
         // chips
         for (i, r, born) in chip_rects {
@@ -546,20 +598,37 @@ impl egui::Widget for EmojiReactions {
             let num_p = pos2(r.min.x + 46.0, r.center().y);
             let dir = if ch.up { 1.0 } else { -1.0 };
             let f = FontId::proportional(13.5);
-            painter.with_clip_rect(r).text(num_p + vec2(0.0, (1.0 - e) * 14.0 * dir), Align2::CENTER_CENTER, ch.count.to_string(), f.clone(), with_alpha(t.foreground, e * born));
+            painter.with_clip_rect(r).text(
+                num_p + vec2(0.0, (1.0 - e) * 14.0 * dir),
+                Align2::CENTER_CENTER,
+                ch.count.to_string(),
+                f.clone(),
+                with_alpha(t.foreground, e * born),
+            );
             if roll < 1.0 {
                 let old = if ch.up { ch.count.saturating_sub(1) } else { ch.count + 1 };
-                painter.with_clip_rect(r).text(num_p - vec2(0.0, e * 14.0 * dir), Align2::CENTER_CENTER, old.to_string(), f, with_alpha(t.foreground, 1.0 - e));
+                painter.with_clip_rect(r).text(
+                    num_p - vec2(0.0, e * 14.0 * dir),
+                    Align2::CENTER_CENTER,
+                    old.to_string(),
+                    f,
+                    with_alpha(t.foreground, 1.0 - e),
+                );
             }
         }
-        let add_scale = glowkit_core::anim::spring(ui, id.with("add_s"), if add_resp.hovered() { 1.08 } else { 1.0 }, 400.0, 16.0);
+        let add_scale =
+            glowkit_core::anim::spring(ui, id.with("add_s"), if add_resp.hovered() { 1.08 } else { 1.0 }, 400.0, 16.0);
         let ar = Rect::from_center_size(add_rect.center(), add_rect.size() * add_scale);
         soft_card_chip(painter, &t, ar, surface(&t), false, self.stroke);
         icon_add_reaction(painter, ar.center(), 20.0, mix(t.muted_foreground, t.foreground, 0.4 + oc * 0.6));
         // flying emoji (on top)
         if let Some((k, t0, from)) = flying {
             let u = ((now - t0) / 0.55).clamp(0.0, 1.0);
-            let target = chips.iter().position(|c| c.emoji == k).map(|i| pos2(left + i as f32 * 74.0 + 20.0, chips_y + chip_h / 2.0)).unwrap_or(pos2(x + 20.0, chips_y + chip_h / 2.0));
+            let target = chips
+                .iter()
+                .position(|c| c.emoji == k)
+                .map(|i| pos2(left + i as f32 * 74.0 + 20.0, chips_y + chip_h / 2.0))
+                .unwrap_or(pos2(x + 20.0, chips_y + chip_h / 2.0));
             let e = ease(Easing::InOutCubic, u);
             let p = lerp_pos(from, target, e) - vec2(0.0, (u * std::f32::consts::PI).sin() * 46.0);
             paint_emoji(painter, p, lerp(30.0, 17.0, e), set[k], 1.0);
@@ -571,7 +640,12 @@ impl egui::Widget for EmojiReactions {
 fn soft_card_chip(painter: &egui::Painter, t: &Theme, r: Rect, fill: Color32, mine: bool, stroke: bool) {
     super::common::soft_card_fill(painter, t, r, r.height() / 2.0, 0.5, stroke, fill);
     if mine {
-        painter.rect_stroke(r, cr(r.height() / 2.0), egui::Stroke::new(1.2, with_alpha(t.accent, 0.55)), egui::StrokeKind::Inside);
+        painter.rect_stroke(
+            r,
+            cr(r.height() / 2.0),
+            egui::Stroke::new(1.2, with_alpha(t.accent, 0.55)),
+            egui::StrokeKind::Inside,
+        );
     }
 }
 
@@ -634,7 +708,16 @@ impl Default for VoiceNote {
 impl VoiceNote {
     /// A "Hold to record" pill.
     pub fn new() -> Self {
-        Self { label: "Hold to record".into(), sensitivity: 60.0, bounce: 40.0, bars: 28, corner: 28.0, stroke: false, level: None, autoplay: false }
+        Self {
+            label: "Hold to record".into(),
+            sensitivity: 60.0,
+            bounce: 40.0,
+            bars: 28,
+            corner: 28.0,
+            stroke: false,
+            level: None,
+            autoplay: false,
+        }
     }
     /// Idle label.
     pub fn label(mut self, s: impl Into<String>) -> Self {
@@ -730,7 +813,13 @@ impl egui::Widget for VoiceNote {
             let cycle = 8.0;
             let p = (idle - 0.8) % cycle;
             let k = ((idle - 0.8) / cycle) as i32;
-            let phase = if p < 2.6 { 0 } else if p < 6.8 { 1 } else { 2 };
+            let phase = if p < 2.6 {
+                0
+            } else if p < 6.8 {
+                1
+            } else {
+                2
+            };
             match phase {
                 0 => auto_hold = Some(if k % 3 == 2 && p > 1.8 { -90.0 } else { 0.0 }),
                 1 => {
@@ -823,10 +912,30 @@ impl egui::Widget for VoiceNote {
         let s = st.clone();
         glowkit_core::set_state(ui, id.with("voice"), st);
         glowkit_core::animate(ui);
-        let rec_a = glowkit_core::anim::follow(ui, id.with("rec_a"), if s.phase == VoicePhase::Recording { 1.0 } else { 0.0 }, 12.0);
-        let play_a = glowkit_core::anim::follow(ui, id.with("play_a"), if s.phase == VoicePhase::Playback { 1.0 } else { 0.0 }, 12.0);
-        let idle_a = glowkit_core::anim::follow(ui, id.with("idle_a"), if s.phase == VoicePhase::Idle { 1.0 } else { 0.0 }, 12.0);
-        let cancel_a = glowkit_core::anim::follow(ui, id.with("cancel_a"), if s.cancel && s.phase == VoicePhase::Recording { 1.0 } else { 0.0 }, 14.0);
+        let rec_a = glowkit_core::anim::follow(
+            ui,
+            id.with("rec_a"),
+            if s.phase == VoicePhase::Recording { 1.0 } else { 0.0 },
+            12.0,
+        );
+        let play_a = glowkit_core::anim::follow(
+            ui,
+            id.with("play_a"),
+            if s.phase == VoicePhase::Playback { 1.0 } else { 0.0 },
+            12.0,
+        );
+        let idle_a = glowkit_core::anim::follow(
+            ui,
+            id.with("idle_a"),
+            if s.phase == VoicePhase::Idle { 1.0 } else { 0.0 },
+            12.0,
+        );
+        let cancel_a = glowkit_core::anim::follow(
+            ui,
+            id.with("cancel_a"),
+            if s.cancel && s.phase == VoicePhase::Recording { 1.0 } else { 0.0 },
+            14.0,
+        );
         if resp.hovered() || play_resp.hovered() || close_resp.hovered() {
             ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
         }
@@ -845,7 +954,13 @@ impl egui::Widget for VoiceNote {
             let total = 18.0 + 10.0 + label_w;
             let x0 = pill.center().x - total / 2.0;
             icon_mic(&clip, pos2(x0 + 9.0, pill.center().y), 22.0, with_alpha(t.foreground, a));
-            clip.text(pos2(x0 + 28.0, pill.center().y), Align2::LEFT_CENTER, &self.label, font.clone(), with_alpha(t.foreground, a));
+            clip.text(
+                pos2(x0 + 28.0, pill.center().y),
+                Align2::LEFT_CENTER,
+                &self.label,
+                font.clone(),
+                with_alpha(t.foreground, a),
+            );
         }
         let wave_bar = |painter: &egui::Painter, x: f32, amp: f32, col: Color32| {
             let h = (4.0 + amp * 26.0).max(3.0);
@@ -888,7 +1003,13 @@ impl egui::Widget for VoiceNote {
             }
             let hint = if cancel_a > 0.5 { "Release to cancel" } else { "‹  Slide to cancel" };
             let hc = mix(t.muted_foreground, red, cancel_a);
-            painter.text(pos2(center.x, pill.max.y + 20.0), Align2::CENTER_CENTER, hint, FontId::proportional(12.5), with_alpha(hc, a));
+            painter.text(
+                pos2(center.x, pill.max.y + 20.0),
+                Align2::CENTER_CENTER,
+                hint,
+                FontId::proportional(12.5),
+                with_alpha(hc, a),
+            );
         }
         // playback content
         if play_a > 0.01 {
@@ -916,7 +1037,13 @@ impl egui::Widget for VoiceNote {
                 wave_bar(&clip, x, amp * 0.85, with_alpha(col, a));
             }
             let remaining = if s.playing || s.play_pos > 0.0 { s.play_pos } else { s.length };
-            clip.text(pos2(pill.max.x - 52.0, pill.center().y), Align2::RIGHT_CENTER, mmss(remaining.max(0.0) + 0.999), FontId::proportional(14.0), with_alpha(t.muted_foreground, a));
+            clip.text(
+                pos2(pill.max.x - 52.0, pill.center().y),
+                Align2::RIGHT_CENTER,
+                mmss(remaining.max(0.0) + 0.999),
+                FontId::proportional(14.0),
+                with_alpha(t.muted_foreground, a),
+            );
             let xc = if close_resp.hovered() { t.foreground } else { t.muted_foreground };
             if close_resp.hovered() {
                 clip.circle_filled(close_rect.center(), 13.0, with_alpha(track(&t), a));

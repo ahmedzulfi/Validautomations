@@ -131,7 +131,13 @@ impl Widget for PaletteSwatches {
         let st = glowkit_core::with_state(
             ui,
             id,
-            || PaletteState { from: harmonious(seed0, n), to: harmonious(seed0, n), since: -10.0, seed: seed0, turns: 0.0 },
+            || PaletteState {
+                from: harmonious(seed0, n),
+                to: harmonious(seed0, n),
+                since: -10.0,
+                seed: seed0,
+                turns: 0.0,
+            },
             |s| {
                 if s.to.len() != n {
                     s.to = harmonious(s.seed, n);
@@ -183,7 +189,11 @@ impl Widget for PaletteSwatches {
             let r = Rect::from_center_size(base.center() - vec2(0.0, 3.0 * lift), sz);
             painter.rect_filled(r, cr(self.corner), c);
             // glossy top edge
-            painter.rect_filled(Rect::from_min_size(r.min, vec2(r.width(), r.height() * 0.5)), cr(self.corner), with_alpha(Color32::WHITE, 0.06));
+            painter.rect_filled(
+                Rect::from_min_size(r.min, vec2(r.width(), r.height() * 0.5)),
+                cr(self.corner),
+                with_alpha(Color32::WHITE, 0.06),
+            );
             if lift > 0.05 {
                 let [rr, gg, bb, _] = st.to[i].to_srgba_unmultiplied();
                 let txt = format!("#{rr:02X}{gg:02X}{bb:02X}");

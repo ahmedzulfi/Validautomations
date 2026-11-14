@@ -672,7 +672,7 @@ OrgChartView::new(&mut chart, &mut state).height(480.0).show(ui);"##,
             name: "Signature Pad",
             category: C,
             description: "Smooth ink capture with speed-based thinning and tapered ends: a signature field with a baseline and a free drawing pad, with undo, clear and point export.",
-            covers: &["signature_pad", "react-signature-canvas", "perfect-freehand", "shadcn: Signature"],
+            covers: &["signature_pad", "react-signature-canvas", "perfect-freehand", "shadcn: Signature", "Bencho: Signature pad"],
             code: r##"let mut ink = Ink::default();
 ui.add(SignaturePad::new(&mut ink).size(vec2(520.0, 200.0)));
 if !ink.is_empty() {

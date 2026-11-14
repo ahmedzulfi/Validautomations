@@ -611,7 +611,7 @@ ui.add(TreeView::new(&nodes, &mut selected).open_depth(2));"##,
             name: "Aspect Ratio",
             category: C,
             description: "A container that locks content to a ratio (16:9, 1:1, 4:3) and clips it to rounded corners, for media, maps and embeds.",
-            covers: &["shadcn/ui: Aspect Ratio", "Radix UI: Aspect Ratio"],
+            covers: &["shadcn/ui: Aspect Ratio", "Radix UI: Aspect Ratio", "Bencho: Aspect ratio"],
             code: r##"AspectRatio::new(16.0 / 9.0).max_width(420.0).show(ui, |ui| {
     let r = ui.max_rect();
     // paint an image, video frame or map into r

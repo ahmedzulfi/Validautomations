@@ -1,5 +1,7 @@
 use super::common::cr;
-use egui::{pos2, vec2, Align, Align2, Color32, FontId, Layout, Rect, Response, Sense, Stroke, Ui, UiBuilder, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align, Align2, Color32, FontId, Layout, Rect, Response, Sense, Stroke, Ui, UiBuilder, Vec2, Widget,
+};
 use glowkit_core::anim::spring;
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
@@ -135,10 +137,7 @@ impl Widget for LabelInput<'_> {
         )];
         if lift > 0.01 {
             let w = (lab_rect.width() + 8.0) * lift.clamp(0.0, 1.0);
-            let gap = Rect::from_center_size(
-                pos2(lab_rect.center().x, rect.min.y + width / 2.0),
-                vec2(w, width + 3.0),
-            );
+            let gap = Rect::from_center_size(pos2(lab_rect.center().x, rect.min.y + width / 2.0), vec2(w, width + 3.0));
             shapes.push(egui::Shape::rect_filled(gap, cr(1.0), notch));
         }
         painter.set(bg_idx, egui::Shape::Vec(shapes));

@@ -252,7 +252,7 @@ ui.add(Input::new(&mut user).label("Username").required(true)
             name: "Search Input",
             category: C,
             description: "Search fields with a magnifier, clear button and keyboard shortcut hint; square or pill.",
-            covers: &["Origin UI: Search input", "shadcn/ui: Command (search field)", "Kibo UI: Search"],
+            covers: &["Origin UI: Search input", "shadcn/ui: Command (search field)", "Kibo UI: Search", "Bencho: Search"],
             code: r##"ui.add(SearchInput::new(&mut query).shortcut("⌘K"));
 ui.add(SearchInput::new(&mut query).pill(true).placeholder("Search docs…"));"##,
             show: |ui| {
@@ -508,7 +508,7 @@ ui.add(Combobox::new(&mut framework, ["Next.js", "SvelteKit", "Nuxt", "Remix", "
             name: "OTP Input",
             category: C,
             description: "One-time-code boxes that fill as you type, auto-advance with a blinking caret and accept paste.",
-            covers: &["shadcn/ui: Input OTP", "Origin UI: OTP input", "Animate UI: Input OTP"],
+            covers: &["shadcn/ui: Input OTP", "Origin UI: OTP input", "Animate UI: Input OTP", "Bencho: One-time code"],
             code: r##"ui.add(OtpInput::new(&mut code).length(6).separator_after(3));"##,
             show: |ui| {
                 ui.add_space(50.0);
@@ -633,7 +633,7 @@ ui.add(DatePicker::range(&mut from, &mut to));"##,
             name: "File Dropzone",
             category: C,
             description: "A dashed drop area whose border marches while files hover, with an animated list of received files.",
-            covers: &["Origin UI: File upload", "Kibo UI: Dropzone", "Dice UI: File Upload", "Uiverse: File input", "Aceternity UI: File Upload"],
+            covers: &["Origin UI: File upload", "Kibo UI: Dropzone", "Dice UI: File Upload", "Uiverse: File input", "Aceternity UI: File Upload", "Bencho: Upload dropzone"],
             code: r##"ui.add(FileDropzone::new(&mut files)
     .hint("PNG, JPG or PDF up to 10 MB")
     .on_drop(|f| println!("got {:?}", f.path())));"##,

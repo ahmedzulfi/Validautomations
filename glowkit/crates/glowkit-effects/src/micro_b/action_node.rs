@@ -132,7 +132,8 @@ impl ActionNode {
         let n = self.actions.len();
         let corner = card.right_top() + vec2(-14.0, 14.0);
         // the buttons sit on an L just outside the corner: along the top edge, then down the side
-        const SPOTS: [(f32, f32); 6] = [(-52.0, -20.0), (-18.0, -20.0), (20.0, 14.0), (20.0, 48.0), (20.0, 82.0), (-86.0, -20.0)];
+        const SPOTS: [(f32, f32); 6] =
+            [(-52.0, -20.0), (-18.0, -20.0), (20.0, 14.0), (20.0, 48.0), (20.0, 82.0), (-86.0, -20.0)];
         let spot = |i: usize| -> Pos2 {
             let (x, y) = SPOTS[i % SPOTS.len()];
             card.right_top() + vec2(x, y)
@@ -142,18 +143,27 @@ impl ActionNode {
         let hovering = card_resp.hovered() || ui.rect_contains_pointer(fan) && ui.rect_contains_pointer(outer);
         let idle = idle_for(ui, id, hovering);
         let auto = self.autoplay && idle > 2.0;
-        let st = glowkit_core::with_state(ui, id, || NodeState { open: false, since: now }, |s| {
-            let want = if auto {
-                if s.open { now - s.since < 2.6 } else { now - s.since > 1.4 }
-            } else {
-                hovering
-            };
-            if want != s.open {
-                s.open = want;
-                s.since = now;
-            }
-            *s
-        });
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || NodeState { open: false, since: now },
+            |s| {
+                let want = if auto {
+                    if s.open {
+                        now - s.since < 2.6
+                    } else {
+                        now - s.since > 1.4
+                    }
+                } else {
+                    hovering
+                };
+                if want != s.open {
+                    s.open = want;
+                    s.since = now;
+                }
+                *s
+            },
+        );
         if auto {
             glowkit_core::animate(ui);
         }
@@ -184,13 +194,26 @@ impl ActionNode {
         // card
         let line = if self.stroke { hairline(&t) } else { Stroke::NONE };
         let card_l = card.translate(vec2(0.0, -2.0 * lift));
-        paint::soft_shadow(&painter, card_l, self.corner, 16.0 + 10.0 * lift, vec2(0.0, 4.0 + 4.0 * lift), shadow_color(&t, 0.5 + 0.4 * lift));
+        paint::soft_shadow(
+            &painter,
+            card_l,
+            self.corner,
+            16.0 + 10.0 * lift,
+            vec2(0.0, 4.0 + 4.0 * lift),
+            shadow_color(&t, 0.5 + 0.4 * lift),
+        );
         painter.rect(card_l, cr(self.corner), bg, line, egui::StrokeKind::Inside);
         let x0 = card_l.min.x + 16.0;
         let tile = Rect::from_min_size(pos2(x0, card_l.min.y + 16.0), vec2(26.0, 26.0));
         painter.rect_filled(tile, cr(8.0), if self.dark { with_alpha(fg, 0.1) } else { surface_hover(&t) });
         icon(&painter, MicroIcon::Node, tile.center(), 13.0, fg, 1.4);
-        painter.text(pos2(tile.max.x + 10.0, tile.center().y), Align2::LEFT_CENTER, &self.title, FontId::proportional(14.5), fg);
+        painter.text(
+            pos2(tile.max.x + 10.0, tile.center().y),
+            Align2::LEFT_CENTER,
+            &self.title,
+            FontId::proportional(14.5),
+            fg,
+        );
         let by = tile.max.y + 10.0;
         painter.galley(pos2(x0, by), body.clone(), sub);
         let fy = by + body.size().y + 14.0 + 11.0;
@@ -200,7 +223,13 @@ impl ActionNode {
         }
         if self.extra > 0 {
             let ex = x0 + 10.0 + self.people.len() as f32 * 13.0 + 4.0;
-            painter.text(pos2(ex, fy), Align2::LEFT_CENTER, format!("+{}", self.extra), FontId::proportional(11.5), sub);
+            painter.text(
+                pos2(ex, fy),
+                Align2::LEFT_CENTER,
+                format!("+{}", self.extra),
+                FontId::proportional(11.5),
+                sub,
+            );
         }
         // action buttons grow out of the corner along their arc
         for (i, (k, hov)) in ps.iter().copied().enumerate() {

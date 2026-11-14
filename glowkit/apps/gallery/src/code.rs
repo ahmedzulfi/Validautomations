@@ -80,4 +80,3 @@ pub fn highlight_rust(job: &mut egui::text::LayoutJob, code: &str, t: &Theme) {
         }
     }
 }
-

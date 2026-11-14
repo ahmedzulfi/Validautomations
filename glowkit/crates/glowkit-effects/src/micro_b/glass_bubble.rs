@@ -110,7 +110,8 @@ impl Widget for GlassBubble {
         let t = glowkit_core::Theme::of(ui);
         let (rect, response) = ui.allocate_exact_size(self.size, Sense::click_and_drag());
         let id = response.id;
-        let (tex, aspect) = self.texture.unwrap_or_else(|| (PaintedScene::texture(ui.ctx(), self.scene), PaintedScene::ASPECT));
+        let (tex, aspect) =
+            self.texture.unwrap_or_else(|| (PaintedScene::texture(ui.ctx(), self.scene), PaintedScene::ASPECT));
         let uv = cover_uv(aspect, rect.aspect_ratio());
         let active = response.dragged() || response.hovered();
         let idle = idle_for(ui, id, response.dragged());
@@ -190,7 +191,8 @@ impl Widget for GlassBubble {
             clip_mesh(&m, &outline, rect.shrink(self.corner))
         };
         // contact shadow ring just outside the glass
-        let ring_pts: Vec<Pos2> = (0..=64).map(|i| c + warp(Vec2::angled(i as f32 / 64.0 * TAU) * (rad + 1.5))).collect();
+        let ring_pts: Vec<Pos2> =
+            (0..=64).map(|i| c + warp(Vec2::angled(i as f32 / 64.0 * TAU) * (rad + 1.5))).collect();
         paint::gradient_polyline(painter, &ring_pts, true, 3.0, |_| with_alpha(Color32::BLACK, 0.07));
         // three additive channels with slightly different refraction = colour fringes
         let f = self.fringe * 0.12;
@@ -215,12 +217,14 @@ impl Widget for GlassBubble {
         }
         // glass shading: faint inner glow at the bottom, specular rim and a highlight
         let clip = painter.with_clip_rect(rect);
-        let lens_pts: Vec<Pos2> = (0..=72).map(|i| c + warp(Vec2::angled(i as f32 / 72.0 * TAU) * (rad - 0.8))).collect();
+        let lens_pts: Vec<Pos2> =
+            (0..=72).map(|i| c + warp(Vec2::angled(i as f32 / 72.0 * TAU) * (rad - 0.8))).collect();
         clip.add(egui::Shape::line(lens_pts, Stroke::new(1.6, with_alpha(Color32::WHITE, 0.85))));
-        let hl: Vec<Pos2> = (0..=20)
-            .map(|i| c + warp(Vec2::angled(-2.75 + i as f32 / 20.0 * 1.0) * (rad * 0.8)))
-            .collect();
-        paint::gradient_polyline(&clip, &hl, false, 3.0, |u| with_alpha(Color32::WHITE, 0.5 * (u * std::f32::consts::PI).sin()));
+        let hl: Vec<Pos2> =
+            (0..=20).map(|i| c + warp(Vec2::angled(-2.75 + i as f32 / 20.0 * 1.0) * (rad * 0.8))).collect();
+        paint::gradient_polyline(&clip, &hl, false, 3.0, |u| {
+            with_alpha(Color32::WHITE, 0.5 * (u * std::f32::consts::PI).sin())
+        });
         paint::glow(&clip, c + warp(vec2(0.0, rad * 0.55)), rad * 0.45, with_alpha(Color32::WHITE, 0.10));
         response
     }

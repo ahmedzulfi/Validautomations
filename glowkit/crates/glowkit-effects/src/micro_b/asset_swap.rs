@@ -167,7 +167,13 @@ fn amount_str(v: f64) -> String {
 
 fn coin(painter: &Painter, c: Pos2, r: f32, a: &SwapAsset, alpha: f32) {
     painter.circle_filled(c, r, with_alpha(a.color, alpha));
-    painter.text(c, Align2::CENTER_CENTER, &a.glyph, FontId::proportional(r * 1.15), with_alpha(contrast_text(a.color), alpha));
+    painter.text(
+        c,
+        Align2::CENTER_CENTER,
+        &a.glyph,
+        FontId::proportional(r * 1.15),
+        with_alpha(contrast_text(a.color), alpha),
+    );
 }
 
 impl Widget for AssetSwap {
@@ -191,7 +197,8 @@ impl Widget for AssetSwap {
         if self.assets.len() < 2 {
             return response;
         }
-        let slot = |s: usize| Rect::from_min_size(rect.min + vec2(0.0, s as f32 * (card_h + gap)), vec2(self.width, card_h));
+        let slot =
+            |s: usize| Rect::from_min_size(rect.min + vec2(0.0, s as f32 * (card_h + gap)), vec2(self.width, card_h));
         let btn = Rect::from_center_size(rect.center(), vec2(32.0, 32.0));
         let btn_resp = ui.interact(btn, id.with("btn"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
         // the card each slot currently shows (slot 0 = pay)
@@ -206,7 +213,11 @@ impl Widget for AssetSwap {
             for s in 0..2 {
                 let c = card_in(s, st0.flipped);
                 let cr_ = chip_rect(slot(s), &painter, &self.assets[st0.asset[c] % n]);
-                if ui.interact(cr_, id.with(("chip", s)), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
+                if ui
+                    .interact(cr_, id.with(("chip", s)), Sense::click())
+                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                    .clicked()
+                {
                     chip_clicked = Some(c);
                 }
             }
@@ -223,8 +234,15 @@ impl Widget for AssetSwap {
                 close_picker = true;
             }
             for i in 0..n {
-                let rr = Rect::from_min_size(pos2(panel.min.x + 6.0, panel.min.y + 36.0 + i as f32 * row_h), vec2(panel.width() - 12.0, row_h));
-                if ui.interact(rr, id.with(("row", i)), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
+                let rr = Rect::from_min_size(
+                    pos2(panel.min.x + 6.0, panel.min.y + 36.0 + i as f32 * row_h),
+                    vec2(panel.width() - 12.0, row_h),
+                );
+                if ui
+                    .interact(rr, id.with(("row", i)), Sense::click())
+                    .on_hover_cursor(egui::CursorIcon::PointingHand)
+                    .clicked()
+                {
                     pick = Some((c, i));
                 }
             }
@@ -232,32 +250,37 @@ impl Widget for AssetSwap {
         let idle = idle_for(ui, id, ui.rect_contains_pointer(rect.expand(30.0)));
         let auto = self.autoplay && idle > 2.0;
         let prices: Vec<f64> = self.assets.iter().map(|a| a.price).collect();
-        let st = glowkit_core::with_state(ui, id, || st0, |s| {
-            let flip = btn_resp.clicked() || (auto && s.picker.is_none() && now - s.since > 2.6);
-            if flip {
-                // the amount received becomes the amount paid
-                let pay = s.asset[card_in(0, s.flipped)] % n;
-                let recv = s.asset[card_in(1, s.flipped)] % n;
-                s.amount = s.amount * prices[pay] / prices[recv].max(1e-12) * 0.997;
-                s.flipped = !s.flipped;
-                s.since = now;
-            }
-            if let Some(c) = chip_clicked {
-                s.picker = Some(c);
-            }
-            if close_picker {
-                s.picker = None;
-            }
-            if let Some((c, i)) = pick {
-                let other = 1 - c;
-                if s.asset[other] == i {
-                    s.asset[other] = s.asset[c];
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0,
+            |s| {
+                let flip = btn_resp.clicked() || (auto && s.picker.is_none() && now - s.since > 2.6);
+                if flip {
+                    // the amount received becomes the amount paid
+                    let pay = s.asset[card_in(0, s.flipped)] % n;
+                    let recv = s.asset[card_in(1, s.flipped)] % n;
+                    s.amount = s.amount * prices[pay] / prices[recv].max(1e-12) * 0.997;
+                    s.flipped = !s.flipped;
+                    s.since = now;
                 }
-                s.asset[c] = i;
-                s.picker = None;
-            }
-            *s
-        });
+                if let Some(c) = chip_clicked {
+                    s.picker = Some(c);
+                }
+                if close_picker {
+                    s.picker = None;
+                }
+                if let Some((c, i)) = pick {
+                    let other = 1 - c;
+                    if s.asset[other] == i {
+                        s.asset[other] = s.asset[c];
+                    }
+                    s.asset[c] = i;
+                    s.picker = None;
+                }
+                *s
+            },
+        );
         if auto {
             glowkit_core::animate(ui);
         }
@@ -303,11 +326,23 @@ impl Widget for AssetSwap {
             painter.text(r.min + vec2(16.0, 16.0), Align2::LEFT_TOP, label, FontId::proportional(12.0), sub);
             let amt = if is_pay { st.amount } else { recv_amount };
             painter.text(r.min + vec2(16.0, 36.0), Align2::LEFT_TOP, amount_str(amt), FontId::proportional(27.0), fg);
-            painter.text(r.min + vec2(16.0, 72.0), Align2::LEFT_TOP, format!("${}", money(amt * asset.price)), FontId::proportional(12.0), sub);
+            painter.text(
+                r.min + vec2(16.0, 72.0),
+                Align2::LEFT_TOP,
+                format!("${}", money(amt * asset.price)),
+                FontId::proportional(12.0),
+                sub,
+            );
             let chip = chip_rect(r, &painter, asset);
             painter.rect_filled(chip, cr(14.0), if self.dark { with_alpha(fg, 0.1) } else { surface_hover(&t) });
             coin(&painter, pos2(chip.min.x + 15.0, chip.center().y), 9.0, asset, 1.0);
-            painter.text(pos2(chip.min.x + 29.0, chip.center().y), Align2::LEFT_CENTER, &asset.symbol, FontId::proportional(12.5), fg);
+            painter.text(
+                pos2(chip.min.x + 29.0, chip.center().y),
+                Align2::LEFT_CENTER,
+                &asset.symbol,
+                FontId::proportional(12.5),
+                fg,
+            );
             icon(&painter, MicroIcon::ChevronDown, pos2(chip.max.x - 13.0, chip.center().y + 0.5), 9.0, sub, 1.4);
         }
         // the round swap button, notched into the stage color
@@ -321,26 +356,48 @@ impl Widget for AssetSwap {
             let c = last_pick;
             let s = if card_in(0, st.flipped) == c { 0 } else { 1 };
             let full = picker_rect(slot(s), rect, n, row_h);
-            let panel = Rect::from_min_max(full.min, pos2(full.max.x, full.min.y + full.height() * pick_t.clamp(0.0, 1.05)));
+            let panel =
+                Rect::from_min_max(full.min, pos2(full.max.x, full.min.y + full.height() * pick_t.clamp(0.0, 1.05)));
             let a = pick_t.clamp(0.0, 1.0);
             paint::soft_shadow(&painter, panel, self.corner, 24.0, vec2(0.0, 8.0), shadow_color(&t, 0.9 * a));
             painter.rect(panel, cr(self.corner), with_alpha(bg, a), line, egui::StrokeKind::Inside);
             let clip = painter.with_clip_rect(panel);
             let title = if s == 0 { &self.labels[0] } else { &self.labels[1] };
-            clip.text(panel.min + vec2(16.0, 20.0), Align2::LEFT_CENTER, title, FontId::proportional(12.0), with_alpha(sub, a));
+            clip.text(
+                panel.min + vec2(16.0, 20.0),
+                Align2::LEFT_CENTER,
+                title,
+                FontId::proportional(12.0),
+                with_alpha(sub, a),
+            );
             icon(&clip, MicroIcon::Close, pos2(panel.max.x - 22.0, panel.min.y + 20.0), 9.0, with_alpha(sub, a), 1.4);
             let hover = ui.input(|i| i.pointer.hover_pos());
             for (i, asset) in self.assets.iter().enumerate() {
                 let e = glowkit_core::anim::stagger(pick_t, i, 0.06, 0.6);
-                let rr = Rect::from_min_size(pos2(panel.min.x + 6.0, panel.min.y + 36.0 + i as f32 * row_h), vec2(panel.width() - 12.0, row_h));
+                let rr = Rect::from_min_size(
+                    pos2(panel.min.x + 6.0, panel.min.y + 36.0 + i as f32 * row_h),
+                    vec2(panel.width() - 12.0, row_h),
+                );
                 if hover.is_some_and(|p| rr.contains(p)) {
                     clip.rect_filled(rr, cr(10.0), if self.dark { with_alpha(fg, 0.08) } else { surface_hover(&t) });
                 }
                 let y = rr.center().y + (1.0 - e) * 6.0;
                 coin(&clip, pos2(rr.min.x + 18.0, y), 9.0, asset, e);
-                clip.text(pos2(rr.min.x + 34.0, y), Align2::LEFT_CENTER, &asset.symbol, FontId::proportional(12.5), with_alpha(fg, e));
+                clip.text(
+                    pos2(rr.min.x + 34.0, y),
+                    Align2::LEFT_CENTER,
+                    &asset.symbol,
+                    FontId::proportional(12.5),
+                    with_alpha(fg, e),
+                );
                 let sw = text_width(&clip, &asset.symbol, 12.5);
-                clip.text(pos2(rr.min.x + 42.0 + sw, y), Align2::LEFT_CENTER, &asset.name, FontId::proportional(12.0), with_alpha(sub, e));
+                clip.text(
+                    pos2(rr.min.x + 42.0 + sw, y),
+                    Align2::LEFT_CENTER,
+                    &asset.name,
+                    FontId::proportional(12.0),
+                    with_alpha(sub, e),
+                );
                 if st.asset[c] == i {
                     icon(&clip, MicroIcon::Check, pos2(rr.max.x - 16.0, y), 11.0, with_alpha(fg, e), 1.6);
                 }

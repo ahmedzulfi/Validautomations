@@ -174,11 +174,13 @@ impl egui::Widget for StackedBars {
         let week_r = Rect::from_min_max(pos2(seg.center().x, seg.min.y), seg.max);
         let day_resp = ui.interact(day_r, id.with("day"), Sense::click());
         let week_resp = ui.interact(week_r, id.with("week"), Sense::click());
-        let chart = Rect::from_min_max(pos2(rect.min.x + pad, rect.min.y + 118.0), pos2(rect.max.x - pad, rect.max.y - 40.0));
+        let chart =
+            Rect::from_min_max(pos2(rect.min.x + pad, rect.min.y + 118.0), pos2(rect.max.x - pad, rect.max.y - 40.0));
         let chart_resp = ui.interact(chart.expand2(vec2(4.0, 10.0)), id.with("chart"), Sense::hover());
         let any = chart_resp.hovered() || day_resp.hovered() || week_resp.hovered();
         let idle = idle_for(ui, id, any);
-        let mut st: BarsState = glowkit_core::state(ui, id.with("bars"), || BarsState { weekly: false, switched_at: -10.0, auto_step: -1 });
+        let mut st: BarsState =
+            glowkit_core::state(ui, id.with("bars"), || BarsState { weekly: false, switched_at: -10.0, auto_step: -1 });
         if day_resp.clicked() && st.weekly {
             st.weekly = false;
             st.switched_at = now;
@@ -188,7 +190,9 @@ impl egui::Widget for StackedBars {
             st.switched_at = now;
         }
         let colw = chart.width() / n as f32;
-        let mut hovered = chart_resp.hover_pos().map(|p| (((p.x - chart.min.x) / colw).floor() as i32).clamp(0, n as i32 - 1) as usize);
+        let mut hovered = chart_resp
+            .hover_pos()
+            .map(|p| (((p.x - chart.min.x) / colw).floor() as i32).clamp(0, n as i32 - 1) as usize);
         if self.autoplay && !any && idle > 0.8 {
             let cycle = 6.0;
             let u = (idle - 0.8) % cycle;
@@ -223,19 +227,40 @@ impl egui::Widget for StackedBars {
         }
         let painter = ui.painter();
         soft_card(painter, &t, rect, self.corner, 1.0, self.stroke);
-        painter.text(pos2(rect.min.x + pad, rect.min.y + 24.0), Align2::LEFT_CENTER, &self.title, FontId::proportional(15.0), t.foreground);
+        painter.text(
+            pos2(rect.min.x + pad, rect.min.y + 24.0),
+            Align2::LEFT_CENTER,
+            &self.title,
+            FontId::proportional(15.0),
+            t.foreground,
+        );
         let sub = if st.weekly { format!("Last {n} weeks") } else { format!("Last {n} days") };
-        painter.text(pos2(rect.min.x + pad, rect.min.y + 42.0), Align2::LEFT_CENTER, sub, FontId::proportional(12.0), t.muted_foreground);
+        painter.text(
+            pos2(rect.min.x + pad, rect.min.y + 42.0),
+            Align2::LEFT_CENTER,
+            sub,
+            FontId::proportional(12.0),
+            t.muted_foreground,
+        );
         // segmented control
         painter.rect_filled(seg, cr(9.0), track(&t));
-        let knob = Rect::from_min_size(pos2(seg.min.x + 3.0 + seg_x * (seg.width() / 2.0), seg.min.y + 3.0), vec2(seg.width() / 2.0 - 6.0, seg.height() - 6.0));
+        let knob = Rect::from_min_size(
+            pos2(seg.min.x + 3.0 + seg_x * (seg.width() / 2.0), seg.min.y + 3.0),
+            vec2(seg.width() / 2.0 - 6.0, seg.height() - 6.0),
+        );
         painter.rect_filled(knob, cr(7.0), raised(&t));
         if !t.dark {
             painter.rect_stroke(knob, cr(7.0), Stroke::new(1.0, with_alpha(t.border, 0.8)), egui::StrokeKind::Inside);
         }
         for (k, (r, label)) in [(day_r, "Day"), (week_r, "Week")].iter().enumerate() {
             let active = if k == 0 { 1.0 - seg_x } else { seg_x };
-            painter.text(r.center(), Align2::CENTER_CENTER, *label, FontId::proportional(12.5), mix(t.muted_foreground, t.foreground, active.clamp(0.0, 1.0)));
+            painter.text(
+                r.center(),
+                Align2::CENTER_CENTER,
+                *label,
+                FontId::proportional(12.5),
+                mix(t.muted_foreground, t.foreground, active.clamp(0.0, 1.0)),
+            );
         }
         // headline number
         let num = thousands(shown_total.max(0.0) as u64);
@@ -243,7 +268,13 @@ impl egui::Widget for StackedBars {
         let np = pos2(rect.min.x + pad, rect.min.y + 66.0);
         let nw = g.size().x;
         painter.galley(np, g, t.foreground);
-        painter.text(pos2(np.x + nw + 8.0, np.y + 22.0), Align2::LEFT_CENTER, "visits", FontId::proportional(12.5), t.muted_foreground);
+        painter.text(
+            pos2(np.x + nw + 8.0, np.y + 22.0),
+            Align2::LEFT_CENTER,
+            "visits",
+            FontId::proportional(12.5),
+            t.muted_foreground,
+        );
         // bars
         let cols: [Color32; 5] = if self.mono {
             let f = t.foreground;
@@ -284,8 +315,16 @@ impl egui::Widget for StackedBars {
             }
             if hovered == Some(i) {
                 let top = y.min(base_y - 4.0);
-                let ring = Rect::from_min_max(pos2(x - bw / 2.0 - 3.0, top - 1.0), pos2(x + bw / 2.0 + 3.0, base_y + 5.0 + nh));
-                painter.rect_stroke(ring, cr(bw / 2.0 + 3.0), Stroke::new(1.3, with_alpha(t.foreground, 0.55 * focus)), egui::StrokeKind::Outside);
+                let ring = Rect::from_min_max(
+                    pos2(x - bw / 2.0 - 3.0, top - 1.0),
+                    pos2(x + bw / 2.0 + 3.0, base_y + 5.0 + nh),
+                );
+                painter.rect_stroke(
+                    ring,
+                    cr(bw / 2.0 + 3.0),
+                    Stroke::new(1.3, with_alpha(t.foreground, 0.55 * focus)),
+                    egui::StrokeKind::Outside,
+                );
             }
         }
         // axis labels
@@ -295,8 +334,20 @@ impl egui::Widget for StackedBars {
             (date_label(284 - (n as i32 - 1)), date_label(284))
         };
         let ly = rect.max.y - 20.0;
-        painter.text(pos2(chart.min.x, ly), Align2::LEFT_CENTER, first, FontId::proportional(11.0), with_alpha(t.muted_foreground, 0.8));
-        painter.text(pos2(chart.max.x, ly), Align2::RIGHT_CENTER, last, FontId::proportional(11.0), with_alpha(t.muted_foreground, 0.8));
+        painter.text(
+            pos2(chart.min.x, ly),
+            Align2::LEFT_CENTER,
+            first,
+            FontId::proportional(11.0),
+            with_alpha(t.muted_foreground, 0.8),
+        );
+        painter.text(
+            pos2(chart.max.x, ly),
+            Align2::RIGHT_CENTER,
+            last,
+            FontId::proportional(11.0),
+            with_alpha(t.muted_foreground, 0.8),
+        );
         // tooltip
         if tip_a > 0.02 {
             if let Some(i) = hovered.or(Some(((tip_x - chart.min.x) / colw) as usize).filter(|k| *k < n)) {
@@ -308,12 +359,37 @@ impl egui::Widget for StackedBars {
                 let tx = if right_side { tip_x + 12.0 } else { tip_x - 12.0 - tw };
                 let tr = Rect::from_min_size(pos2(tx, chart.min.y - 6.0), vec2(tw, th));
                 let tp = painter.with_clip_rect(rect.expand(30.0));
-                glowkit_core::paint::soft_shadow(&tp, tr, 10.0, 14.0, vec2(0.0, 4.0), Color32::from_black_alpha((40.0 * tip_a) as u8));
-                tp.rect(tr, cr(10.0), with_alpha(surface(&t), tip_a), Stroke::new(1.0, with_alpha(t.border, tip_a)), egui::StrokeKind::Inside);
+                glowkit_core::paint::soft_shadow(
+                    &tp,
+                    tr,
+                    10.0,
+                    14.0,
+                    vec2(0.0, 4.0),
+                    Color32::from_black_alpha((40.0 * tip_a) as u8),
+                );
+                tp.rect(
+                    tr,
+                    cr(10.0),
+                    with_alpha(surface(&t), tip_a),
+                    Stroke::new(1.0, with_alpha(t.border, tip_a)),
+                    egui::StrokeKind::Inside,
+                );
                 let a = tip_a;
                 let sum: f32 = v[..4].iter().sum();
-                tp.text(pos2(tr.min.x + 10.0, tr.min.y + 15.0), Align2::LEFT_CENTER, date_label(day), FontId::proportional(11.5), with_alpha(t.muted_foreground, a));
-                tp.text(pos2(tr.max.x - 10.0, tr.min.y + 15.0), Align2::RIGHT_CENTER, thousands(sum as u64), FontId::proportional(11.5), with_alpha(t.foreground, a));
+                tp.text(
+                    pos2(tr.min.x + 10.0, tr.min.y + 15.0),
+                    Align2::LEFT_CENTER,
+                    date_label(day),
+                    FontId::proportional(11.5),
+                    with_alpha(t.muted_foreground, a),
+                );
+                tp.text(
+                    pos2(tr.max.x - 10.0, tr.min.y + 15.0),
+                    Align2::RIGHT_CENTER,
+                    thousands(sum as u64),
+                    FontId::proportional(11.5),
+                    with_alpha(t.foreground, a),
+                );
                 for (k, name) in [(0usize, SERIES[0]), (1, SERIES[1]), (3, SERIES[3]), (4, "Bounced")].iter() {
                     let row = match k {
                         0 => 0,
@@ -322,9 +398,25 @@ impl egui::Widget for StackedBars {
                         _ => 3,
                     };
                     let y = tr.min.y + 34.0 + row as f32 * 16.0;
-                    tp.rect_filled(Rect::from_center_size(pos2(tr.min.x + 14.0, y), vec2(7.0, 7.0)), cr(2.0), with_alpha(cols[*k], a));
-                    tp.text(pos2(tr.min.x + 24.0, y), Align2::LEFT_CENTER, *name, FontId::proportional(11.5), with_alpha(t.foreground, a * 0.85));
-                    tp.text(pos2(tr.max.x - 10.0, y), Align2::RIGHT_CENTER, format!("{}", v[*k] as u32), FontId::proportional(11.5), with_alpha(t.foreground, a));
+                    tp.rect_filled(
+                        Rect::from_center_size(pos2(tr.min.x + 14.0, y), vec2(7.0, 7.0)),
+                        cr(2.0),
+                        with_alpha(cols[*k], a),
+                    );
+                    tp.text(
+                        pos2(tr.min.x + 24.0, y),
+                        Align2::LEFT_CENTER,
+                        *name,
+                        FontId::proportional(11.5),
+                        with_alpha(t.foreground, a * 0.85),
+                    );
+                    tp.text(
+                        pos2(tr.max.x - 10.0, y),
+                        Align2::RIGHT_CENTER,
+                        format!("{}", v[*k] as u32),
+                        FontId::proportional(11.5),
+                        with_alpha(t.foreground, a),
+                    );
                 }
             }
         }

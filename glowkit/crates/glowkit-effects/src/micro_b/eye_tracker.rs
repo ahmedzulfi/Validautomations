@@ -48,7 +48,15 @@ impl Default for EyeTracker {
 impl EyeTracker {
     /// An eye-tracking cube.
     pub fn new() -> Self {
-        Self { size: 100.0, height: 300.0, shape: EyeShape::Eyes, follow: 0.6, bounce: 0.3, dark: false, autoplay: true }
+        Self {
+            size: 100.0,
+            height: 300.0,
+            shape: EyeShape::Eyes,
+            follow: 0.6,
+            bounce: 0.3,
+            dark: false,
+            autoplay: true,
+        }
     }
     /// Cube size in points.
     pub fn size(mut self, s: f32) -> Self {
@@ -114,7 +122,11 @@ impl Widget for EyeTracker {
             let d = p - center;
             let reach = stage.width().max(stage.height()) * 0.5;
             let m = (d.length() / reach).min(1.0);
-            if d.length() > 0.1 { d.normalized() * m } else { Vec2::ZERO }
+            if d.length() > 0.1 {
+                d.normalized() * m
+            } else {
+                Vec2::ZERO
+            }
         });
         let damping = 26.0 - 18.0 * self.bounce;
         let face = spring2(ui, id.with("face"), look * self.follow, 160.0, damping);
@@ -124,12 +136,23 @@ impl Widget for EyeTracker {
         }
         let painter = ui.painter_at(stage);
         let (ink_bg, ink_fg) = ink(&t);
-        let (bg, eye) = if self.dark { (ink_bg, ink_fg) } else { (surface(&t), if t.dark { t.foreground } else { egui::Color32::from_rgb(20, 20, 24) }) };
+        let (bg, eye) = if self.dark {
+            (ink_bg, ink_fg)
+        } else {
+            (surface(&t), if t.dark { t.foreground } else { egui::Color32::from_rgb(20, 20, 24) })
+        };
         // the cube leans toward the gaze a little
         let lean = body * s * 0.06;
         let cube = Rect::from_center_size(center + lean, Vec2::splat(s));
         let radius = s * 0.26;
-        paint::soft_shadow(&painter, cube, radius, s * 0.22, vec2(-body.x * s * 0.05, s * 0.07 - body.y * s * 0.03), shadow_color(&t, 0.9));
+        paint::soft_shadow(
+            &painter,
+            cube,
+            radius,
+            s * 0.22,
+            vec2(-body.x * s * 0.05, s * 0.07 - body.y * s * 0.03),
+            shadow_color(&t, 0.9),
+        );
         painter.rect(cube, cr(radius), bg, hairline(&t), egui::StrokeKind::Inside);
         // soft shading on the side facing away from the gaze
         let shade_c = cube.center() - body * s * 0.45;

@@ -150,7 +150,15 @@ impl Default for HeatBlobs {
 impl HeatBlobs {
     /// Gray dots with the neon ramp.
     pub fn new() -> Self {
-        Self { shape: HeatShape::Dots, palette: HeatPalette::Neon, heat: 60.0, area: 50.0, softness: 40.0, cold: None, autoplay: false }
+        Self {
+            shape: HeatShape::Dots,
+            palette: HeatPalette::Neon,
+            heat: 60.0,
+            area: 50.0,
+            softness: 40.0,
+            cold: None,
+            autoplay: false,
+        }
     }
     /// Starting shape (a press cycles to the next one).
     pub fn shape(mut self, s: HeatShape) -> Self {
@@ -241,7 +249,8 @@ impl egui::Widget for HeatBlobs {
                 settled &= s.is_settled();
             }
         }
-        let blobs: Vec<(Pos2, f32, f32)> = st.blobs.iter().map(|b| (c + vec2(b.x.value, b.y.value), b.r.value.max(0.0), b.heat)).collect();
+        let blobs: Vec<(Pos2, f32, f32)> =
+            st.blobs.iter().map(|b| (c + vec2(b.x.value, b.y.value), b.r.value.max(0.0), b.heat)).collect();
         glowkit_core::set_state(ui, id.with("heat"), st);
         if !settled || self.autoplay || blobs.iter().any(|b| b.2 > 0.001) || hand.is_some() {
             glowkit_core::animate(ui);

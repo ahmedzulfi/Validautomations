@@ -71,7 +71,9 @@ pub fn install_fonts(ctx: &egui::Context) {
     };
     fonts.families.insert(FontFamily::Proportional, with("inter", &defaults_prop));
     fonts.families.insert(FontFamily::Monospace, with("jetbrains", &defaults_mono));
-    fonts.families.insert(FontFamily::Name("display".into()), with("jakarta-bold", &with("inter-semibold", &defaults_prop)));
+    fonts
+        .families
+        .insert(FontFamily::Name("display".into()), with("jakarta-bold", &with("inter-semibold", &defaults_prop)));
     fonts.families.insert(FontFamily::Name("semibold".into()), with("inter-semibold", &defaults_prop));
     ctx.set_fonts(fonts);
 }
@@ -119,7 +121,12 @@ fn pill(ui: &mut Ui, text: &str, dark: bool, height: f32) -> egui::Response {
 }
 
 /// A round icon button; `paint_icon` draws inside the given rect with the given color.
-fn round_button(ui: &mut Ui, size: f32, filled: bool, paint_icon: impl FnOnce(&egui::Painter, Rect, Color32)) -> egui::Response {
+fn round_button(
+    ui: &mut Ui,
+    size: f32,
+    filled: bool,
+    paint_icon: impl FnOnce(&egui::Painter, Rect, Color32),
+) -> egui::Response {
     let t = Theme::of(ui);
     let (rect, resp) = ui.allocate_exact_size(vec2(size, size), Sense::click());
     let hov = ui.ctx().animate_bool_with_time(resp.id, resp.hovered(), 0.12);
@@ -176,7 +183,10 @@ fn chip(ui: &mut Ui, text: &str, count: Option<usize>, selected: bool) -> egui::
     let (rect, resp) = ui.allocate_exact_size(vec2(g.size().x + 30.0, 36.0), Sense::click());
     let hov = ui.ctx().animate_bool_with_time(resp.id, resp.hovered(), 0.12);
     let sel = ui.ctx().animate_bool_with_time(resp.id.with("sel"), selected, 0.18);
-    let fill = t.muted.lerp_to_gamma(glowkit::color::shade(t.muted, if t.dark { 0.04 } else { -0.03 }), hov).lerp_to_gamma(t.primary, sel);
+    let fill = t
+        .muted
+        .lerp_to_gamma(glowkit::color::shade(t.muted, if t.dark { 0.04 } else { -0.03 }), hov)
+        .lerp_to_gamma(t.primary, sel);
     let fg = t.foreground.lerp_to_gamma(t.primary_foreground, sel);
     ui.painter().rect_filled(rect, CornerRadius::same(18), fill);
     ui.painter().galley_with_override_text_color(rect.center() - g.size() / 2.0, g, fg);
@@ -429,7 +439,13 @@ impl Gallery {
         ui.painter().line_segment([ic + vec2(3.0, 3.0), ic + vec2(7.0, 7.0)], Stroke::new(1.6, t.muted_foreground));
         let kbd = if cfg!(target_os = "macos") { "⌘ K" } else { "Ctrl K" };
         if !focused && self.search.is_empty() {
-            ui.painter().text(sr.right_center() - vec2(16.0, 0.0), Align2::RIGHT_CENTER, kbd, body(12.0), with_alpha(t.muted_foreground, 0.8));
+            ui.painter().text(
+                sr.right_center() - vec2(16.0, 0.0),
+                Align2::RIGHT_CENTER,
+                kbd,
+                body(12.0),
+                with_alpha(t.muted_foreground, 0.8),
+            );
         }
         let er = Rect::from_min_max(pos2(sr.min.x + 38.0, sr.min.y + 8.0), pos2(sr.max.x - 58.0, sr.max.y - 8.0));
         let changed = ui
@@ -481,7 +497,10 @@ impl Gallery {
             if self.search.is_empty() {
                 let hero_top = ui.cursor().min.y;
                 ui.add_space(84.0);
-                let deco = Rect::from_min_max(pos2(full.max.x - 420.0, hero_top + 40.0), pos2(full.max.x - 20.0, hero_top + 360.0));
+                let deco = Rect::from_min_max(
+                    pos2(full.max.x - 420.0, hero_top + 40.0),
+                    pos2(full.max.x - 20.0, hero_top + 360.0),
+                );
                 dot_field(ui.painter(), deco, &t, time);
                 dot_field(ui.painter(), deco.translate(vec2(-(full.width() - 460.0), 60.0)), &t, time + 2.0);
                 let title = if ui.available_width() > 760.0 { 60.0 } else { 40.0 };
@@ -504,14 +523,22 @@ impl Gallery {
                 // platform badges
                 let labels = ["Windows", "macOS", "Linux", "WebAssembly"];
                 let font = semibold(12.5);
-                let widths: Vec<f32> =
-                    labels.iter().map(|l| ui.painter().layout_no_wrap(l.to_string(), font.clone(), t.foreground).size().x + 22.0).collect();
+                let widths: Vec<f32> = labels
+                    .iter()
+                    .map(|l| ui.painter().layout_no_wrap(l.to_string(), font.clone(), t.foreground).size().x + 22.0)
+                    .collect();
                 let total = widths.iter().sum::<f32>() + 8.0 * (labels.len() - 1) as f32;
                 let (row, _) = ui.allocate_exact_size(vec2(ui.available_width(), 28.0), Sense::hover());
                 let mut bx = row.center().x - total / 2.0;
                 for (l, bw) in labels.iter().zip(widths) {
                     let r = Rect::from_min_size(pos2(bx, row.min.y), vec2(bw, 28.0));
-                    ui.painter().rect(r, CornerRadius::same(8), t.background, Stroke::new(1.0, t.border), StrokeKind::Inside);
+                    ui.painter().rect(
+                        r,
+                        CornerRadius::same(8),
+                        t.background,
+                        Stroke::new(1.0, t.border),
+                        StrokeKind::Inside,
+                    );
                     ui.painter().text(r.center(), Align2::CENTER_CENTER, *l, font.clone(), t.foreground);
                     bx += bw + 8.0;
                 }
@@ -529,7 +556,8 @@ impl Gallery {
                 let copied = self.just_copied(ui, "install");
                 let clicked = ui
                     .scope_builder(UiBuilder::new().max_rect(right), |ui| {
-                        pill(ui, if copied { "Copied to clipboard" } else { "$ cargo add glowkit" }, false, 46.0).clicked()
+                        pill(ui, if copied { "Copied to clipboard" } else { "$ cargo add glowkit" }, false, 46.0)
+                            .clicked()
                     })
                     .inner;
                 if clicked {
@@ -539,7 +567,11 @@ impl Gallery {
                 let cats = Category::ALL.iter().filter(|c| self.demos.iter().any(|d| d.category == **c)).count();
                 centered_text(
                     ui,
-                    &format!("{} components across {} categories · v{VERSION} · MIT or Apache-2.0", self.demos.len(), cats),
+                    &format!(
+                        "{} components across {} categories · v{VERSION} · MIT or Apache-2.0",
+                        self.demos.len(),
+                        cats
+                    ),
                     body(13.5),
                     t.muted_foreground,
                 );
@@ -551,24 +583,25 @@ impl Gallery {
             // chips
             grid_offset = ui.cursor().min.y - content_top;
             let chips_rect = Rect::from_min_size(pos2(ui.min_rect().min.x + pad, ui.cursor().min.y), vec2(w, 0.0));
-            let chips = ui.scope_builder(UiBuilder::new().max_rect(chips_rect.with_max_y(chips_rect.min.y + 4000.0)), |ui| {
-              ui.horizontal_wrapped(|ui| {
-                ui.set_max_width(w);
-                ui.spacing_mut().item_spacing = vec2(8.0, 8.0);
-                if chip(ui, "All", Some(self.demos.len()), self.filter.is_none()).clicked() {
-                    self.filter = None;
-                }
-                for cat in Category::ALL {
-                    let n = self.demos.iter().filter(|d| d.category == cat).count();
-                    if n == 0 {
-                        continue;
-                    }
-                    if chip(ui, cat.label(), Some(n), self.filter == Some(cat)).clicked() {
-                        self.filter = if self.filter == Some(cat) { None } else { Some(cat) };
-                    }
-                }
-              });
-            });
+            let chips =
+                ui.scope_builder(UiBuilder::new().max_rect(chips_rect.with_max_y(chips_rect.min.y + 4000.0)), |ui| {
+                    ui.horizontal_wrapped(|ui| {
+                        ui.set_max_width(w);
+                        ui.spacing_mut().item_spacing = vec2(8.0, 8.0);
+                        if chip(ui, "All", Some(self.demos.len()), self.filter.is_none()).clicked() {
+                            self.filter = None;
+                        }
+                        for cat in Category::ALL {
+                            let n = self.demos.iter().filter(|d| d.category == cat).count();
+                            if n == 0 {
+                                continue;
+                            }
+                            if chip(ui, cat.label(), Some(n), self.filter == Some(cat)).clicked() {
+                                self.filter = if self.filter == Some(cat) { None } else { Some(cat) };
+                            }
+                        }
+                    });
+                });
             let _ = chips;
             ui.add_space(18.0);
 
@@ -576,7 +609,12 @@ impl Gallery {
             let items: Vec<usize> = (0..self.demos.len()).filter(|&i| self.matches(&self.demos[i])).collect();
             if items.is_empty() {
                 ui.add_space(60.0);
-                centered_text(ui, &format!("No components match \u{201C}{}\u{201D}", self.search), semibold(17.0), t.foreground);
+                centered_text(
+                    ui,
+                    &format!("No components match \u{201C}{}\u{201D}", self.search),
+                    semibold(17.0),
+                    t.foreground,
+                );
                 ui.add_space(6.0);
                 centered_text(ui, "Try a different word, or clear the search.", body(14.0), t.muted_foreground);
                 return;
@@ -588,7 +626,8 @@ impl Gallery {
             let caption = 52.0;
             let viewport = ui.clip_rect();
             for chunk in items.chunks(cols) {
-                let (row, _) = ui.allocate_exact_size(vec2(ui.available_width(), tile_h + caption + gap), Sense::hover());
+                let (row, _) =
+                    ui.allocate_exact_size(vec2(ui.available_width(), tile_h + caption + gap), Sense::hover());
                 for (k, &i) in chunk.iter().enumerate() {
                     let x = row.min.x + pad + k as f32 * (tile_w + gap);
                     let tile = Rect::from_min_size(pos2(x, row.min.y), vec2(tile_w, tile_h));
@@ -636,16 +675,21 @@ impl Gallery {
         let ctx = ui.ctx().clone();
         let before: HashSet<LayerId> = ctx.memory(|m| m.layer_ids().collect());
         let area_id = Id::unique(("gk_tile", d.id));
-        let resp = egui::Area::new(area_id).order(Order::Middle).fixed_pos(tile.min).constrain(false).interactable(false).show(&ctx, |ui| {
-            ui.set_clip_rect(clip);
-            ui.set_width(VIRTUAL_W);
-            ui.add_space(top);
-            let inner = egui::Frame::new().inner_margin(egui::Margin::symmetric(24, 0)).show(ui, |ui| {
-                ui.set_width(VIRTUAL_W - 48.0);
-                ui.push_id(("tile", d.id), |ui| (d.show)(ui));
+        let resp = egui::Area::new(area_id)
+            .order(Order::Middle)
+            .fixed_pos(tile.min)
+            .constrain(false)
+            .interactable(false)
+            .show(&ctx, |ui| {
+                ui.set_clip_rect(clip);
+                ui.set_width(VIRTUAL_W);
+                ui.add_space(top);
+                let inner = egui::Frame::new().inner_margin(egui::Margin::symmetric(24, 0)).show(ui, |ui| {
+                    ui.set_width(VIRTUAL_W - 48.0);
+                    ui.push_id(("tile", d.id), |ui| (d.show)(ui));
+                });
+                inner.response.rect.height()
             });
-            inner.response.rect.height()
-        });
         let h = resp.inner;
         if h.is_finite() && h > 0.0 {
             let prev = self.tile_heights.entry(d.id).or_insert(h);
@@ -675,7 +719,13 @@ impl Gallery {
         let hov = ui.ctx().animate_bool_with_time(resp.id, resp.hovered() || tile_hovered, 0.12);
         let p = ui.painter();
         p.text(pos2(cap.min.x + 6.0, cap.min.y + 14.0), Align2::LEFT_TOP, d.name, semibold(14.5), t.foreground);
-        p.text(pos2(cap.min.x + 6.0, cap.min.y + 33.0), Align2::LEFT_TOP, d.category.label(), body(12.5), t.muted_foreground);
+        p.text(
+            pos2(cap.min.x + 6.0, cap.min.y + 33.0),
+            Align2::LEFT_TOP,
+            d.category.label(),
+            body(12.5),
+            t.muted_foreground,
+        );
         let ar = Rect::from_center_size(pos2(cap.max.x - 20.0, cap.min.y + 26.0), vec2(30.0, 30.0));
         p.circle(ar.center(), 15.0, t.background.lerp_to_gamma(t.muted, hov), Stroke::new(1.0, t.border));
         let a = Rect::from_center_size(ar.center() + vec2(hov * 2.0, 0.0), vec2(11.0, 11.0));
@@ -700,8 +750,17 @@ impl Gallery {
                 let g = ui.painter().layout_no_wrap("All components".to_owned(), body(14.0), t.foreground);
                 let (r, resp) = ui.allocate_exact_size(vec2(g.size().x + 30.0, 30.0), Sense::click());
                 let col = if resp.hovered() { t.foreground } else { t.muted_foreground };
-                arrow_icon(ui.painter(), Rect::from_center_size(pos2(r.min.x + 8.0, r.center().y), vec2(11.0, 11.0)), col, true);
-                ui.painter().galley_with_override_text_color(pos2(r.min.x + 22.0, r.center().y - g.size().y / 2.0), g, col);
+                arrow_icon(
+                    ui.painter(),
+                    Rect::from_center_size(pos2(r.min.x + 8.0, r.center().y), vec2(11.0, 11.0)),
+                    col,
+                    true,
+                );
+                ui.painter().galley_with_override_text_color(
+                    pos2(r.min.x + 22.0, r.center().y - g.size().y / 2.0),
+                    g,
+                    col,
+                );
                 if resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
                     self.open(Page::Home);
                 }
@@ -735,18 +794,40 @@ impl Gallery {
         ui.painter().rect_filled(stage, CornerRadius::same(32), t.muted);
         // segmented Preview / Code
         let seg = Rect::from_min_size(stage.min + vec2(14.0, 14.0), vec2(164.0, 38.0));
-        ui.painter().rect_filled(seg, CornerRadius::same(19), glowkit::color::shade(t.muted, if t.dark { 0.05 } else { -0.04 }));
+        ui.painter().rect_filled(
+            seg,
+            CornerRadius::same(19),
+            glowkit::color::shade(t.muted, if t.dark { 0.05 } else { -0.04 }),
+        );
         let tabs = ["Preview", "Code"];
-        let thumb_x = ui.ctx().animate_value_with_time(Id::unique("gk_seg"), if self.show_code { 1.0 } else { 0.0 }, 0.18);
+        let thumb_x =
+            ui.ctx().animate_value_with_time(Id::unique("gk_seg"), if self.show_code { 1.0 } else { 0.0 }, 0.18);
         let tw = (seg.width() - 8.0) / 2.0;
-        let thumb = Rect::from_min_size(pos2(seg.min.x + 4.0 + thumb_x * tw, seg.min.y + 4.0), vec2(tw, seg.height() - 8.0));
-        paint::soft_shadow(ui.painter(), thumb, 15.0, 6.0, vec2(0.0, 1.0), Color32::from_black_alpha(if t.dark { 60 } else { 18 }));
+        let thumb =
+            Rect::from_min_size(pos2(seg.min.x + 4.0 + thumb_x * tw, seg.min.y + 4.0), vec2(tw, seg.height() - 8.0));
+        paint::soft_shadow(
+            ui.painter(),
+            thumb,
+            15.0,
+            6.0,
+            vec2(0.0, 1.0),
+            Color32::from_black_alpha(if t.dark { 60 } else { 18 }),
+        );
         ui.painter().rect_filled(thumb, CornerRadius::same(15), t.background);
         for (k, label) in tabs.iter().enumerate() {
-            let r = Rect::from_min_size(pos2(seg.min.x + 4.0 + k as f32 * tw, seg.min.y + 4.0), vec2(tw, seg.height() - 8.0));
+            let r = Rect::from_min_size(
+                pos2(seg.min.x + 4.0 + k as f32 * tw, seg.min.y + 4.0),
+                vec2(tw, seg.height() - 8.0),
+            );
             let resp = ui.interact(r, Id::unique(("gk_tab", k)), Sense::click());
             let on = (k == 1) == self.show_code;
-            ui.painter().text(r.center(), Align2::CENTER_CENTER, *label, semibold(13.5), if on { t.foreground } else { t.muted_foreground });
+            ui.painter().text(
+                r.center(),
+                Align2::CENTER_CENTER,
+                *label,
+                semibold(13.5),
+                if on { t.foreground } else { t.muted_foreground },
+            );
             if resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
                 self.show_code = k == 1;
             }
@@ -756,12 +837,16 @@ impl Gallery {
         let pr = nr.translate(vec2(-44.0, 0.0));
         let go_prev = ui
             .scope_builder(UiBuilder::new().max_rect(pr), |ui| {
-                round_button(ui, 36.0, false, |p, r, c| arrow_icon(p, r, c, true)).on_hover_text(self.demos[(i + n - 1) % n].name).clicked()
+                round_button(ui, 36.0, false, |p, r, c| arrow_icon(p, r, c, true))
+                    .on_hover_text(self.demos[(i + n - 1) % n].name)
+                    .clicked()
             })
             .inner;
         let go_next = ui
             .scope_builder(UiBuilder::new().max_rect(nr), |ui| {
-                round_button(ui, 36.0, false, |p, r, c| arrow_icon(p, r, c, false)).on_hover_text(self.demos[(i + 1) % n].name).clicked()
+                round_button(ui, 36.0, false, |p, r, c| arrow_icon(p, r, c, false))
+                    .on_hover_text(self.demos[(i + 1) % n].name)
+                    .clicked()
             })
             .inner;
         if go_prev {
@@ -816,7 +901,12 @@ impl Gallery {
             ui.spacing_mut().item_spacing.y = 10.0;
             ui.label(RichText::new(d.category.label().to_uppercase()).font(semibold(11.5)).color(t.muted_foreground));
             ui.label(RichText::new(d.name).font(display(24.0)).color(t.foreground));
-            ui.add(egui::Label::new(RichText::new(d.description).font(body(14.5)).color(t.muted_foreground).line_height(Some(22.0))).wrap());
+            ui.add(
+                egui::Label::new(
+                    RichText::new(d.description).font(body(14.5)).color(t.muted_foreground).line_height(Some(22.0)),
+                )
+                .wrap(),
+            );
             ui.add_space(6.0);
             if !d.covers.is_empty() {
                 ui.label(RichText::new("Equivalent to").font(semibold(13.0)).color(t.foreground));
@@ -833,11 +923,23 @@ impl Gallery {
                     job.wrap.max_rows = 1;
                     job.wrap.overflow_character = Some('\u{2026}');
                     let item_g = ui.painter().layout_job(job);
-                    ui.painter().galley(pos2(r.min.x + 12.0, r.center().y - item_g.size().y / 2.0), item_g, t.foreground);
-                    ui.painter().galley(pos2(r.max.x - 12.0 - lib_w, r.center().y - lib_g.size().y / 2.0), lib_g, t.muted_foreground);
+                    ui.painter().galley(
+                        pos2(r.min.x + 12.0, r.center().y - item_g.size().y / 2.0),
+                        item_g,
+                        t.foreground,
+                    );
+                    ui.painter().galley(
+                        pos2(r.max.x - 12.0 - lib_w, r.center().y - lib_g.size().y / 2.0),
+                        lib_g,
+                        t.muted_foreground,
+                    );
                 }
                 if d.covers.len() > shown {
-                    ui.label(RichText::new(format!("+{} more", d.covers.len() - shown)).font(body(12.5)).color(t.muted_foreground));
+                    ui.label(
+                        RichText::new(format!("+{} more", d.covers.len() - shown))
+                            .font(body(12.5))
+                            .color(t.muted_foreground),
+                    );
                 }
             }
             // theme presets
@@ -1010,9 +1112,12 @@ fn footer(ui: &mut Ui, t: &Theme) {
 /// The plain preview used by the screenshot route (`#shot/<id>`): a soft stage with the demo.
 pub fn preview_frame(ui: &mut Ui, d: Demo) {
     let t = Theme::of(ui);
-    egui::Frame::new().fill(t.muted).corner_radius(CornerRadius::same(28)).inner_margin(egui::Margin::same(24)).show(ui, |ui| {
-        ui.set_width(ui.available_width());
-        ui.set_min_height(360.0);
-        ui.push_id(d.id, |ui| (d.show)(ui));
-    });
+    egui::Frame::new().fill(t.muted).corner_radius(CornerRadius::same(28)).inner_margin(egui::Margin::same(24)).show(
+        ui,
+        |ui| {
+            ui.set_width(ui.available_width());
+            ui.set_min_height(360.0);
+            ui.push_id(d.id, |ui| (d.show)(ui));
+        },
+    );
 }

@@ -148,7 +148,7 @@ pub fn all() -> Vec<Demo> {
             name: "Dock",
             category: C,
             description: "A macOS-style dock: icons magnify around the pointer, show a label and bounce when clicked.",
-            covers: &["Magic UI: Dock", "React Bits: Dock", "Aceternity: Floating Dock", "Motion Primitives: Dock"],
+            covers: &["Magic UI: Dock", "React Bits: Dock", "Aceternity: Floating Dock", "Motion Primitives: Dock", "Bencho: Magnifying dock"],
             code: r##"let items = [DockItem::new("🏠", "Home").active(true), DockItem::new("✉", "Mail")];
 let r = Dock::new(&items).magnification(1.75).show(ui);
 if let Some(i) = r.clicked { /* open items[i] */ }"##,
@@ -231,7 +231,7 @@ ui.add(StackCards::new(&faces).card_size(vec2(200.0, 260.0)));"##,
             name: "Card Swap",
             category: C,
             description: "A skewed 3D stack that cycles: the front card drops away and reappears at the back.",
-            covers: &["React Bits: Card Swap"],
+            covers: &["React Bits: Card Swap", "Bencho: Card swap"],
             code: r##"ui.add(CardSwap::new(&faces).interval(3.0).skew(6.0));"##,
             show: |ui| {
                 let faces = vec![
@@ -262,7 +262,7 @@ ui.add(StackCards::new(&faces).card_size(vec2(200.0, 260.0)));"##,
             name: "Carousel",
             category: C,
             description: "Drag or swipe between items that snap into place on a spring; neighbors peek in and dots track position.",
-            covers: &["React Bits: Carousel", "Embla-style carousel", "Motion Primitives: Carousel", "Aceternity UI: Carousel", "shadcn/ui: Carousel"],
+            covers: &["React Bits: Carousel", "Embla-style carousel", "Motion Primitives: Carousel", "Aceternity UI: Carousel", "shadcn/ui: Carousel", "Bencho: Carousel"],
             code: r##"Carousel::new(5).autoplay(3.0).looping(true).show(ui, |ui, i| {
     ui.heading(format!("Slide {i}"));
 });"##,

@@ -78,7 +78,11 @@ fn main() -> eframe::Result {
             .with_title("glowkit"),
         ..Default::default()
     };
-    eframe::run_native("glowkit gallery", options, Box::new(|cc| Ok(Box::new(App(Gallery::new(&cc.egui_ctx, glowkit::all_demos(), initial))))))
+    eframe::run_native(
+        "glowkit gallery",
+        options,
+        Box::new(|cc| Ok(Box::new(App(Gallery::new(&cc.egui_ctx, glowkit::all_demos(), initial))))),
+    )
 }
 
 #[cfg(target_arch = "wasm32")]
