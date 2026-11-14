@@ -253,7 +253,7 @@ impl egui::Widget for ConfirmSheet {
         let k = s.pos.max(0.0);
         if k > 0.001 {
             let dim = (k.min(1.0) * (1.0 - (s.drag.max(0.0) / hidden).min(1.0))) * 0.35;
-            painter.rect_filled(rect, cr(0.0), with_alpha(Color32::BLACK, dim));
+            painter.rect_filled(rect, cr(screen_radius(ui)), with_alpha(Color32::BLACK, dim));
             let sheet_fill = if t.dark { hexa(0x2C, 0x2C, 0x31) } else { Color32::WHITE };
             let sep = with_alpha(t.foreground, 0.1);
             if alert {
@@ -526,7 +526,7 @@ impl egui::Widget for ActionBarSheet {
             }
             let k = s.pos.max(0.0);
             if k > 0.001 {
-                painter.rect_filled(rect, cr(0.0), with_alpha(Color32::BLACK, 0.3 * k.min(1.0) * (1.0 - (s.drag.max(0.0) / hidden).min(1.0))));
+                painter.rect_filled(rect, cr(screen_radius(ui)), with_alpha(Color32::BLACK, 0.3 * k.min(1.0) * (1.0 - (s.drag.max(0.0) / hidden).min(1.0))));
                 let off = (1.0 - s.pos) * hidden + s.drag;
                 let stretch = (-s.drag).max(0.0);
                 let sh = Rect::from_min_max(sheet.min + vec2(0.0, off - stretch), sheet.max + vec2(0.0, 40.0));

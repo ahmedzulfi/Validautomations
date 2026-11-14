@@ -308,7 +308,7 @@ impl egui::Widget for SwipeImageViewer {
         }
         let drag_k = (st.dismiss.y.abs() / (rect.height() * 0.5)).clamp(0.0, 1.0);
         let back_a = hero.clamp(0.0, 1.0) * (1.0 - drag_k * 0.85);
-        painter.rect_filled(rect, cr(0.0), with_alpha(Color32::BLACK, back_a));
+        painter.rect_filled(rect, cr(screen_radius(ui)), with_alpha(Color32::BLACK, back_a));
 
         let disp_page = rubber_clamp(st.page * pw, 0.0, (n - 1) as f32 * pw, pw * 0.4) / pw;
         let shrink = 1.0 - drag_k * 0.35;

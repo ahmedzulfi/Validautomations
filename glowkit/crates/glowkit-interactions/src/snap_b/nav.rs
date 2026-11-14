@@ -516,9 +516,9 @@ impl Widget for LiquidGlassButton {
         }
         let gp = pos2(x, body.center().y - galley.size().y / 2.0);
         if !light_text {
-            painter.galley(gp + vec2(0.0, 1.0), galley.clone(), with_alpha(Color32::BLACK, 0.35 * alpha));
+            painter.galley_with_override_text_color(gp + vec2(0.0, 1.0), galley.clone(), with_alpha(Color32::BLACK, 0.35 * alpha));
         }
-        painter.galley(gp, galley.clone(), text_c);
+        painter.galley_with_override_text_color(gp, galley.clone(), text_c);
         let ix = gp.x + galley.size().x + icon_w * 0.62 + 2.0 * hov;
         match self.icon {
             GlassGlyph::Chevron => {

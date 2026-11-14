@@ -274,7 +274,7 @@ impl egui::Widget for PreviewMenu {
                         .with_blur_width(30.0 * blur),
                 ));
             }
-            painter.rect_filled(rect, cr(0.0), veil);
+            painter.rect_filled(rect, cr(screen_radius(ui)), veil);
         }
         if lift > 0.001 {
             let a = cell(s.idx);

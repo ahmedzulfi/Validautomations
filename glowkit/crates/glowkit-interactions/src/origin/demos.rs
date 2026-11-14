@@ -348,9 +348,9 @@ ui.add(CoverflowGallery::new(&mut index).angle(0.95).autoplay(3.0));"##,
             category: Category::Backgrounds,
             description: "An animated sky: cumulus clouds drift on two parallax layers under a cirrus veil, with a low sun glow; the pointer turns the wind. Dusk palette on dark themes.",
             covers: &["Originkit: Cloud Sky"],
-            code: r##"ui.add(CloudSky::new().clouds(9).cirrus(0.6));"##,
+            code: r##"ui.add(CloudSky::new().clouds(7).cirrus(0.6));"##,
             show: |ui| {
-                let v = controls(ui, "clouds", [9.0, 1.0, 0.6], [("Clouds", 1.0, 16.0, 0), ("Speed", 0.0, 4.0, 1), ("Cirrus", 0.0, 1.0, 2)]);
+                let v = controls(ui, "clouds", [7.0, 1.0, 0.6], [("Clouds", 1.0, 16.0, 0), ("Speed", 0.0, 4.0, 1), ("Cirrus", 0.0, 1.0, 2)]);
                 ui.add_space(8.0);
                 ui.add(CloudSky::new().clouds(v[0] as usize).speed(v[1]).cirrus(v[2]).size(vec2(ui.available_width(), 380.0)));
             },
@@ -361,9 +361,9 @@ ui.add(CoverflowGallery::new(&mut index).angle(0.95).autoplay(3.0));"##,
             category: Category::Backgrounds,
             description: "A ground-level voxel meadow at sunset: square sun, drifting block clouds, a blocky treeline and swaying cube grass and pixel flowers with a soft out-of-focus foreground.",
             covers: &["Originkit: Still Sunset Meadow"],
-            code: r##"ui.add(VoxelMeadow::new().flowers(0.35).breeze(1.0));"##,
+            code: r##"ui.add(VoxelMeadow::new().flowers(0.25).breeze(1.0));"##,
             show: |ui| {
-                let v = controls(ui, "meadow", [0.35, 1.0], [("Flowers", 0.0, 1.0, 2), ("Breeze", 0.0, 2.0, 1)]);
+                let v = controls(ui, "meadow", [0.25, 1.0], [("Flowers", 0.0, 1.0, 2), ("Breeze", 0.0, 2.0, 1)]);
                 ui.add_space(8.0);
                 ui.add(VoxelMeadow::new().flowers(v[0]).breeze(v[1]).size(vec2(ui.available_width(), 380.0)));
             },
@@ -374,9 +374,9 @@ ui.add(CoverflowGallery::new(&mut index).angle(0.95).autoplay(3.0));"##,
             category: Category::Backgrounds,
             description: "A night meadow of rolling hills made of twinkling peach-to-violet glitter under a periwinkle sky, with blooming crests and soft daisies drifting in the foreground.",
             covers: &["Originkit: Glimmer Vale"],
-            code: r##"ui.add(GlimmerVale::new().glitter(2600).daisies(26));"##,
+            code: r##"ui.add(GlimmerVale::new().glitter(3600).daisies(22));"##,
             show: |ui| {
-                let v = controls(ui, "vale", [2600.0, 26.0], [("Glitter", 600.0, 4500.0, 0), ("Daisies", 0.0, 50.0, 0)]);
+                let v = controls(ui, "vale", [3600.0, 22.0], [("Glitter", 600.0, 4500.0, 0), ("Daisies", 0.0, 50.0, 0)]);
                 ui.add_space(8.0);
                 ui.add(GlimmerVale::new().glitter(v[0] as usize).daisies(v[1] as usize).size(vec2(ui.available_width(), 380.0)));
             },

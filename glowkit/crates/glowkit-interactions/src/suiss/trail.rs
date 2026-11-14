@@ -249,7 +249,7 @@ impl egui::Widget for TrailNav<'_> {
             if rel > 0.0 {
                 shadow(&painter, &t, page, 0.0, 0.8 * (1.0 - rel).clamp(0.0, 1.0));
             }
-            painter.rect_filled(page, cr(0.0), bg);
+            painter.rect_filled(page, cr(screen_radius(ui)), bg);
             let title = &s.stack[d];
             if d > 0 {
                 glyph(&painter, Glyph::ChevronRight, pos2(page.min.x + 18.0, page.min.y + 46.0), -12.0, blue);
@@ -284,7 +284,7 @@ impl egui::Widget for TrailNav<'_> {
                 }
             }
             if rel < 0.0 {
-                painter.rect_filled(page, cr(0.0), with_alpha(Color32::BLACK, 0.12 * (-rel).min(1.0)));
+                painter.rect_filled(page, cr(screen_radius(ui)), with_alpha(Color32::BLACK, 0.12 * (-rel).min(1.0)));
             }
         };
         draw_page(lo);

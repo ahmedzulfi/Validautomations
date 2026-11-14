@@ -140,6 +140,9 @@ impl WarpGrid {
         let mut line = |pts: Vec<(Pos2, f32)>| {
             for w in pts.windows(2) {
                 let ((a, ka), (bb, kb)) = (w[0], w[1]);
+                if a.distance(bb) > step * 4.0 {
+                    continue; // a line crossing the well splits around the sphere
+                }
                 let k = (ka + kb) * 0.5;
                 let col = with_alpha(lerp_c(accent, if t.dark { Color32::WHITE } else { accent }, k * 0.4), (base_a + k * 0.75).min(1.0));
                 let width = 1.0 + k * 0.6;

@@ -107,13 +107,14 @@ impl Widget for InkReveal {
         let accent = self.accent.unwrap_or(if t.dark { hex("#FBBF24") } else { t.accent });
         let hl = self.highlight.unwrap_or(if t.dark { with_alpha(hex("#F59E0B"), 0.35) } else { with_alpha(hex("#FDE047"), 0.75) });
         // layout once with placeholder colors to measure
+        let layout_painter = ui.painter().clone();
         let build = |colors: &dyn Fn(usize) -> Color32| {
             let mut job = LayoutJob::default();
             job.wrap.max_width = width;
             for (i, (w, _)) in words.iter().enumerate() {
                 job.append(w, 0.0, TextFormat { font_id: self.font.clone(), color: colors(i), line_height: Some(self.font.size * 1.25), ..Default::default() });
             }
-            ui.painter().layout_job(job)
+            layout_painter.layout_job(job)
         };
         let measure = build(&|_| ink);
         let (rect, response) = ui.allocate_exact_size(vec2(width, measure.size().y), Sense::hover());

@@ -769,7 +769,7 @@ impl Default for SpiralSlider {
 impl SpiralSlider {
     /// A spiral of the painted scenes.
     pub fn new() -> Self {
-        Self { textures: Vec::new(), height: 380.0, radius: 130.0, per_turn: 7, pitch: 1.0, speed: 0.22, frost: 1.0 }
+        Self { textures: Vec::new(), height: 380.0, radius: 165.0, per_turn: 6, pitch: 1.0, speed: 0.22, frost: 1.0 }
     }
     /// Your own pictures (cycled).
     pub fn textures(mut self, t: impl Into<Vec<TextureId>>) -> Self {
@@ -825,7 +825,7 @@ impl Widget for SpiralSlider {
         let dth = TAU / n;
         let r = self.radius;
         let panel_w = r * dth * 0.92 * 1.25; // along the track
-        let advance = panel_w * 0.3 * self.pitch; // track advance per panel
+        let advance = panel_w * 0.42 * self.pitch; // track advance per panel
         let arc = dth * 0.88; // angular size of a panel
         let tilt = -0.16;
         let bg = t.muted;

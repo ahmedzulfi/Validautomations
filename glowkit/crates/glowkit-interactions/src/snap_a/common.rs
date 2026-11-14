@@ -165,10 +165,6 @@ impl Soup {
     pub fn push(&mut self, z: f32, v: [Vertex; 3]) {
         self.tris.push((z, v));
     }
-    pub fn flat(&mut self, z: f32, p: [Pos2; 3], c: Color32) {
-        let vx = |p: Pos2| Vertex { pos: p, uv: WHITE_UV, color: c };
-        self.tris.push((z, [vx(p[0]), vx(p[1]), vx(p[2])]));
-    }
     pub fn paint(mut self, painter: &Painter) {
         self.tris.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
         let mut m = Mesh::default();
@@ -340,12 +336,6 @@ impl Ink {
         self.shapes.push(Shape::galley(r.min, g, color));
         r
     }
-    pub fn wrapped(&mut self, pos: Pos2, text: &str, font: FontId, color: Color32, width: f32) -> Rect {
-        let g = self.painter.layout(text.to_owned(), font, color, width);
-        let r = Rect::from_min_size(pos, g.size());
-        self.shapes.push(Shape::galley(pos, g, color));
-        r
-    }
     pub fn rect(&mut self, r: Rect, radius: f32, c: Color32) {
         self.shapes.push(Shape::rect_filled(r, radius, c));
     }
@@ -417,14 +407,6 @@ pub(crate) fn subdivide(m: &Mesh, max_edge: f32) -> Mesh {
         }
     }
     out
-}
-
-/// Offset every vertex of a mesh (used to paint ink meshes flat on screen).
-pub(crate) fn translated(mut m: Mesh, d: Vec2) -> Mesh {
-    for v in &mut m.vertices {
-        v.pos += d;
-    }
-    m
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -500,14 +482,6 @@ pub(crate) const PAPER_BACK: Color32 = Color32::from_rgb(226, 222, 212);
 
 // ---------------------------------------------------------------------------------------------
 // Scroll + autoplay helpers
-
-/// How far `rect` has travelled through the viewport (`ui.clip_rect()`): 0 when its top sits at
-/// the bottom of the viewport, 1 when its bottom reaches the top.
-pub(crate) fn pass_progress(ui: &Ui, rect: Rect) -> f32 {
-    let clip = ui.clip_rect();
-    let total = (rect.height() + clip.height()).max(1.0);
-    ((clip.max.y - rect.min.y) / total).clamp(0.0, 1.0)
-}
 
 /// For a tall "sticky" track `rect`: progress 0 when its top reaches the viewport top, 1 when
 /// its bottom reaches the viewport bottom, plus the pinned stage rect (viewport-sized, clamped
@@ -604,25 +578,6 @@ pub(crate) fn fan(painter: &Painter, center: Pos2, pts: &[Pos2], c: Color32) {
     let n = pts.len() as u32;
     for i in 0..n {
         m.add_triangle(0, 1 + i, 1 + (i + 1) % n);
-    }
-    painter.add(Shape::mesh(m));
-}
-
-/// A filled quad strip between two polylines (`a[i]`, `b[i]`), colored per vertex.
-pub(crate) fn strip(painter: &Painter, a: &[Pos2], b: &[Pos2], ca: &[Color32], cb: &[Color32]) {
-    let n = a.len().min(b.len());
-    if n < 2 {
-        return;
-    }
-    let mut m = Mesh::default();
-    for i in 0..n {
-        m.colored_vertex(a[i], ca[i.min(ca.len() - 1)]);
-        m.colored_vertex(b[i], cb[i.min(cb.len() - 1)]);
-    }
-    for i in 0..n as u32 - 1 {
-        let k = i * 2;
-        m.add_triangle(k, k + 1, k + 3);
-        m.add_triangle(k, k + 3, k + 2);
     }
     painter.add(Shape::mesh(m));
 }

@@ -264,7 +264,7 @@ impl Widget for VoxelMeadow {
         let sky = [hex("#E7A9C9"), hex("#F4B7B1"), hex("#FAD2A6"), hex("#FBE3B8")];
         paint::shader_grid(&painter, Rect::from_min_max(rect.min, pos2(rect.max.x, horizon + 4.0)), 1, 10, |uv| ramp(&sky, uv.y));
         // square sun with glow
-        let sun = pos2(rect.min.x + rect.width() * 0.08, horizon - rect.height() * 0.1);
+        let sun = pos2(rect.min.x + rect.width() * 0.1, horizon - rect.height() * 0.14);
         paint::glow(&painter, sun, rect.height() * 0.55, with_alpha(hex("#FFF3D6"), 0.75));
         painter.rect_filled(Rect::from_center_size(sun, Vec2::splat(rect.height() * 0.09)), 0.0, hex("#FFFBF0"));
         // block clouds
@@ -292,7 +292,7 @@ impl Widget for VoxelMeadow {
         let bw = 18.0;
         let cols = (rect.width() / bw) as i32 + 2;
         for i in 0..cols {
-            let n = noise3(i as f32 * 0.18, 3.0, 0.0) * 0.5 + 0.5;
+            let n = (noise3(i as f32 * 0.21, 3.0, 0.0) * 1.6 + 0.5).clamp(0.0, 1.0);
             let hgt = ((n * 5.0) as i32).max(1);
             for k in 0..hgt {
                 let c = pos2(rect.min.x + i as f32 * bw, horizon - k as f32 * bw * 0.6);
@@ -477,10 +477,10 @@ impl Widget for GlimmerVale {
                 if y > rect.max.y {
                     continue;
                 }
-                let near_crest = (1.0 - depth / 40.0).max(0.0);
+                let near_crest = (1.0 - depth / 60.0).max(0.0);
                 let tw = 0.5 + 0.5 * (time * (2.0 + 4.0 * h01(seed + 2)) + h01(seed + 3) * TAU).sin();
                 let c = lerp_rgb(violet, warm, (h01(seed + 4) * 0.6 + near_crest * 0.6).min(1.0));
-                let a = (0.3 + 0.7 * tw) * (0.45 + 0.55 * near_crest) * (0.75 + 0.25 * l as f32 / 2.0);
+                let a = ((0.35 + 0.75 * tw) * (0.5 + 0.7 * near_crest) * (0.8 + 0.2 * l as f32 / 2.0)).min(1.0);
                 let size = (0.7 + 1.4 * h01(seed + 5).powi(2)) * (0.8 + 0.3 * l as f32);
                 dots.add(pos2(x, y), size, lum(c, a, true));
             }

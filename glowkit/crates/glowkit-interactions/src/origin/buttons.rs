@@ -661,7 +661,7 @@ impl Widget for GlassKeycap {
         let cam = Cam { center: rect.center() + vec2(0.0, bob + press * 8.0), focal: self.size * 4.6, dist: 6.0 };
         let yaw = 0.32 + lean.x * 0.45;
         let pitch = 0.5 - lean.y * 0.3;
-        let hgt = 0.62 - press * 0.12;
+        let hgt = 0.82 - press * 0.14;
         let tf = |p: V3| p.rot_y(yaw).rot_x(pitch);
         // keycap: bottom square ±1, top ±0.7 dished slightly back
         let bot = [v3(-1.0, -0.35, -1.0), v3(1.0, -0.35, -1.0), v3(1.0, -0.35, 1.0), v3(-1.0, -0.35, 1.0)];

@@ -23,6 +23,67 @@ fn controls<const N: usize>(ui: &mut Ui, key: &str, init: [f32; N], add: impl Fn
     v
 }
 
+#[derive(Clone, Copy, Default)]
+struct AutoScroll {
+    off: f32,
+    dir: f32,
+    wait: f32,
+    max: f32,
+    idle: f32,
+}
+
+/// A vertical `ScrollArea` that glides down and back up on its own while the pointer is away,
+/// so scroll-driven components animate in screenshots.
+fn auto_scroll(ui: &mut Ui, key: &str, height: f32, speed: f32, add: impl FnOnce(&mut Ui)) {
+    let id = ui.scope_id().with(("snap_auto_scroll", key));
+    let dt = ui.input(|i| i.unstable_dt).clamp(0.0, 0.1);
+    let mut st: AutoScroll = glowkit_core::state(ui, id, || AutoScroll { idle: 1.0, dir: 1.0, wait: 0.6, ..Default::default() });
+    let mut sa = egui::ScrollArea::vertical()
+        .id_salt(("snap_auto_scroll_area", key))
+        .max_height(height)
+        .min_scrolled_height(height)
+        .auto_shrink([false, false]);
+    if st.idle > 0.8 && st.max > 0.0 {
+        if st.wait > 0.0 {
+            st.wait -= dt;
+        } else {
+            let edge = (st.off.min(st.max - st.off) / 60.0).clamp(0.25, 1.0);
+            st.off += st.dir * speed * edge * dt;
+            if st.off >= st.max {
+                st.off = st.max;
+                st.dir = -1.0;
+                st.wait = 1.2;
+            } else if st.off <= 0.0 {
+                st.off = 0.0;
+                st.dir = 1.0;
+                st.wait = 1.0;
+            }
+        }
+        sa = sa.vertical_scroll_offset(st.off);
+    }
+    let out = sa.show(ui, add);
+    let hovered = ui.rect_contains_pointer(out.inner_rect);
+    st.max = (out.content_size.y - out.inner_rect.height()).max(0.0);
+    if hovered {
+        st.idle = 0.0;
+        st.off = out.state.clamped_offset().y;
+    } else {
+        st.idle += dt;
+    }
+    glowkit_core::set_state(ui, id, st);
+    glowkit_core::animate(ui);
+}
+
+fn scroll_hint(ui: &mut Ui, text: &str, h: f32) {
+    let t = glowkit_core::Theme::of(ui);
+    ui.add_space(h * 0.35);
+    ui.vertical_centered(|ui| {
+        ui.label(egui::RichText::new(text).size(13.0).color(t.muted_foreground));
+        ui.label(egui::RichText::new("↓").size(18.0).color(t.muted_foreground));
+    });
+    ui.add_space(h * 0.35);
+}
+
 fn slider_w(ui: &Ui, n: usize) -> f32 {
     ((ui.available_width() - 10.0 * (n as f32 - 1.0)) / n as f32).max(80.0)
 }
@@ -208,6 +269,203 @@ pub(super) fn all() -> Vec<Demo> {
                     let w = slider_w(ui, 2);
                     ui.add(ControlSlider::new("Duration", &mut v[0], 1.0..=5.0).decimals(1).suffix("s").width(w));
                     ui.add(ControlSlider::new("Paper width", &mut v[1], 150.0..=260.0).suffix("px").width(w));
+                });
+            },
+        },
+        Demo {
+            id: "snap-pleated-strip",
+            name: "Pleated Strip",
+            category: Category::ThreeD,
+            description: "An endless column of posters joined by paper pleats and rolled round a drum; scrolling fast throws the folds open, at rest they close and the nearest poster centres.",
+            covers: &["Snapblocks: Pleated Strip"],
+            code: r##"ui.add(PleatedStrip::new().count(12).pleat(22.0));"##,
+            show: |ui| {
+                let v = mem(ui, "plv", || [22.0f32, 180.0]);
+                ui.add(PleatedStrip::new().pleat(v[0]).radius(v[1]).height(420.0));
+                controls(ui, "plv", [22.0, 180.0], |ui, v| {
+                    let w = slider_w(ui, 2);
+                    ui.add(ControlSlider::new("Pleat depth", &mut v[0], 6.0..=50.0).suffix("px").width(w));
+                    ui.add(ControlSlider::new("Drum radius", &mut v[1], 120.0..=320.0).suffix("px").width(w));
+                });
+            },
+        },
+        Demo {
+            id: "snap-elastic-frame",
+            name: "Elastic Frame",
+            category: Category::CardsAndBorders,
+            description: "A rounded frame drawn as an elastic string: bring the pointer to an edge and it plucks outward into a glowing veil, then springs back with a wobble.",
+            covers: &["Snapblocks: Elastic Frame"],
+            code: r##"ElasticFrame::new().size(260.0).show(ui, |ui| {
+    ui.label("Anything goes in here");
+});"##,
+            show: |ui| {
+                let v = mem(ui, "efv", || [1.0f32, 90.0, 48.0]);
+                ui.add(ElasticFrame::new().tension(v[0]).reach(v[1]).corner(v[2]).height(400.0));
+                controls(ui, "efv", [1.0, 90.0, 48.0], |ui, v| {
+                    let w = slider_w(ui, 3);
+                    ui.add(ControlSlider::new("Tension", &mut v[0], 0.3..=2.5).decimals(1).width(w));
+                    ui.add(ControlSlider::new("Reach", &mut v[1], 30.0..=160.0).suffix("px").width(w));
+                    ui.add(ControlSlider::new("Corner", &mut v[2], 0.0..=110.0).suffix("px").width(w));
+                });
+            },
+        },
+        Demo {
+            id: "snap-fluted-glass",
+            name: "Fluted Glass",
+            category: Category::Backgrounds,
+            description: "A picture behind reeded glass: each rib is its own lens holding a squeezed slice of the image, smeared into spikes, bending harder near the pointer.",
+            covers: &["Snapblocks: Fluted Glass"],
+            code: r##"ui.add(FlutedGlass::new().ribs(30).strength(1.0).caption("Every edge, gently bent."));"##,
+            show: |ui| {
+                let v = mem(ui, "fgv", || [30.0f32, 1.0, 5.0]);
+                ui.add(FlutedGlass::new().ribs(v[0] as usize).strength(v[1]).scene(v[2] as usize).caption("Every edge, gently bent.").size(vec2(ui.available_width(), 380.0)));
+                controls(ui, "fgv", [30.0, 1.0, 5.0], |ui, v| {
+                    let w = slider_w(ui, 3);
+                    ui.add(ControlSlider::new("Ribs", &mut v[0], 8.0..=80.0).width(w));
+                    ui.add(ControlSlider::new("Strength", &mut v[1], 0.0..=2.5).decimals(1).width(w));
+                    ui.add(ControlSlider::new("Scene", &mut v[2], 0.0..=7.0).width(w));
+                });
+            },
+        },
+        Demo {
+            id: "snap-meniscus",
+            name: "Meniscus",
+            category: Category::MicroInteractions,
+            description: "A drop of liquid glass that pulls free of its dock and melts into whatever it touches, refracting and colour-fringing the pool beneath; tap to frost it.",
+            covers: &["Snapblocks: Meniscus"],
+            code: r##"ui.add(Meniscus::new("Lido, four o'clock", "Pool floor, lane four, clear glass"));"##,
+            show: |ui| {
+                let v = mem(ui, "mnv", || [1.0f32, 1.0]);
+                ui.add(Meniscus::new("Lido, four o'clock", "Pool floor, lane four, clear glass").melt(v[0]).refraction(v[1]).size(vec2(ui.available_width(), 400.0)));
+                controls(ui, "mnv", [1.0, 1.0], |ui, v| {
+                    let w = slider_w(ui, 2);
+                    ui.add(ControlSlider::new("Melt", &mut v[0], 0.3..=2.5).decimals(1).width(w));
+                    ui.add(ControlSlider::new("Refraction", &mut v[1], 0.0..=2.5).decimals(1).width(w));
+                });
+            },
+        },
+        Demo {
+            id: "snap-ink-reveal",
+            name: "Ink Reveal",
+            category: Category::TextAnimations,
+            description: "Every word starts faint and inks in as the scroll reaches it, with a soft leading edge; accented words light up with a highlighter swept behind them.",
+            covers: &["Snapblocks: Ink Reveal"],
+            code: r##"ScrollArea::vertical().show(ui, |ui| {
+    ui.add(InkReveal::new("Most interfaces sit perfectly still. This one *waits* for you."));
+});"##,
+            show: |ui| {
+                let v = mem(ui, "irv", || [0.12f32, 26.0]);
+                auto_scroll(ui, "ink_reveal", 380.0, 70.0, |ui| {
+                    scroll_hint(ui, "Scroll to ink the words in", 380.0);
+                    ui.horizontal(|ui| {
+                        let w = ui.available_width().min(560.0);
+                        ui.add_space((ui.available_width() - w) * 0.5);
+                        ui.add(InkReveal::new("Most interfaces sit perfectly still. This one waits for you. Every word lights as it passes, so attention moves at the speed of your *scroll* and the page finally feels *alive.*")
+                            .softness(v[0])
+                            .font(egui::FontId::proportional(v[1]))
+                            .width(w));
+                    });
+                    ui.add_space(380.0);
+                });
+                controls(ui, "irv", [0.12, 26.0], |ui, v| {
+                    let w = slider_w(ui, 2);
+                    ui.add(ControlSlider::new("Softness", &mut v[0], 0.02..=0.4).decimals(2).width(w));
+                    ui.add(ControlSlider::new("Size", &mut v[1], 16.0..=40.0).suffix("px").width(w));
+                });
+            },
+        },
+        Demo {
+            id: "snap-ink-trail",
+            name: "Ink Trail",
+            category: Category::CursorAndInteraction,
+            description: "A surface the cursor paints into: a glowing trail that drifts on a slow noise current and fades, like an ember on dark themes and wet ink on light ones.",
+            covers: &["Snapblocks: Ink Trail"],
+            code: r##"ui.add(InkTrail::new().text("Leave a mark.").life(1.6));"##,
+            show: |ui| {
+                let v = mem(ui, "itv", || [26.0f32, 1.6, 1.0]);
+                ui.add(InkTrail::new().text("Leave a mark.").width(v[0]).life(v[1]).drift(v[2]).size(vec2(ui.available_width(), 360.0)));
+                controls(ui, "itv", [26.0, 1.6, 1.0], |ui, v| {
+                    let w = slider_w(ui, 3);
+                    ui.add(ControlSlider::new("Width", &mut v[0], 6.0..=60.0).suffix("px").width(w));
+                    ui.add(ControlSlider::new("Life", &mut v[1], 0.4..=4.0).decimals(1).suffix("s").width(w));
+                    ui.add(ControlSlider::new("Drift", &mut v[2], 0.0..=3.0).decimals(1).width(w));
+                });
+            },
+        },
+        Demo {
+            id: "snap-petal-dissolve",
+            name: "Petal Dissolve",
+            category: Category::TextAnimations,
+            description: "A word erodes into tumbling red and white petals, then time runs backwards and every petal flies home to rebuild it.",
+            covers: &["Snapblocks: Petal Dissolve"],
+            code: r##"ui.add(PetalDissolve::new("Ember").size(72.0));"##,
+            show: |ui| {
+                let v = mem(ui, "pdv", || [1.0f32, 7.0]);
+                ui.add(PetalDissolve::new("Ember").wind(v[0]).density(v[1] as usize).size(84.0).height(340.0));
+                controls(ui, "pdv", [1.0, 7.0], |ui, v| {
+                    let w = slider_w(ui, 2);
+                    ui.add(ControlSlider::new("Wind", &mut v[0], 0.0..=2.5).decimals(1).width(w));
+                    ui.add(ControlSlider::new("Density", &mut v[1], 3.0..=12.0).width(w));
+                });
+            },
+        },
+        Demo {
+            id: "snap-aperture-zoom",
+            name: "Aperture Zoom",
+            category: Category::Motion,
+            description: "A hero that starts as a small rounded window onto an image and opens like a camera aperture as you scroll, the headline's words sliding apart.",
+            covers: &["Snapblocks: Aperture Zoom"],
+            code: r##"ScrollArea::vertical().show(ui, |ui| {
+    ui.add(ApertureZoom::new("Open", "wide."));
+});"##,
+            show: |ui| {
+                let v = mem(ui, "azv", || [1.3f32, 2.6]);
+                auto_scroll(ui, "aperture", 380.0, 160.0, |ui| {
+                    ui.add(ApertureZoom::new("Open", "wide.").zoom(v[0]).track(v[1]).height(380.0));
+                    scroll_hint(ui, "The page carries on as normal from here.", 300.0);
+                });
+                controls(ui, "azv", [1.3, 2.6], |ui, v| {
+                    let w = slider_w(ui, 2);
+                    ui.add(ControlSlider::new("Start zoom", &mut v[0], 1.0..=2.0).decimals(2).width(w));
+                    ui.add(ControlSlider::new("Track", &mut v[1], 1.5..=5.0).decimals(1).suffix("x").width(w));
+                });
+            },
+        },
+        Demo {
+            id: "snap-zoom-reveal",
+            name: "Zoom Reveal",
+            category: Category::Motion,
+            description: "A small pill of footage between two words opens into a full-bleed frame as the page scrolls, the words riding its edges out and a play label surfacing.",
+            covers: &["Snapblocks: Zoom Reveal"],
+            code: r##"ScrollArea::vertical().show(ui, |ui| {
+    ui.add(ZoomReveal::new("North", "Light").play_label("Begin the film"));
+});"##,
+            show: |ui| {
+                let v = mem(ui, "zrv", || [28.0f32, 2.6]);
+                auto_scroll(ui, "zoom_reveal", 380.0, 160.0, |ui| {
+                    ui.add(ZoomReveal::new("North", "Light").font_size(v[0]).track(v[1]).height(380.0));
+                    scroll_hint(ui, "The page carries on as normal from here.", 300.0);
+                });
+                controls(ui, "zrv", [28.0, 2.6], |ui, v| {
+                    let w = slider_w(ui, 2);
+                    ui.add(ControlSlider::new("Word size", &mut v[0], 16.0..=48.0).suffix("px").width(w));
+                    ui.add(ControlSlider::new("Track", &mut v[1], 1.5..=5.0).decimals(1).suffix("x").width(w));
+                });
+            },
+        },
+        Demo {
+            id: "snap-card-bookmark",
+            name: "Card Bookmark",
+            category: Category::CardsAndBorders,
+            description: "Cards cut like bookmarks with silky wave-ribbon art; the active one fills with its colour, lifts and glows while the others wait in the dark.",
+            covers: &["Snapblocks: Card Bookmark"],
+            code: r##"ui.add(CardBookmark::new());"##,
+            show: |ui| {
+                let v = mem(ui, "cbv", || [34.0f32]);
+                ui.add(CardBookmark::new().waves(v[0] as usize).height(330.0));
+                controls(ui, "cbv", [34.0], |ui, v| {
+                    let w = slider_w(ui, 1);
+                    ui.add(ControlSlider::new("Ribbons", &mut v[0], 6.0..=80.0).width(w));
                 });
             },
         },

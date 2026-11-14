@@ -171,6 +171,7 @@ pub(crate) fn ramp(x: f32, a: f32, b: f32) -> f32 {
 /// screen rect. Paint content, then call [`phone_bezel`] to mask the screen's rounded corners.
 pub(crate) fn phone(painter: &Painter, t: &Theme, rect: Rect, screen: Color32) -> Rect {
     let r = phone_radius(rect);
+    set_screen_radius(painter.ctx(), r - 6.0);
     shadow(painter, t, rect, r, 1.2);
     let inner = rect.shrink(6.0);
     painter.rect_filled(inner, cr(r - 6.0), screen);
@@ -184,6 +185,7 @@ fn phone_radius(rect: Rect) -> f32 {
 /// The phone's bezel, painted on top of the screen content so it masks the screen's corners.
 pub(crate) fn phone_bezel(painter: &Painter, t: &Theme, rect: Rect) {
     let r = phone_radius(rect);
+    set_screen_radius(painter.ctx(), 0.0);
     let bezel = if t.dark { hexa(0x2A, 0x2A, 0x30) } else { hexa(0x1C, 0x1C, 0x1F) };
     let outer = paint::rounded_rect_points(rect, r, 10);
     let inner = paint::rounded_rect_points(rect.shrink(6.0), r - 6.0, 10);
@@ -828,4 +830,19 @@ impl Scroller {
         }
         self.v != 0.0 || self.s < min || self.s > max
     }
+}
+
+fn screen_radius_id() -> Id {
+    Id::unique("suiss_screen_radius")
+}
+
+/// Declare the corner radius of the screen widgets are about to be placed on (0 to clear), so
+/// their full-screen fills follow a rounded display.
+pub(crate) fn set_screen_radius(ctx: &egui::Context, r: f32) {
+    ctx.data_mut(|d| d.insert_temp(screen_radius_id(), r));
+}
+
+/// Corner radius for full-screen fills (see [`set_screen_radius`]).
+pub(crate) fn screen_radius(ui: &Ui) -> f32 {
+    ui.ctx().data(|d| d.get_temp::<f32>(screen_radius_id())).unwrap_or(0.0)
 }

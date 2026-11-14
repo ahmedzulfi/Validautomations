@@ -163,7 +163,7 @@ impl Widget for PlushTile {
         let pf = glowkit_core::anim::spring2(ui, id.with("ptr"), pointer.unwrap_or(rect.center()).to_vec2(), 120.0, 18.0).to_pos2();
         let painter = ui.painter_at(outer);
         let base = self.base.unwrap_or(hex("#F2EBDD"));
-        let cols = self.colors.unwrap_or([hex("#E2232E"), hex("#2F6BFF"), hex("#F5B300"), hex("#1FA855")]);
+        let cols = self.colors.unwrap_or([hex("#F0508C"), hex("#7C5CFF"), hex("#14B8A6"), hex("#F59E0B")]);
         let radius = self.size * 0.24;
         paint::soft_shadow(&painter, rect.translate(vec2(0.0, 10.0)), radius, 22.0, Vec2::ZERO, with_alpha(Color32::BLACK, if t.dark { 0.6 } else { 0.25 }));
         // skin under the fur
@@ -327,23 +327,20 @@ impl Widget for CorollaGleam {
         painter.rect_filled(rect, 0.0, bg);
         let film = self.film.clone().unwrap_or_else(|| vec![hex("#FF8AD8"), hex("#8B5CF6"), hex("#4F46E5"), hex("#14B8A6"), hex("#F59E0B"), hex("#F472B6")]);
         let unit = rect.height().min(rect.width() * 0.55);
-        let cam = Cam { center: pos2(rect.center().x, rect.max.y - unit * 0.12), focal: unit * 2.7, dist: 7.0 };
+        let cam = Cam { center: pos2(rect.center().x, rect.max.y - unit * 0.06), focal: unit * 3.5, dist: 7.0 };
         let yaw = time * 0.18 * self.speed + lean.x * 0.4;
-        let pitch = 0.18 + lean.y * 0.2;
+        let pitch = 0.12 + lean.y * 0.12;
         let breathe = 1.0 + (time * 0.9).sin() * 0.04;
         let n = self.slabs;
-        let (r0, r1, hgt) = (1.05, 1.62, 1.45);
-        let thick = 0.06;
-        // local slab outline (u radial, v up): a tongue with a round top
-        let mut outline: Vec<(f32, f32)> = Vec::new();
-        let rw = (r1 - r0) * 0.5;
-        let uc = (r0 + r1) * 0.5;
-        let top = hgt * breathe - rw;
-        outline.push((r0, -0.4));
-        outline.push((r1, -0.4));
+        // each slab is a petal in a radial plane, opened outward by `open` from the vertical axis
+        let (r0, len, hw) = (0.22, 1.85 * breathe, 0.34);
+        let open = 1.12 + lean.y * 0.08;
+        let thick = 0.05;
+        // local outline: (l along the petal, w across), a tongue with a round tip
+        let mut outline: Vec<(f32, f32)> = vec![(0.0, -hw), (0.0, hw)];
         for k in 0..=12 {
             let a = k as f32 / 12.0 * PI;
-            outline.push((uc + a.cos() * rw, top + a.sin() * rw));
+            outline.push((len - hw + a.sin() * hw, hw * a.cos()));
         }
         struct Slab {
             depth: f32,
@@ -353,15 +350,18 @@ impl Widget for CorollaGleam {
             k: usize,
         }
         let mut slabs: Vec<Slab> = Vec::with_capacity(n);
+        let (so, co) = open.sin_cos();
         for k in 0..n {
             let th = k as f32 / n as f32 * TAU + yaw;
             let radial = v3(th.cos(), 0.0, th.sin());
             let normal = v3(-th.sin(), 0.0, th.cos());
-            let place = |u: f32, v: f32, off: f32| -> V3 { (radial * u + v3(0.0, v, 0.0) + normal * off).rot_x(pitch) };
+            let along = radial * so + v3(0.0, co, 0.0);
+            let across = radial * co - v3(0.0, so, 0.0);
+            let place = |l: f32, w: f32, off: f32| -> V3 { (radial * r0 + along * l + across * w + normal * off).rot_x(pitch) };
             let proj = |p: V3| cam.project(p).map(|x| x.0).unwrap_or(cam.center);
-            let front: Vec<Pos2> = outline.iter().map(|(u, v)| proj(place(*u, *v, thick))).collect();
-            let back: Vec<Pos2> = outline.iter().map(|(u, v)| proj(place(*u, *v, -thick))).collect();
-            let c = place(uc, hgt * 0.5, 0.0);
+            let front: Vec<Pos2> = outline.iter().map(|(l, w)| proj(place(*l, *w, thick))).collect();
+            let back: Vec<Pos2> = outline.iter().map(|(l, w)| proj(place(*l, *w, -thick))).collect();
+            let c = place(len * 0.5, 0.0, 0.0);
             let facing = normal.rot_x(pitch).z;
             slabs.push(Slab { depth: c.z, front, back, facing, k });
         }
@@ -398,7 +398,7 @@ impl Widget for CorollaGleam {
             let face = if s.facing > 0.0 { &s.front } else { &s.back };
             paint::fill_convex_fn(&painter, face, 5, |p| with_alpha(tint(p, 0.0), 0.86));
             // inner glassy highlight along the rounded rim
-            let rim: Vec<Pos2> = face[2..].to_vec();
+            let rim: Vec<Pos2> = face[1..].to_vec();
             painter.add(Shape::line(rim, Stroke::new(1.4, with_alpha(Color32::WHITE, 0.35 + 0.4 * (1.0 - f)))));
         }
         // fade into the floor

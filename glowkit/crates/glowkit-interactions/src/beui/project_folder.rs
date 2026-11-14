@@ -166,9 +166,6 @@ impl egui::Widget for ProjectFolder {
         paint::soft_shadow(&painter, front, 18.0, 14.0, vec2(0.0, 2.0), shadow_color(&t, 0.3));
         let glass = if t.dark { with_alpha(shade(t.muted, 0.08), 0.94) } else { with_alpha(Color32::WHITE, 0.9) };
         painter.rect(front, cr(18.0), glass, Stroke::new(1.0, if t.dark { with_alpha(Color32::WHITE, 0.1) } else { t.border }), egui::StrokeKind::Inside);
-        // top sheen
-        let sheen = Rect::from_min_size(front.min + vec2(1.0, 1.0), vec2(front.width() - 2.0, 18.0));
-        paint::gradient_rect(&painter, sheen, 17.0, 90.0, &[with_alpha(Color32::WHITE, if t.dark { 0.06 } else { 0.5 }), with_alpha(Color32::WHITE, 0.0)]);
         let pad = 18.0;
         painter.text(pos2(front.min.x + pad, front.min.y + 30.0), Align2::LEFT_CENTER, &self.title, FontId::proportional(17.0), t.foreground);
         let ly = front.max.y - 42.0;
