@@ -41,6 +41,13 @@ pub use glowkit_templates as templates;
 #[cfg(feature = "text")]
 pub use glowkit_text as text;
 
+/// The customization guide: theming, component options, motion and composition.
+///
+/// Every code sample in it is compiled and run by `cargo test`.
+#[cfg(all(feature = "text", feature = "backgrounds", feature = "effects", feature = "motion"))]
+#[doc = include_str!("../docs/CUSTOMIZING.md")]
+pub mod guide {}
+
 /// Common imports.
 pub mod prelude {
     pub use glowkit_core::anim::{Easing, Spring, Trigger};

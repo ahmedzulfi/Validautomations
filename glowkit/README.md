@@ -7,7 +7,7 @@ Build Windows, macOS and Linux apps (and web apps through WebAssembly) with the 
 components you see on the best websites: shimmering text, aurora backgrounds, border beams,
 spotlight cards, magnetic docks, animated charts, and a full AI chat kit. 100% Rust, built on [egui](https://github.com/emilk/egui).
 
-[Live gallery](https://glowkit-rs.github.io/glowkit/gallery/) · [Website](https://glowkit-rs.github.io/glowkit/) · [Catalog](CATALOG.md) · [Docs](https://docs.rs/glowkit) · [Contributing](CONTRIBUTING.md)
+[Live gallery](https://glowkit-rs.github.io/glowkit/gallery/) · [Website](https://glowkit-rs.github.io/glowkit/) · [Catalog](CATALOG.md) · [Docs](https://docs.rs/glowkit) · [Customizing](crates/glowkit/docs/CUSTOMIZING.md) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -116,6 +116,8 @@ t.install(ctx);
 ```
 
 Every component reads its colors from the active theme and offers setters to override them.
+The full [customization guide](crates/glowkit/docs/CUSTOMIZING.md) covers tokens, component
+options, triggers, springs, the motion engine and composition.
 
 ## Running the web gallery
 
