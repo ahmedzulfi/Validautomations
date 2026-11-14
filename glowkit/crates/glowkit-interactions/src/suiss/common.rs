@@ -529,7 +529,6 @@ pub(crate) fn text_width(painter: &Painter, s: &str, size: f32) -> f32 {
     painter.layout_no_wrap(s.to_string(), egui::FontId::proportional(size), Color32::WHITE).size().x
 }
 
-
 // ---------------------------------------------------------------------------------------------
 // Touch input: the real pointer, or a scripted ghost finger while the demo idles
 

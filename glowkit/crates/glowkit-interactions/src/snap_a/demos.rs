@@ -246,7 +246,7 @@ pub(super) fn all() -> Vec<Demo> {
             show: |ui| {
                 let v = mem(ui, "clv", || [46.0f32, 1.0, 0.0]);
                 let clip = [LineClip::Peg, LineClip::Binder, LineClip::Tape][(v[2].round() as usize).min(2)];
-                ui.add(ClothesLine::new().speed(v[0]).swing(v[1]).clip(clip).size(vec2(ui.available_width(), 300.0)));
+                ui.add(ClothesLine::new().speed(v[0]).swing(v[1]).clip(clip).size(vec2(ui.available_width(), 270.0)));
                 controls(ui, "clv", [46.0, 1.0, 0.0], |ui, v| {
                     let w = slider_w(ui, 3);
                     ui.add(ControlSlider::new("Speed", &mut v[0], 0.0..=160.0).width(w));
@@ -365,7 +365,7 @@ pub(super) fn all() -> Vec<Demo> {
                             .font(egui::FontId::proportional(v[1]))
                             .width(w));
                     });
-                    ui.add_space(380.0);
+                    ui.add_space(170.0);
                 });
                 controls(ui, "irv", [0.12, 26.0], |ui, v| {
                     let w = slider_w(ui, 2);

@@ -9,8 +9,8 @@
 //! rubber-bands, and releases settle on springs that carry the flick's velocity.
 
 mod banner;
-mod gallery;
 pub(crate) mod common;
+mod gallery;
 mod index;
 mod island;
 mod otp;

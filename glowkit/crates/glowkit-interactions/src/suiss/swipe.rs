@@ -119,7 +119,13 @@ impl egui::Widget for SwipeActions<'_> {
         let old = std::mem::take(&mut st.rows);
         let mut rows: Vec<SwipeAnim> = keys
             .iter()
-            .map(|k| old.iter().find(|a| a.key == *k).copied().unwrap_or(SwipeAnim { key: *k, height: 1.0, ..Default::default() }))
+            .map(|k| {
+                old.iter().find(|a| a.key == *k).copied().unwrap_or(SwipeAnim {
+                    key: *k,
+                    height: 1.0,
+                    ..Default::default()
+                })
+            })
             .collect();
         let total: f32 = rows.iter().map(|a| a.height.clamp(0.0, 1.0) * ROW_H).sum::<f32>().max(1.0);
         let (rect, response) = ui.allocate_exact_size(vec2(w, total + 34.0), Sense::click_and_drag());
@@ -143,7 +149,8 @@ impl egui::Widget for SwipeActions<'_> {
         let lead_w = BTN_W * leading.len() as f32;
         let full_at = w * 0.6;
 
-        let row_top = |rows: &[SwipeAnim], i: usize| -> f32 { rows[..i].iter().map(|a| a.height.clamp(0.0, 1.0) * ROW_H).sum() };
+        let row_top =
+            |rows: &[SwipeAnim], i: usize| -> f32 { rows[..i].iter().map(|a| a.height.clamp(0.0, 1.0) * ROW_H).sum() };
         let g = st.g.update(&touch, now, dt);
         if g.pressed {
             let p = st.g.start;
@@ -206,7 +213,8 @@ impl egui::Widget for SwipeActions<'_> {
                         if st.open == Some(k) {
                             let px = st.g.last.x - list.min.x;
                             if x < -1.0 && px > w + x {
-                                let b = (((px - (w + x)) / (-x / trailing.len() as f32)) as usize).min(trailing.len() - 1);
+                                let b =
+                                    (((px - (w + x)) / (-x / trailing.len() as f32)) as usize).min(trailing.len() - 1);
                                 if b + 1 == trailing.len() {
                                     rows[i].removing = true;
                                     st.toast = Some((format!("Deleted “{}”", self.rows[i].title), now));
@@ -315,7 +323,14 @@ impl egui::Widget for SwipeActions<'_> {
                     let cx = if b + 1 == n && full > 0.5 { br.min.x + BTN_W / 2.0 } else { cx };
                     let alpha = ((br.width() - 20.0) / 30.0).clamp(0.0, 1.0);
                     glyph(&clip, act.glyph, pos2(cx, row.center().y - 8.0), 15.0, with_alpha(Color32::WHITE, alpha));
-                    text(&clip, pos2(cx, row.center().y + 13.0), Align2::CENTER_CENTER, act.label, 11.0, with_alpha(Color32::WHITE, alpha));
+                    text(
+                        &clip,
+                        pos2(cx, row.center().y + 13.0),
+                        Align2::CENTER_CENTER,
+                        act.label,
+                        11.0,
+                        with_alpha(Color32::WHITE, alpha),
+                    );
                 }
             } else if x > 0.5 {
                 let revealed = Rect::from_min_max(row.min, pos2(row.min.x + x, row.max.y));
@@ -324,7 +339,14 @@ impl egui::Widget for SwipeActions<'_> {
                 let cx = revealed.max.x - (BTN_W / 2.0).min(revealed.width() / 2.0);
                 let alpha = ((revealed.width() - 20.0) / 30.0).clamp(0.0, 1.0);
                 glyph(&clip, act.glyph, pos2(cx, row.center().y - 8.0), 15.0, with_alpha(Color32::WHITE, alpha));
-                text(&clip, pos2(cx, row.center().y + 13.0), Align2::CENTER_CENTER, act.label, 11.0, with_alpha(Color32::WHITE, alpha));
+                text(
+                    &clip,
+                    pos2(cx, row.center().y + 13.0),
+                    Align2::CENTER_CENTER,
+                    act.label,
+                    11.0,
+                    with_alpha(Color32::WHITE, alpha),
+                );
             }
             // content
             let content = row.translate(vec2(x, 0.0));
@@ -334,7 +356,14 @@ impl egui::Widget for SwipeActions<'_> {
             if unread {
                 clip.circle_filled(pos2(content.min.x + 11.0, content.min.y + 22.0), 4.0, system_blue(&t));
             }
-            text_bold(&clip, pos2(content.min.x + 22.0, content.min.y + 22.0), Align2::LEFT_CENTER, &r.title, 14.0, t.foreground);
+            text_bold(
+                &clip,
+                pos2(content.min.x + 22.0, content.min.y + 22.0),
+                Align2::LEFT_CENTER,
+                &r.title,
+                14.0,
+                t.foreground,
+            );
             text(
                 &clip,
                 pos2(content.max.x - 14.0, content.min.y + 22.0),
@@ -343,7 +372,14 @@ impl egui::Widget for SwipeActions<'_> {
                 11.0,
                 t.muted_foreground,
             );
-            text(&clip, pos2(content.min.x + 22.0, content.min.y + 44.0), Align2::LEFT_CENTER, &r.detail, 12.5, mix(t.muted_foreground, t.foreground, 0.25));
+            text(
+                &clip,
+                pos2(content.min.x + 22.0, content.min.y + 44.0),
+                Align2::LEFT_CENTER,
+                &r.detail,
+                12.5,
+                mix(t.muted_foreground, t.foreground, 0.25),
+            );
             if i + 1 < rows.len() {
                 clip.line_segment(
                     [pos2(content.min.x + 22.0, row.max.y - 0.5), pos2(row.max.x, row.max.y - 0.5)],
@@ -354,7 +390,14 @@ impl egui::Widget for SwipeActions<'_> {
         }
         if let Some((msg, t0)) = toast {
             let a = ramp(now - t0, 0.0, 0.2) * (1.0 - ramp(now - t0, 1.8, 2.2));
-            text(&painter, pos2(list.min.x + 6.0, list.max.y + 18.0), Align2::LEFT_CENTER, msg, 11.5, with_alpha(t.muted_foreground, a));
+            text(
+                &painter,
+                pos2(list.min.x + 6.0, list.max.y + 18.0),
+                Align2::LEFT_CENTER,
+                msg,
+                11.5,
+                with_alpha(t.muted_foreground, a),
+            );
         }
         ghost_touch(&painter, touch.pos.unwrap_or(rect.center()), if touch.down { 1.0 } else { 0.0 }, touch.alpha);
         response

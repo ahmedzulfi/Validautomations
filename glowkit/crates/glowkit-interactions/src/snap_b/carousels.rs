@@ -827,7 +827,7 @@ impl Widget for SpiralSlider {
         let panel_w = r * dth * 0.92 * 1.25; // along the track
         let advance = panel_w * 0.42 * self.pitch; // track advance per panel
         let arc = dth * 0.88; // angular size of a panel
-        let tilt = -0.16;
+        let tilt = -0.08;
         let bg = t.muted;
         let frost_c = if t.dark { hex("#C8CCDA") } else { hex("#FFFFFF") };
         let base = off.floor() as i32;
@@ -850,7 +850,7 @@ impl Widget for SpiralSlider {
             let pt3 = |u: f32, v: f32| -> V3 {
                 let a = th0 + (v - 0.5) * arc;
                 let x = xc + (u - 0.5) * panel_w + (a - th0) / TAU * advance * n;
-                v3(x, a.sin() * r, a.cos() * r).rot_z(tilt)
+                v3(x, a.sin() * r, a.cos() * r).rot_x(0.38).rot_z(tilt)
             };
             let c3 = pt3(0.5, 0.5);
             if (cam.pt(c3).x - rect.center().x).abs() > rect.width() / 2.0 + panel_w {

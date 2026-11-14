@@ -108,7 +108,9 @@ impl egui::Widget for FlipLetters {
             ghost = Some((p, a));
             ui.ctx().request_repaint();
         }
-        let hit = pointer.and_then(|p| glyphs.glyphs.iter().position(|g| Rect::from_min_size(origin + g.offset, g.size).contains(p)));
+        let hit = pointer.and_then(|p| {
+            glyphs.glyphs.iter().position(|g| Rect::from_min_size(origin + g.offset, g.size).contains(p))
+        });
         let spread = (self.ripple / 100.0 * 6.0).round() as i32;
         let stagger = 0.045;
         if let Some(h) = hit {
@@ -266,11 +268,18 @@ impl egui::Widget for TextReel {
             return response;
         }
         let painter = ui.painter_at(rect);
-        let cy = rect.center().y - self.size * 0.6;
+        let cy = rect.center().y - self.size * 0.1;
         let label_y = cy - self.size * 0.85;
         // label, spaced
         let spaced: String = self.label.chars().flat_map(|c| [c, '\u{2009}', '\u{2009}']).collect();
-        text(&painter, pos2(rect.center().x, label_y), Align2::CENTER_CENTER, spaced.trim_end(), 12.5, t.muted_foreground);
+        text(
+            &painter,
+            pos2(rect.center().x, label_y),
+            Align2::CENTER_CENTER,
+            spaced.trim_end(),
+            12.5,
+            t.muted_foreground,
+        );
         let reel = Rect::from_min_max(pos2(rect.min.x, cy - self.size * 0.62), rect.max);
         let clip = painter.with_clip_rect(reel);
         let k0 = s.pos.floor() as i32 - 4;
@@ -292,7 +301,13 @@ impl egui::Widget for TextReel {
             if speed_blur > 0.05 {
                 for j in 1..3 {
                     let off = j as f32 * 3.0 * speed_blur * s.vel.signum();
-                    clip.text(pos2(rect.center().x, y + off), Align2::CENTER_CENTER, word, font.clone(), with_alpha(col, a * 0.15));
+                    clip.text(
+                        pos2(rect.center().x, y + off),
+                        Align2::CENTER_CENTER,
+                        word,
+                        font.clone(),
+                        with_alpha(col, a * 0.15),
+                    );
                 }
             }
         }

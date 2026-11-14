@@ -65,7 +65,13 @@ pub struct UptimeBars {
 impl UptimeBars {
     /// A strip per service (up to three).
     pub fn new(services: &[&str]) -> Self {
-        Self { services: services.iter().take(3).map(|s| s.to_string()).collect(), days: 60, magnify: 50.0, seed: 7, autoplay: false }
+        Self {
+            services: services.iter().take(3).map(|s| s.to_string()).collect(),
+            days: 60,
+            magnify: 50.0,
+            seed: 7,
+            autoplay: false,
+        }
     }
     /// Initial range: 30, 60 or 90 days.
     pub fn days(mut self, d: usize) -> Self {
@@ -106,12 +112,17 @@ impl egui::Widget for UptimeBars {
         let t = Theme::of(ui);
         let rows = self.services.len().max(1);
         let row_h = 86.0;
-        let (rect, response) = ui.allocate_exact_size(vec2(ui.available_width().min(640.0), 48.0 + row_h * rows as f32), Sense::click_and_drag());
+        let (rect, response) = ui.allocate_exact_size(
+            vec2(ui.available_width().min(640.0), 48.0 + row_h * rows as f32),
+            Sense::click_and_drag(),
+        );
         let id = response.id;
         let dt = glowkit_core::dt(ui);
         let now = glowkit_core::time(ui);
         let ranges = [30usize, 60, 90];
-        let chip = |i: usize| Rect::from_min_size(pos2(rect.max.x - 150.0 + i as f32 * 50.0, rect.min.y + 4.0), vec2(46.0, 26.0));
+        let chip = |i: usize| {
+            Rect::from_min_size(pos2(rect.max.x - 150.0 + i as f32 * 50.0, rect.min.y + 4.0), vec2(46.0, 26.0))
+        };
         let rx = |i: usize| (chip(i).center().x - rect.min.x) / rect.width();
         let ry = |r: usize| (48.0 + r as f32 * row_h + 44.0) / rect.height();
         let script = [
@@ -121,7 +132,8 @@ impl egui::Widget for UptimeBars {
             tap(7.4, rx(0), 18.0 / rect.height()),
         ];
         let touch = touch(ui, &response, rect, self.autoplay, &script, 9.5);
-        let mut st: UptimeState = glowkit_core::state(ui, id.with("uptime"), || UptimeState { range: 1, ..Default::default() });
+        let mut st: UptimeState =
+            glowkit_core::state(ui, id.with("uptime"), || UptimeState { range: 1, ..Default::default() });
         if st.range >= 3 {
             st.range = 1;
         }
@@ -219,13 +231,27 @@ impl egui::Widget for UptimeBars {
         } else {
             (hexa(0x4A, 0xC2, 0x6B), hexa(0xF2, 0x9D, 0x0B), hexa(0xDC, 0x26, 0x26))
         };
-        text_bold(&painter, pos2(rect.min.x, rect.min.y + 17.0), Align2::LEFT_CENTER, "System status", 15.0, t.foreground);
+        text_bold(
+            &painter,
+            pos2(rect.min.x, rect.min.y + 17.0),
+            Align2::LEFT_CENTER,
+            "System status",
+            15.0,
+            t.foreground,
+        );
         for (i, days) in ranges.iter().enumerate() {
             let r = chip(i);
             if i == s.range {
                 painter.rect_filled(r, cr(13.0), recess(&t));
             }
-            text(&painter, r.center(), Align2::CENTER_CENTER, format!("{days}d"), 12.0, if i == s.range { t.foreground } else { t.muted_foreground });
+            text(
+                &painter,
+                r.center(),
+                Align2::CENTER_CENTER,
+                format!("{days}d"),
+                12.0,
+                if i == s.range { t.foreground } else { t.muted_foreground },
+            );
         }
         for r in 0..rows {
             let y0 = rect.min.y + 48.0 + r as f32 * row_h;
@@ -273,11 +299,32 @@ impl egui::Widget for UptimeBars {
                 let tr = Rect::from_min_size(pos2(x, b.min.y - 78.0 + (1.0 - a) * 6.0), vec2(w, 62.0));
                 let fill = if t.dark { hexa(0x26, 0x26, 0x2B) } else { Color32::WHITE };
                 card(&painter, &t, tr, 10.0, a, with_alpha(fill, a));
-                text_bold(&painter, pos2(tr.min.x + 12.0, tr.min.y + 16.0), Align2::LEFT_CENTER, day_label(n - 1 - i), 12.5, with_alpha(t.foreground, a));
-                text(&painter, pos2(tr.max.x - 12.0, tr.min.y + 16.0), Align2::RIGHT_CENTER, format!("{up:.2}%"), 12.0, with_alpha(t.muted_foreground, a));
+                text_bold(
+                    &painter,
+                    pos2(tr.min.x + 12.0, tr.min.y + 16.0),
+                    Align2::LEFT_CENTER,
+                    day_label(n - 1 - i),
+                    12.5,
+                    with_alpha(t.foreground, a),
+                );
+                text(
+                    &painter,
+                    pos2(tr.max.x - 12.0, tr.min.y + 16.0),
+                    Align2::RIGHT_CENTER,
+                    format!("{up:.2}%"),
+                    12.0,
+                    with_alpha(t.muted_foreground, a),
+                );
                 let c = [green, amber, red][stt as usize];
                 painter.circle_filled(pos2(tr.min.x + 15.0, tr.min.y + 42.0), 3.5, with_alpha(c, a));
-                text(&painter, pos2(tr.min.x + 25.0, tr.min.y + 42.0), Align2::LEFT_CENTER, note, 12.0, with_alpha(t.muted_foreground, a));
+                text(
+                    &painter,
+                    pos2(tr.min.x + 25.0, tr.min.y + 42.0),
+                    Align2::LEFT_CENTER,
+                    note,
+                    12.0,
+                    with_alpha(t.muted_foreground, a),
+                );
             }
         }
         ghost_touch(&painter, touch.pos.unwrap_or(rect.center()), if touch.down { 1.0 } else { 0.0 }, touch.alpha);
@@ -307,7 +354,13 @@ pub struct DeviceSession {
 
 impl DeviceSession {
     /// A session row.
-    pub fn new(name: impl Into<String>, place: impl Into<String>, ip: impl Into<String>, seen: impl Into<String>, kind: u8) -> Self {
+    pub fn new(
+        name: impl Into<String>,
+        place: impl Into<String>,
+        ip: impl Into<String>,
+        seen: impl Into<String>,
+        kind: u8,
+    ) -> Self {
         Self { name: name.into(), place: place.into(), ip: ip.into(), seen: seen.into(), kind, badge: None }
     }
     /// A small highlighted badge after the name.
@@ -322,7 +375,8 @@ fn sample_sessions() -> Vec<DeviceSession> {
         DeviceSession::new("Safari on macOS", "Lisbon, Portugal", "198.51.100.188", "Active now", 0),
         DeviceSession::new("Chrome on Windows 11", "Porto, Portugal", "192.0.2.148", "Active now", 1),
         DeviceSession::new("App on Android 15", "Madrid, Spain", "198.51.100.116", "Last active 3 hours ago", 2),
-        DeviceSession::new("Firefox on Linux", "Berlin, Germany", "203.0.113.109", "Last active yesterday", 0).badge("New location"),
+        DeviceSession::new("Firefox on Linux", "Berlin, Germany", "203.0.113.109", "Last active yesterday", 0)
+            .badge("New location"),
         DeviceSession::new("Safari on iPadOS", "Lisbon, Portugal", "198.51.100.42", "Last active 2 days ago", 3),
     ]
 }
@@ -401,7 +455,8 @@ impl egui::Widget for ActiveSessions {
         let row_h = 64.0;
         let w = ui.available_width().min(600.0);
         let head_h = 64.0;
-        let (rect, response) = ui.allocate_exact_size(vec2(w, head_h + row_h * n as f32 + 44.0), Sense::click_and_drag());
+        let (rect, response) =
+            ui.allocate_exact_size(vec2(w, head_h + row_h * n as f32 + 44.0), Sense::click_and_drag());
         let id = response.id;
         let dt = glowkit_core::dt(ui);
         let now = glowkit_core::time(ui);
@@ -411,7 +466,8 @@ impl egui::Widget for ActiveSessions {
         st.fold.resize(n, 1.0);
         st.fold_v.resize(n, 0.0);
         let list_top = rect.min.y + head_h;
-        let row_y = |fold: &[f32], i: usize| list_top + fold[..i].iter().map(|f| f.clamp(0.0, 1.0) * row_h).sum::<f32>();
+        let row_y =
+            |fold: &[f32], i: usize| list_top + fold[..i].iter().map(|f| f.clamp(0.0, 1.0) * row_h).sum::<f32>();
         let all_btn = Rect::from_min_size(pos2(rect.max.x - 176.0, rect.min.y + 8.0), vec2(176.0, 30.0));
         let total: f32 = st.fold.iter().map(|f| f.clamp(0.0, 1.0) * row_h).sum();
         let restore = Rect::from_center_size(pos2(rect.center().x, list_top + total + 24.0), vec2(170.0, 26.0));
@@ -474,7 +530,14 @@ impl egui::Widget for ActiveSessions {
                 moving = true;
             }
             let tgt = if st.gone[i] { 0.0 } else { 1.0 };
-            spring_step(&mut st.fold[i], &mut st.fold_v[i], tgt, 260.0, damping_for(if tgt > 0.5 { self.bounce } else { 0.0 }, 260.0), dt);
+            spring_step(
+                &mut st.fold[i],
+                &mut st.fold_v[i],
+                tgt,
+                260.0,
+                damping_for(if tgt > 0.5 { self.bounce } else { 0.0 }, 260.0),
+                dt,
+            );
             moving |= !settled(st.fold[i] * 60.0, st.fold_v[i] * 60.0, tgt * 60.0);
         }
         let s = st.clone();
@@ -486,13 +549,39 @@ impl egui::Widget for ActiveSessions {
             return response;
         }
         let painter = ui.painter_at(rect.expand(12.0));
-        text_bold(&painter, pos2(rect.min.x + 2.0, rect.min.y + 14.0), Align2::LEFT_CENTER, "Active sessions", 14.5, t.foreground);
-        text(&painter, pos2(rect.min.x + 2.0, rect.min.y + 34.0), Align2::LEFT_CENTER, "Devices signed in to your account.", 12.0, t.muted_foreground);
+        text_bold(
+            &painter,
+            pos2(rect.min.x + 2.0, rect.min.y + 14.0),
+            Align2::LEFT_CENTER,
+            "Active sessions",
+            14.5,
+            t.foreground,
+        );
+        text(
+            &painter,
+            pos2(rect.min.x + 2.0, rect.min.y + 34.0),
+            Align2::LEFT_CENTER,
+            "Devices signed in to your account.",
+            12.0,
+            t.muted_foreground,
+        );
         let others = (1..n).filter(|&i| !s.gone[i]).count();
         let btn_a = if others > 0 { 1.0 } else { 0.4 };
         painter.rect_filled(all_btn, cr(15.0), surface(&t));
-        painter.rect_stroke(all_btn, cr(15.0), Stroke::new(1.0, with_alpha(hairline(&t), btn_a)), egui::StrokeKind::Inside);
-        text(&painter, all_btn.center(), Align2::CENTER_CENTER, "Sign out other sessions", 12.5, with_alpha(t.foreground, btn_a));
+        painter.rect_stroke(
+            all_btn,
+            cr(15.0),
+            Stroke::new(1.0, with_alpha(hairline(&t), btn_a)),
+            egui::StrokeKind::Inside,
+        );
+        text(
+            &painter,
+            all_btn.center(),
+            Align2::CENTER_CENTER,
+            "Sign out other sessions",
+            12.5,
+            with_alpha(t.foreground, btn_a),
+        );
         let total: f32 = s.fold.iter().map(|f| f.clamp(0.0, 1.0) * row_h).sum();
         let list = Rect::from_min_size(pos2(rect.min.x, list_top), vec2(w, total));
         card(&painter, &t, list, 14.0, 0.3, surface(&t));
@@ -522,15 +611,43 @@ impl egui::Widget for ActiveSessions {
             glyph(&rc, icon, ib.center(), 15.0, with_alpha(t.muted_foreground, a));
             let x = row.min.x + 62.0 + dx;
             let nr = text(&rc, pos2(x, cy - 10.0), Align2::LEFT_CENTER, &sess.name, 13.5, with_alpha(t.foreground, a));
-            let badge = if i == 0 { Some(("This device".to_string(), recess(&t), t.muted_foreground)) } else { sess.badge.clone().map(|b| (b, hexa(0xFE, 0xF3, 0xC7), hexa(0x92, 0x40, 0x0E))) };
+            let badge = if i == 0 {
+                Some(("This device".to_string(), recess(&t), t.muted_foreground))
+            } else {
+                sess.badge.clone().map(|b| (b, hexa(0xFE, 0xF3, 0xC7), hexa(0x92, 0x40, 0x0E)))
+            };
             if let Some((b, bg, fg)) = badge {
                 let bw = text_width(&rc, &b, 10.5) + 12.0;
                 let br = Rect::from_min_size(pos2(nr.max.x + 8.0, cy - 19.0), vec2(bw, 18.0));
-                rc.rect_filled(br, cr(5.0), with_alpha(if t.dark && i != 0 { mix(bg, Color32::BLACK, 0.7) } else { bg }, a));
-                text(&rc, br.center(), Align2::CENTER_CENTER, b, 10.5, with_alpha(if t.dark && i != 0 { hexa(0xFC, 0xD3, 0x4D) } else { fg }, a));
+                rc.rect_filled(
+                    br,
+                    cr(5.0),
+                    with_alpha(if t.dark && i != 0 { mix(bg, Color32::BLACK, 0.7) } else { bg }, a),
+                );
+                text(
+                    &rc,
+                    br.center(),
+                    Align2::CENTER_CENTER,
+                    b,
+                    10.5,
+                    with_alpha(if t.dark && i != 0 { hexa(0xFC, 0xD3, 0x4D) } else { fg }, a),
+                );
             }
-            let pr = text(&rc, pos2(x, cy + 10.0), Align2::LEFT_CENTER, &sess.place, 11.5, with_alpha(t.muted_foreground, a));
-            let ipr = rc.text(pos2(pr.max.x + 14.0, cy + 10.0), Align2::LEFT_CENTER, &sess.ip, FontId::monospace(10.5), with_alpha(t.muted_foreground, a));
+            let pr = text(
+                &rc,
+                pos2(x, cy + 10.0),
+                Align2::LEFT_CENTER,
+                &sess.place,
+                11.5,
+                with_alpha(t.muted_foreground, a),
+            );
+            let ipr = rc.text(
+                pos2(pr.max.x + 14.0, cy + 10.0),
+                Align2::LEFT_CENTER,
+                &sess.ip,
+                FontId::monospace(10.5),
+                with_alpha(t.muted_foreground, a),
+            );
             rc.circle_filled(pos2(pr.max.x + 7.0, cy + 10.0), 1.2, with_alpha(t.muted_foreground, a));
             if ipr.max.x + 120.0 < row.max.x - 90.0 {
                 let active = sess.seen.starts_with("Active");
@@ -538,7 +655,14 @@ impl egui::Widget for ActiveSessions {
                 if active {
                     rc.circle_filled(pos2(sx + 3.0, cy + 10.0), 3.0, with_alpha(green, a));
                 }
-                text(&rc, pos2(sx + if active { 10.0 } else { 0.0 }, cy + 10.0), Align2::LEFT_CENTER, &sess.seen, 11.5, with_alpha(if active { green } else { t.muted_foreground }, a));
+                text(
+                    &rc,
+                    pos2(sx + if active { 10.0 } else { 0.0 }, cy + 10.0),
+                    Align2::LEFT_CENTER,
+                    &sess.seen,
+                    11.5,
+                    with_alpha(if active { green } else { t.muted_foreground }, a),
+                );
             }
             if i > 0 {
                 let br = Rect::from_min_size(pos2(row.max.x - 92.0, cy - 15.0), vec2(80.0, 30.0));
@@ -555,14 +679,23 @@ impl egui::Widget for ActiveSessions {
                 }
             }
             if i + 1 < n {
-                rc.line_segment([pos2(row.min.x, row.max.y - 0.5), pos2(row.max.x, row.max.y - 0.5)], Stroke::new(1.0, hairline(&t)));
+                rc.line_segment(
+                    [pos2(row.min.x, row.max.y - 0.5), pos2(row.max.x, row.max.y - 0.5)],
+                    Stroke::new(1.0, hairline(&t)),
+                );
             }
         }
         if (1..n).all(|i| s.gone[i]) && s.fold.iter().skip(1).all(|f| *f < 0.05) {
-            text(&painter, pos2(rect.center().x, list.max.y + 24.0), Align2::CENTER_CENTER, "↺  Restore demo sessions", 12.5, system_blue(&t));
+            text(
+                &painter,
+                pos2(rect.center().x, list.max.y + 24.0),
+                Align2::CENTER_CENTER,
+                "↺  Restore demo sessions",
+                12.5,
+                system_blue(&t),
+            );
         }
         ghost_touch(&painter, touch.pos.unwrap_or(rect.center()), if touch.down { 1.0 } else { 0.0 }, touch.alpha);
         response
     }
 }
-

@@ -158,10 +158,10 @@ impl egui::Widget for PreviewMenu {
         let item_h = 40.0;
         let menu_w = 200.0_f32.min(pw);
         let menu_top = preview.max.y + 12.0;
-        let item_rect = |k: usize| {
-            Rect::from_min_size(pos2(preview.min.x, menu_top + k as f32 * item_h), vec2(menu_w, item_h))
-        };
-        let menu_rect = Rect::from_min_size(pos2(preview.min.x, menu_top), vec2(menu_w, item_h * self.actions.len() as f32));
+        let item_rect =
+            |k: usize| Rect::from_min_size(pos2(preview.min.x, menu_top + k as f32 * item_h), vec2(menu_w, item_h));
+        let menu_rect =
+            Rect::from_min_size(pos2(preview.min.x, menu_top), vec2(menu_w, item_h * self.actions.len() as f32));
 
         let g = st.g.update(&touch, now, dt);
         let mut select: Option<usize> = None;
@@ -195,7 +195,9 @@ impl egui::Widget for PreviewMenu {
                 }
                 if g.released {
                     let p = st.g.last;
-                    if let Some(k) = (0..self.actions.len()).find(|&k| item_rect(k).translate(st.drag * 0.3).contains(p)) {
+                    if let Some(k) =
+                        (0..self.actions.len()).find(|&k| item_rect(k).translate(st.drag * 0.3).contains(p))
+                    {
                         select = Some(k);
                     } else if g.tap && !preview.contains(p) {
                         st.phase = 0;
@@ -225,8 +227,22 @@ impl egui::Widget for PreviewMenu {
 
         let open = st.phase == 2;
         let stiff = 240.0;
-        spring_step(&mut st.lift, &mut st.lift_v, if open { 1.0 } else { 0.0 }, stiff, damping_for(self.bounce, stiff), dt);
-        spring_step(&mut st.menu, &mut st.menu_v, if open { 1.0 } else { 0.0 }, 300.0, damping_for(self.bounce, 300.0), dt);
+        spring_step(
+            &mut st.lift,
+            &mut st.lift_v,
+            if open { 1.0 } else { 0.0 },
+            stiff,
+            damping_for(self.bounce, stiff),
+            dt,
+        );
+        spring_step(
+            &mut st.menu,
+            &mut st.menu_v,
+            if open { 1.0 } else { 0.0 },
+            300.0,
+            damping_for(self.bounce, 300.0),
+            dt,
+        );
         let press_t = if st.phase == 1 { 1.0 } else { 0.0 };
         spring_step(&mut st.press, &mut st.press_v, press_t, 200.0, 20.0, dt);
         let moving = st.phase != 0
@@ -246,7 +262,14 @@ impl egui::Widget for PreviewMenu {
 
         // paint
         let painter = ui.painter_at(rect);
-        text_bold(&painter, pos2(rect.min.x + pad, rect.min.y + 44.0), Align2::LEFT_CENTER, &self.title, 22.0, t.foreground);
+        text_bold(
+            &painter,
+            pos2(rect.min.x + pad, rect.min.y + 44.0),
+            Align2::LEFT_CENTER,
+            &self.title,
+            22.0,
+            t.foreground,
+        );
         let tex = |i: usize| PaintedScene::texture(ui.ctx(), (i * 5 + 2) % PaintedScene::COUNT);
         let lift = s.lift.max(0.0);
         let blur = lift.clamp(0.0, 1.0);
@@ -257,7 +280,14 @@ impl egui::Widget for PreviewMenu {
                 continue;
             }
             let r = if i == s.idx { Rect::from_center_size(r.center(), r.size() * (1.0 - 0.06 * s.press)) } else { r };
-            image_rect(&painter, r, 10.0, tex(i), cover_uv(PaintedScene::ASPECT, 1.0), with_alpha(Color32::WHITE, 1.0 - 0.8 * blur));
+            image_rect(
+                &painter,
+                r,
+                10.0,
+                tex(i),
+                cover_uv(PaintedScene::ASPECT, 1.0),
+                with_alpha(Color32::WHITE, 1.0 - 0.8 * blur),
+            );
             if s.favs.get(i).copied().unwrap_or(false) {
                 let c = r.left_bottom() + vec2(14.0, -14.0);
                 painter.circle_filled(c, 10.0, with_alpha(Color32::BLACK, 0.35));
@@ -284,10 +314,7 @@ impl egui::Widget for PreviewMenu {
             let r = Rect::from_center_size(center, sz);
             let cu = cover_uv(PaintedScene::ASPECT, 1.0);
             let kk = k.clamp(0.0, 1.0);
-            let uv = Rect::from_min_max(
-                pos2(lerp(cu.min.x, 0.0, kk), 0.0),
-                pos2(lerp(cu.max.x, 1.0, kk), 1.0),
-            );
+            let uv = Rect::from_min_max(pos2(lerp(cu.min.x, 0.0, kk), 0.0), pos2(lerp(cu.max.x, 1.0, kk), 1.0));
             shadow(&painter, &t, r, 16.0, 1.4 * kk);
             image_rect(&painter, r, lerp(10.0, 16.0, kk), tex(s.idx), uv, Color32::WHITE);
             if s.favs.get(s.idx).copied().unwrap_or(false) {
@@ -332,8 +359,21 @@ impl egui::Widget for PreviewMenu {
                     );
                 }
                 let dy = (1.0 - appear) * 6.0;
-                text(&clip, pos2(ir.min.x + 16.0, ir.center().y + dy), Align2::LEFT_CENTER, label, 14.0, with_alpha(col, appear));
-                glyph(&clip, glyph_for(label), pos2(ir.max.x - 22.0, ir.center().y + dy), 15.0, with_alpha(col, appear));
+                text(
+                    &clip,
+                    pos2(ir.min.x + 16.0, ir.center().y + dy),
+                    Align2::LEFT_CENTER,
+                    label,
+                    14.0,
+                    with_alpha(col, appear),
+                );
+                glyph(
+                    &clip,
+                    glyph_for(label),
+                    pos2(ir.max.x - 22.0, ir.center().y + dy),
+                    15.0,
+                    with_alpha(col, appear),
+                );
             }
         }
         if s.phase == 0 && lift < 0.01 {

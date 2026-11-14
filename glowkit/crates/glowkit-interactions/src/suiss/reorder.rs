@@ -163,7 +163,11 @@ impl egui::Widget for ReorderList<'_> {
                 .iter()
                 .enumerate()
                 .map(|(i, k)| {
-                    old.iter().find(|a| a.key == *k).copied().unwrap_or(RowAnim { key: *k, y: tops[i], ..Default::default() })
+                    old.iter().find(|a| a.key == *k).copied().unwrap_or(RowAnim {
+                        key: *k,
+                        y: tops[i],
+                        ..Default::default()
+                    })
                 })
                 .collect();
         }
@@ -247,7 +251,11 @@ impl egui::Widget for ReorderList<'_> {
         spring_step(&mut st.lift, &mut st.lift_v, lift_target, 420.0, damping_for(self.bounce, 420.0), dt);
         let moving = st.drag.is_some()
             || st.lift.abs() > 0.002
-            || st.rows.iter().zip(&tops).any(|(a, t)| (a.y - t).abs() > 0.1 || a.v.abs() > 0.5 || a.bump_v.abs() > 0.01);
+            || st
+                .rows
+                .iter()
+                .zip(&tops)
+                .any(|(a, t)| (a.y - t).abs() > 0.1 || a.v.abs() > 0.5 || a.bump_v.abs() > 0.01);
         let s = st.clone();
         glowkit_core::set_state(ui, id.with("reorder"), st);
         if moving || touch.ghost {
@@ -277,7 +285,11 @@ impl egui::Widget for ReorderList<'_> {
             let rr = Rect::from_center_size(base.center(), vec2(w * grow, h * (1.0 + a.bump * 0.02)));
             if elevated > 0.01 {
                 shadow(&painter, &t, rr, 14.0, elevated.clamp(0.0, 1.3) * (0.4 + self.lift / 70.0));
-                painter.rect_filled(rr, cr(14.0 * elevated.clamp(0.0, 1.0)), mix(fill, Color32::WHITE, if t.dark { 0.04 } else { 0.0 }));
+                painter.rect_filled(
+                    rr,
+                    cr(14.0 * elevated.clamp(0.0, 1.0)),
+                    mix(fill, Color32::WHITE, if t.dark { 0.04 } else { 0.0 }),
+                );
             }
             let x = rr.min.x + 18.0;
             if r.detail.is_empty() {

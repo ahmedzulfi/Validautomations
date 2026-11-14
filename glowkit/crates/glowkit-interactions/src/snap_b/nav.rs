@@ -440,7 +440,7 @@ impl Widget for LiquidGlassButton {
         let scale = 1.0 - 0.04 * press + 0.015 * hov;
         let body = Rect::from_center_size(body.center() + vec2(0.0, 1.5 * press), body.size() * scale);
         let r = body.height() / 2.0;
-        let alpha = if self.disabled { 0.45 } else { 1.0 };
+        let alpha = if self.disabled { 0.6 } else { 1.0 };
         // shadow
         let sh = if t.dark { Color32::from_black_alpha(170) } else { Color32::from_rgba_unmultiplied(30, 30, 50, 60) };
         paint::soft_shadow(&painter, body.translate(vec2(0.0, 5.0 - 2.0 * press)), r, 14.0, Vec2::ZERO, sh.gamma_multiply(alpha));
@@ -668,8 +668,8 @@ impl Widget for MorphNavbar {
         let wdt = wall_dt(ui);
         let time = glowkit_core::time(ui);
         let bar_h = 52.0;
-        let closed_w = 470.0f32.min(w_avail - 8.0);
-        let panel_sizes = [vec2(640.0f32.min(w_avail - 8.0), 282.0), vec2(560.0f32.min(w_avail - 8.0), 320.0), vec2(520.0f32.min(w_avail - 8.0), 268.0)];
+        let closed_w = 560.0f32.min(w_avail - 8.0);
+        let panel_sizes = [vec2(660.0f32.min(w_avail - 8.0), 282.0), vec2(600.0f32.min(w_avail - 8.0), 320.0), vec2(580.0f32.min(w_avail - 8.0), 268.0)];
         let top = rect.min.y + 10.0;
         let pointer = ui.input(|i| i.pointer.hover_pos()).filter(|p| rect.contains(*p));
         let idle = idle_time(ui, id, pointer.is_some());
@@ -682,7 +682,7 @@ impl Widget for MorphNavbar {
         let item_font = semibold_font(ui, 14.5);
         let brand_font = display_font(ui, 17.0);
         let item_w = 84.0;
-        let items_x0 = bar.center().x - item_w * 1.5 + 10.0;
+        let items_x0 = bar.center().x - item_w * 1.5 + 24.0;
         let item_rect = |i: usize| Rect::from_min_size(pos2(items_x0 + i as f32 * item_w, bar.min.y + 8.0), vec2(item_w, bar_h - 16.0));
         // ghost tour: open 0 -> 1 -> 2 -> closed, each for a few seconds
         let ghost_on = self.autoplay && pointer.is_none() && idle > 1.0;
@@ -784,7 +784,7 @@ impl Widget for MorphNavbar {
         painter.circle_filled(mark_c, 9.0, hex("#E9E4D8"));
         painter.circle_filled(mark_c + vec2(3.0, -3.0), 4.0, ink);
         painter.text(mark_c + vec2(16.0, 0.0), Align2::LEFT_CENTER, &self.brand, brand_font, hex("#F2EFE8"));
-        let items_x0 = bar.center().x - item_w * 1.5 + 10.0;
+        let items_x0 = bar.center().x - item_w * 1.5 + 24.0;
         let item_rect = |i: usize| Rect::from_min_size(pos2(items_x0 + i as f32 * item_w, bar.min.y + 8.0), vec2(item_w, bar_h - 16.0));
         for (i, label) in self.items.iter().enumerate() {
             let r = item_rect(i);

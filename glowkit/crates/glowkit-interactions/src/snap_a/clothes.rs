@@ -80,7 +80,7 @@ impl ClothesLine {
         self.clip = c;
         self
     }
-    /// Widget size (default: available width x 300).
+    /// Widget size (default: available width x 270).
     pub fn size(mut self, s: Vec2) -> Self {
         self.size = Some(s);
         self
@@ -134,7 +134,7 @@ fn card_mesh(tex: TextureId, corners: impl Fn(f32, f32) -> Pos2, tint: impl Fn(f
 impl Widget for ClothesLine {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
-        let size = glowkit_core::desired_size(ui, self.size, 300.0);
+        let size = glowkit_core::desired_size(ui, self.size, 270.0);
         let (rect, response) = ui.allocate_exact_size(size, Sense::click_and_drag());
         let id = response.id;
         let dt = glowkit_core::dt(ui);

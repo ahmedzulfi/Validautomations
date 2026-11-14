@@ -59,7 +59,11 @@ fn key_of(id_salt: impl std::hash::Hash + std::fmt::Debug) -> Id {
 
 impl CoachTip {
     /// A tip remembered under `id_salt`.
-    pub fn new(id_salt: impl std::hash::Hash + std::fmt::Debug, title: impl Into<String>, body: impl Into<String>) -> Self {
+    pub fn new(
+        id_salt: impl std::hash::Hash + std::fmt::Debug,
+        title: impl Into<String>,
+        body: impl Into<String>,
+    ) -> Self {
         Self {
             key: key_of(id_salt),
             title: title.into(),
@@ -139,7 +143,12 @@ impl egui::Widget for CoachTip {
         let accent = self.accent.unwrap_or_else(|| system_blue(&t));
         let pad = 14.0;
         let text_w = if self.inline { ui.available_width() - 2.0 * pad - 40.0 } else { self.width - 2.0 * pad - 40.0 };
-        let body_g = ui.painter().layout(self.body.clone(), egui::FontId::proportional(12.5), t.muted_foreground, text_w.max(60.0));
+        let body_g = ui.painter().layout(
+            self.body.clone(),
+            egui::FontId::proportional(12.5),
+            t.muted_foreground,
+            text_w.max(60.0),
+        );
         let card_h = (pad * 2.0 + 20.0 + body_g.size().y).max(64.0);
         let visible_t = if st.dismissed || st.closing || st.flying { 0.0 } else { 1.0 };
         let stiff = 300.0;
@@ -153,7 +162,8 @@ impl egui::Widget for CoachTip {
         } else {
             let a = self.anchor.unwrap_or_else(|| ui.cursor().min);
             let clip = self.bounds.unwrap_or_else(|| ui.clip_rect());
-            let x = (a.x - self.width * 0.7).clamp(clip.min.x + 8.0, (clip.max.x - 8.0 - self.width).max(clip.min.x + 8.0));
+            let x =
+                (a.x - self.width * 0.7).clamp(clip.min.x + 8.0, (clip.max.x - 8.0 - self.width).max(clip.min.x + 8.0));
             let card = Rect::from_min_size(pos2(x, a.y + 10.0), vec2(self.width, card_h));
             let (rect, _) = ui.allocate_exact_size(Vec2::ZERO, Sense::hover());
             (rect, card)
@@ -230,7 +240,10 @@ impl egui::Widget for CoachTip {
         if st.closing && st.appear < 0.02 {
             st.dismissed = true;
         }
-        let animating = st.flying || st.closing && !st.dismissed || st.off.length() > 0.2 || !settled(st.appear, st.appear_v, visible_t);
+        let animating = st.flying
+            || st.closing && !st.dismissed
+            || st.off.length() > 0.2
+            || !settled(st.appear, st.appear_v, visible_t);
         let s = st;
         glowkit_core::set_state(ui, self.key, st);
         if animating {
@@ -252,7 +265,11 @@ impl egui::Widget for CoachTip {
             return resp;
         }
         let fill = if t.dark { hexa(0x2A, 0x2A, 0x2F) } else { Color32::WHITE };
-        let (pivot, scale) = if self.inline { (card.center(), 1.0) } else { (self.anchor.unwrap_or(card.center_top()) + s.off, 0.55 + 0.45 * k) };
+        let (pivot, scale) = if self.inline {
+            (card.center(), 1.0)
+        } else {
+            (self.anchor.unwrap_or(card.center_top()) + s.off, 0.55 + 0.45 * k)
+        };
         let tr = |p: Pos2| pivot + (p - pivot) * scale;
         let r = Rect::from_min_max(tr(card.min), tr(card.max));
         shadow(&painter, &t, r, 16.0, 0.9 * alpha);
@@ -275,8 +292,20 @@ impl egui::Widget for CoachTip {
             let icon_c = pos2(r.min.x + pad + 13.0, r.min.y + pad + 13.0);
             self.icon.paint(&painter, icon_c, 24.0 * scale, with_alpha(accent, ca));
             let tx = r.min.x + pad + 38.0;
-            text_bold(&painter, pos2(tx, r.min.y + pad + 9.0), Align2::LEFT_CENTER, &self.title, 14.0, with_alpha(t.foreground, ca));
-            let bg = painter.layout(self.body.clone(), egui::FontId::proportional(12.5), with_alpha(t.muted_foreground, ca), text_w.max(60.0));
+            text_bold(
+                &painter,
+                pos2(tx, r.min.y + pad + 9.0),
+                Align2::LEFT_CENTER,
+                &self.title,
+                14.0,
+                with_alpha(t.foreground, ca),
+            );
+            let bg = painter.layout(
+                self.body.clone(),
+                egui::FontId::proportional(12.5),
+                with_alpha(t.muted_foreground, ca),
+                text_w.max(60.0),
+            );
             painter.galley(pos2(tx, r.min.y + pad + 20.0), bg, t.muted_foreground);
             let cc = pos2(r.max.x - 18.0, r.min.y + 18.0);
             glyph(&painter, Glyph::Close, cc, 9.0, with_alpha(t.muted_foreground, ca));

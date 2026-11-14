@@ -284,7 +284,14 @@ impl egui::Widget for SwipeImageViewer {
 
         // ---- paint
         let painter = ui.painter_at(rect);
-        text_bold(&painter, pos2(rect.min.x + pad, rect.min.y + 44.0), Align2::LEFT_CENTER, &self.title, 22.0, t.foreground);
+        text_bold(
+            &painter,
+            pos2(rect.min.x + pad, rect.min.y + 44.0),
+            Align2::LEFT_CENTER,
+            &self.title,
+            22.0,
+            t.foreground,
+        );
         text(
             &painter,
             pos2(rect.max.x - pad, rect.min.y + 46.0),

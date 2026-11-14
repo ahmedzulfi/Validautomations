@@ -18,7 +18,15 @@ fn scene(ui: &Ui, textures: &[TextureId], i: usize) -> TextureId {
 }
 
 /// Paint `tex` into `rect` rotated by `angle` around its center, with rounded corners.
-fn rotated_image(painter: &egui::Painter, rect: Rect, radius: f32, tex: TextureId, uv: Rect, angle: f32, tint: Color32) {
+fn rotated_image(
+    painter: &egui::Painter,
+    rect: Rect,
+    radius: f32,
+    tex: TextureId,
+    uv: Rect,
+    angle: f32,
+    tint: Color32,
+) {
     painter.add(Shape::Rect(RectShape::filled(rect, cr(radius), tint).with_texture(tex, uv).with_angle(angle)));
 }
 
@@ -68,7 +76,16 @@ impl Default for DraggableMarquee {
 impl DraggableMarquee {
     /// A marquee over the eight painted scenes.
     pub fn new() -> Self {
-        Self { textures: Vec::new(), count: 8, speed: 40.0, gap: 20.0, lean: 50.0, card: vec2(190.0, 250.0), height: 340.0, autoplay: false }
+        Self {
+            textures: Vec::new(),
+            count: 8,
+            speed: 40.0,
+            gap: 20.0,
+            lean: 50.0,
+            card: vec2(190.0, 250.0),
+            height: 340.0,
+            autoplay: false,
+        }
     }
     /// Your own images (portrait crops are taken from the middle).
     pub fn textures(mut self, t: Vec<TextureId>) -> Self {
@@ -108,7 +125,8 @@ impl DraggableMarquee {
     }
 }
 
-const MARQUEE_SCRIPT: [Stroke2; 2] = [drag(1.0, 1.35, (0.72, 0.5), (0.3, 0.52)), drag(4.0, 4.4, (0.3, 0.5), (0.8, 0.48))];
+const MARQUEE_SCRIPT: [Stroke2; 2] =
+    [drag(1.0, 1.35, (0.72, 0.5), (0.3, 0.52)), drag(4.0, 4.4, (0.3, 0.5), (0.8, 0.48))];
 
 impl egui::Widget for DraggableMarquee {
     fn ui(self, ui: &mut Ui) -> Response {
@@ -286,7 +304,8 @@ impl ParallaxSlider {
     }
 }
 
-const PARALLAX_SCRIPT: [Stroke2; 2] = [drag(1.0, 1.3, (0.75, 0.45), (0.35, 0.47)), drag(4.6, 5.0, (0.3, 0.45), (0.62, 0.44))];
+const PARALLAX_SCRIPT: [Stroke2; 2] =
+    [drag(1.0, 1.3, (0.75, 0.45), (0.35, 0.47)), drag(4.6, 5.0, (0.3, 0.45), (0.62, 0.44))];
 
 impl egui::Widget for ParallaxSlider {
     fn ui(self, ui: &mut Ui) -> Response {
@@ -309,7 +328,9 @@ impl egui::Widget for ParallaxSlider {
                 st.v = -st.g.vel.x;
             }
             if response.hovered() {
-                let (wheel, l, r) = ui.input(|i| (i.smooth_scroll_delta, i.key_pressed(egui::Key::ArrowLeft), i.key_pressed(egui::Key::ArrowRight)));
+                let (wheel, l, r) = ui.input(|i| {
+                    (i.smooth_scroll_delta, i.key_pressed(egui::Key::ArrowLeft), i.key_pressed(egui::Key::ArrowRight))
+                });
                 st.v -= (wheel.x + wheel.y) * 18.0;
                 if l {
                     st.v -= 900.0;
@@ -376,8 +397,22 @@ impl egui::Widget for ParallaxSlider {
             if k == s.hovered && s.title > 0.01 {
                 let title = self.titles.get(idx).cloned().unwrap_or_else(|| names[idx % names.len()].to_string());
                 let a = s.title.clamp(0.0, 1.0);
-                text(&painter, pos2(fr.min.x + 2.0, fr.max.y + 20.0 + (1.0 - s.title) * 10.0), Align2::LEFT_CENTER, title, 14.0, with_alpha(t.foreground, a));
-                text(&painter, pos2(fr.max.x - 2.0, fr.max.y + 20.0 + (1.0 - s.title) * 10.0), Align2::RIGHT_CENTER, format!("{:02}", idx + 1), 12.0, with_alpha(t.muted_foreground, a));
+                text(
+                    &painter,
+                    pos2(fr.min.x + 2.0, fr.max.y + 20.0 + (1.0 - s.title) * 10.0),
+                    Align2::LEFT_CENTER,
+                    title,
+                    14.0,
+                    with_alpha(t.foreground, a),
+                );
+                text(
+                    &painter,
+                    pos2(fr.max.x - 2.0, fr.max.y + 20.0 + (1.0 - s.title) * 10.0),
+                    Align2::RIGHT_CENTER,
+                    format!("{:02}", idx + 1),
+                    12.0,
+                    with_alpha(t.muted_foreground, a),
+                );
             }
         }
         ghost_touch(&painter, touch.pos.unwrap_or(rect.center()), if touch.down { 1.0 } else { 0.0 }, touch.alpha);
@@ -514,10 +549,20 @@ impl egui::Widget for LensGallery {
         let sub = 6;
         for gy in -1..rows {
             for gx in -1..cols {
-                let tile = Rect::from_min_size(pos2(rect.min.x + ox + gx as f32 * step.x - step.x * 0.5, rect.min.y + oy + gy as f32 * step.y - step.y * 0.5), self.tile);
+                let tile = Rect::from_min_size(
+                    pos2(
+                        rect.min.x + ox + gx as f32 * step.x - step.x * 0.5,
+                        rect.min.y + oy + gy as f32 * step.y - step.y * 0.5,
+                    ),
+                    self.tile,
+                );
                 let (ix, iy) = (ix0 + gx, iy0 + gy);
                 let idx = (ix * 3 + iy * 5).rem_euclid(8) as usize;
-                let tex = if self.textures.is_empty() { PaintedScene::texture(ui.ctx(), idx) } else { self.textures[idx % self.textures.len()] };
+                let tex = if self.textures.is_empty() {
+                    PaintedScene::texture(ui.ctx(), idx)
+                } else {
+                    self.textures[idx % self.textures.len()]
+                };
                 let uv = cover_uv(PaintedScene::ASPECT, self.tile.x / self.tile.y);
                 let mut mesh = Mesh::with_texture(tex);
                 let center_d = ((tile.center() - c) / rad).length();

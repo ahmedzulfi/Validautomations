@@ -95,7 +95,13 @@ fn chip(ui: &mut Ui, rect: Rect, label: &str, key: &str) -> bool {
         if hov { 0.06 } else { 0.0 },
     );
     ui.painter().rect_filled(rect, super::common::cr(rect.height() / 2.0), fill);
-    ui.painter().text(rect.center(), egui::Align2::CENTER_CENTER, label, egui::FontId::proportional(12.5), t.foreground);
+    ui.painter().text(
+        rect.center(),
+        egui::Align2::CENTER_CENTER,
+        label,
+        egui::FontId::proportional(12.5),
+        t.foreground,
+    );
     if hov {
         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
     }

@@ -219,7 +219,8 @@ impl egui::Widget for LiveIsland {
         let g = st.g.update(&touch, now, dt);
         if st.g.down && pill.expand(10.0).contains(st.g.start) {
             let dy = st.g.last.y - st.g.start.y;
-            st.pull = if st.expanded { rubber(dy.min(0.0), 40.0) + rubber(dy.max(0.0), 20.0) } else { rubber(dy, 46.0) };
+            st.pull =
+                if st.expanded { rubber(dy.min(0.0), 40.0) + rubber(dy.max(0.0), 20.0) } else { rubber(dy, 46.0) };
         }
         if g.released {
             let on_pill = pill.expand(10.0).contains(st.g.start);
@@ -278,7 +279,12 @@ impl egui::Widget for LiveIsland {
         }
         painter.rect_filled(pill, cr(radius), Color32::BLACK);
         if t.dark {
-            painter.rect_stroke(pill, cr(radius), egui::Stroke::new(1.0, with_alpha(Color32::WHITE, 0.08)), egui::StrokeKind::Inside);
+            painter.rect_stroke(
+                pill,
+                cr(radius),
+                egui::Stroke::new(1.0, with_alpha(Color32::WHITE, 0.08)),
+                egui::StrokeKind::Inside,
+            );
         }
         let remaining = self.timer - ((now - started) % self.timer);
         let frac = remaining / self.timer;
@@ -293,7 +299,14 @@ impl egui::Widget for LiveIsland {
             let ring_c = pos2(pill.min.x + 18.0, cy);
             paint::arc(&content, ring_c, 7.5, 0.0, TAU, 2.4, with_alpha(ac, 0.25 * a_compact));
             paint::arc(&content, ring_c, 7.5, -PI / 2.0, -PI / 2.0 + TAU * frac, 2.4, with_alpha(ac, a_compact));
-            text(&content, pos2(pill.max.x - 14.0, cy), Align2::RIGHT_CENTER, mmss(remaining), 13.0, with_alpha(ac, a_compact));
+            text(
+                &content,
+                pos2(pill.max.x - 14.0, cy),
+                Align2::RIGHT_CENTER,
+                mmss(remaining),
+                13.0,
+                with_alpha(ac, a_compact),
+            );
         }
         // expanded
         let a_exp = if notice.is_some() {
@@ -308,7 +321,14 @@ impl egui::Widget for LiveIsland {
             let y0 = pill.min.y + 22.0;
             text(&content, pos2(x0, y0 + 6.0), Align2::LEFT_CENTER, &self.label, 13.0, with_alpha(ac, a_exp));
             text(&content, pos2(x0, y0 + 26.0), Align2::LEFT_CENTER, "Pasta water", 12.0, with_alpha(dim, a_exp));
-            text_bold(&content, pos2(x0 - 1.0, y0 + 64.0), Align2::LEFT_CENTER, mmss(remaining), 40.0, with_alpha(white, a_exp));
+            text_bold(
+                &content,
+                pos2(x0 - 1.0, y0 + 64.0),
+                Align2::LEFT_CENTER,
+                mmss(remaining),
+                40.0,
+                with_alpha(white, a_exp),
+            );
             let rc = pos2(pill.max.x - 52.0, y0 + 34.0);
             paint::arc(&content, rc, 26.0, 0.0, TAU, 5.0, with_alpha(ac, 0.22 * a_exp));
             paint::arc(&content, rc, 26.0, -PI / 2.0, -PI / 2.0 + TAU * frac, 5.0, with_alpha(ac, a_exp));
@@ -330,12 +350,20 @@ impl egui::Widget for LiveIsland {
         }
         // notice
         if let Some((n, t0)) = &notice {
-            let a = ramp(w, compact.x + 10.0, notice_sz.x - 6.0) * (1.0 - ramp(now - t0, self.duration - 0.25, self.duration));
+            let a = ramp(w, compact.x + 10.0, notice_sz.x - 6.0)
+                * (1.0 - ramp(now - t0, self.duration - 0.25, self.duration));
             if a > 0.01 {
                 let c = pos2(pill.min.x + 32.0, pill.center().y);
                 content.circle_filled(c, 19.0, with_alpha(n.accent, a));
                 text(&content, c, Align2::CENTER_CENTER, &n.badge, 12.0, with_alpha(white, a));
-                text_bold(&content, pos2(c.x + 30.0, c.y - 9.0), Align2::LEFT_CENTER, &n.title, 13.0, with_alpha(white, a));
+                text_bold(
+                    &content,
+                    pos2(c.x + 30.0, c.y - 9.0),
+                    Align2::LEFT_CENTER,
+                    &n.title,
+                    13.0,
+                    with_alpha(white, a),
+                );
                 text(&content, pos2(c.x + 30.0, c.y + 10.0), Align2::LEFT_CENTER, &n.body, 12.0, with_alpha(dim, a));
                 // a little audio-wave flourish on the right
                 for i in 0..4 {

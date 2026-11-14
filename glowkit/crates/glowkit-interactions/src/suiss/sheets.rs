@@ -34,7 +34,15 @@ struct SheetState {
 }
 
 /// Paint a pill button with a press squish; returns its rect.
-fn pill(painter: &egui::Painter, t: &Theme, c: egui::Pos2, label: &str, squish: f32, fill: Color32, fg: Color32) -> Rect {
+fn pill(
+    painter: &egui::Painter,
+    t: &Theme,
+    c: egui::Pos2,
+    label: &str,
+    squish: f32,
+    fill: Color32,
+    fg: Color32,
+) -> Rect {
     let w = text_width(painter, label, 14.0) + 36.0;
     let r = Rect::from_center_size(c, vec2(w, 38.0) * (1.0 - 0.05 * squish));
     painter.rect_filled(r, cr(19.0), fill);
@@ -152,12 +160,19 @@ impl egui::Widget for ConfirmSheet {
         let m = 10.0;
         let cancel_h = 52.0;
         let wrap = rect.width() - 2.0 * m - 32.0;
-        let desc_g = painter.layout(self.description.clone(), egui::FontId::proportional(12.5), t.muted_foreground, wrap);
+        let desc_g =
+            painter.layout(self.description.clone(), egui::FontId::proportional(12.5), t.muted_foreground, wrap);
         let head_h = 30.0 + 22.0 + if self.description.is_empty() { 0.0 } else { desc_g.size().y + 4.0 };
         let group_h = head_h + 52.0;
         let sheet_h = group_h + 8.0 + cancel_h + m;
-        let cancel = Rect::from_min_size(pos2(rect.min.x + m, rect.max.y - m - cancel_h), vec2(rect.width() - 2.0 * m, cancel_h));
-        let group = Rect::from_min_size(pos2(rect.min.x + m, cancel.min.y - 8.0 - group_h), vec2(rect.width() - 2.0 * m, group_h));
+        let cancel = Rect::from_min_size(
+            pos2(rect.min.x + m, rect.max.y - m - cancel_h),
+            vec2(rect.width() - 2.0 * m, cancel_h),
+        );
+        let group = Rect::from_min_size(
+            pos2(rect.min.x + m, cancel.min.y - 8.0 - group_h),
+            vec2(rect.width() - 2.0 * m, group_h),
+        );
         let action_r = Rect::from_min_max(pos2(group.min.x, group.max.y - 52.0), group.max);
         let alert_r = Rect::from_center_size(rect.center(), vec2(280.0_f32.min(rect.width() - 40.0), head_h + 56.0));
         let alert_btns = |k: u8| {
@@ -230,11 +245,19 @@ impl egui::Widget for ConfirmSheet {
         }
         let target = if st.open { 1.0 } else { 0.0 };
         let stiff = if alert { 420.0 } else { 260.0 };
-        spring_step(&mut st.pos, &mut st.pos_v, target, stiff, damping_for(if st.open { self.bounce } else { 0.0 }, stiff), dt);
+        spring_step(
+            &mut st.pos,
+            &mut st.pos_v,
+            target,
+            stiff,
+            damping_for(if st.open { self.bounce } else { 0.0 }, stiff),
+            dt,
+        );
         if !st.grabbed {
             spring_step(&mut st.drag, &mut st.press_v, 0.0, 300.0, damping_for(self.bounce, 300.0), dt);
         }
-        st.press = if st.pressed_btn.is_some() { (st.press + dt * 10.0).min(1.0) } else { (st.press - dt * 8.0).max(0.0) };
+        st.press =
+            if st.pressed_btn.is_some() { (st.press + dt * 10.0).min(1.0) } else { (st.press - dt * 8.0).max(0.0) };
         let moving = st.g.down || !settled(st.pos, st.pos_v, target) || st.drag.abs() > 0.2 || st.press > 0.0;
         let s = st.clone();
         glowkit_core::set_state(ui, id.with("confirm"), st);
@@ -245,10 +268,25 @@ impl egui::Widget for ConfirmSheet {
         // paint
         let red = if t.dark { hexa(0xFF, 0x45, 0x3A) } else { hexa(0xE5, 0x30, 0x2A) };
         let trig_fill = if t.dark { mix(t.muted, t.foreground, 0.04) } else { Color32::WHITE };
-        pill(&painter, &t, trig_c, &self.trigger, if s.pressed_btn == Some(0) { s.press } else { 0.0 }, trig_fill, t.foreground);
+        pill(
+            &painter,
+            &t,
+            trig_c,
+            &self.trigger,
+            if s.pressed_btn == Some(0) { s.press } else { 0.0 },
+            trig_fill,
+            t.foreground,
+        );
         if let Some((msg, t0)) = &s.result {
             let a = ramp(now - t0, 0.2, 0.5) * (1.0 - ramp(now - t0, 2.5, 3.0));
-            text(&painter, trig_c + vec2(0.0, 36.0), Align2::CENTER_CENTER, msg, 12.0, with_alpha(t.muted_foreground, a));
+            text(
+                &painter,
+                trig_c + vec2(0.0, 36.0),
+                Align2::CENTER_CENTER,
+                msg,
+                12.0,
+                with_alpha(t.muted_foreground, a),
+            );
         }
         let k = s.pos.max(0.0);
         if k > 0.001 {
@@ -262,14 +300,41 @@ impl egui::Widget for ConfirmSheet {
                 let a = k.min(1.0);
                 shadow(&painter, &t, r, 16.0, a);
                 painter.rect_filled(r, cr(16.0), with_alpha(sheet_fill, a));
-                text_bold(&painter, pos2(r.center().x, r.min.y + 26.0), Align2::CENTER_CENTER, &self.title, 15.0, with_alpha(t.foreground, a));
-                let g2 = painter.layout(self.description.clone(), egui::FontId::proportional(12.5), with_alpha(t.muted_foreground, a), r.width() - 32.0);
+                text_bold(
+                    &painter,
+                    pos2(r.center().x, r.min.y + 26.0),
+                    Align2::CENTER_CENTER,
+                    &self.title,
+                    15.0,
+                    with_alpha(t.foreground, a),
+                );
+                let g2 = painter.layout(
+                    self.description.clone(),
+                    egui::FontId::proportional(12.5),
+                    with_alpha(t.muted_foreground, a),
+                    r.width() - 32.0,
+                );
                 painter.galley(pos2(r.center().x - g2.size().x / 2.0, r.min.y + 42.0), g2, t.muted_foreground);
                 let by = r.max.y - 46.0 * sc;
                 painter.line_segment([pos2(r.min.x, by), pos2(r.max.x, by)], egui::Stroke::new(1.0, sep));
-                painter.line_segment([pos2(r.center().x, by), pos2(r.center().x, r.max.y)], egui::Stroke::new(1.0, sep));
-                text(&painter, pos2(r.min.x + r.width() * 0.25, by + 23.0 * sc), Align2::CENTER_CENTER, "Cancel", 14.0, with_alpha(system_blue(&t), a));
-                text_bold(&painter, pos2(r.min.x + r.width() * 0.75, by + 23.0 * sc), Align2::CENTER_CENTER, &self.action, 14.0, with_alpha(red, a));
+                painter
+                    .line_segment([pos2(r.center().x, by), pos2(r.center().x, r.max.y)], egui::Stroke::new(1.0, sep));
+                text(
+                    &painter,
+                    pos2(r.min.x + r.width() * 0.25, by + 23.0 * sc),
+                    Align2::CENTER_CENTER,
+                    "Cancel",
+                    14.0,
+                    with_alpha(system_blue(&t), a),
+                );
+                text_bold(
+                    &painter,
+                    pos2(r.min.x + r.width() * 0.75, by + 23.0 * sc),
+                    Align2::CENTER_CENTER,
+                    &self.action,
+                    14.0,
+                    with_alpha(red, a),
+                );
             } else {
                 let off = (1.0 - s.pos) * hidden + s.drag;
                 let stretch = (-s.drag).max(0.0);
@@ -277,18 +342,35 @@ impl egui::Widget for ConfirmSheet {
                 let cr_ = cancel.translate(vec2(0.0, off));
                 shadow(&painter, &t, gr, 14.0, 0.8);
                 painter.rect_filled(gr, cr(14.0), sheet_fill);
-                text_bold(&painter, pos2(gr.center().x, gr.min.y + 24.0), Align2::CENTER_CENTER, &self.title, 13.5, t.muted_foreground);
+                text_bold(
+                    &painter,
+                    pos2(gr.center().x, gr.min.y + 24.0),
+                    Align2::CENTER_CENTER,
+                    &self.title,
+                    13.5,
+                    t.muted_foreground,
+                );
                 if !self.description.is_empty() {
-                    let g2 = painter.layout(self.description.clone(), egui::FontId::proportional(12.5), t.muted_foreground, wrap);
+                    let g2 = painter.layout(
+                        self.description.clone(),
+                        egui::FontId::proportional(12.5),
+                        t.muted_foreground,
+                        wrap,
+                    );
                     painter.galley(pos2(gr.center().x - g2.size().x / 2.0, gr.min.y + 40.0), g2, t.muted_foreground);
                 }
                 let ar = Rect::from_min_max(pos2(gr.min.x, gr.max.y - 52.0), gr.max);
                 if s.pressed_btn == Some(1) {
-                    painter.rect_filled(ar, egui::CornerRadius { nw: 0, ne: 0, sw: 14, se: 14 }, mix(sheet_fill, t.foreground, 0.08 * s.press));
+                    painter.rect_filled(
+                        ar,
+                        egui::CornerRadius { nw: 0, ne: 0, sw: 14, se: 14 },
+                        mix(sheet_fill, t.foreground, 0.08 * s.press),
+                    );
                 }
                 painter.line_segment([pos2(ar.min.x, ar.min.y), pos2(ar.max.x, ar.min.y)], egui::Stroke::new(1.0, sep));
                 text(&painter, ar.center(), Align2::CENTER_CENTER, &self.action, 17.0, red);
-                let cfill = if s.pressed_btn == Some(2) { mix(sheet_fill, t.foreground, 0.08 * s.press) } else { sheet_fill };
+                let cfill =
+                    if s.pressed_btn == Some(2) { mix(sheet_fill, t.foreground, 0.08 * s.press) } else { sheet_fill };
                 shadow(&painter, &t, cr_, 14.0, 0.6);
                 painter.rect_filled(cr_, cr(14.0), cfill);
                 text_bold(&painter, cr_.center(), Align2::CENTER_CENTER, "Cancel", 16.5, system_blue(&t));
@@ -358,7 +440,14 @@ impl Default for ActionBarSheet {
 impl ActionBarSheet {
     /// An action bar with no menus yet (add them with [`Self::menu`]; empty shows File/Edit/View).
     pub fn new() -> Self {
-        Self { menus: Vec::new(), size: None, title: "Untitled draft".into(), bounce: 25.0, force_mobile: None, autoplay: false }
+        Self {
+            menus: Vec::new(),
+            size: None,
+            title: "Untitled draft".into(),
+            bounce: 25.0,
+            force_mobile: None,
+            autoplay: false,
+        }
     }
     /// Add a menu with its items.
     pub fn menu(mut self, name: impl Into<String>, items: &[&str]) -> Self {
@@ -392,13 +481,8 @@ impl ActionBarSheet {
     }
 }
 
-const BAR_SCRIPT: [Stroke2; 5] = [
-    tap(0.8, 0.9, 0.087),
-    tap(2.0, 0.5, 0.614),
-    tap(3.3, 0.5, 0.523),
-    tap(4.4, 0.5, 0.705),
-    tap(5.6, 0.5, 0.705),
-];
+const BAR_SCRIPT: [Stroke2; 5] =
+    [tap(0.8, 0.9, 0.087), tap(2.0, 0.5, 0.614), tap(3.3, 0.5, 0.523), tap(4.4, 0.5, 0.705), tap(5.6, 0.5, 0.705)];
 
 impl egui::Widget for ActionBarSheet {
     fn ui(self, ui: &mut Ui) -> Response {
@@ -450,7 +534,12 @@ impl egui::Widget for ActionBarSheet {
             let hidden = sheet_h + 10.0;
             let off = (1.0 - st.pos) * hidden + st.drag;
             let sh = sheet.translate(vec2(0.0, off));
-            let row_r = |i: usize| Rect::from_min_size(pos2(sh.min.x + 12.0, sh.min.y + 40.0 + i as f32 * row_h), vec2(sh.width() - 24.0, row_h));
+            let row_r = |i: usize| {
+                Rect::from_min_size(
+                    pos2(sh.min.x + 12.0, sh.min.y + 40.0 + i as f32 * row_h),
+                    vec2(sh.width() - 24.0, row_h),
+                )
+            };
             if g.pressed {
                 st.grabbed = st.open && sh.contains(st.g.start);
             }
@@ -492,13 +581,23 @@ impl egui::Widget for ActionBarSheet {
                 st.grabbed = false;
             }
             let target = if st.open { 1.0 } else { 0.0 };
-            spring_step(&mut st.pos, &mut st.pos_v, target, stiff, damping_for(if st.open { self.bounce } else { 0.0 }, stiff), dt);
+            spring_step(
+                &mut st.pos,
+                &mut st.pos_v,
+                target,
+                stiff,
+                damping_for(if st.open { self.bounce } else { 0.0 }, stiff),
+                dt,
+            );
             if !st.grabbed {
                 spring_step(&mut st.drag, &mut st.drag_v, 0.0, 300.0, damp, dt);
             }
             let pt = if st.menu.is_some() { 1.0 } else { 0.0 };
             spring_step(&mut st.page, &mut st.page_v, pt, 320.0, damping_for(self.bounce * 0.6, 320.0), dt);
-            let moving = st.g.down || !settled(st.pos, st.pos_v, target) || st.drag.abs() > 0.2 || !settled(st.page, st.page_v, pt);
+            let moving = st.g.down
+                || !settled(st.pos, st.pos_v, target)
+                || st.drag.abs() > 0.2
+                || !settled(st.page, st.page_v, pt);
             let s = st.clone();
             glowkit_core::set_state(ui, id.with("abar"), st);
             if moving || touch.ghost || s.flash.is_some() {
@@ -506,7 +605,14 @@ impl egui::Widget for ActionBarSheet {
             }
 
             // document behind
-            text_bold(&painter, pos2(rect.min.x + 18.0, rect.min.y + 46.0), Align2::LEFT_CENTER, &self.title, 20.0, t.foreground);
+            text_bold(
+                &painter,
+                pos2(rect.min.x + 18.0, rect.min.y + 46.0),
+                Align2::LEFT_CENTER,
+                &self.title,
+                20.0,
+                t.foreground,
+            );
             painter.circle_filled(dots, 16.0, recess(&t));
             for dx in [-6.0, 0.0, 6.0] {
                 painter.circle_filled(dots + vec2(dx, 0.0), 1.8, t.foreground);
@@ -514,41 +620,102 @@ impl egui::Widget for ActionBarSheet {
             for i in 0..9 {
                 let w = [0.92, 0.85, 0.95, 0.6, 0.9, 0.88, 0.97, 0.7, 0.4][i];
                 let y = rect.min.y + 84.0 + i as f32 * 20.0 + if i > 3 { 16.0 } else { 0.0 };
-                painter.rect_filled(Rect::from_min_size(pos2(rect.min.x + 18.0, y), vec2((rect.width() - 36.0) * w, 8.0)), cr(4.0), recess(&t));
+                painter.rect_filled(
+                    Rect::from_min_size(pos2(rect.min.x + 18.0, y), vec2((rect.width() - 36.0) * w, 8.0)),
+                    cr(4.0),
+                    recess(&t),
+                );
             }
             if let Some((item, t0)) = &s.flash {
                 let a = ramp(now - t0, 0.2, 0.4) * (1.0 - ramp(now - t0, 1.6, 2.0));
                 if a > 0.0 {
-                    let r = Rect::from_center_size(pos2(rect.center().x, rect.min.y + 300.0), vec2(text_width(&painter, item, 13.0) + 60.0, 34.0));
-                    painter.rect_filled(r, cr(17.0), with_alpha(if t.dark { hexa(0x3A, 0x3A, 0x40) } else { hexa(0x1C, 0x1C, 0x1F) }, a));
-                    text(&painter, r.center(), Align2::CENTER_CENTER, format!("✓  {item}"), 13.0, with_alpha(Color32::WHITE, a));
+                    let r = Rect::from_center_size(
+                        pos2(rect.center().x, rect.min.y + 300.0),
+                        vec2(text_width(&painter, item, 13.0) + 60.0, 34.0),
+                    );
+                    painter.rect_filled(
+                        r,
+                        cr(17.0),
+                        with_alpha(if t.dark { hexa(0x3A, 0x3A, 0x40) } else { hexa(0x1C, 0x1C, 0x1F) }, a),
+                    );
+                    text(
+                        &painter,
+                        r.center(),
+                        Align2::CENTER_CENTER,
+                        format!("✓  {item}"),
+                        13.0,
+                        with_alpha(Color32::WHITE, a),
+                    );
                 }
             }
             let k = s.pos.max(0.0);
             if k > 0.001 {
-                painter.rect_filled(rect, cr(screen_radius(ui)), with_alpha(Color32::BLACK, 0.3 * k.min(1.0) * (1.0 - (s.drag.max(0.0) / hidden).min(1.0))));
+                painter.rect_filled(
+                    rect,
+                    cr(screen_radius(ui)),
+                    with_alpha(Color32::BLACK, 0.3 * k.min(1.0) * (1.0 - (s.drag.max(0.0) / hidden).min(1.0))),
+                );
                 let off = (1.0 - s.pos) * hidden + s.drag;
                 let stretch = (-s.drag).max(0.0);
                 let sh = Rect::from_min_max(sheet.min + vec2(0.0, off - stretch), sheet.max + vec2(0.0, 40.0));
                 let fill = if t.dark { hexa(0x24, 0x24, 0x29) } else { Color32::WHITE };
                 shadow(&painter, &t, sh, 22.0, 1.0);
                 painter.rect_filled(sh, egui::CornerRadius { nw: 22, ne: 22, sw: 0, se: 0 }, fill);
-                painter.rect_filled(Rect::from_center_size(pos2(sh.center().x, sh.min.y + 10.0), vec2(36.0, 5.0)), cr(2.5), with_alpha(t.muted_foreground, 0.4));
+                painter.rect_filled(
+                    Rect::from_center_size(pos2(sh.center().x, sh.min.y + 10.0), vec2(36.0, 5.0)),
+                    cr(2.5),
+                    with_alpha(t.muted_foreground, 0.4),
+                );
                 let clip = painter.with_clip_rect(sh);
                 let page = s.page;
                 let w = sh.width();
-                let row_at = |i: usize, dx: f32| Rect::from_min_size(pos2(sh.min.x + 12.0 + dx, sh.min.y + 40.0 + i as f32 * row_h), vec2(w - 24.0, row_h));
+                let row_at = |i: usize, dx: f32| {
+                    Rect::from_min_size(
+                        pos2(sh.min.x + 12.0 + dx, sh.min.y + 40.0 + i as f32 * row_h),
+                        vec2(w - 24.0, row_h),
+                    )
+                };
                 // page 0: menus
                 let dx0 = -page * w * 0.3;
                 let a0 = (1.0 - page).clamp(0.0, 1.0);
-                text_bold(&clip, pos2(sh.center().x + dx0, sh.min.y + 26.0), Align2::CENTER_CENTER, "More actions", 13.0, with_alpha(t.muted_foreground, a0));
+                text_bold(
+                    &clip,
+                    pos2(sh.center().x + dx0, sh.min.y + 26.0),
+                    Align2::CENTER_CENTER,
+                    "More actions",
+                    13.0,
+                    with_alpha(t.muted_foreground, a0),
+                );
                 for (i, (name, items)) in menus.iter().enumerate() {
                     let r = row_at(i, dx0);
-                    text(&clip, pos2(r.min.x + 8.0, r.center().y), Align2::LEFT_CENTER, name, 15.5, with_alpha(t.foreground, a0));
-                    text(&clip, pos2(r.max.x - 30.0, r.center().y), Align2::RIGHT_CENTER, format!("{}", items.len()), 12.5, with_alpha(t.muted_foreground, a0));
-                    glyph(&clip, Glyph::ChevronRight, pos2(r.max.x - 12.0, r.center().y), 10.0, with_alpha(t.muted_foreground, a0));
+                    text(
+                        &clip,
+                        pos2(r.min.x + 8.0, r.center().y),
+                        Align2::LEFT_CENTER,
+                        name,
+                        15.5,
+                        with_alpha(t.foreground, a0),
+                    );
+                    text(
+                        &clip,
+                        pos2(r.max.x - 30.0, r.center().y),
+                        Align2::RIGHT_CENTER,
+                        format!("{}", items.len()),
+                        12.5,
+                        with_alpha(t.muted_foreground, a0),
+                    );
+                    glyph(
+                        &clip,
+                        Glyph::ChevronRight,
+                        pos2(r.max.x - 12.0, r.center().y),
+                        10.0,
+                        with_alpha(t.muted_foreground, a0),
+                    );
                     if i + 1 < menus.len() {
-                        clip.line_segment([pos2(r.min.x + 8.0, r.max.y), pos2(r.max.x, r.max.y)], egui::Stroke::new(1.0, with_alpha(hairline(&t), a0)));
+                        clip.line_segment(
+                            [pos2(r.min.x + 8.0, r.max.y), pos2(r.max.x, r.max.y)],
+                            egui::Stroke::new(1.0, with_alpha(hairline(&t), a0)),
+                        );
                     }
                 }
                 // page 1: the menu's items
@@ -557,14 +724,45 @@ impl egui::Widget for ActionBarSheet {
                     let dx1 = (1.0 - page) * w;
                     let back = row_at(0, dx1);
                     glyph(&clip, Glyph::ChevronRight, pos2(back.min.x + 10.0, back.center().y), -10.0, system_blue(&t));
-                    text(&clip, pos2(back.min.x + 22.0, back.center().y), Align2::LEFT_CENTER, "Menus", 15.0, system_blue(&t));
-                    text_bold(&clip, pos2(sh.center().x + dx1, sh.min.y + 26.0), Align2::CENTER_CENTER, &menus[m].0, 13.0, t.muted_foreground);
+                    text(
+                        &clip,
+                        pos2(back.min.x + 22.0, back.center().y),
+                        Align2::LEFT_CENTER,
+                        "Menus",
+                        15.0,
+                        system_blue(&t),
+                    );
+                    text_bold(
+                        &clip,
+                        pos2(sh.center().x + dx1, sh.min.y + 26.0),
+                        Align2::CENTER_CENTER,
+                        &menus[m].0,
+                        13.0,
+                        t.muted_foreground,
+                    );
                     for (j, item) in menus[m].1.iter().enumerate() {
                         let r = row_at(j + 1, dx1);
-                        clip.line_segment([pos2(r.min.x + 8.0, r.min.y), pos2(r.max.x, r.min.y)], egui::Stroke::new(1.0, hairline(&t)));
+                        clip.line_segment(
+                            [pos2(r.min.x + 8.0, r.min.y), pos2(r.max.x, r.min.y)],
+                            egui::Stroke::new(1.0, hairline(&t)),
+                        );
                         let destructive = item.starts_with("Delete");
-                        text(&clip, pos2(r.min.x + 8.0, r.center().y), Align2::LEFT_CENTER, item, 15.5, if destructive { red } else { t.foreground });
-                        text(&clip, pos2(r.max.x - 8.0, r.center().y), Align2::RIGHT_CENTER, shortcut(item), 12.5, t.muted_foreground);
+                        text(
+                            &clip,
+                            pos2(r.min.x + 8.0, r.center().y),
+                            Align2::LEFT_CENTER,
+                            item,
+                            15.5,
+                            if destructive { red } else { t.foreground },
+                        );
+                        text(
+                            &clip,
+                            pos2(r.max.x - 8.0, r.center().y),
+                            Align2::RIGHT_CENTER,
+                            shortcut(item),
+                            12.5,
+                            t.muted_foreground,
+                        );
                     }
                 }
             }
@@ -585,8 +783,15 @@ impl egui::Widget for ActionBarSheet {
                     st.menu = if st.menu == Some(i) { None } else { Some(i) };
                 } else if let (Some(m), Some(p)) = (st.menu, response.interact_pointer_pos()) {
                     let n = menus[m].1.len();
-                    let drop = Rect::from_min_size(pos2(st.drop_x, bar.max.y + 6.0), vec2(200.0, 12.0 + n as f32 * 32.0));
-                    if let Some(j) = (0..n).find(|&j| Rect::from_min_size(pos2(drop.min.x + 6.0, drop.min.y + 6.0 + j as f32 * 32.0), vec2(188.0, 32.0)).contains(p)) {
+                    let drop =
+                        Rect::from_min_size(pos2(st.drop_x, bar.max.y + 6.0), vec2(200.0, 12.0 + n as f32 * 32.0));
+                    if let Some(j) = (0..n).find(|&j| {
+                        Rect::from_min_size(
+                            pos2(drop.min.x + 6.0, drop.min.y + 6.0 + j as f32 * 32.0),
+                            vec2(188.0, 32.0),
+                        )
+                        .contains(p)
+                    }) {
                         st.flash = Some((menus[m].1[j].clone(), now));
                     }
                     st.menu = None;
@@ -620,24 +825,63 @@ impl egui::Widget for ActionBarSheet {
                 }
                 text(&painter, r.center(), Align2::CENTER_CENTER, &menus[i].0, 13.5, t.foreground);
             }
-            text(&painter, pos2(bar.max.x - 12.0, bar.center().y), Align2::RIGHT_CENTER, &self.title, 12.5, t.muted_foreground);
+            text(
+                &painter,
+                pos2(bar.max.x - 12.0, bar.center().y),
+                Align2::RIGHT_CENTER,
+                &self.title,
+                12.5,
+                t.muted_foreground,
+            );
             if s.drop > 0.01 {
                 let m = s.last_menu.min(menus.len() - 1);
                 let n = menus[m].1.len();
                 let full = Rect::from_min_size(pos2(s.drop_x, bar.max.y + 6.0), vec2(200.0, 12.0 + n as f32 * 32.0));
                 let k = s.drop.clamp(0.0, 1.1);
-                let r = Rect::from_min_size(full.min, vec2(full.width(), full.height() * k.min(1.0) + (k - 1.0).max(0.0) * 20.0));
+                let r = Rect::from_min_size(
+                    full.min,
+                    vec2(full.width(), full.height() * k.min(1.0) + (k - 1.0).max(0.0) * 20.0),
+                );
                 card(&painter, &t, r, 10.0, 1.0, fill);
                 let clip = painter.with_clip_rect(r);
                 for (j, item) in menus[m].1.iter().enumerate() {
-                    let ir = Rect::from_min_size(pos2(r.min.x + 6.0, r.min.y + 6.0 + j as f32 * 32.0), vec2(188.0, 32.0));
+                    let ir =
+                        Rect::from_min_size(pos2(r.min.x + 6.0, r.min.y + 6.0 + j as f32 * 32.0), vec2(188.0, 32.0));
                     if hover.is_some_and(|p| ir.contains(p)) {
                         clip.rect_filled(ir, cr(6.0), system_blue(&t));
-                        text(&clip, pos2(ir.min.x + 10.0, ir.center().y), Align2::LEFT_CENTER, item, 13.0, Color32::WHITE);
-                        text(&clip, pos2(ir.max.x - 10.0, ir.center().y), Align2::RIGHT_CENTER, shortcut(item), 12.0, Color32::WHITE);
+                        text(
+                            &clip,
+                            pos2(ir.min.x + 10.0, ir.center().y),
+                            Align2::LEFT_CENTER,
+                            item,
+                            13.0,
+                            Color32::WHITE,
+                        );
+                        text(
+                            &clip,
+                            pos2(ir.max.x - 10.0, ir.center().y),
+                            Align2::RIGHT_CENTER,
+                            shortcut(item),
+                            12.0,
+                            Color32::WHITE,
+                        );
                     } else {
-                        text(&clip, pos2(ir.min.x + 10.0, ir.center().y), Align2::LEFT_CENTER, item, 13.0, t.foreground);
-                        text(&clip, pos2(ir.max.x - 10.0, ir.center().y), Align2::RIGHT_CENTER, shortcut(item), 12.0, t.muted_foreground);
+                        text(
+                            &clip,
+                            pos2(ir.min.x + 10.0, ir.center().y),
+                            Align2::LEFT_CENTER,
+                            item,
+                            13.0,
+                            t.foreground,
+                        );
+                        text(
+                            &clip,
+                            pos2(ir.max.x - 10.0, ir.center().y),
+                            Align2::RIGHT_CENTER,
+                            shortcut(item),
+                            12.0,
+                            t.muted_foreground,
+                        );
                     }
                 }
             }

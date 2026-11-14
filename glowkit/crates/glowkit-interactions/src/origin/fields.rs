@@ -989,6 +989,35 @@ impl Fluid {
                 self.d[i] = out;
             }
         }
+        // a touch of diffusion keeps the coarse grid from looking blocky
+        let d1 = self.d.clone();
+        for y in 1..h - 1 {
+            for x in 1..w - 1 {
+                let i = y * w + x;
+                let (l, r, u, d) = (d1[i - 1], d1[i + 1], d1[i - w], d1[i + w]);
+                for (c, out) in self.d[i].iter_mut().enumerate() {
+                    let n = (l[c] + r[c] + u[c] + d[c]) * 0.25;
+                    *out = d1[i][c] * 0.8 + n * 0.2;
+                }
+            }
+        }
+        // the walls absorb momentum and dye
+        for x in 0..w {
+            for y in [0, h - 1] {
+                let i = y * w + x;
+                self.u[i] = 0.0;
+                self.v[i] = 0.0;
+                self.d[i] = [0.0; 3];
+            }
+        }
+        for y in 0..h {
+            for x in [0, w - 1] {
+                let i = y * w + x;
+                self.u[i] = 0.0;
+                self.v[i] = 0.0;
+                self.d[i] = [0.0; 3];
+            }
+        }
     }
 }
 
@@ -1123,7 +1152,7 @@ impl Widget for FluidTrail {
                 let pos = pos2(rect.min.x + x as f32 / scale.x, rect.min.y + y as f32 / scale.y);
                 let col = if add {
                     let edge = (x.min(gw - 1 - x).min(y).min(gh - 1 - y) as f32 / 3.0).min(1.0);
-                    let k = |v: f32| ((1.0 - (-v * 1.5).exp()) * 255.0 * edge) as u8;
+                    let k = |v: f32| ((1.0 - (-v * 2.2).exp()) * 255.0 * edge) as u8;
                     Color32::from_rgba_premultiplied(k(d[0]), k(d[1]), k(d[2]), 0)
                 } else {
                     let dens = (d[0] + d[1] + d[2]).max(1e-4);

@@ -134,7 +134,13 @@ impl egui::Widget for SelectionList<'_> {
         let old = std::mem::take(&mut st.rows);
         st.rows = keys
             .iter()
-            .map(|k| old.iter().find(|a| a.key == *k).copied().unwrap_or(RowSel { key: *k, height: 1.0, ..Default::default() }))
+            .map(|k| {
+                old.iter().find(|a| a.key == *k).copied().unwrap_or(RowSel {
+                    key: *k,
+                    height: 1.0,
+                    ..Default::default()
+                })
+            })
             .collect();
         let n = st.rows.len();
 
@@ -142,16 +148,23 @@ impl egui::Widget for SelectionList<'_> {
         let list_top = rect.min.y + 72.0;
         let list_x = rect.min.x + 12.0;
         let list_w = rect.width() - 24.0;
-        let row_y = |rows: &[RowSel], i: usize| -> f32 { list_top + rows[..i].iter().map(|r| r.height.clamp(0.0, 1.0) * ROW_H).sum::<f32>() };
-        let bar = Rect::from_center_size(pos2(rect.center().x, rect.max.y - 40.0 + (1.0 - st.bar) * 90.0), vec2(rect.width() - 36.0, 48.0));
+        let row_y = |rows: &[RowSel], i: usize| -> f32 {
+            list_top + rows[..i].iter().map(|r| r.height.clamp(0.0, 1.0) * ROW_H).sum::<f32>()
+        };
+        let bar = Rect::from_center_size(
+            pos2(rect.center().x, rect.max.y - 40.0 + (1.0 - st.bar) * 90.0),
+            vec2(rect.width() - 36.0, 48.0),
+        );
         let del_c = pos2(bar.max.x - 28.0, bar.center().y);
         let arch_c = pos2(bar.max.x - 66.0, bar.center().y);
 
         let g = st.g.update(&touch, now, dt);
-        let hit_row = |rows: &[RowSel], p: egui::Pos2| (0..rows.len()).find(|&i| {
-            let y = row_y(rows, i);
-            p.y >= y && p.y < y + ROW_H * rows[i].height.clamp(0.0, 1.0) && p.x > list_x && p.x < list_x + list_w
-        });
+        let hit_row = |rows: &[RowSel], p: egui::Pos2| {
+            (0..rows.len()).find(|&i| {
+                let y = row_y(rows, i);
+                p.y >= y && p.y < y + ROW_H * rows[i].height.clamp(0.0, 1.0) && p.x > list_x && p.x < list_x + list_w
+            })
+        };
         if g.pressed && st.editing && st.g.start.x < list_x + 40.0 {
             if let Some(i) = hit_row(&st.rows, st.g.start) {
                 let on = !st.rows[i].on;
@@ -247,7 +260,14 @@ impl egui::Widget for SelectionList<'_> {
         // paint
         let painter = ui.painter_at(rect);
         let blue = system_blue(&t);
-        text_bold(&painter, pos2(rect.min.x + 18.0, rect.min.y + 46.0), Align2::LEFT_CENTER, &self.title, 24.0, t.foreground);
+        text_bold(
+            &painter,
+            pos2(rect.min.x + 18.0, rect.min.y + 46.0),
+            Align2::LEFT_CENTER,
+            &self.title,
+            24.0,
+            t.foreground,
+        );
         text(&painter, btn.center(), Align2::CENTER_CENTER, if s.editing { "Done" } else { "Select" }, 14.0, blue);
         let fill = surface(&t);
         let total: f32 = s.rows.iter().map(|r| r.height.clamp(0.0, 1.0) * ROW_H).sum();
@@ -283,7 +303,13 @@ impl egui::Widget for SelectionList<'_> {
             text_bold(&clip, pos2(x, row.center().y - 9.0), Align2::LEFT_CENTER, &row_r.title, 14.0, t.foreground);
             text(&clip, pos2(x, row.center().y + 10.0), Align2::LEFT_CENTER, &row_r.detail, 12.0, t.muted_foreground);
             let chev_a = (1.0 - e).clamp(0.0, 1.0);
-            glyph(&clip, Glyph::ChevronRight, pos2(row.max.x - 18.0, row.center().y), 10.0, with_alpha(t.muted_foreground, 0.6 * chev_a));
+            glyph(
+                &clip,
+                Glyph::ChevronRight,
+                pos2(row.max.x - 18.0, row.center().y),
+                10.0,
+                with_alpha(t.muted_foreground, 0.6 * chev_a),
+            );
             if i + 1 < n {
                 clip.line_segment(
                     [pos2(row.min.x + 16.0 + shift.max(0.0), row.max.y - 0.5), pos2(row.max.x, row.max.y - 0.5)],
@@ -293,7 +319,10 @@ impl egui::Widget for SelectionList<'_> {
         }
         // floating toolbar
         if s.bar > 0.01 {
-            let bar = Rect::from_center_size(pos2(rect.center().x, rect.max.y - 40.0 + (1.0 - s.bar) * 90.0), vec2(rect.width() - 36.0, 48.0));
+            let bar = Rect::from_center_size(
+                pos2(rect.center().x, rect.max.y - 40.0 + (1.0 - s.bar) * 90.0),
+                vec2(rect.width() - 36.0, 48.0),
+            );
             let bfill = if t.dark { hexa(0x2C, 0x2C, 0x30) } else { Color32::WHITE };
             card(&painter, &t, bar, 24.0, 1.2, bfill);
             let label = if count == 0 { "Select items".to_string() } else { format!("{count} selected") };

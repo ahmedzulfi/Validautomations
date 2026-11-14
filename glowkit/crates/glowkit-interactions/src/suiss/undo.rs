@@ -105,7 +105,9 @@ impl egui::Widget for UndoBar<'_> {
         let old = std::mem::take(&mut st.rows);
         st.rows = keys
             .iter()
-            .map(|k| old.iter().find(|a| a.key == *k).copied().unwrap_or(RowFold { key: *k, h: 1.0, ..Default::default() }))
+            .map(|k| {
+                old.iter().find(|a| a.key == *k).copied().unwrap_or(RowFold { key: *k, h: 1.0, ..Default::default() })
+            })
             .collect();
         // commit a finished deletion
         if let Some(k) = st.commit.take() {
@@ -119,7 +121,8 @@ impl egui::Widget for UndoBar<'_> {
         let top = rect.min.y + 70.0;
         let list_x = rect.min.x + 12.0;
         let list_w = rect.width() - 24.0;
-        let row_y = |rows: &[RowFold], i: usize| top + rows[..i].iter().map(|r| r.h.clamp(0.0, 1.0) * ROW_H).sum::<f32>();
+        let row_y =
+            |rows: &[RowFold], i: usize| top + rows[..i].iter().map(|r| r.h.clamp(0.0, 1.0) * ROW_H).sum::<f32>();
         let bar = Rect::from_center_size(pos2(rect.center().x, rect.max.y - 44.0), vec2(rect.width() - 28.0, 52.0));
         let undo_btn = Rect::from_min_max(pos2(bar.max.x - 96.0, bar.min.y), bar.max);
         let pending_key = st.pending.as_ref().map(|p| p.0);
@@ -151,7 +154,9 @@ impl egui::Widget for UndoBar<'_> {
                 if p.x > list_x + list_w - 46.0 {
                     if let Some(i) = (0..n).find(|&i| {
                         let y = row_y(&st.rows, i);
-                        Some(st.rows[i].key) != pending_key && p.y >= y && p.y < y + ROW_H * st.rows[i].h.clamp(0.0, 1.0)
+                        Some(st.rows[i].key) != pending_key
+                            && p.y >= y
+                            && p.y < y + ROW_H * st.rows[i].h.clamp(0.0, 1.0)
                     }) {
                         if let Some((k, _)) = st.pending.take() {
                             st.commit = Some(k);
@@ -188,7 +193,8 @@ impl egui::Widget for UndoBar<'_> {
         if !st.grabbed {
             st.drag *= (1.0 - dt * 10.0).max(0.0);
         }
-        moving |= st.pending.is_some() || !settled(st.bar, st.bar_v, bt) || st.swap_v.abs() > 0.01 || st.commit.is_some();
+        moving |=
+            st.pending.is_some() || !settled(st.bar, st.bar_v, bt) || st.swap_v.abs() > 0.01 || st.commit.is_some();
         let s = st.clone();
         glowkit_core::set_state(ui, id.with("undo"), st);
         if moving || touch.ghost {
@@ -200,7 +206,14 @@ impl egui::Widget for UndoBar<'_> {
 
         // paint
         let painter = ui.painter_at(rect);
-        text_bold(&painter, pos2(rect.min.x + 18.0, rect.min.y + 46.0), Align2::LEFT_CENTER, "Notes", 24.0, t.foreground);
+        text_bold(
+            &painter,
+            pos2(rect.min.x + 18.0, rect.min.y + 46.0),
+            Align2::LEFT_CENTER,
+            "Notes",
+            24.0,
+            t.foreground,
+        );
         let total: f32 = s.rows.iter().map(|r| r.h.clamp(0.0, 1.0) * ROW_H).sum();
         let list = Rect::from_min_size(pos2(list_x, top), vec2(list_w, total.max(0.0)));
         if total > 1.0 {
@@ -223,11 +236,34 @@ impl egui::Widget for UndoBar<'_> {
             let a = r.h.clamp(0.0, 1.0);
             let cy = y + h / 2.0;
             let tr = &self.rows[i];
-            text_bold(&rc, pos2(row.min.x + 16.0, cy - 9.0), Align2::LEFT_CENTER, &tr.title, 14.0, with_alpha(t.foreground, a));
-            text(&rc, pos2(row.min.x + 16.0, cy + 10.0), Align2::LEFT_CENTER, &tr.detail, 12.0, with_alpha(t.muted_foreground, a));
-            glyph(&rc, Glyph::Trash, pos2(row.max.x - 24.0, cy), 15.0, with_alpha(mix(t.muted_foreground, del, 0.35), a));
+            text_bold(
+                &rc,
+                pos2(row.min.x + 16.0, cy - 9.0),
+                Align2::LEFT_CENTER,
+                &tr.title,
+                14.0,
+                with_alpha(t.foreground, a),
+            );
+            text(
+                &rc,
+                pos2(row.min.x + 16.0, cy + 10.0),
+                Align2::LEFT_CENTER,
+                &tr.detail,
+                12.0,
+                with_alpha(t.muted_foreground, a),
+            );
+            glyph(
+                &rc,
+                Glyph::Trash,
+                pos2(row.max.x - 24.0, cy),
+                15.0,
+                with_alpha(mix(t.muted_foreground, del, 0.35), a),
+            );
             if i + 1 < n {
-                rc.line_segment([pos2(row.min.x + 16.0, row.max.y - 0.5), pos2(row.max.x, row.max.y - 0.5)], egui::Stroke::new(1.0, hairline(&t)));
+                rc.line_segment(
+                    [pos2(row.min.x + 16.0, row.max.y - 0.5), pos2(row.max.x, row.max.y - 0.5)],
+                    egui::Stroke::new(1.0, hairline(&t)),
+                );
             }
         }
         if s.bar > 0.01 {
@@ -237,14 +273,28 @@ impl egui::Widget for UndoBar<'_> {
             shadow(&painter, &t, b, 26.0, 1.2);
             painter.rect_filled(b, cr(26.0), fill);
             let label = format!("“{}” deleted", s.title);
-            text(&painter, pos2(b.min.x + 20.0, b.center().y - s.swap * 2.0), Align2::LEFT_CENTER, label, 13.0, Color32::WHITE);
+            text(
+                &painter,
+                pos2(b.min.x + 20.0, b.center().y - s.swap * 2.0),
+                Align2::LEFT_CENTER,
+                label,
+                13.0,
+                Color32::WHITE,
+            );
             let uc = pos2(b.max.x - 56.0, b.center().y);
             text_bold(&painter, uc + vec2(-6.0, 0.0), Align2::CENTER_CENTER, "Undo", 13.5, hexa(0x64, 0xB5, 0xFF));
             let frac = (s.left / self.timeout).clamp(0.0, 1.0);
             let rc = pos2(b.max.x - 20.0, b.center().y);
             paint::arc(&painter, rc, 9.0, 0.0, TAU, 2.2, with_alpha(Color32::WHITE, 0.18));
             paint::arc(&painter, rc, 9.0, -PI / 2.0, -PI / 2.0 + TAU * frac, 2.2, Color32::WHITE);
-            text(&painter, rc, Align2::CENTER_CENTER, format!("{}", s.left.ceil().max(0.0) as i32), 9.0, Color32::WHITE);
+            text(
+                &painter,
+                rc,
+                Align2::CENTER_CENTER,
+                format!("{}", s.left.ceil().max(0.0) as i32),
+                9.0,
+                Color32::WHITE,
+            );
         }
         ghost_touch(&painter, touch.pos.unwrap_or(rect.center()), if touch.down { 1.0 } else { 0.0 }, touch.alpha);
         response

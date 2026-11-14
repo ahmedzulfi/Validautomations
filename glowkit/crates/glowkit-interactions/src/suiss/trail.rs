@@ -132,13 +132,16 @@ impl egui::Widget for TrailNav<'_> {
         let row_h = 48.0;
         let rows_top = rect.min.y + 136.0;
         let back_r = Rect::from_min_size(pos2(rect.min.x + 8.0, rect.min.y + 32.0), vec2(w * 0.55, 28.0));
-        let menu_row = |i: usize| Rect::from_min_size(pos2(rect.min.x + 12.0, rect.min.y + 66.0 + i as f32 * 40.0), vec2(200.0, 40.0));
+        let menu_row = |i: usize| {
+            Rect::from_min_size(pos2(rect.min.x + 12.0, rect.min.y + 66.0 + i as f32 * 40.0), vec2(200.0, 40.0))
+        };
 
         let crumbs = |stack: &[String], depth: usize, painter: &egui::Painter| -> Vec<(usize, Rect, String)> {
             let mut out = Vec::new();
             let mut x = rect.min.x + 18.0;
             let y = rect.min.y + 112.0;
-            let items: Vec<usize> = if depth >= 3 { vec![0, usize::MAX, depth - 1, depth] } else { (0..=depth).collect() };
+            let items: Vec<usize> =
+                if depth >= 3 { vec![0, usize::MAX, depth - 1, depth] } else { (0..=depth).collect() };
             for k in items {
                 let label = if k == usize::MAX { "…".to_string() } else { stack[k].clone() };
                 let tw = text_width(painter, &label, 12.0);
@@ -188,7 +191,10 @@ impl egui::Widget for TrailNav<'_> {
             } else if g.tap {
                 if st.hold_back && back_r.contains(p) {
                     new_depth = Some(st.depth - 1);
-                } else if let Some((k, _, _)) = crumbs(&st.stack, st.depth, &painter).into_iter().find(|(k, r, _)| r.expand(4.0).contains(p) && *k != usize::MAX) {
+                } else if let Some((k, _, _)) = crumbs(&st.stack, st.depth, &painter)
+                    .into_iter()
+                    .find(|(k, r, _)| r.expand(4.0).contains(p) && *k != usize::MAX)
+                {
                     if k < st.depth {
                         new_depth = Some(k);
                     }
@@ -223,7 +229,8 @@ impl egui::Widget for TrailNav<'_> {
         }
         let mt = if st.menu_open { 1.0 } else { 0.0 };
         spring_step(&mut st.menu, &mut st.menu_v, mt, 360.0, damping_for(40.0, 360.0), dt);
-        let moving = st.g.down || !settled(st.disp, st.disp_v * 100.0, st.depth as f32) || !settled(st.menu, st.menu_v, mt);
+        let moving =
+            st.g.down || !settled(st.disp, st.disp_v * 100.0, st.depth as f32) || !settled(st.menu, st.menu_v, mt);
         let s = st.clone();
         glowkit_core::set_state(ui, id.with("trail"), st);
         if moving || touch.ghost {
@@ -252,20 +259,56 @@ impl egui::Widget for TrailNav<'_> {
             let title = &s.stack[d];
             if d > 0 {
                 glyph(&painter, Glyph::ChevronRight, pos2(page.min.x + 18.0, page.min.y + 46.0), -12.0, blue);
-                text(&painter, pos2(page.min.x + 28.0, page.min.y + 46.0), Align2::LEFT_CENTER, &s.stack[d - 1], 14.5, blue);
+                text(
+                    &painter,
+                    pos2(page.min.x + 28.0, page.min.y + 46.0),
+                    Align2::LEFT_CENTER,
+                    &s.stack[d - 1],
+                    14.5,
+                    blue,
+                );
             }
-            text_bold(&painter, pos2(page.min.x + 18.0, page.min.y + 84.0), Align2::LEFT_CENTER, title, 22.0, t.foreground);
+            text_bold(
+                &painter,
+                pos2(page.min.x + 18.0, page.min.y + 84.0),
+                Align2::LEFT_CENTER,
+                title,
+                22.0,
+                t.foreground,
+            );
             for (k, r, label) in crumbs(&s.stack, d, &painter) {
                 let r = r.translate(vec2(x, 0.0));
                 let current = k == d;
-                text(&painter, r.left_center(), Align2::LEFT_CENTER, &label, 12.0, if current { t.foreground } else if k == usize::MAX { t.muted_foreground } else { blue });
+                text(
+                    &painter,
+                    r.left_center(),
+                    Align2::LEFT_CENTER,
+                    &label,
+                    12.0,
+                    if current {
+                        t.foreground
+                    } else if k == usize::MAX {
+                        t.muted_foreground
+                    } else {
+                        blue
+                    },
+                );
                 if !current {
-                    text(&painter, pos2(r.max.x + 9.0, r.center().y), Align2::CENTER_CENTER, "›", 12.0, t.muted_foreground);
+                    text(
+                        &painter,
+                        pos2(r.max.x + 9.0, r.center().y),
+                        Align2::CENTER_CENTER,
+                        "›",
+                        12.0,
+                        t.muted_foreground,
+                    );
                 }
             }
             let kids = children(title);
-            let opts: Vec<String> = if kids.is_empty() { OPTIONS.iter().map(|s| s.to_string()).collect() } else { kids.clone() };
-            let list = Rect::from_min_size(pos2(page.min.x + 12.0, rows_top), vec2(w - 24.0, row_h * opts.len() as f32));
+            let opts: Vec<String> =
+                if kids.is_empty() { OPTIONS.iter().map(|s| s.to_string()).collect() } else { kids.clone() };
+            let list =
+                Rect::from_min_size(pos2(page.min.x + 12.0, rows_top), vec2(w - 24.0, row_h * opts.len() as f32));
             card(&painter, &t, list, 12.0, 0.3, surface(&t));
             let sel: usize = glowkit_core::state(ui, id.with(("opt", title.clone())), || 1);
             for (i, o) in opts.iter().enumerate() {
@@ -279,7 +322,10 @@ impl egui::Widget for TrailNav<'_> {
                     glyph(&painter, Glyph::ChevronRight, pos2(list.max.x - 18.0, y), 10.0, t.muted_foreground);
                 }
                 if i + 1 < opts.len() {
-                    painter.line_segment([pos2(list.min.x + 16.0, y + row_h / 2.0), pos2(list.max.x, y + row_h / 2.0)], egui::Stroke::new(1.0, hairline(&t)));
+                    painter.line_segment(
+                        [pos2(list.min.x + 16.0, y + row_h / 2.0), pos2(list.max.x, y + row_h / 2.0)],
+                        egui::Stroke::new(1.0, hairline(&t)),
+                    );
                 }
             }
             if rel < 0.0 {
@@ -303,9 +349,19 @@ impl egui::Widget for TrailNav<'_> {
                 let mr = menu_row(i);
                 let a = ((k - i as f32 * 0.12) * 1.5).clamp(0.0, 1.0);
                 let label = &s.stack[anc - 1 - i];
-                text(&clip, pos2(mr.min.x + 14.0, mr.center().y), Align2::LEFT_CENTER, label, 14.0, with_alpha(t.foreground, a));
+                text(
+                    &clip,
+                    pos2(mr.min.x + 14.0, mr.center().y),
+                    Align2::LEFT_CENTER,
+                    label,
+                    14.0,
+                    with_alpha(t.foreground, a),
+                );
                 if i + 1 < anc {
-                    clip.line_segment([pos2(mr.min.x, mr.max.y), pos2(mr.max.x, mr.max.y)], egui::Stroke::new(1.0, with_alpha(mix(fill, t.foreground, 0.1), a)));
+                    clip.line_segment(
+                        [pos2(mr.min.x, mr.max.y), pos2(mr.max.x, mr.max.y)],
+                        egui::Stroke::new(1.0, with_alpha(mix(fill, t.foreground, 0.1), a)),
+                    );
                 }
             }
         }

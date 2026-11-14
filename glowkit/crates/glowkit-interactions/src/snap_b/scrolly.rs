@@ -355,10 +355,11 @@ impl Widget for MarbleScroll {
         // a page drawn as a distorted grid; `edge` = Some(seam_y) for the lower page (torn top)
         let draw_page = |i: usize, top: f32, seam: Option<f32>, amp: f32| {
             let (tex, uv) = tex_of(i);
-            let (nx, ny) = (36usize, 26usize);
+            let (nx, ny) = (48usize, 44usize);
             let mut m = Mesh::with_texture(tex);
-            let y_lo = rect.min.y.max(top);
-            let y_hi = rect.max.y.min(top + h);
+            // overlap neighbours so torn edges never show the backdrop
+            let y_lo = rect.min.y.max(top - 80.0);
+            let y_hi = rect.max.y.min(top + h + 80.0);
             if y_hi <= y_lo {
                 return;
             }
@@ -369,22 +370,22 @@ impl Widget for MarbleScroll {
                     // distance to the nearest seam on screen (above or below this page)
                     let d_top = (y - top).abs();
                     let d_bot = (top + h - y).abs();
-                    let near = (-d_top.min(d_bot) / 70.0).exp();
+                    let near = (-d_top.min(d_bot) / 110.0).exp();
                     let kx = (x - rect.min.x) / rect.width();
                     let ky = (y - top) / h;
                     let sw = amp * near * marble;
                     let wx = fbm3(kx * 3.0, ky * 3.0 + time * 0.2, time * 0.15 + i as f32, 3);
                     let wy = fbm3(kx * 3.0 + 7.3, ky * 3.0, time * 0.15 + 3.0, 3);
                     let swirl = noise3(kx * 9.0 + wx * 2.5, ky * 9.0 + wy * 2.5, time * 0.3);
-                    let du = (wx * 0.10 + swirl * 0.05) * sw;
-                    let dv = (wy * 0.10 + swirl * 0.04) * sw;
+                    let vein = (swirl * 7.0 + wx * 4.0).sin();
+                    let du = (wx * 0.16 + vein * 0.035) * sw;
+                    let dv = (wy * 0.22 + vein * 0.05) * sw;
                     let u = uv.min.x + (kx + du).clamp(0.0, 1.0) * uv.width();
                     let v = uv.min.y + (ky + dv).clamp(0.0, 1.0) * uv.height();
                     let mut a = 1.0;
                     if let Some(sy) = seam {
                         let edge = sy
-                            + (fbm3(kx * 7.0, time * 0.4, i as f32, 4) * 26.0 + noise3(kx * 40.0, time, 2.0) * 6.0) * (0.4 + amp)
-                            + 0.0;
+                            + (fbm3(kx * 7.0, time * 0.4, i as f32, 4) * 40.0 + noise3(kx * 40.0, time, 2.0) * 9.0) * (0.5 + amp * 1.5);
                         a = ((y - edge) / 3.0 + 0.5).clamp(0.0, 1.0);
                     }
                     let shade = 1.0 - 0.25 * near * amp.min(1.0) * marble.min(1.0) * (0.5 + 0.5 * swirl);
@@ -406,7 +407,7 @@ impl Widget for MarbleScroll {
         let top0 = rect.min.y + i0 as f32 * h - s;
         let seam = top0 + h; // screen y of the boundary between page i0 and i0+1
         let in_view = 1.0 - ((seam - rect.center().y).abs() / (h * 0.55)).clamp(0.0, 1.0);
-        let amp = (in_view * 0.6 + speed_k) * if i0 + 1 < n && seam < rect.max.y { 1.0 } else { 0.0 };
+        let amp = (0.25 + in_view * 0.75 + speed_k) * if i0 + 1 < n && seam < rect.max.y { 1.0 } else { 0.0 };
         draw_page(i0, top0, None, amp);
         if i0 + 1 < n && seam < rect.max.y {
             draw_page(i0 + 1, seam, Some(seam), amp);
@@ -414,7 +415,7 @@ impl Widget for MarbleScroll {
             let pts: Vec<Pos2> = (0..=80)
                 .map(|k| {
                     let kx = k as f32 / 80.0;
-                    let edge = seam + (fbm3(kx * 7.0, time * 0.4, (i0 + 1) as f32, 4) * 26.0 + noise3(kx * 40.0, time, 2.0) * 6.0) * (0.4 + amp);
+                    let edge = seam + (fbm3(kx * 7.0, time * 0.4, (i0 + 1) as f32, 4) * 40.0 + noise3(kx * 40.0, time, 2.0) * 9.0) * (0.5 + amp * 1.5);
                     pos2(rect.min.x + kx * rect.width(), edge)
                 })
                 .collect();

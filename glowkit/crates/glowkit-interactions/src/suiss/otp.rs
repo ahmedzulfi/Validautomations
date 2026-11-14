@@ -157,7 +157,10 @@ impl egui::Widget for OtpAutofill<'_> {
             let (c, r) = (k % 3, k / 3);
             let kw = (rect.width() - 24.0) / 3.0;
             let kh = (kb_h - 20.0) / 4.0;
-            Rect::from_min_size(pos2(rect.min.x + 8.0 + c as f32 * (kw + 4.0), kb_top + 8.0 + r as f32 * kh), vec2(kw, kh - 4.0))
+            Rect::from_min_size(
+                pos2(rect.min.x + 8.0 + c as f32 * (kw + 4.0), kb_top + 8.0 + r as f32 * kh),
+                vec2(kw, kh - 4.0),
+            )
         };
 
         // input
@@ -341,10 +344,24 @@ impl egui::Widget for OtpAutofill<'_> {
             1 => {
                 let a = ramp(now - st.status_t, 0.0, 0.25);
                 glyph(&painter, Glyph::Check, pos2(rect.center().x - 34.0, status_y), 12.0, with_alpha(green, a));
-                text(&painter, pos2(rect.center().x - 24.0, status_y), Align2::LEFT_CENTER, "Verified", 13.0, with_alpha(green, a));
+                text(
+                    &painter,
+                    pos2(rect.center().x - 24.0, status_y),
+                    Align2::LEFT_CENTER,
+                    "Verified",
+                    13.0,
+                    with_alpha(green, a),
+                );
             }
             2 => {
-                text(&painter, pos2(rect.center().x, status_y), Align2::CENTER_CENTER, "That code didn't work", 12.5, red);
+                text(
+                    &painter,
+                    pos2(rect.center().x, status_y),
+                    Align2::CENTER_CENTER,
+                    "That code didn't work",
+                    12.5,
+                    red,
+                );
             }
             _ => {
                 text(&painter, pos2(rect.center().x, status_y), Align2::CENTER_CENTER, "Resend code", 12.5, blue);
@@ -374,7 +391,14 @@ impl egui::Widget for OtpAutofill<'_> {
             let ready_a = if sugg_ready { ramp(now - st.sugg_since, 0.5, 0.75) } else { 0.0 };
             if let (Some(code), true) = (sugg_code, ready_a > 0.01) {
                 let c = bar.center() + vec2(0.0, (1.0 - ready_a) * 8.0);
-                text(&painter, c - vec2(0.0, 9.0), Align2::CENTER_CENTER, "From Messages", 10.5, with_alpha(t.muted_foreground, ready_a));
+                text(
+                    &painter,
+                    c - vec2(0.0, 9.0),
+                    Align2::CENTER_CENTER,
+                    "From Messages",
+                    10.5,
+                    with_alpha(t.muted_foreground, ready_a),
+                );
                 let spaced: String = code.chars().flat_map(|c| [c, '\u{2009}']).collect();
                 painter.text(
                     c + vec2(0.0, 8.0),

@@ -117,7 +117,9 @@ impl egui::Widget for SearchReveal<'_> {
         st.heights.resize(n, (1.0, 0.0));
 
         let view = Rect::from_min_max(pos2(rect.min.x, rect.min.y + 66.0), rect.max);
-        let field_rel = |s: f32| Rect::from_min_size(pos2(view.min.x + 14.0, view.min.y + 8.0 - s), vec2(view.width() - 28.0, 36.0));
+        let field_rel = |s: f32| {
+            Rect::from_min_size(pos2(view.min.x + 14.0, view.min.y + 8.0 - s), vec2(view.width() - 28.0, 36.0))
+        };
         let content_h = BAND + st.heights.iter().map(|h| h.0.clamp(0.0, 1.0) * ROW_H).sum::<f32>() + 16.0;
         let max = (content_h - view.height()).max(BAND);
 
@@ -202,30 +204,62 @@ impl egui::Widget for SearchReveal<'_> {
 
         // paint
         let painter = ui.painter_at(rect);
-        text_bold(&painter, pos2(rect.min.x + 18.0, rect.min.y + 46.0), Align2::LEFT_CENTER, &self.title, 24.0, t.foreground);
+        text_bold(
+            &painter,
+            pos2(rect.min.x + 18.0, rect.min.y + 46.0),
+            Align2::LEFT_CENTER,
+            &self.title,
+            24.0,
+            t.foreground,
+        );
         let clip = painter.with_clip_rect(view);
         let scroll = s.sc.s;
         // field: unfolds as it comes into view
         let reveal = (1.0 - scroll / BAND).clamp(0.0, 1.0);
         let over = (-scroll).max(0.0);
         let fh = 36.0 * (0.55 + 0.45 * reveal);
-        let field = Rect::from_min_size(pos2(view.min.x + 14.0, view.min.y + 8.0 - scroll.min(BAND) * 0.5 + over * 0.5 - (36.0 - fh) * 0.0), vec2(view.width() - 28.0, fh));
+        let field = Rect::from_min_size(
+            pos2(view.min.x + 14.0, view.min.y + 8.0 - scroll.min(BAND) * 0.5 + over * 0.5 - (36.0 - fh) * 0.0),
+            vec2(view.width() - 28.0, fh),
+        );
         let fa = ((reveal - 0.25) / 0.75).clamp(0.0, 1.0);
         if fa > 0.0 {
             let ff = mix(recess(&t), t.foreground, if t.dark { 0.02 } else { 0.0 });
             clip.rect_filled(field, cr(10.0), with_alpha(ff, fa));
             if s.focused {
-                clip.rect_stroke(field, cr(10.0), egui::Stroke::new(1.5, with_alpha(system_blue(&t), fa)), egui::StrokeKind::Inside);
+                clip.rect_stroke(
+                    field,
+                    cr(10.0),
+                    egui::Stroke::new(1.5, with_alpha(system_blue(&t), fa)),
+                    egui::StrokeKind::Inside,
+                );
             }
             let gc = pos2(field.min.x + 16.0, field.center().y);
             glyph(&clip, Glyph::Search, gc, 13.0 * (0.7 + 0.3 * fa), with_alpha(t.muted_foreground, fa));
             let tx = field.min.x + 30.0;
             if s.query.is_empty() {
-                text(&clip, pos2(tx, field.center().y), Align2::LEFT_CENTER, &self.placeholder, 14.0, with_alpha(t.muted_foreground, fa));
+                text(
+                    &clip,
+                    pos2(tx, field.center().y),
+                    Align2::LEFT_CENTER,
+                    &self.placeholder,
+                    14.0,
+                    with_alpha(t.muted_foreground, fa),
+                );
             } else {
-                let r = text(&clip, pos2(tx, field.center().y), Align2::LEFT_CENTER, &s.query, 14.0, with_alpha(t.foreground, fa));
+                let r = text(
+                    &clip,
+                    pos2(tx, field.center().y),
+                    Align2::LEFT_CENTER,
+                    &s.query,
+                    14.0,
+                    with_alpha(t.foreground, fa),
+                );
                 if s.focused && (now * 2.0).fract() < 0.55 {
-                    clip.line_segment([pos2(r.max.x + 2.0, r.min.y), pos2(r.max.x + 2.0, r.max.y)], egui::Stroke::new(1.6, system_blue(&t)));
+                    clip.line_segment(
+                        [pos2(r.max.x + 2.0, r.min.y), pos2(r.max.x + 2.0, r.max.y)],
+                        egui::Stroke::new(1.6, system_blue(&t)),
+                    );
                 }
                 let cc = pos2(field.max.x - 16.0, field.center().y);
                 clip.circle_filled(cc, 8.0, with_alpha(t.muted_foreground, 0.6 * fa));
@@ -259,14 +293,38 @@ impl egui::Widget for SearchReveal<'_> {
             let rc = list_clip.with_clip_rect(row.intersect(list).intersect(view));
             let r = &self.rows[i];
             let cy = row.min.y + ROW_H / 2.0 - (1.0 - a) * ROW_H / 2.0;
-            text_bold(&rc, pos2(row.min.x + 16.0, cy - 9.0), Align2::LEFT_CENTER, &r.title, 14.0, with_alpha(t.foreground, a));
-            text(&rc, pos2(row.min.x + 16.0, cy + 10.0), Align2::LEFT_CENTER, &r.detail, 12.0, with_alpha(t.muted_foreground, a));
+            text_bold(
+                &rc,
+                pos2(row.min.x + 16.0, cy - 9.0),
+                Align2::LEFT_CENTER,
+                &r.title,
+                14.0,
+                with_alpha(t.foreground, a),
+            );
+            text(
+                &rc,
+                pos2(row.min.x + 16.0, cy + 10.0),
+                Align2::LEFT_CENTER,
+                &r.detail,
+                12.0,
+                with_alpha(t.muted_foreground, a),
+            );
             if k + 1 < shown.len() {
-                rc.line_segment([pos2(row.min.x + 16.0, row.max.y - 0.5), pos2(row.max.x, row.max.y - 0.5)], egui::Stroke::new(1.0, hairline(&t)));
+                rc.line_segment(
+                    [pos2(row.min.x + 16.0, row.max.y - 0.5), pos2(row.max.x, row.max.y - 0.5)],
+                    egui::Stroke::new(1.0, hairline(&t)),
+                );
             }
         }
         if total < 1.0 && !s.query.is_empty() {
-            text(&clip, pos2(view.center().x, top + 40.0), Align2::CENTER_CENTER, format!("No results for “{}”", s.query), 13.0, t.muted_foreground);
+            text(
+                &clip,
+                pos2(view.center().x, top + 40.0),
+                Align2::CENTER_CENTER,
+                format!("No results for “{}”", s.query),
+                13.0,
+                t.muted_foreground,
+            );
         }
         // a slim scroll indicator while moving
         if moving && max > BAND {

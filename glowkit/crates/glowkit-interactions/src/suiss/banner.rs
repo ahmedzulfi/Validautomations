@@ -24,7 +24,13 @@ pub struct BannerSpec {
 impl BannerSpec {
     /// A title-only banner.
     pub fn new(title: impl Into<String>) -> Self {
-        Self { title: title.into(), description: String::new(), icon: None, accent: hexa(0x0A, 0x84, 0xFF), action: None }
+        Self {
+            title: title.into(),
+            description: String::new(),
+            icon: None,
+            accent: hexa(0x0A, 0x84, 0xFF),
+            action: None,
+        }
     }
     /// Second line.
     pub fn description(mut self, d: impl Into<String>) -> Self {
@@ -151,7 +157,8 @@ impl egui::Widget for TopBanner {
         let mut st: BannerState = glowkit_core::state(ui, self.key, BannerState::default);
         let h_of = |b: &BannerSpec| if b.description.is_empty() { 50.0 } else { 64.0 };
         let cur_h = st.current.as_ref().map(h_of).unwrap_or(60.0);
-        let rest = Rect::from_min_size(pos2(rect.min.x + 10.0, rect.min.y + self.top), vec2(rect.width() - 20.0, cur_h));
+        let rest =
+            Rect::from_min_size(pos2(rect.min.x + 10.0, rect.min.y + self.top), vec2(rect.width() - 20.0, cur_h));
         let hidden_dy = -(self.top + cur_h + 30.0);
         let banner_dy = hidden_dy * (1.0 - st.pos) + st.drag;
         let banner = rest.translate(vec2(0.0, banner_dy));
@@ -166,9 +173,14 @@ impl egui::Widget for TopBanner {
             let k = [0.3, 3.4, 3.7].iter().filter(|&&x| touch.t > x).count() as u32;
             while st.auto < k {
                 st.queue.push(match st.auto {
-                    0 => BannerSpec::new("Link copied").description("Anyone with the link can view.").icon(MicroIcon::Link, hexa(0x0A, 0x84, 0xFF)),
+                    0 => BannerSpec::new("Link copied")
+                        .description("Anyone with the link can view.")
+                        .icon(MicroIcon::Link, hexa(0x0A, 0x84, 0xFF)),
                     1 => BannerSpec::new("Back online").icon(MicroIcon::Refresh, hexa(0x34, 0xC7, 0x59)),
-                    _ => BannerSpec::new("Photo saved").description("Added to Recents.").icon(MicroIcon::Folder, hexa(0xFF, 0x9F, 0x0A)).action("View"),
+                    _ => BannerSpec::new("Photo saved")
+                        .description("Added to Recents.")
+                        .icon(MicroIcon::Folder, hexa(0xFF, 0x9F, 0x0A))
+                        .action("View"),
                 });
                 st.auto += 1;
             }
@@ -216,7 +228,14 @@ impl egui::Widget for TopBanner {
         // physics
         let target = if st.current.is_some() && !st.leaving { 1.0 } else { 0.0 };
         let stiff = 260.0;
-        spring_step(&mut st.pos, &mut st.pos_v, target, stiff, damping_for(if st.leaving { 0.0 } else { self.bounce }, stiff), dt);
+        spring_step(
+            &mut st.pos,
+            &mut st.pos_v,
+            target,
+            stiff,
+            damping_for(if st.leaving { 0.0 } else { self.bounce }, stiff),
+            dt,
+        );
         if !st.grabbed {
             st.drag *= (1.0 - dt * 16.0).max(0.0);
         }
@@ -255,11 +274,21 @@ impl egui::Widget for TopBanner {
                 text_bold(&painter, pos2(x, r.center().y), Align2::LEFT_CENTER, &b.title, 14.0, t.foreground);
             } else {
                 text_bold(&painter, pos2(x, r.center().y - 9.0), Align2::LEFT_CENTER, &b.title, 14.0, t.foreground);
-                text(&painter, pos2(x, r.center().y + 10.0), Align2::LEFT_CENTER, &b.description, 12.0, t.muted_foreground);
+                text(
+                    &painter,
+                    pos2(x, r.center().y + 10.0),
+                    Align2::LEFT_CENTER,
+                    &b.description,
+                    12.0,
+                    t.muted_foreground,
+                );
             }
             if let Some(a) = &b.action {
                 let w = text_width(&painter, a, 13.0) + 24.0;
-                let br = Rect::from_center_size(pos2(r.max.x - 14.0 - w / 2.0, r.center().y), vec2(w, 30.0) * (1.0 - 0.06 * s.pressed_action));
+                let br = Rect::from_center_size(
+                    pos2(r.max.x - 14.0 - w / 2.0, r.center().y),
+                    vec2(w, 30.0) * (1.0 - 0.06 * s.pressed_action),
+                );
                 painter.rect_filled(br, cr(15.0), mix(recess(&t), system_blue(&t), 0.12));
                 text_bold(&painter, br.center(), Align2::CENTER_CENTER, a, 13.0, system_blue(&t));
             }

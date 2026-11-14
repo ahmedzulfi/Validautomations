@@ -140,8 +140,8 @@ impl Widget for InkReveal {
                 let k = sstep(0.55, 1.0, amount(i));
                 if k > 0.0 {
                     let word_len = w.trim_end().chars().count();
-                    let a = measure.pos_from_cursor(CCursor::new(char_idx));
-                    let b = measure.pos_from_cursor(CCursor::new(char_idx + word_len));
+                    let a = measure.pos_from_cursor(CCursor { prefer_next_row: true, ..CCursor::new(char_idx) });
+                    let b = measure.pos_from_cursor(CCursor { prefer_next_row: false, ..CCursor::new(char_idx + word_len) });
                     if (a.min.y - b.min.y).abs() < 1.0 {
                         let h = a.height();
                         let r = Rect::from_min_max(pos2(a.min.x - 2.0, a.min.y + h * 0.52), pos2(a.min.x + (b.min.x - a.min.x + 4.0) * k, a.max.y - h * 0.08));

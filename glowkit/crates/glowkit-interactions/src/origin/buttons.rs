@@ -180,6 +180,7 @@ impl Widget for VenomButton {
         let target = st.anchor;
         let (base, nrm) = pill_closest(pill, target);
         let mut mesh = Mesh::default();
+        let mut rim_mesh = Mesh::default();
         let mut gloss = Mesh::default();
         if k > 0.01 {
             let n = self.strands;
@@ -199,6 +200,10 @@ impl Widget for VenomButton {
                     let s = j as f32 / (len - 1) as f32;
                     (13.0 * (1.0 - s).powf(1.6) + 3.0) * (0.6 + 0.4 * k.min(1.0))
                 };
+                if t.dark {
+                    // a faint rim so black goo still reads on dark backgrounds
+                    strip(&mut rim_mesh, &pts, |j| w(j) + 2.0, |_| hex("#3A3A44"), |_| Color32::TRANSPARENT);
+                }
                 strip(&mut mesh, &pts, w, |_| goo, |_| Color32::TRANSPARENT);
                 let gl: Vec<Pos2> = pts.iter().map(|p| *p - nrm.rot90() * 1.2 - vec2(0.0, 1.2)).collect();
                 strip(&mut gloss, &gl[2..len - 3], |_| 1.1, |j| lum(hi, 0.5 * (1.0 - j as f32 / len as f32), false), |_| Color32::TRANSPARENT);
@@ -211,6 +216,7 @@ impl Widget for VenomButton {
             let bulge = base + nrm * 4.0 * k;
             painter.circle_filled(bulge, 18.0 * k.clamp(0.0, 1.0), goo);
         }
+        painter.add(Shape::mesh(rim_mesh));
         painter.add(Shape::mesh(mesh));
         // the pill
         let pr = pill.translate(vec2(0.0, press * 2.0)).shrink(press * 1.5);
@@ -660,7 +666,7 @@ impl Widget for GlassKeycap {
         let tf = |p: V3| p.rot_y(yaw).rot_x(pitch);
         // keycap: bottom square ±1, top ±0.7 dished slightly back
         let bot = [v3(-1.0, -0.35, -1.0), v3(1.0, -0.35, -1.0), v3(1.0, -0.35, 1.0), v3(-1.0, -0.35, 1.0)];
-        let top = [v3(-0.7, hgt - 0.35, -0.75), v3(0.7, hgt - 0.35, -0.75), v3(0.7, hgt - 0.35, 0.65), v3(-0.7, hgt - 0.35, 0.65)];
+        let top = [v3(-0.64, hgt - 0.35, -0.7), v3(0.64, hgt - 0.35, -0.7), v3(0.64, hgt - 0.35, 0.56), v3(-0.64, hgt - 0.35, 0.56)];
         let pb: Vec<(Pos2, V3)> = bot.iter().map(|p| (cam.project(tf(*p)).map(|x| x.0).unwrap_or(rect.center()), tf(*p))).collect();
         let pt: Vec<(Pos2, V3)> = top.iter().map(|p| (cam.project(tf(*p)).map(|x| x.0).unwrap_or(rect.center()), tf(*p))).collect();
         // shadow + under-glow
@@ -726,6 +732,9 @@ impl Widget for GlassKeycap {
                 edge(pb[i].0, pb[j].0, 1.4);
             }
         }
+        // the dished centre of the cap
+        let dish: Vec<Pos2> = tq.iter().map(|p| tc + (*p - tc) * 0.78).collect();
+        painter.add(Shape::closed_line(dish, Stroke::new(1.0, if t.dark { with_alpha(Color32::WHITE, 0.25) } else { with_alpha(hex("#27272A"), 0.2) })));
         // legend on the top face (affine-mapped center)
         let font = FontId::proportional(self.size * 0.2);
         let ink = if t.dark { Color32::WHITE } else { hex("#18181B") };

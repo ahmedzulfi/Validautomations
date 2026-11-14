@@ -91,7 +91,8 @@ impl egui::Widget for HoverImageList {
         let t = Theme::of(ui);
         let row_h = 74.0;
         let n = self.items.len().clamp(1, 8);
-        let (rect, response) = ui.allocate_exact_size(vec2(ui.available_width(), row_h * n as f32 + 2.0), Sense::hover());
+        let (rect, response) =
+            ui.allocate_exact_size(vec2(ui.available_width(), row_h * n as f32 + 2.0), Sense::hover());
         let id = response.id;
         let dt = glowkit_core::dt(ui);
         let mut st: HoverState = glowkit_core::state(ui, id.with("hoverimg"), HoverState::default);
@@ -103,7 +104,20 @@ impl egui::Widget for HoverImageList {
         }
         if self.autoplay && !response.hovered() && idle > GHOST_DELAY {
             let e = (idle - GHOST_DELAY) % 8.0;
-            let ky = keys(e, &[(0.0, -0.3), (0.6, 0.5), (1.8, 0.5), (2.6, 1.5), (3.6, 1.5), (4.4, 2.5), (5.6, 2.4), (6.6, 0.6), (7.2, -0.4)]);
+            let ky = keys(
+                e,
+                &[
+                    (0.0, -0.3),
+                    (0.6, 0.5),
+                    (1.8, 0.5),
+                    (2.6, 1.5),
+                    (3.6, 1.5),
+                    (4.4, 2.5),
+                    (5.6, 2.4),
+                    (6.6, 0.6),
+                    (7.2, -0.4),
+                ],
+            );
             let kx = keys(e, &[(0.0, 0.3), (1.8, 0.42), (2.6, 0.62), (3.6, 0.5), (4.4, 0.35), (5.6, 0.6), (7.2, 0.4)]);
             let p = pos2(rect.min.x + kx * rect.width(), rect.min.y + ky * row_h);
             let a = ramp(e, 0.0, 0.4) * (1.0 - ramp(e, 6.8, 7.3));
@@ -137,7 +151,10 @@ impl egui::Widget for HoverImageList {
             let tgt = if hit == Some(i) { 1.0 } else { 0.0 };
             spring_step(&mut st.shifts[i], &mut st.shift_v[i], tgt, 300.0, 24.0, dt);
         }
-        let moving = st.v.length() > 1.0 || !settled(st.scale, st.scale_v, st_t) || st.swap < 1.0 || st.shift_v.iter().any(|v| v.abs() > 0.01);
+        let moving = st.v.length() > 1.0
+            || !settled(st.scale, st.scale_v, st_t)
+            || st.swap < 1.0
+            || st.shift_v.iter().any(|v| v.abs() > 0.01);
         let s = st;
         glowkit_core::set_state(ui, id.with("hoverimg"), st);
         if moving {
@@ -149,30 +166,58 @@ impl egui::Widget for HoverImageList {
         for (i, (title, sub)) in self.items.iter().take(n).enumerate() {
             let y = rect.min.y + i as f32 * row_h;
             if i > 0 {
-                painter.line_segment([pos2(rect.min.x, y), pos2(rect.max.x, y)], Stroke::new(1.0, with_alpha(t.foreground, 0.1)));
+                painter.line_segment(
+                    [pos2(rect.min.x, y), pos2(rect.max.x, y)],
+                    Stroke::new(1.0, with_alpha(t.foreground, 0.1)),
+                );
             }
             let dim = if hit.is_some() && hit != Some(i) { 0.45 } else { 1.0 };
             let x = rect.min.x + 28.0 + s.shifts[i] * 14.0;
             text(&painter, pos2(x, y + row_h / 2.0), Align2::LEFT_CENTER, title, 30.0, with_alpha(t.foreground, dim));
-            text(&painter, pos2(rect.max.x - 28.0, y + row_h / 2.0), Align2::RIGHT_CENTER, sub, 13.5, with_alpha(t.muted_foreground, dim));
+            text(
+                &painter,
+                pos2(rect.max.x - 28.0, y + row_h / 2.0),
+                Align2::RIGHT_CENTER,
+                sub,
+                13.5,
+                with_alpha(t.muted_foreground, dim),
+            );
         }
         if s.scale > 0.01 {
             let tilt = (s.v.x / 1500.0).clamp(-1.0, 1.0) * 0.2 * self.tilt / 50.0;
             let center = rect.min + s.p + self.image * 0.5;
             let sz = self.image * s.scale.max(0.0);
             let r = Rect::from_center_size(center, sz);
-            let tex_of = |i: usize| if self.textures.is_empty() { PaintedScene::texture(ui.ctx(), (i * 3 + 2) % PaintedScene::COUNT) } else { self.textures[i % self.textures.len()] };
+            let tex_of = |i: usize| {
+                if self.textures.is_empty() {
+                    PaintedScene::texture(ui.ctx(), (i * 3 + 2) % PaintedScene::COUNT)
+                } else {
+                    self.textures[i % self.textures.len()]
+                }
+            };
             let uv = cover_uv(PaintedScene::ASPECT, self.image.x / self.image.y);
             shadow(&painter, &t, r, 10.0, s.scale.clamp(0.0, 1.0));
             // swap: the new picture slides up over the old one
             let k = glowkit_core::ease(glowkit_core::Easing::OutCubic, s.swap);
-            painter.add(Shape::Rect(egui::epaint::RectShape::filled(r, cr(10.0), Color32::WHITE).with_texture(tex_of(s.prev), uv).with_angle(tilt)));
+            painter.add(Shape::Rect(
+                egui::epaint::RectShape::filled(r, cr(10.0), Color32::WHITE)
+                    .with_texture(tex_of(s.prev), uv)
+                    .with_angle(tilt),
+            ));
             let top = Rect::from_min_max(pos2(r.min.x, lerp(r.max.y, r.min.y, k)), r.max);
             let uv_top = Rect::from_min_max(pos2(uv.min.x, lerp(uv.max.y, uv.min.y, k)), uv.max);
             if tilt.abs() < 0.02 || k >= 0.999 {
-                painter.add(Shape::Rect(egui::epaint::RectShape::filled(if k >= 0.999 { r } else { top }, cr(10.0), Color32::WHITE).with_texture(tex_of(s.idx), if k >= 0.999 { uv } else { uv_top }).with_angle(tilt)));
+                painter.add(Shape::Rect(
+                    egui::epaint::RectShape::filled(if k >= 0.999 { r } else { top }, cr(10.0), Color32::WHITE)
+                        .with_texture(tex_of(s.idx), if k >= 0.999 { uv } else { uv_top })
+                        .with_angle(tilt),
+                ));
             } else {
-                painter.add(Shape::Rect(egui::epaint::RectShape::filled(r, cr(10.0), with_alpha(Color32::WHITE, k)).with_texture(tex_of(s.idx), uv).with_angle(tilt)));
+                painter.add(Shape::Rect(
+                    egui::epaint::RectShape::filled(r, cr(10.0), with_alpha(Color32::WHITE, k))
+                        .with_texture(tex_of(s.idx), uv)
+                        .with_angle(tilt),
+                ));
             }
         }
         if let Some((p, a)) = ghost {
@@ -269,12 +314,25 @@ impl SplitShowcase {
 fn mark(painter: &egui::Painter, kind: u8, c: Pos2, s: f32, col: Color32) {
     match kind {
         0 => {
-            painter.add(Shape::convex_polygon(vec![pos2(c.x, c.y - s * 0.55), pos2(c.x + s * 0.6, c.y + s * 0.45), pos2(c.x - s * 0.6, c.y + s * 0.45)], col, Stroke::NONE));
+            painter.add(Shape::convex_polygon(
+                vec![
+                    pos2(c.x, c.y - s * 0.55),
+                    pos2(c.x + s * 0.6, c.y + s * 0.45),
+                    pos2(c.x - s * 0.6, c.y + s * 0.45),
+                ],
+                col,
+                Stroke::NONE,
+            ));
         }
         1 => {
             for (i, a) in [0.45, 0.75, 1.0].iter().enumerate() {
                 let x = c.x - s * 0.45 + i as f32 * s * 0.38;
-                let pts = vec![pos2(x + s * 0.18, c.y - s * 0.5), pos2(x + s * 0.4, c.y - s * 0.5), pos2(x + s * 0.05, c.y + s * 0.5), pos2(x - s * 0.17, c.y + s * 0.5)];
+                let pts = vec![
+                    pos2(x + s * 0.18, c.y - s * 0.5),
+                    pos2(x + s * 0.4, c.y - s * 0.5),
+                    pos2(x + s * 0.05, c.y + s * 0.5),
+                    pos2(x - s * 0.17, c.y + s * 0.5),
+                ];
                 painter.add(Shape::convex_polygon(pts, with_alpha(col, *a), Stroke::NONE));
             }
         }
@@ -311,11 +369,18 @@ impl egui::Widget for SplitShowcase {
             ghost = Some((p, ramp(e, 0.0, 0.4) * (1.0 - ramp(e, 5.0, 5.5))));
             ui.ctx().request_repaint();
         }
-        let hovered = pointer.filter(|p| pill.expand(8.0).contains(*p)).map(|p| if p.x < pill.center().x { 0 } else { 1 });
+        let hovered =
+            pointer.filter(|p| pill.expand(8.0).contains(*p)).map(|p| if p.x < pill.center().x { 0 } else { 1 });
         let pressing = response.is_pointer_button_down_on();
         let mut moving = false;
         for k in 0..2 {
-            let tgt = if hovered == Some(k) { 1.0 } else if hovered.is_some() { -0.35 } else { 0.0 };
+            let tgt = if hovered == Some(k) {
+                1.0
+            } else if hovered.is_some() {
+                -0.35
+            } else {
+                0.0
+            };
             spring_step(&mut st.h[k], &mut st.hv[k], tgt, 220.0, damping_for(self.bounce, 220.0), dt);
             let pt = if pressing && hovered == Some(k) { 1.0 } else { 0.0 };
             st.press[k] += (pt - st.press[k]) * (dt * 14.0).min(1.0);
@@ -348,7 +413,7 @@ impl egui::Widget for SplitShowcase {
                 r.min.x += gap * 0.5;
             }
             let r = Rect::from_center_size(r.center(), r.size() * (1.0 - 0.03 * s.press[k]) * (1.0 + 0.02 * pos_h));
-            let inner = (pos_h * rad).round().clamp(0.0, 255.0) as u8;
+            let inner = (s.h[0].max(s.h[1]).max(0.0) * rad).round().clamp(0.0, 255.0) as u8;
             let outer = rad.round() as u8;
             let corners = if k == 0 {
                 egui::CornerRadius { nw: outer, sw: outer, ne: inner, se: inner }
@@ -357,7 +422,14 @@ impl egui::Widget for SplitShowcase {
             };
             if pos_h > 0.02 {
                 let a = if t.dark { 0.5 } else { 0.12 };
-                painter.add(Shape::Rect(egui::epaint::RectShape::filled(r.translate(vec2(0.0, 6.0 * pos_h)), corners, with_alpha(Color32::BLACK, a * pos_h.min(1.0))).with_blur_width(24.0 * pos_h)));
+                painter.add(Shape::Rect(
+                    egui::epaint::RectShape::filled(
+                        r.translate(vec2(0.0, 6.0 * pos_h)),
+                        corners,
+                        with_alpha(Color32::BLACK, a * pos_h.min(1.0)),
+                    )
+                    .with_blur_width(24.0 * pos_h),
+                ));
             }
             painter.rect_filled(r, corners, mix(base, lift, pos_h.min(1.0)));
             let side = &self.sides[k];
@@ -366,7 +438,13 @@ impl egui::Widget for SplitShowcase {
             let total = nw + 40.0;
             let cx = r.center().x;
             let cy = r.center().y - 12.0;
-            mark(&painter, side.mark, pos2(cx - total / 2.0 + 16.0, cy), 30.0, if side.mark == 1 { side.color.unwrap_or(hexa(0x4F, 0x7C, 0xFF)) } else { col });
+            mark(
+                &painter,
+                side.mark,
+                pos2(cx - total / 2.0 + 16.0, cy),
+                30.0,
+                if side.mark == 1 { side.color.unwrap_or(hexa(0x4F, 0x7C, 0xFF)) } else { col },
+            );
             text_bold(&painter, pos2(cx - total / 2.0 + 40.0, cy), Align2::LEFT_CENTER, &side.name, 30.0, t.foreground);
             let cap: String = side.caption.chars().flat_map(|c| [c, '\u{200A}']).collect();
             text(&painter, pos2(cx, cy + 40.0), Align2::CENTER_CENTER, cap, 11.5, t.muted_foreground);
@@ -377,7 +455,11 @@ impl egui::Widget for SplitShowcase {
         let dots = ((pill.height() - 60.0) / 6.0) as i32;
         for i in 0..dots {
             let y = pill.min.y + 30.0 + i as f32 * 6.0;
-            painter.circle_filled(pos2(sx, y), 1.1, with_alpha(t.muted_foreground, 0.8 * (1.0 - open * 1.5).clamp(0.0, 1.0)));
+            painter.circle_filled(
+                pos2(sx, y),
+                1.1,
+                with_alpha(t.muted_foreground, 0.8 * (1.0 - open * 1.5).clamp(0.0, 1.0)),
+            );
         }
         if let Some((p, a)) = ghost {
             ghost_touch(&painter, p, 0.0, a);
@@ -501,7 +583,7 @@ fn first_hit(o: Pos2, d: Vec2, tri: &[Pos2; 3], skip: Option<usize>) -> Option<(
     best
 }
 
-const PRISM_SCRIPT: [Stroke2; 2] = [drag(1.0, 3.2, (0.1, 0.62), (0.1, 0.3)), drag(4.4, 6.4, (0.12, 0.3), (0.16, 0.72))];
+const PRISM_SCRIPT: [Stroke2; 2] = [drag(1.0, 3.2, (0.08, 0.7), (0.1, 0.42)), drag(4.4, 6.4, (0.12, 0.42), (0.2, 0.8))];
 
 impl egui::Widget for PrismBeam {
     fn ui(self, ui: &mut Ui) -> Response {
@@ -522,6 +604,7 @@ impl egui::Widget for PrismBeam {
         if st.g.down {
             st.target = st.g.last - rect.min;
             st.target.x = st.target.x.clamp(0.0, rect.width() * 0.4);
+            st.target.y = st.target.y.clamp(rect.height() * 0.1, rect.height() * 0.95);
         }
         spring_step(&mut st.src.x, &mut st.src_v.x, st.target.x, 120.0, 14.0, dt);
         spring_step(&mut st.src.y, &mut st.src_v.y, st.target.y, 120.0, 14.0, dt);
@@ -534,7 +617,11 @@ impl egui::Widget for PrismBeam {
         let c = rect.center() + vec2(-rect.width() * 0.04, 6.0);
         let side = self.size;
         let hgt = side * 3f32.sqrt() / 2.0;
-        let tri = [pos2(c.x, c.y - hgt * 2.0 / 3.0), pos2(c.x + side / 2.0, c.y + hgt / 3.0), pos2(c.x - side / 2.0, c.y + hgt / 3.0)];
+        let tri = [
+            pos2(c.x, c.y - hgt * 2.0 / 3.0),
+            pos2(c.x + side / 2.0, c.y + hgt / 3.0),
+            pos2(c.x - side / 2.0, c.y + hgt / 3.0),
+        ];
         let src = rect.min + s.src;
         // aim at the middle of the left face
         let aim = tri[2].lerp(tri[0], 0.45);
@@ -553,22 +640,33 @@ impl egui::Widget for PrismBeam {
         // glass body
         let pts = tri.to_vec();
         if !t.dark {
-            painter.add(Shape::convex_polygon(pts.iter().map(|p| *p + vec2(0.0, 8.0)).collect(), with_alpha(Color32::BLACK, 0.05), Stroke::NONE));
+            painter.add(Shape::convex_polygon(
+                pts.iter().map(|p| *p + vec2(0.0, 8.0)).collect(),
+                with_alpha(Color32::BLACK, 0.05),
+                Stroke::NONE,
+            ));
         }
         let bounds = Rect::from_points(&pts);
         let shade_a = if t.dark { 0.10 } else { 0.95 };
         paint::fill_convex_fn(&painter, &pts, 3, |p| {
             let u = ((p.y - bounds.min.y) / bounds.height()).clamp(0.0, 1.0);
             let v = ((p.x - bounds.min.x) / bounds.width()).clamp(0.0, 1.0);
-            let base = if t.dark { Color32::from_gray((40.0 + 30.0 * (1.0 - u)) as u8) } else { Color32::from_gray((250.0 - 30.0 * u - 12.0 * v) as u8) };
+            let base = if t.dark {
+                Color32::from_gray((40.0 + 30.0 * (1.0 - u)) as u8)
+            } else {
+                Color32::from_gray((250.0 - 30.0 * u - 12.0 * v) as u8)
+            };
             with_alpha(base, shade_a)
         });
         let edge = if t.dark { with_alpha(Color32::WHITE, 0.35) } else { with_alpha(Color32::WHITE, 0.95) };
         painter.add(Shape::closed_line(pts.clone(), Stroke::new(1.5, edge)));
-        painter.line_segment([tri[0], tri[1]], Stroke::new(1.0, with_alpha(Color32::BLACK, if t.dark { 0.0 } else { 0.06 })));
+        painter.line_segment(
+            [tri[0], tri[1]],
+            Stroke::new(1.0, with_alpha(Color32::BLACK, if t.dark { 0.0 } else { 0.06 })),
+        );
         // inside + dispersion
         if let Some((e, n0, k0)) = entry {
-            let base_n = 1.5;
+            let base_n = 1.38;
             let spread = 0.002 + self.dispersion / 100.0 * 0.05;
             let bands = 7;
             let mut exits: Vec<(Pos2, Vec2, f32)> = Vec::new();
@@ -633,7 +731,14 @@ impl egui::Widget for PrismBeam {
         let pulse = 0.5 + 0.5 * (now * 3.0).sin();
         painter.circle_filled(src, 5.0 + pulse, with_alpha(beam_col, 0.25));
         let label = lerp(0.0, 1.0, 1.0 - ramp(touch.alpha, 0.0, 0.2));
-        text(&painter, pos2(rect.min.x + 14.0, rect.max.y - 16.0), Align2::LEFT_CENTER, "Drag to aim the light", 12.0, with_alpha(t.muted_foreground, 0.7 * label.max(0.4)));
+        text(
+            &painter,
+            pos2(rect.min.x + 14.0, rect.max.y - 16.0),
+            Align2::LEFT_CENTER,
+            "Drag to aim the light",
+            12.0,
+            with_alpha(t.muted_foreground, 0.7 * label.max(0.4)),
+        );
         ghost_touch(&painter, touch.pos.unwrap_or(rect.center()), if touch.down { 1.0 } else { 0.0 }, touch.alpha);
         response
     }

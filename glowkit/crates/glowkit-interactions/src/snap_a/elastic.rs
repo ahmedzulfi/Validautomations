@@ -177,7 +177,9 @@ impl ElasticFrame {
                 let d = s.d.clone();
                 for i in 0..N {
                     let lap = d[(i + N - 1) % N] + d[(i + 1) % N] - 2.0 * d[i];
-                    let mut acc = 2400.0 * tension * lap - 60.0 * tension * d[i] - 3.2 * s.v[i];
+                    let vlap = s.v[(i + N - 1) % N] + s.v[(i + 1) % N] - 2.0 * s.v[i];
+                    // stiffness + a little viscosity along the string so kinks smooth out
+                    let mut acc = 2400.0 * tension * lap + 14.0 * vlap - 60.0 * tension * d[i] - 3.2 * s.v[i];
                     if let Some(tg) = target[i] {
                         acc += 900.0 * (tg - d[i]) - 30.0 * s.v[i];
                     }

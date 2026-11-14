@@ -25,8 +25,8 @@ struct IndexState {
 }
 
 const LETTERS: [&str; 27] = [
-    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X",
-    "Y", "Z", "#",
+    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W",
+    "X", "Y", "Z", "#",
 ];
 
 /// A contacts-style list with sticky section headers and an A-Z index along the trailing edge.
@@ -82,21 +82,56 @@ impl<'a> SectionIndex<'a> {
 
 /// Sample contact names for demos.
 pub(crate) const SAMPLE_NAMES: [&str; 44] = [
-    "Aaron Price", "Abby Chen", "Alex Morgan", "Amira Haddad", "Ben Carter", "Bianca Rossi", "Carla Diaz", "Chris Okafor",
-    "Daniel Park", "Dana Whitfield", "Elena Petrova", "Emeka Obi", "Farah Khan", "Felix Wagner", "Grace Liu", "Gustavo Lima",
-    "Hana Sato", "Hugo Martin", "Isla Brennan", "Jonas Berg", "Julia Novak", "Kai Nakamura", "Kira Volkova", "Leo Dubois",
-    "Lucia Ferreira", "Maya Chen", "Mateo Ruiz", "Mila Horvat", "Nadia Ali", "Noah Fischer", "Omar Haddad", "Priya Raman",
-    "Paolo Conti", "Rosa Medina", "Ryan Walsh", "Sara Lindqvist", "Sam Taylor", "Sofia Rossi", "Tom Becker", "Tara Singh",
-    "Vera Ivanova", "Will Turner", "Yara Haddad", "Zoe Adams",
+    "Aaron Price",
+    "Abby Chen",
+    "Alex Morgan",
+    "Amira Haddad",
+    "Ben Carter",
+    "Bianca Rossi",
+    "Carla Diaz",
+    "Chris Okafor",
+    "Daniel Park",
+    "Dana Whitfield",
+    "Elena Petrova",
+    "Emeka Obi",
+    "Farah Khan",
+    "Felix Wagner",
+    "Grace Liu",
+    "Gustavo Lima",
+    "Hana Sato",
+    "Hugo Martin",
+    "Isla Brennan",
+    "Jonas Berg",
+    "Julia Novak",
+    "Kai Nakamura",
+    "Kira Volkova",
+    "Leo Dubois",
+    "Lucia Ferreira",
+    "Maya Chen",
+    "Mateo Ruiz",
+    "Mila Horvat",
+    "Nadia Ali",
+    "Noah Fischer",
+    "Omar Haddad",
+    "Priya Raman",
+    "Paolo Conti",
+    "Rosa Medina",
+    "Ryan Walsh",
+    "Sara Lindqvist",
+    "Sam Taylor",
+    "Sofia Rossi",
+    "Tom Becker",
+    "Tara Singh",
+    "Vera Ivanova",
+    "Will Turner",
+    "Yara Haddad",
+    "Zoe Adams",
 ];
 
 const HEAD_H: f32 = 26.0;
 const ROW_H: f32 = 44.0;
-const SCRIPT: [Stroke2; 3] = [
-    drag(0.8, 2.8, (0.955, 0.16), (0.955, 0.72)),
-    tap(3.9, 0.955, 0.222),
-    drag(5.2, 5.42, (0.45, 0.82), (0.45, 0.42)),
-];
+const SCRIPT: [Stroke2; 3] =
+    [drag(0.8, 2.8, (0.955, 0.16), (0.955, 0.72)), tap(3.9, 0.955, 0.222), drag(5.2, 5.42, (0.45, 0.82), (0.45, 0.42))];
 
 impl egui::Widget for SectionIndex<'_> {
     fn ui(self, ui: &mut Ui) -> Response {
@@ -136,7 +171,8 @@ impl egui::Widget for SectionIndex<'_> {
         let bar = Rect::from_min_max(pos2(view.max.x - 22.0, view.min.y + 8.0), pos2(view.max.x, view.max.y - 8.0));
         let slot = bar.height() / LETTERS.len() as f32;
         let letter_at = |y: f32| (((y - bar.min.y) / slot).floor().max(0.0) as usize).min(LETTERS.len() - 1);
-        let section_for = |li: usize| sections.iter().position(|(l, _)| *l >= li).unwrap_or(sections.len().saturating_sub(1));
+        let section_for =
+            |li: usize| sections.iter().position(|(l, _)| *l >= li).unwrap_or(sections.len().saturating_sub(1));
 
         let g = st.g.update(&touch, now, dt);
         if g.pressed {
@@ -200,7 +236,14 @@ impl egui::Widget for SectionIndex<'_> {
 
         // paint
         let painter = ui.painter_at(rect);
-        text_bold(&painter, pos2(rect.min.x + 18.0, rect.min.y + 46.0), Align2::LEFT_CENTER, &self.title, 24.0, t.foreground);
+        text_bold(
+            &painter,
+            pos2(rect.min.x + 18.0, rect.min.y + 46.0),
+            Align2::LEFT_CENTER,
+            &self.title,
+            24.0,
+            t.foreground,
+        );
         let clip = painter.with_clip_rect(view);
         let scroll = s.sc.s;
         let head_bg = if t.dark { mix(t.background, t.foreground, 0.04) } else { hexa(0xF4, 0xF4, 0xF6) };
@@ -230,7 +273,10 @@ impl egui::Widget for SectionIndex<'_> {
                 let r1 = text(&clip, pos2(lx, ry + ROW_H / 2.0), Align2::LEFT_CENTER, first, 14.5, t.foreground);
                 text_bold(&clip, pos2(r1.max.x + 4.0, ry + ROW_H / 2.0), Align2::LEFT_CENTER, last, 14.5, t.foreground);
                 if j + 1 < v.len() {
-                    clip.line_segment([pos2(lx, ry + ROW_H - 0.5), pos2(rx, ry + ROW_H - 0.5)], egui::Stroke::new(1.0, hairline(&t)));
+                    clip.line_segment(
+                        [pos2(lx, ry + ROW_H - 0.5), pos2(rx, ry + ROW_H - 0.5)],
+                        egui::Stroke::new(1.0, hairline(&t)),
+                    );
                 }
             }
         }
@@ -263,11 +309,24 @@ impl egui::Widget for SectionIndex<'_> {
             let li = s.letter;
             let si = section_for(li);
             let shown = sections.get(si).map(|(l, _)| *l).unwrap_or(li);
-            let c = pos2(lerp(bar.min.x - 10.0, bar.min.x - 64.0 - mag * 10.0, b.min(1.2)), s.finger_y.clamp(view.min.y + 40.0, view.max.y - 40.0));
+            let c = pos2(
+                lerp(bar.min.x - 10.0, bar.min.x - 64.0 - mag * 10.0, b.min(1.2)),
+                s.finger_y.clamp(view.min.y + 40.0, view.max.y - 40.0),
+            );
             let r = 27.0 * b.clamp(0.0, 1.3) * (1.0 + s.bump * 0.06);
             shadow(&painter, &t, Rect::from_center_size(c, Vec2::splat(r * 2.0)), r, 0.8 * b.min(1.0));
-            painter.circle_filled(c, r, with_alpha(if t.dark { hexa(0x3A, 0x3A, 0x40) } else { hexa(0x8E, 0x8E, 0x93) }, b.clamp(0.0, 1.0)));
-            painter.text(c, Align2::CENTER_CENTER, LETTERS[shown], FontId::proportional(26.0 * b.clamp(0.0, 1.2)), with_alpha(Color32::WHITE, b.clamp(0.0, 1.0)));
+            painter.circle_filled(
+                c,
+                r,
+                with_alpha(if t.dark { hexa(0x3A, 0x3A, 0x40) } else { hexa(0x8E, 0x8E, 0x93) }, b.clamp(0.0, 1.0)),
+            );
+            painter.text(
+                c,
+                Align2::CENTER_CENTER,
+                LETTERS[shown],
+                FontId::proportional(26.0 * b.clamp(0.0, 1.2)),
+                with_alpha(Color32::WHITE, b.clamp(0.0, 1.0)),
+            );
         }
         ghost_touch(&painter, touch.pos.unwrap_or(rect.center()), if touch.down { 1.0 } else { 0.0 }, touch.alpha);
         response
