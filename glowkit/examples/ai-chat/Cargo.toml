@@ -1,0 +1,11 @@
+[package]
+name = "glowkit-example-ai-chat"
+description = "A minimal AI chat app built with glowkit-ai (with a fake streaming model)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+glowkit = { workspace = true, features = ["ai"] }
+eframe = { workspace = true, features = ["default"] }

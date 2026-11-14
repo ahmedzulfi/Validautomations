@@ -1379,6 +1379,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "glowkit-example-ai-chat"
+version = "0.1.0"
+dependencies = [
+ "eframe",
+ "glowkit",
+]
+
+[[package]]
+name = "glowkit-example-hello"
+version = "0.1.0"
+dependencies = [
+ "eframe",
+ "glowkit",
+]
+
+[[package]]
 name = "glowkit-gallery"
 version = "0.1.0"
 dependencies = [

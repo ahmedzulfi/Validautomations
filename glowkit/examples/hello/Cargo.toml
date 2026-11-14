@@ -1,0 +1,11 @@
+[package]
+name = "glowkit-example-hello"
+description = "Minimal glowkit app: aurora hero, animated text and a shimmer button."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+glowkit = { workspace = true, features = ["backgrounds", "text", "effects", "components"] }
+eframe = { workspace = true, features = ["default"] }

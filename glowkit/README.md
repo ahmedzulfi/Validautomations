@@ -72,7 +72,13 @@ impl eframe::App for App {
 }
 ```
 
-There is a runnable version in [`examples/hello`](examples/hello).
+Runnable examples:
+
+```bash
+cargo run -p glowkit-example-hello     # animated hero screen with a toast
+cargo run -p glowkit-example-ai-chat   # chat app with a streaming (fake) model
+cargo run --release -p glowkit-gallery  # every component
+```
 
 ## What's inside
 

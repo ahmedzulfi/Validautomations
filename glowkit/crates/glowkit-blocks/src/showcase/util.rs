@@ -202,6 +202,7 @@ pub(crate) fn chevron(p: &Painter, c: Pos2, s: f32, dir: Vec2, stroke: Stroke) {
 }
 
 /// Allocate a block of `size` centered horizontally in the available width, with `top` spacing.
+#[cfg_attr(not(feature = "demos"), allow(dead_code))]
 pub(crate) fn centered_rect(ui: &mut Ui, size: Vec2, top: f32) -> Rect {
     let avail = ui.available_rect_before_wrap();
     let x = avail.center().x - size.x / 2.0;

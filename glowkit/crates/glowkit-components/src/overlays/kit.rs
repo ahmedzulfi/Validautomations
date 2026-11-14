@@ -159,6 +159,7 @@ pub(crate) fn button_width(ui: &Ui, label: &str, size: f32) -> f32 {
 }
 
 /// A compact themed button that allocates its own space.
+#[cfg_attr(not(feature = "demos"), allow(dead_code))]
 pub(crate) fn button(ui: &mut Ui, label: &str, kind: Btn) -> Response {
     let w = button_width(ui, label, 13.5);
     let (rect, _) = ui.allocate_exact_size(vec2(w, 34.0), Sense::hover());
