@@ -6,6 +6,8 @@ pub mod buttons;
 pub mod cards;
 pub mod cursor;
 pub mod menus;
+pub mod micro_a;
+pub mod micro_b;
 pub mod motion;
 pub mod scroll;
 
@@ -13,6 +15,8 @@ pub use buttons::*;
 pub use cards::*;
 pub use cursor::*;
 pub use menus::*;
+pub use micro_a::*;
+pub use micro_b::*;
 pub use motion::*;
 pub use scroll::*;
 
@@ -26,5 +30,7 @@ pub fn demos() -> Vec<glowkit_core::demo::Demo> {
     v.extend(motion::demos());
     v.extend(menus::demos());
     v.extend(scroll::demos());
+    v.extend(micro_a::demos());
+    v.extend(micro_b::demos());
     v
 }
