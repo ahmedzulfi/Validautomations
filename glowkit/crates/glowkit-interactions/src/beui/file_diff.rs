@@ -108,29 +108,35 @@ impl egui::Widget for FileDiff {
         // total characters to write decides how long the writing takes
         let chars: usize = self.lines.iter().filter(|l| l.0 == LineKind::Added).map(|l| l.1.len()).sum();
         let write_time = 0.5 + chars as f32 / self.speed + 0.25 * self.lines.len() as f32 * 0.3;
-        let st = glowkit_core::with_state(ui, id, || DiffState { open: false, since: now - 10.0 }, |s| {
-            if hr.clicked() {
-                s.open = !s.open;
-                s.since = now;
-            }
-            if rr.clicked() {
-                s.open = true;
-                s.since = now;
-            }
-            if auto {
-                let held = (now - s.since) as f32;
-                if (s.open && held > write_time + 2.2) || (!s.open && held > 1.2) {
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || DiffState { open: false, since: now - 10.0 },
+            |s| {
+                if hr.clicked() {
                     s.open = !s.open;
                     s.since = now;
                 }
-            }
-            *s
-        });
+                if rr.clicked() {
+                    s.open = true;
+                    s.since = now;
+                }
+                if auto {
+                    let held = (now - s.since) as f32;
+                    if (s.open && held > write_time + 2.2) || (!s.open && held > 1.2) {
+                        s.open = !s.open;
+                        s.since = now;
+                    }
+                }
+                *s
+            },
+        );
         let since = (now - st.since) as f32;
         if auto || (st.open && since < write_time + 0.5) {
             glowkit_core::animate(ui);
         }
-        let (rect, radius) = morph_axes(ui, id.with("box"), if st.open { full } else { head }, 16.0, (300.0, 30.0), (240.0, 22.0));
+        let (rect, radius) =
+            morph_axes(ui, id.with("box"), if st.open { full } else { head }, 16.0, (300.0, 30.0), (240.0, 22.0));
         if !ui.is_rect_visible(outer) {
             return resp;
         }
@@ -141,7 +147,13 @@ impl egui::Widget for FileDiff {
         // header
         let cy = head.center().y;
         icon(&painter, BeIcon::Code, pos2(head.min.x + 22.0, cy), 14.0, t.muted_foreground, 1.3);
-        painter.text(pos2(head.min.x + 38.0, cy), Align2::LEFT_CENTER, &self.path, FontId::monospace(12.5), t.foreground);
+        painter.text(
+            pos2(head.min.x + 38.0, cy),
+            Align2::LEFT_CENTER,
+            &self.path,
+            FontId::monospace(12.5),
+            t.foreground,
+        );
         let adds = self.lines.iter().filter(|l| l.0 == LineKind::Added).count();
         let dels = self.lines.iter().filter(|l| l.0 == LineKind::Removed).count();
         let chev_k = spring(ui, id.with("chev"), if st.open { 1.0 } else { 0.0 }, 300.0, 20.0);
@@ -150,19 +162,38 @@ impl egui::Widget for FileDiff {
         let s = 4.0;
         let (sn, cs) = ang.sin_cos();
         let rot = |x: f32, y: f32| cc + vec2(x * cs - y * sn, x * sn + y * cs) * s;
-        painter.add(egui::Shape::line(vec![rot(-1.0, -0.5), rot(0.0, 0.6), rot(1.0, -0.5)], Stroke::new(1.4, t.muted_foreground)));
+        painter.add(egui::Shape::line(
+            vec![rot(-1.0, -0.5), rot(0.0, 0.6), rot(1.0, -0.5)],
+            Stroke::new(1.4, t.muted_foreground),
+        ));
         let done = st.open && since > write_time;
         let ck = spring(ui, id.with("check"), if done { 1.0 } else { 0.0 }, 400.0, 16.0);
-        icon(&painter, BeIcon::Check, pos2(head.max.x - 44.0, cy), 11.0 * (0.6 + 0.4 * ck), mix(t.muted_foreground, t.success, ck), 1.5);
+        icon(
+            &painter,
+            BeIcon::Check,
+            pos2(head.max.x - 44.0, cy),
+            11.0 * (0.6 + 0.4 * ck),
+            mix(t.muted_foreground, t.success, ck),
+            1.5,
+        );
         let minus = format!("-{dels}");
         let mw = text_width(&painter, &minus, 12.5);
         painter.text(pos2(head.max.x - 60.0, cy), Align2::RIGHT_CENTER, &minus, FontId::monospace(12.5), t.destructive);
-        painter.text(pos2(head.max.x - 66.0 - mw, cy), Align2::RIGHT_CENTER, format!("+{adds}"), FontId::monospace(12.5), t.success);
+        painter.text(
+            pos2(head.max.x - 66.0 - mw, cy),
+            Align2::RIGHT_CENTER,
+            format!("+{adds}"),
+            FontId::monospace(12.5),
+            t.success,
+        );
         // body
         let clip = painter.with_clip_rect(rect.shrink(1.0));
         let body_top = head.max.y + 6.0;
         if rect.height() > head_h + 2.0 {
-            clip.line_segment([pos2(rect.min.x, head.max.y), pos2(rect.max.x, head.max.y)], Stroke::new(1.0, with_alpha(t.border, 0.8)));
+            clip.line_segment(
+                [pos2(rect.min.x, head.max.y), pos2(rect.max.x, head.max.y)],
+                Stroke::new(1.0, with_alpha(t.border, 0.8)),
+            );
         }
         let mut clock = 0.45f32; // seconds into the writing when each line begins
         let mut ln_old = self.start_line;
@@ -182,19 +213,46 @@ impl egui::Widget for FileDiff {
             let num_col = with_alpha(t.muted_foreground, 0.7);
             match kind {
                 LineKind::Context => {
-                    clip.text(pos2(row.min.x + 30.0, y), Align2::RIGHT_CENTER, ln_old.to_string(), mono.clone(), num_col);
-                    clip.text(pos2(row.min.x + 58.0, y), Align2::LEFT_CENTER, text, mono, mix(t.foreground, t.muted_foreground, 0.35));
+                    clip.text(
+                        pos2(row.min.x + 30.0, y),
+                        Align2::RIGHT_CENTER,
+                        ln_old.to_string(),
+                        mono.clone(),
+                        num_col,
+                    );
+                    clip.text(
+                        pos2(row.min.x + 58.0, y),
+                        Align2::LEFT_CENTER,
+                        text,
+                        mono,
+                        mix(t.foreground, t.muted_foreground, 0.35),
+                    );
                     ln_old += 1;
                 }
                 LineKind::Removed => {
                     let a = if started { 1.0 } else { 0.0 };
                     clip.rect_filled(row, cr(0.0), with_alpha(t.destructive, 0.1 * a));
-                    clip.text(pos2(row.min.x + 30.0, y), Align2::RIGHT_CENTER, ln_old.to_string(), mono.clone(), num_col);
+                    clip.text(
+                        pos2(row.min.x + 30.0, y),
+                        Align2::RIGHT_CENTER,
+                        ln_old.to_string(),
+                        mono.clone(),
+                        num_col,
+                    );
                     clip.text(pos2(row.min.x + 42.0, y), Align2::LEFT_CENTER, "-", mono.clone(), t.destructive);
-                    let r = clip.text(pos2(row.min.x + 58.0, y), Align2::LEFT_CENTER, text, mono, mix(t.foreground, t.destructive, 0.6 * a));
+                    let r = clip.text(
+                        pos2(row.min.x + 58.0, y),
+                        Align2::LEFT_CENTER,
+                        text,
+                        mono,
+                        mix(t.foreground, t.destructive, 0.6 * a),
+                    );
                     if started && p > 0.0 {
                         let x1 = r.min.x + (r.width()) * p;
-                        clip.line_segment([pos2(r.min.x, y + 0.5), pos2(x1, y + 0.5)], Stroke::new(1.2, with_alpha(t.destructive, 0.8)));
+                        clip.line_segment(
+                            [pos2(r.min.x, y + 0.5), pos2(x1, y + 0.5)],
+                            Stroke::new(1.2, with_alpha(t.destructive, 0.8)),
+                        );
                     }
                     ln_old += 1;
                 }
@@ -209,7 +267,11 @@ impl egui::Widget for FileDiff {
                     let shown: String = text.chars().take(n).collect();
                     let r = clip.text(pos2(row.min.x + 58.0, y), Align2::LEFT_CENTER, &shown, mono, t.foreground);
                     if st.open && p < 1.0 && (now * 2.5) as i64 % 2 == 0 {
-                        clip.rect_filled(Rect::from_min_size(pos2(r.max.x + 1.0, y - 7.0), vec2(7.0, 14.0)), cr(1.0), with_alpha(t.accent, 0.8));
+                        clip.rect_filled(
+                            Rect::from_min_size(pos2(r.max.x + 1.0, y - 7.0), vec2(7.0, 14.0)),
+                            cr(1.0),
+                            with_alpha(t.accent, 0.8),
+                        );
                     }
                 }
             }
@@ -217,7 +279,13 @@ impl egui::Widget for FileDiff {
         // replay
         let rc = if rr.hovered() { t.foreground } else { t.muted_foreground };
         icon(&painter, BeIcon::Refresh, pos2(replay.min.x + 10.0, replay.center().y), 11.0, rc, 1.3);
-        painter.text(pos2(replay.min.x + 22.0, replay.center().y), Align2::LEFT_CENTER, "Replay", FontId::proportional(12.5), rc);
+        painter.text(
+            pos2(replay.min.x + 22.0, replay.center().y),
+            Align2::LEFT_CENTER,
+            "Replay",
+            FontId::proportional(12.5),
+            rc,
+        );
         resp
     }
 }

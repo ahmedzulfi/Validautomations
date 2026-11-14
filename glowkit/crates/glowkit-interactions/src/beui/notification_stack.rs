@@ -78,13 +78,18 @@ impl egui::Widget for NotificationStack {
         let now = ui.input(|i| i.time);
         let idle = idle_for(ui, id, resp.hovered());
         let auto = self.autoplay && idle > 2.0;
-        let st = glowkit_core::with_state(ui, id, || StackState { open: false, since: now }, |s| {
-            if resp.clicked() || (auto && now - s.since > if s.open { 2.8 } else { 1.8 }) {
-                s.open = !s.open;
-                s.since = now;
-            }
-            *s
-        });
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || StackState { open: false, since: now },
+            |s| {
+                if resp.clicked() || (auto && now - s.since > if s.open { 2.8 } else { 1.8 }) {
+                    s.open = !s.open;
+                    s.since = now;
+                }
+                *s
+            },
+        );
         if auto {
             glowkit_core::animate(ui);
         }
@@ -92,7 +97,8 @@ impl egui::Widget for NotificationStack {
             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
         }
         let top = outer.min.y;
-        let container_t = Rect::from_min_size(pos2(outer.min.x, top), vec2(self.width, if st.open { open_h } else { closed_h }));
+        let container_t =
+            Rect::from_min_size(pos2(outer.min.x, top), vec2(self.width, if st.open { open_h } else { closed_h }));
         let (container, cr_) = morph(ui, id.with("box"), container_t, 28.0, 300.0, 24.0);
         let k = ((container.height() - closed_h) / (open_h - closed_h)).clamp(-0.1, 1.1);
         if !ui.is_rect_visible(outer) {
@@ -110,7 +116,10 @@ impl egui::Widget for NotificationStack {
                 pos2(container.min.x + pad + depth * 10.0, top + pad + depth * 7.0),
                 vec2(inner_w - depth * 20.0, card_h),
             );
-            let listed = Rect::from_min_size(pos2(container.min.x + pad, top + pad + i as f32 * (card_h + gap)), vec2(inner_w, card_h));
+            let listed = Rect::from_min_size(
+                pos2(container.min.x + pad, top + pad + i as f32 * (card_h + gap)),
+                vec2(inner_w, card_h),
+            );
             // each card follows on its own spring, a little later the deeper it is
             let target = if st.open { listed } else { stacked };
             let (r, _) = morph(ui, id.with(("c", i)), target, 18.0, 320.0 - i as f32 * 30.0, 24.0 - i as f32 * 1.5);
@@ -126,13 +135,31 @@ impl egui::Widget for NotificationStack {
             let ca = if i == 0 { 1.0 } else { k.clamp(0.0, 1.0) };
             if ca > 0.02 {
                 let clip = painter.with_clip_rect(r);
-                clip.text(pos2(r.min.x + 16.0, r.min.y + 24.0), Align2::LEFT_CENTER, title, FontId::proportional(14.0), with_alpha(t.foreground, ca));
-                clip.text(pos2(r.min.x + 16.0, r.min.y + 45.0), Align2::LEFT_CENTER, detail, FontId::proportional(11.5), with_alpha(t.muted_foreground, ca));
+                clip.text(
+                    pos2(r.min.x + 16.0, r.min.y + 24.0),
+                    Align2::LEFT_CENTER,
+                    title,
+                    FontId::proportional(14.0),
+                    with_alpha(t.foreground, ca),
+                );
+                clip.text(
+                    pos2(r.min.x + 16.0, r.min.y + 45.0),
+                    Align2::LEFT_CENTER,
+                    detail,
+                    FontId::proportional(11.5),
+                    with_alpha(t.muted_foreground, ca),
+                );
                 if *retries > 0 {
                     let amber = t.warning;
                     let ic = pos2(r.max.x - 34.0, r.min.y + 24.0);
                     super::common::icon(&clip, BeIcon::Refresh, ic, 12.0, with_alpha(amber, ca), 1.4);
-                    clip.text(ic + vec2(10.0, 0.0), Align2::LEFT_CENTER, retries.to_string(), FontId::proportional(12.0), with_alpha(amber, ca));
+                    clip.text(
+                        ic + vec2(10.0, 0.0),
+                        Align2::LEFT_CENTER,
+                        retries.to_string(),
+                        FontId::proportional(12.0),
+                        with_alpha(amber, ca),
+                    );
                 }
             }
         }
@@ -142,9 +169,28 @@ impl egui::Widget for NotificationStack {
         painter.circle_filled(bc, 13.0, self.badge);
         painter.text(bc, Align2::CENTER_CENTER, n.to_string(), FontId::proportional(12.0), Color32::WHITE);
         let kk = k.clamp(0.0, 1.0);
-        painter.text(pos2(bc.x + 22.0, fy - kk * 6.0), Align2::LEFT_CENTER, "Notifications", FontId::proportional(14.0), with_alpha(t.foreground, 1.0 - kk));
-        let vr = painter.text(pos2(bc.x + 22.0, fy + (1.0 - kk) * 6.0), Align2::LEFT_CENTER, "View all", FontId::proportional(14.0), with_alpha(t.foreground, kk));
-        icon(&painter, BeIcon::ArrowUpRight, pos2(vr.max.x + 10.0, fy + (1.0 - kk) * 6.0), 8.0, with_alpha(t.foreground, kk), 1.4);
+        painter.text(
+            pos2(bc.x + 22.0, fy - kk * 6.0),
+            Align2::LEFT_CENTER,
+            "Notifications",
+            FontId::proportional(14.0),
+            with_alpha(t.foreground, 1.0 - kk),
+        );
+        let vr = painter.text(
+            pos2(bc.x + 22.0, fy + (1.0 - kk) * 6.0),
+            Align2::LEFT_CENTER,
+            "View all",
+            FontId::proportional(14.0),
+            with_alpha(t.foreground, kk),
+        );
+        icon(
+            &painter,
+            BeIcon::ArrowUpRight,
+            pos2(vr.max.x + 10.0, fy + (1.0 - kk) * 6.0),
+            8.0,
+            with_alpha(t.foreground, kk),
+            1.4,
+        );
         resp
     }
 }

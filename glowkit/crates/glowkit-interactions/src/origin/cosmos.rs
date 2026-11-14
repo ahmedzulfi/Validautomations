@@ -1,7 +1,7 @@
 //! Particle "cosmos" pieces: a strand vortex, a point-cloud ringed planet, a black-hole accretion
 //! disc and a glass orb with a galaxy inside.
 
-use super::common::{h01, lerp_rgb, lum, pointer_or_ghost, ramp, strip, Cam, Dots, V3, v3};
+use super::common::{h01, lerp_rgb, lum, pointer_or_ghost, ramp, strip, v3, Cam, Dots, V3};
 use egui::epaint::Mesh;
 use egui::{pos2, vec2, Color32, Pos2, Rect, Response, Sense, Shape, Ui, Vec2, Widget};
 use glowkit_core::color::{hex, with_alpha};
@@ -261,7 +261,9 @@ impl Tornado {
                 let tw = 0.5 + 0.5 * (time * (3.0 + 5.0 * h01(seed + 4)) + h01(seed + 5) * TAU).sin();
                 let depth = ((d - cam.dist) / 3.0).clamp(-1.0, 1.0);
                 let a = (0.25 + 0.75 * tw) * (0.7 - depth * 0.3) * (u * 8.0).min(1.0);
-                let size = ((0.45 + 0.9 * h01(seed + 6).powi(2)) * (sc / (unit * 0.3)).clamp(0.6, 1.3) * (1.0 + 0.1 / r)).min(1.6);
+                let size =
+                    ((0.45 + 0.9 * h01(seed + 6).powi(2)) * (sc / (unit * 0.3)).clamp(0.6, 1.3) * (1.0 + 0.1 / r))
+                        .min(1.6);
                 let a = if add { a } else { a * 0.55 };
                 dots.add(push(s), size, lum(col, a, add));
             }
@@ -441,7 +443,13 @@ impl ParticleSaturn {
                 if behind {
                     continue;
                 }
-                let dens = if r > 2.0 { 0.6 } else if r < 1.5 { 0.55 } else { 1.0 };
+                let dens = if r > 2.0 {
+                    0.6
+                } else if r < 1.5 {
+                    0.55
+                } else {
+                    1.0
+                };
                 let a = (0.55 + 0.45 * h01(seed + 4)) * dens;
                 let size = (0.55 + 0.75 * h01(seed + 5)) * ds * (sc / csc).clamp(0.8, 1.2);
                 let c = lum(ringc, a, add);
@@ -855,7 +863,12 @@ impl CosmicOrb {
             painter.circle_stroke(c, r + 0.5, egui::Stroke::new(1.0, with_alpha(hex("#1E1B4B"), 0.3)));
         }
         // specular
-        paint::glow_ellipse(painter, c + vec2(-r * 0.38, -r * 0.48), vec2(r * 0.34, r * 0.16), lum(Color32::WHITE, 0.22, true));
+        paint::glow_ellipse(
+            painter,
+            c + vec2(-r * 0.38, -r * 0.48),
+            vec2(r * 0.34, r * 0.16),
+            lum(Color32::WHITE, 0.22, true),
+        );
         paint::glow(painter, c + vec2(-r * 0.45, -r * 0.5), r * 0.08, lum(Color32::WHITE, 0.55, true));
         let _ = PI;
     }
@@ -864,7 +877,8 @@ impl CosmicOrb {
 impl Widget for CosmicOrb {
     fn ui(self, ui: &mut Ui) -> Response {
         let side = self.radius * 2.0 + 60.0;
-        let (rect, response) = alloc(ui, Some(self.size.unwrap_or(vec2(ui.available_width().max(side), side))), side, Sense::hover());
+        let (rect, response) =
+            alloc(ui, Some(self.size.unwrap_or(vec2(ui.available_width().max(side), side))), side, Sense::hover());
         if !ui.is_rect_visible(rect) {
             return response;
         }

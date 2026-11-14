@@ -330,7 +330,7 @@ if r.inner { /* contact clicked */ }"##,
             name: "Glass Icons",
             category: Category::Buttons,
             description: "Frosted glass tiles floating over tilted, vividly colored backplates; hover swings the plate and lifts the glass.",
-            covers: &["React Bits: Glass Icons"],
+            covers: &["React Bits: Glass Icons", "Originkit: Glass Icon"],
             code: r##"let r = GlassIcons::new(vec![
     GlassIcon::new("📁", "Files").colors(hex("#3B82F6"), hex("#6366F1")),
     GlassIcon::new("📖", "Books"),

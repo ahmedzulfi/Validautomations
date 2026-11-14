@@ -272,15 +272,31 @@ impl egui::Widget for AvailabilityScheduler<'_> {
             let on = spring(ui, id.with(("on", d)), if day.enabled { 1.0 } else { 0.0 }, 360.0, 24.0);
             // switch
             let sw = Rect::from_center_size(pos2(x_switch, my), vec2(40.0, 24.0));
-            let track = mix(if t.dark { mix(t.muted, Color32::WHITE, 0.15) } else { mix(t.muted, t.border, 0.9) }, t.accent, on.clamp(0.0, 1.0));
+            let track = mix(
+                if t.dark { mix(t.muted, Color32::WHITE, 0.15) } else { mix(t.muted, t.border, 0.9) },
+                t.accent,
+                on.clamp(0.0, 1.0),
+            );
             painter.rect_filled(sw, cr(12.0), track);
             let kx = sw.min.x + 12.0 + 16.0 * on;
             painter.circle_filled(pos2(kx, my), 9.5, Color32::WHITE);
-            painter.text(pos2(x_name, my), Align2::LEFT_CENTER, &day.name, FontId::proportional(14.0), mix(t.muted_foreground, t.foreground, 0.4 + 0.6 * on));
+            painter.text(
+                pos2(x_name, my),
+                Align2::LEFT_CENTER,
+                &day.name,
+                FontId::proportional(14.0),
+                mix(t.muted_foreground, t.foreground, 0.4 + 0.6 * on),
+            );
             // "Unavailable" fades in as the pickers fold away
             let ua = (1.0 - on * 1.6).clamp(0.0, 1.0);
             if ua > 0.0 {
-                clip.text(pos2(x_slots + (1.0 - ua) * -10.0, my), Align2::LEFT_CENTER, "Unavailable", FontId::proportional(13.5), with_alpha(t.muted_foreground, ua));
+                clip.text(
+                    pos2(x_slots + (1.0 - ua) * -10.0, my),
+                    Align2::LEFT_CENTER,
+                    "Unavailable",
+                    FontId::proportional(13.5),
+                    with_alpha(t.muted_foreground, ua),
+                );
             }
             let slot_a = ((on - 0.2) / 0.8).clamp(0.0, 1.0);
             if slot_a > 0.0 {
@@ -293,16 +309,42 @@ impl egui::Widget for AvailabilityScheduler<'_> {
                         // pickers fold in from the left when the day turns on
                         let r = Rect::from_min_size(r0.min, vec2(r0.width() * (0.6 + 0.4 * sa), r0.height()));
                         let hov = ptr.is_some_and(|p| r0.contains(p));
-                        clip.rect(r, cr(10.0), with_alpha(if hov { hover_fill(&t) } else { super::common::well(&t) }, sa), Stroke::new(1.0, with_alpha(hairline(&t).color, sa)), egui::StrokeKind::Inside);
-                        clip.text(pos2(r.min.x + 12.0, sy), Align2::LEFT_CENTER, fmt_time(m), FontId::proportional(13.0), with_alpha(t.foreground, sa));
-                        icon(&clip, BeIcon::ChevronDown, pos2(r.max.x - 16.0, sy), 9.0, with_alpha(t.muted_foreground, sa), 1.3);
+                        clip.rect(
+                            r,
+                            cr(10.0),
+                            with_alpha(if hov { hover_fill(&t) } else { super::common::well(&t) }, sa),
+                            Stroke::new(1.0, with_alpha(hairline(&t).color, sa)),
+                            egui::StrokeKind::Inside,
+                        );
+                        clip.text(
+                            pos2(r.min.x + 12.0, sy),
+                            Align2::LEFT_CENTER,
+                            fmt_time(m),
+                            FontId::proportional(13.0),
+                            with_alpha(t.foreground, sa),
+                        );
+                        icon(
+                            &clip,
+                            BeIcon::ChevronDown,
+                            pos2(r.max.x - 16.0, sy),
+                            9.0,
+                            with_alpha(t.muted_foreground, sa),
+                            1.3,
+                        );
                     }
-                    clip.text(pos2(x_slots + pill_w + 11.0, sy), Align2::CENTER_CENTER, "–", FontId::proportional(13.0), with_alpha(t.muted_foreground, sa));
+                    clip.text(
+                        pos2(x_slots + pill_w + 11.0, sy),
+                        Align2::CENTER_CENTER,
+                        "–",
+                        FontId::proportional(13.0),
+                        with_alpha(t.muted_foreground, sa),
+                    );
                     icon(&clip, BeIcon::Close, pos2(x_remove, sy), 9.0, with_alpha(t.muted_foreground, sa), 1.3);
                 }
             }
             icon(&painter, BeIcon::Plus, pos2(x_add, my), 11.0, t.muted_foreground, 1.4);
-            let flash = st.copied.filter(|c| c.0 == d).map(|c| (1.0 - (now - c.1) as f32 / 0.9).clamp(0.0, 1.0)).unwrap_or(0.0);
+            let flash =
+                st.copied.filter(|c| c.0 == d).map(|c| (1.0 - (now - c.1) as f32 / 0.9).clamp(0.0, 1.0)).unwrap_or(0.0);
             if flash > 0.0 {
                 glowkit_core::animate(ui);
                 icon(&painter, BeIcon::Check, pos2(x_copy, my), 11.0, mix(t.muted_foreground, t.success, flash), 1.5);
@@ -314,12 +356,17 @@ impl egui::Widget for AvailabilityScheduler<'_> {
         let pop = st.popover.filter(|(d, s, _)| *d < n && *s < self.days[*d].slots.len());
         let pid = id.with("pop");
         let open = pop.is_some();
-        let last_anchor: Option<Rect> = glowkit_core::with_state(ui, pid.with("anchor"), || None, |a| {
-            if let Some((d, s, w)) = pop {
-                *a = Some(pill(d, s, w));
-            }
-            *a
-        });
+        let last_anchor: Option<Rect> = glowkit_core::with_state(
+            ui,
+            pid.with("anchor"),
+            || None,
+            |a| {
+                if let Some((d, s, w)) = pop {
+                    *a = Some(pill(d, s, w));
+                }
+                *a
+            },
+        );
         if let Some(anchor) = last_anchor {
             let target = if open { pop_rect(anchor) } else { anchor };
             let (r, rad) = morph(ui, pid, target, if open { 12.0 } else { 10.0 }, 420.0, 30.0);
@@ -331,10 +378,17 @@ impl egui::Widget for AvailabilityScheduler<'_> {
                     let cur = self.days[d].slots[s];
                     let m = if w == 0 { cur.0 } else { cur.1 };
                     for (k_, v) in options_for(m).iter().enumerate() {
-                        let rr = Rect::from_min_size(pos2(r.min.x + 4.0, r.min.y + 4.0 + k_ as f32 * 30.0), vec2(r.width() - 8.0, 30.0));
+                        let rr = Rect::from_min_size(
+                            pos2(r.min.x + 4.0, r.min.y + 4.0 + k_ as f32 * 30.0),
+                            vec2(r.width() - 8.0, 30.0),
+                        );
                         let hov = ptr.is_some_and(|p| rr.contains(p));
                         if *v == m || hov {
-                            clip.rect_filled(rr, cr(8.0), if *v == m { with_alpha(t.accent, 0.14) } else { hover_fill(&t) });
+                            clip.rect_filled(
+                                rr,
+                                cr(8.0),
+                                if *v == m { with_alpha(t.accent, 0.14) } else { hover_fill(&t) },
+                            );
                         }
                         clip.text(
                             pos2(rr.min.x + 10.0, rr.center().y),

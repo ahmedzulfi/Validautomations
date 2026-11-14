@@ -63,8 +63,9 @@ fn activity_panel(
     let n = rings.len().max(1);
     let gap = 8.0;
     let tw = (rect.width() - pad * 2.0 - gap * (n as f32 - 1.0)) / n as f32;
-    let tiles: Vec<Rect> =
-        (0..n).map(|i| Rect::from_min_size(pos2(rect.min.x + pad + i as f32 * (tw + gap), rect.min.y + 46.0), vec2(tw, 56.0))).collect();
+    let tiles: Vec<Rect> = (0..n)
+        .map(|i| Rect::from_min_size(pos2(rect.min.x + pad + i as f32 * (tw + gap), rect.min.y + 46.0), vec2(tw, 56.0)))
+        .collect();
     let ring_top = rect.min.y + 46.0 + 56.0 + 14.0;
     let avail = (rect.max.y - pad - ring_top).max(40.0);
     let radius = (avail / 2.0).min(rect.width() * 0.28);
@@ -385,12 +386,22 @@ impl egui::Widget for BoardSleepScore {
         let total: f32 = metrics.iter().map(|m| m.score).sum();
         let max_total: f32 = metrics.iter().map(|m| m.max).sum::<f32>().max(1e-3);
         let score100 = total / max_total * 100.0;
-        text(&painter, pos2(rect.min.x + pad, rect.min.y + 52.0), Align2::LEFT_CENTER, grade(score100), f(22.0), t.foreground);
+        text(
+            &painter,
+            pos2(rect.min.x + pad, rect.min.y + 52.0),
+            Align2::LEFT_CENTER,
+            grade(score100),
+            f(22.0),
+            t.foreground,
+        );
         let hl = [flag(ui, id.with("lh"), lresp.hovered(), 14.0), flag(ui, id.with("rh"), rresp.hovered(), 14.0)];
         range_pill(&painter, &t, pr, label, hl);
 
         // rows
-        let rows_r = Rect::from_min_size(pos2(rect.min.x + 8.0, rect.min.y + 214.0), vec2(rect.width() - 16.0, rows_n as f32 * 40.0));
+        let rows_r = Rect::from_min_size(
+            pos2(rect.min.x + 8.0, rect.min.y + 214.0),
+            vec2(rect.width() - 16.0, rows_n as f32 * 40.0),
+        );
         let mut focus = None;
         if let Some(mp) = response.hover_pos() {
             if rows_r.contains(mp) {
@@ -410,11 +421,23 @@ impl egui::Widget for BoardSleepScore {
                 painter.rect_filled(rr.shrink2(vec2(4.0, 3.0)), cr(8.0), fade(track(&t), fo));
             }
             if i > 0 {
-                painter.line_segment([pos2(rr.min.x + 10.0, y), pos2(rr.max.x - 10.0, y)], Stroke::new(1.0, hairline(&t)));
+                painter
+                    .line_segment([pos2(rr.min.x + 10.0, y), pos2(rr.max.x - 10.0, y)], Stroke::new(1.0, hairline(&t)));
             }
             let a = ra * (1.0 - 0.45 * flag(ui, id.with(("rowd", i)), focus.is_some() && focus != Some(i), 10.0));
-            painter.rect_filled(Rect::from_center_size(pos2(rr.min.x + 16.0, rr.center().y), vec2(10.0, 10.0)), cr(3.0), fade(col, a));
-            text(&painter, pos2(rr.min.x + 30.0, rr.center().y), Align2::LEFT_CENTER, &m.label, f(13.5), fade(dim(&t), a));
+            painter.rect_filled(
+                Rect::from_center_size(pos2(rr.min.x + 16.0, rr.center().y), vec2(10.0, 10.0)),
+                cr(3.0),
+                fade(col, a),
+            );
+            text(
+                &painter,
+                pos2(rr.min.x + 30.0, rr.center().y),
+                Align2::LEFT_CENTER,
+                &m.label,
+                f(13.5),
+                fade(dim(&t), a),
+            );
             let sc = tween(ui, id.with(("sc", i)), m.score, 0.0, 0.7);
             text(
                 &painter,
@@ -587,8 +610,12 @@ impl egui::Widget for BoardActiveDays {
         let right = Rect::from_min_max(pos2(left.max.x + gap, rect.min.y), rect.max);
         let last = self.months.len() - 1;
         let default_day = self.months[last].days.iter().rposition(|d| d.progress.iter().any(|v| *v > 0.0)).unwrap_or(0);
-        let mut st: DaysState =
-            glowkit_core::state(ui, id.with("st"), || DaysState { month: last, day: default_day, scroll: f32::NAN, slide: 0.0 });
+        let mut st: DaysState = glowkit_core::state(ui, id.with("st"), || DaysState {
+            month: last,
+            day: default_day,
+            scroll: f32::NAN,
+            slide: 0.0,
+        });
         st.month = st.month.min(last);
 
         // header + month pill
@@ -612,16 +639,31 @@ impl egui::Widget for BoardActiveDays {
             st.scroll = f32::NAN;
         }
         let m = &self.months[st.month];
-        text(&painter, pos2(left.min.x + pad, left.min.y + 26.0), Align2::LEFT_CENTER, "Most active days", f(13.0), dim(&t));
+        text(
+            &painter,
+            pos2(left.min.x + pad, left.min.y + 26.0),
+            Align2::LEFT_CENTER,
+            "Most active days",
+            f(13.0),
+            dim(&t),
+        );
         let total: u32 = m.days.iter().map(|d| d.steps).sum();
         let shown = tween(ui, id.with(("steps", st.month)), total as f32, 0.0, 1.0);
-        let hr = text(&painter, pos2(left.min.x + pad, left.min.y + 54.0), Align2::LEFT_CENTER, thousands(shown as f64), f(24.0), t.foreground);
+        let hr = text(
+            &painter,
+            pos2(left.min.x + pad, left.min.y + 54.0),
+            Align2::LEFT_CENTER,
+            thousands(shown as f64),
+            f(24.0),
+            t.foreground,
+        );
         text(&painter, pos2(hr.max.x + 6.0, hr.max.y - 9.0), Align2::LEFT_CENTER, "total steps", f(12.0), dim(&t));
         let hl = [flag(ui, id.with("lh"), lresp.hovered(), 14.0), flag(ui, id.with("rh"), rresp.hovered(), 14.0)];
         range_pill(&painter, &t, pr, &m.name, hl);
 
         // calendar viewport
-        let vp = Rect::from_min_max(pos2(left.min.x + 10.0, left.min.y + 82.0), pos2(left.max.x - 10.0, left.max.y - 10.0));
+        let vp =
+            Rect::from_min_max(pos2(left.min.x + 10.0, left.min.y + 82.0), pos2(left.max.x - 10.0, left.max.y - 10.0));
         tile(&painter, &t, vp, 12.0);
         let cw = (vp.width() - 16.0) / 7.0;
         let ch = 62.0;
@@ -674,7 +716,10 @@ impl egui::Widget for BoardActiveDays {
         for (i, d) in m.days.iter().enumerate() {
             let slot = m.first_weekday + i;
             let (col, row) = (slot % 7, slot / 7);
-            let cell = Rect::from_min_size(pos2(vp.min.x + 8.0 + col as f32 * cw + ox, y0 + head + row as f32 * ch), vec2(cw, ch));
+            let cell = Rect::from_min_size(
+                pos2(vp.min.x + 8.0 + col as f32 * cw + ox, y0 + head + row as f32 * ch),
+                vec2(cw, ch),
+            );
             if cell.max.y < vp.min.y || cell.min.y > vp.max.y {
                 continue;
             }
@@ -687,12 +732,24 @@ impl egui::Widget for BoardActiveDays {
             let hf = flag(ui, id.with(("hov", st.month, i)), hov, 14.0);
             let box_r = cell.shrink2(vec2(3.0, 2.0));
             if sf > 0.01 {
-                cal.rect_stroke(box_r, cr(10.0), Stroke::new(1.5, fade(mix(t.border, t.muted_foreground, 0.5), sf * ca)), egui::StrokeKind::Inside);
+                cal.rect_stroke(
+                    box_r,
+                    cr(10.0),
+                    Stroke::new(1.5, fade(mix(t.border, t.muted_foreground, 0.5), sf * ca)),
+                    egui::StrokeKind::Inside,
+                );
             }
             if hf > 0.01 {
                 cal.rect_filled(box_r, cr(10.0), fade(track(&t), hf * 0.7 * ca));
             }
-            text(&cal, pos2(cell.center().x, cell.min.y + 13.0), Align2::CENTER_CENTER, i + 1, f(13.0), fade(t.foreground, ca));
+            text(
+                &cal,
+                pos2(cell.center().x, cell.min.y + 13.0),
+                Align2::CENTER_CENTER,
+                i + 1,
+                f(13.0),
+                fade(t.foreground, ca),
+            );
             let rc = pos2(cell.center().x, cell.min.y + 41.0);
             let grow = ease_out(entry_k(ui, el, 0.2 + 0.015 * i as f32, 0.8));
             let empty = d.progress.iter().all(|v| *v <= 0.0);
@@ -717,12 +774,31 @@ impl egui::Widget for BoardActiveDays {
         let d = m.days.get(st.day).copied().unwrap_or_default();
         let mins = d.progress[1] * self.goals[1];
         let rings = vec![
-            BoardRing::new("Move", format!("{} kcal", thousands((d.progress[0] * self.goals[0]) as f64)), d.progress[0]),
-            BoardRing::new("Exercise", format!("{}h {:02}m", (mins / 60.0) as u32, (mins % 60.0) as u32), d.progress[1]),
+            BoardRing::new(
+                "Move",
+                format!("{} kcal", thousands((d.progress[0] * self.goals[0]) as f64)),
+                d.progress[0],
+            ),
+            BoardRing::new(
+                "Exercise",
+                format!("{}h {:02}m", (mins / 60.0) as u32, (mins % 60.0) as u32),
+                d.progress[1],
+            ),
             BoardRing::new("Running", format!("{:.1} km", d.progress[2] * self.goals[2]), d.progress[2]),
         ];
         let title = format!("Activity for {} {}, {}", m.name, st.day + 1, self.year);
-        activity_panel(ui, &painter, id.with("rings"), right, &title, &rings, 17.0, response.hover_pos().filter(|q| right.contains(*q)), false, false);
+        activity_panel(
+            ui,
+            &painter,
+            id.with("rings"),
+            right,
+            &title,
+            &rings,
+            17.0,
+            response.hover_pos().filter(|q| right.contains(*q)),
+            false,
+            false,
+        );
         for r in [&lresp, &rresp] {
             if r.hovered() {
                 ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -738,10 +814,19 @@ fn paint_fade(painter: &Painter, t: &Theme, vp: Rect, top: bool, bottom: bool) {
     let inner = vp.shrink2(vec2(1.0, 1.0));
     if top {
         let r = Rect::from_min_size(inner.min + vec2(0.0, 0.0), vec2(inner.width(), h));
-        glowkit_core::paint::quad(painter, [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()], [bg, bg, Color32::TRANSPARENT, Color32::TRANSPARENT]);
+        glowkit_core::paint::quad(
+            painter,
+            [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()],
+            [bg, bg, Color32::TRANSPARENT, Color32::TRANSPARENT],
+        );
     }
     if bottom {
-        let r = Rect::from_min_max(pos2(inner.min.x + 6.0, inner.max.y - h), pos2(inner.max.x - 6.0, inner.max.y - 6.0));
-        glowkit_core::paint::quad(painter, [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()], [Color32::TRANSPARENT, Color32::TRANSPARENT, bg, bg]);
+        let r =
+            Rect::from_min_max(pos2(inner.min.x + 6.0, inner.max.y - h), pos2(inner.max.x - 6.0, inner.max.y - 6.0));
+        glowkit_core::paint::quad(
+            painter,
+            [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()],
+            [Color32::TRANSPARENT, Color32::TRANSPARENT, bg, bg],
+        );
     }
 }

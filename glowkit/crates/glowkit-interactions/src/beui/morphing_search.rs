@@ -74,9 +74,11 @@ impl<'a> MorphingSearch<'a> {
         let id = resp.id;
         let now = ui.input(|i| i.time);
         let recent0 = self.recent.clone();
-        let st0: SearchState = glowkit_core::state(ui, id, || SearchState { recents: recent0, open: false, since: now, auto_open: false });
+        let st0: SearchState =
+            glowkit_core::state(ui, id, || SearchState { recents: recent0, open: false, since: now, auto_open: false });
         let q = self.query.to_lowercase();
-        let rows: Vec<String> = st0.recents.iter().filter(|r| q.is_empty() || r.to_lowercase().contains(&q)).cloned().collect();
+        let rows: Vec<String> =
+            st0.recents.iter().filter(|r| q.is_empty() || r.to_lowercase().contains(&q)).cloned().collect();
         let nrows = rows.len().max(1);
         let panel_h = bar_h + 34.0 + nrows as f32 * row_h + 6.0;
         let open_rect = Rect::from_min_max(pos2(bar.min.x, bar.max.y - panel_h), bar.max);
@@ -103,7 +105,8 @@ impl<'a> MorphingSearch<'a> {
             }
         }
         // text input
-        let input_rect = Rect::from_min_max(pos2(chip_x + 6.0, bar.min.y + 8.0), pos2(bar.max.x - 16.0, bar.max.y - 8.0));
+        let input_rect =
+            Rect::from_min_max(pos2(chip_x + 6.0, bar.min.y + 8.0), pos2(bar.max.x - 16.0, bar.max.y - 8.0));
         let te_id = id.with("te");
         let focused = ui.memory(|m| m.has_focus(te_id));
         // rows
@@ -225,7 +228,8 @@ impl<'a> MorphingSearch<'a> {
             let ha = spring(ui, id.with("ha"), if hov.is_some() && open { 1.0 } else { 0.0 }, 300.0, 26.0);
             let top = rect.min.y + 34.0;
             if ha > 0.01 && !rows.is_empty() {
-                let hr = Rect::from_min_size(pos2(rect.min.x + 6.0, top + hy * row_h), vec2(rect.width() - 12.0, row_h));
+                let hr =
+                    Rect::from_min_size(pos2(rect.min.x + 6.0, top + hy * row_h), vec2(rect.width() - 12.0, row_h));
                 clip.rect_filled(hr, cr(12.0), with_alpha(hover_fill(&t), ha * ka));
             }
             if rows.is_empty() {
@@ -243,8 +247,21 @@ impl<'a> MorphingSearch<'a> {
                 let y = top + row_h * (i as f32 + 0.5) + (1.0 - e) * 10.0;
                 let col = if hov == Some(i) { t.foreground } else { mix(t.foreground, t.muted_foreground, 0.2) };
                 icon(&clip, BeIcon::Clock, pos2(rect.min.x + 26.0, y), 13.0, with_alpha(t.muted_foreground, a), 1.2);
-                clip.text(pos2(rect.min.x + 46.0, y), Align2::LEFT_CENTER, r, FontId::proportional(13.5), with_alpha(col, a));
-                icon(&clip, BeIcon::Close, pos2(rect.max.x - 24.0, y), 9.0, with_alpha(t.muted_foreground, a * 0.8), 1.2);
+                clip.text(
+                    pos2(rect.min.x + 46.0, y),
+                    Align2::LEFT_CENTER,
+                    r,
+                    FontId::proportional(13.5),
+                    with_alpha(col, a),
+                );
+                icon(
+                    &clip,
+                    BeIcon::Close,
+                    pos2(rect.max.x - 24.0, y),
+                    9.0,
+                    with_alpha(t.muted_foreground, a * 0.8),
+                    1.2,
+                );
             }
             if open {
                 if let Some(p) = pointer {
@@ -266,7 +283,13 @@ impl<'a> MorphingSearch<'a> {
         icon(&fg_painter, BeIcon::Search, pos2(bar.min.x + 24.0, by), 15.0, t.muted_foreground, 1.5);
         for (r, tag) in &chip_rects {
             fg_painter.rect_filled(*r, cr(15.0), hover_fill(&t));
-            fg_painter.text(pos2(r.min.x + 12.0, r.center().y), Align2::LEFT_CENTER, tag, FontId::proportional(13.0), t.foreground);
+            fg_painter.text(
+                pos2(r.min.x + 12.0, r.center().y),
+                Align2::LEFT_CENTER,
+                tag,
+                FontId::proportional(13.0),
+                t.foreground,
+            );
             icon(&fg_painter, BeIcon::Close, pos2(r.max.x - 14.0, r.center().y), 8.0, t.muted_foreground, 1.2);
         }
         let ghost_n = if st.auto_open && self.query.is_empty() && !focused {
@@ -283,7 +306,7 @@ impl<'a> MorphingSearch<'a> {
                 .frame(egui::Frame::NONE)
                 .font(FontId::proportional(14.5))
                 .text_color(t.foreground)
-                .hint_text(egui::RichText::new(hint).color(t.muted_foreground))
+                .hint_text(egui::RichText::new(hint).color(t.muted_foreground)),
         );
         if resp.clicked() {
             te.request_focus();
@@ -297,11 +320,16 @@ impl<'a> MorphingSearch<'a> {
                 }
             }
             self.query.clear();
-            glowkit_core::with_state(ui, id, || st0.clone(), |s| {
-                s.recents.retain(|r| r != &qq);
-                s.recents.insert(0, qq.clone());
-                s.recents.truncate(5);
-            });
+            glowkit_core::with_state(
+                ui,
+                id,
+                || st0.clone(),
+                |s| {
+                    s.recents.retain(|r| r != &qq);
+                    s.recents.insert(0, qq.clone());
+                    s.recents.truncate(5);
+                },
+            );
         }
         if st.auto_open && self.query.is_empty() && !focused {
             // ghost typing while the panel demonstrates itself
@@ -317,7 +345,10 @@ impl<'a> MorphingSearch<'a> {
                     t.foreground,
                 );
                 if (since * 2.0) as i32 % 2 == 0 {
-                    fg_painter.line_segment([pos2(r.max.x + 1.0, by - 8.0), pos2(r.max.x + 1.0, by + 8.0)], Stroke::new(1.2, t.accent));
+                    fg_painter.line_segment(
+                        [pos2(r.max.x + 1.0, by - 8.0), pos2(r.max.x + 1.0, by + 8.0)],
+                        Stroke::new(1.2, t.accent),
+                    );
                 }
             }
         }

@@ -109,34 +109,97 @@ impl CrumpleItem {
         let blue = hex("#2B3A8F");
         match self {
             CrumpleItem::Letter { heading, body, signature } => {
-                ink.text(pos2(size.x * 0.5, 14.0 * s), Align2::CENTER_TOP, heading, FontId::monospace(10.0 * s), hex("#22222A"));
-                ink.text(pos2(size.x * 0.5, 27.0 * s), Align2::CENTER_TOP, "Harbour Road 12", FontId::proportional(5.5 * s), typed);
-                ink.rect(Rect::from_min_size(pos2(16.0 * s, 36.0 * s), vec2(size.x - 32.0 * s, 0.6 * s)), 0.0, with_alpha(typed, 0.4));
-                ink.text(pos2(size.x - 16.0 * s, 42.0 * s), Align2::RIGHT_TOP, "14 November", FontId::monospace(5.0 * s), typed);
+                ink.text(
+                    pos2(size.x * 0.5, 14.0 * s),
+                    Align2::CENTER_TOP,
+                    heading,
+                    FontId::monospace(10.0 * s),
+                    hex("#22222A"),
+                );
+                ink.text(
+                    pos2(size.x * 0.5, 27.0 * s),
+                    Align2::CENTER_TOP,
+                    "Harbour Road 12",
+                    FontId::proportional(5.5 * s),
+                    typed,
+                );
+                ink.rect(
+                    Rect::from_min_size(pos2(16.0 * s, 36.0 * s), vec2(size.x - 32.0 * s, 0.6 * s)),
+                    0.0,
+                    with_alpha(typed, 0.4),
+                );
+                ink.text(
+                    pos2(size.x - 16.0 * s, 42.0 * s),
+                    Align2::RIGHT_TOP,
+                    "14 November",
+                    FontId::monospace(5.0 * s),
+                    typed,
+                );
                 let mut y = 54.0 * s;
                 for line in body {
                     ink.text(pos2(16.0 * s, y), Align2::LEFT_TOP, line, FontId::monospace(5.4 * s), typed);
                     y += 8.0 * s;
                 }
-                ink.text(pos2(16.0 * s, y + 4.0 * s), Align2::LEFT_TOP, signature, FontId::proportional(12.0 * s), blue);
+                ink.text(
+                    pos2(16.0 * s, y + 4.0 * s),
+                    Align2::LEFT_TOP,
+                    signature,
+                    FontId::proportional(12.0 * s),
+                    blue,
+                );
                 // stamp
                 let st = Rect::from_min_size(pos2(size.x - 66.0 * s, size.y - 40.0 * s), vec2(50.0 * s, 17.0 * s));
                 let red = hex("#C8343C");
-                ink.shapes.push(egui::Shape::rect_stroke(st, 2.0 * s, egui::Stroke::new(1.3 * s, with_alpha(red, 0.8)), egui::StrokeKind::Inside));
-                ink.text(st.center(), Align2::CENTER_CENTER, "RECEIVED", FontId::monospace(6.4 * s), with_alpha(red, 0.85));
+                ink.shapes.push(egui::Shape::rect_stroke(
+                    st,
+                    2.0 * s,
+                    egui::Stroke::new(1.3 * s, with_alpha(red, 0.8)),
+                    egui::StrokeKind::Inside,
+                ));
+                ink.text(
+                    st.center(),
+                    Align2::CENTER_CENTER,
+                    "RECEIVED",
+                    FontId::monospace(6.4 * s),
+                    with_alpha(red, 0.85),
+                );
             }
             CrumpleItem::Photo { caption, .. } => {
-                ink.text(pos2(size.x * 0.12, size.y * 0.84), Align2::LEFT_TOP, caption, FontId::proportional(10.0 * s), hex("#2E3550"));
+                ink.text(
+                    pos2(size.x * 0.12, size.y * 0.84),
+                    Align2::LEFT_TOP,
+                    caption,
+                    FontId::proportional(10.0 * s),
+                    hex("#2E3550"),
+                );
             }
             CrumpleItem::Note { lines, signature } => {
-                ink.text(pos2(size.x - 14.0 * s, 12.0 * s), Align2::RIGHT_TOP, "3 March", FontId::proportional(6.0 * s), blue);
+                ink.text(
+                    pos2(size.x - 14.0 * s, 12.0 * s),
+                    Align2::RIGHT_TOP,
+                    "3 March",
+                    FontId::proportional(6.0 * s),
+                    blue,
+                );
                 let mut y = 24.0 * s;
                 for line in lines {
                     ink.text(pos2(14.0 * s, y), Align2::LEFT_TOP, line, FontId::proportional(8.0 * s), blue);
                     y += 11.0 * s;
                 }
-                ink.text(pos2(size.x - 18.0 * s, y + 8.0 * s), Align2::RIGHT_TOP, "with love,", FontId::proportional(6.5 * s), blue);
-                ink.text(pos2(size.x - 18.0 * s, y + 17.0 * s), Align2::RIGHT_TOP, signature, FontId::proportional(13.0 * s), blue);
+                ink.text(
+                    pos2(size.x - 18.0 * s, y + 8.0 * s),
+                    Align2::RIGHT_TOP,
+                    "with love,",
+                    FontId::proportional(6.5 * s),
+                    blue,
+                );
+                ink.text(
+                    pos2(size.x - 18.0 * s, y + 17.0 * s),
+                    Align2::RIGHT_TOP,
+                    signature,
+                    FontId::proportional(13.0 * s),
+                    blue,
+                );
             }
         }
     }
@@ -249,7 +312,12 @@ pub(crate) fn paint_desk(painter: &egui::Painter, rect: Rect, base: Color32, rad
     let dark = glowkit_core::color::shade(base, -0.05);
     let pts = paint::rounded_rect_points(rect, radius, 8);
     let c = rect.center() - vec2(0.0, rect.height() * 0.1);
-    paint::fill_convex_fn(painter, &pts, 8, paint::radial_fn(c, rect.width().max(rect.height()) * 0.62, &[light, base, dark]));
+    paint::fill_convex_fn(
+        painter,
+        &pts,
+        8,
+        paint::radial_fn(c, rect.width().max(rect.height()) * 0.62, &[light, base, dark]),
+    );
 }
 
 impl Widget for CrumpleReveal {
@@ -290,34 +358,39 @@ impl Widget for CrumpleReveal {
             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
         }
         let (forced, autoplay) = (self.open, self.autoplay);
-        let st = glowkit_core::with_state(ui, id, || st0.clone(), |s| {
-            s.c.resize(n, Spring::new(1.0).with(70.0, 12.0));
-            s.lift.resize(n, 0.0);
-            if clicked {
-                s.open = match hit {
-                    Some(i) if s.open != Some(i) => Some(i),
-                    _ => None,
-                };
-                s.auto_t = 0.0;
-            }
-            if let Some(f) = forced {
-                s.open = f.filter(|i| *i < n);
-            } else if autoplay && idle > 2.5 {
-                s.auto_t -= wdt;
-                if s.auto_t <= 0.0 {
-                    s.auto_step = (s.auto_step + 1) % (n + 1);
-                    s.open = if s.auto_step == n { None } else { Some(s.auto_step) };
-                    s.auto_t = if s.open.is_some() { 2.6 } else { 1.2 };
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0.clone(),
+            |s| {
+                s.c.resize(n, Spring::new(1.0).with(70.0, 12.0));
+                s.lift.resize(n, 0.0);
+                if clicked {
+                    s.open = match hit {
+                        Some(i) if s.open != Some(i) => Some(i),
+                        _ => None,
+                    };
+                    s.auto_t = 0.0;
                 }
-            }
-            for i in 0..n {
-                s.c[i].target = if s.open == Some(i) { 0.0 } else { 1.0 };
-                s.c[i].step(dt);
-                let target = if hit == Some(i) { 1.0 } else { 0.0 };
-                s.lift[i] = glowkit_core::anim::approach(s.lift[i], target, 10.0, dt);
-            }
-            s.clone()
-        });
+                if let Some(f) = forced {
+                    s.open = f.filter(|i| *i < n);
+                } else if autoplay && idle > 2.5 {
+                    s.auto_t -= wdt;
+                    if s.auto_t <= 0.0 {
+                        s.auto_step = (s.auto_step + 1) % (n + 1);
+                        s.open = if s.auto_step == n { None } else { Some(s.auto_step) };
+                        s.auto_t = if s.open.is_some() { 2.6 } else { 1.2 };
+                    }
+                }
+                for i in 0..n {
+                    s.c[i].target = if s.open == Some(i) { 0.0 } else { 1.0 };
+                    s.c[i].step(dt);
+                    let target = if hit == Some(i) { 1.0 } else { 0.0 };
+                    s.lift[i] = glowkit_core::anim::approach(s.lift[i], target, 10.0, dt);
+                }
+                s.clone()
+            },
+        );
         if st.c.iter().any(|s| !s.is_settled()) || st.lift.iter().any(|l| *l > 0.001 && *l < 0.999) {
             glowkit_core::animate(ui);
         }
@@ -346,7 +419,14 @@ impl Widget for CrumpleReveal {
             let flat_sh = (1.0 - cc * 1.6).clamp(0.0, 1.0);
             if flat_sh > 0.0 {
                 let r = Rect::from_center_size(center + sh_off * 0.6, self.sheet * 0.98);
-                paint::soft_shadow(&painter, r, 4.0, 18.0, Vec2::ZERO, Color32::from_black_alpha((60.0 * flat_sh) as u8));
+                paint::soft_shadow(
+                    &painter,
+                    r,
+                    4.0,
+                    18.0,
+                    Vec2::ZERO,
+                    Color32::from_black_alpha((60.0 * flat_sh) as u8),
+                );
             }
             let ball_sh = sstep(0.3, 0.9, cc);
             if ball_sh > 0.0 {
@@ -499,7 +579,8 @@ impl Widget for CrumpleCarousel {
         let step = self.poster.x * 0.62 * self.spread;
         let drag = if response.dragged() { response.drag_delta().x } else { 0.0 };
         let released = response.drag_stopped();
-        let wheel = if response.hovered() { ui.input(|i| i.smooth_scroll_delta.x + i.smooth_scroll_delta.y) } else { 0.0 };
+        let wheel =
+            if response.hovered() { ui.input(|i| i.smooth_scroll_delta.x + i.smooth_scroll_delta.y) } else { 0.0 };
         let clicked = response.clicked().then(|| response.interact_pointer_pos()).flatten();
         let (progress, autoplay) = (self.progress, self.autoplay);
         let max = (n - 1) as f32;
@@ -552,7 +633,11 @@ impl Widget for CrumpleCarousel {
             glowkit_core::animate(ui);
         }
         if response.hovered() {
-            ui.ctx().set_cursor_icon(if response.dragged() { egui::CursorIcon::Grabbing } else { egui::CursorIcon::Grab });
+            ui.ctx().set_cursor_icon(if response.dragged() {
+                egui::CursorIcon::Grabbing
+            } else {
+                egui::CursorIcon::Grab
+            });
         }
         if !ui.is_rect_visible(rect) {
             return response;

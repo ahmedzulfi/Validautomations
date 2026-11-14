@@ -52,7 +52,13 @@ fn centered_in(ui: &mut Ui, rect: Rect, key: &str, f: impl FnOnce(&mut Ui)) {
 }
 
 /// The component on the left, a column of parameter sliders on the right (below when narrow).
-fn bench<P>(ui: &mut Ui, height: f32, p: &mut P, component: impl FnOnce(&mut Ui, &mut P), controls: impl FnOnce(&mut Ui, &mut P)) {
+fn bench<P>(
+    ui: &mut Ui,
+    height: f32,
+    p: &mut P,
+    component: impl FnOnce(&mut Ui, &mut P),
+    controls: impl FnOnce(&mut Ui, &mut P),
+) {
     let w = ui.available_width();
     let wide = w > 620.0;
     let (rect, _) = ui.allocate_exact_size(vec2(w, height), Sense::hover());
@@ -81,9 +87,16 @@ fn choice(ui: &mut Ui, label: &str, value: &mut f32, options: &[&str]) {
     let w = ui.available_width();
     let (rect, _) = ui.allocate_exact_size(vec2(w, 34.0), Sense::hover());
     let font = FontId::proportional(13.0);
-    ui.painter().text(pos2(rect.min.x + 2.0, rect.center().y), Align2::LEFT_CENTER, label, font.clone(), mix(t.muted_foreground, t.foreground, 0.55));
+    ui.painter().text(
+        pos2(rect.min.x + 2.0, rect.center().y),
+        Align2::LEFT_CENTER,
+        label,
+        font.clone(),
+        mix(t.muted_foreground, t.foreground, 0.55),
+    );
     let label_w = ui.painter().layout_no_wrap(label.into(), font.clone(), t.foreground).size().x;
-    let text_w: Vec<f32> = options.iter().map(|o| ui.painter().layout_no_wrap((*o).into(), font.clone(), t.foreground).size().x).collect();
+    let text_w: Vec<f32> =
+        options.iter().map(|o| ui.painter().layout_no_wrap((*o).into(), font.clone(), t.foreground).size().x).collect();
     let room = w - label_w - 20.0 - text_w.iter().sum::<f32>();
     let pad = (room / options.len() as f32).clamp(8.0, 20.0);
     let opt_w: Vec<f32> = text_w.iter().map(|x| x + pad).collect();
@@ -367,7 +380,7 @@ ui.add(ExpandableControl::new(&mut picked, "Rust").tint(true));"##,
             name: "Morphing Search",
             category: C,
             description: "A frosted search bar floating over a gallery rises into a panel of recent searches when focused, rows sliding in under a gliding highlight.",
-            covers: &["beUI: Morphing Search"],
+            covers: &["beUI: Morphing Search", "Bencho: Search"],
             code: r##"MorphingSearch::new(&mut query)
     .tags(&mut tags)
     .recent(["dashboards", "empty states", "pricing pages"])
@@ -402,7 +415,7 @@ ui.add(ExpandableControl::new(&mut picked, "Rust").tint(true));"##,
             name: "Morphing Modal",
             category: Category::Overlays,
             description: "A button that becomes its own sheet; picking a row re-measures the sheet, its height easing to the new page as the content slides across.",
-            covers: &["beUI: Morphing Modal"],
+            covers: &["beUI: Morphing Modal", "Motion Primitives: Morphing Popover"],
             code: r##"let done = MorphingModal::new("Open wallet options")
     .option(BeIcon::Eye, "View private key", "Private key", "Anyone with it controls the wallet.", "Reveal", false)
     .option(BeIcon::Trash, "Remove wallet", "Remove this wallet?", "You can import it again later.", "Remove", true)
@@ -635,7 +648,7 @@ ui.add(WalletCard::new(&mut balance).name("Main Wallet"));"##,
             name: "Bouncy Accordion",
             category: C,
             description: "Rows share one rounded block until one opens: it breaks away into its own card, gaps and corners springing around it as its text drops in with a bounce.",
-            covers: &["beUI: Bouncy Accordion"],
+            covers: &["beUI: Bouncy Accordion", "Motion Primitives: Disclosure"],
             code: r##"ui.add(
     BouncyAccordion::new()
         .item(BeIcon::Doc, "Release brief", "Collect launch notes, owners and risks.")

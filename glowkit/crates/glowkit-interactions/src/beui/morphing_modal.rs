@@ -50,7 +50,14 @@ pub struct MorphingModal {
 impl MorphingModal {
     /// A trigger button labelled `trigger`.
     pub fn new(trigger: impl Into<String>) -> Self {
-        Self { trigger: trigger.into(), title: "Options".into(), options: Vec::new(), size: None, width: 340.0, autoplay: true }
+        Self {
+            trigger: trigger.into(),
+            title: "Options".into(),
+            options: Vec::new(),
+            size: None,
+            width: 340.0,
+            autoplay: true,
+        }
     }
     /// Heading of the option list (default "Options").
     pub fn title(mut self, t: impl Into<String>) -> Self {
@@ -102,7 +109,8 @@ impl MorphingModal {
         let id = resp.id;
         let painter = ui.painter_at(area);
         let now = ui.input(|i| i.time);
-        let st0: ModalState = glowkit_core::state(ui, id, || ModalState { open: false, page: None, since: now, page_since: now });
+        let st0: ModalState =
+            glowkit_core::state(ui, id, || ModalState { open: false, page: None, since: now, page_since: now });
         let n = self.options.len();
         let pad = 18.0;
         let row_h = 44.0;
@@ -127,7 +135,12 @@ impl MorphingModal {
         let idle = idle_for(ui, id, ptr.is_some());
         let auto = self.autoplay && idle > 2.5;
         let close_btn = Rect::from_center_size(pos2(sheet.max.x - 24.0, sheet.min.y + 26.0), vec2(26.0, 26.0));
-        let row_rect = |i: usize| Rect::from_min_size(pos2(sheet.min.x + 10.0, sheet.min.y + 52.0 + i as f32 * (row_h + 4.0)), vec2(w - 20.0, row_h));
+        let row_rect = |i: usize| {
+            Rect::from_min_size(
+                pos2(sheet.min.x + 10.0, sheet.min.y + 52.0 + i as f32 * (row_h + 4.0)),
+                vec2(w - 20.0, row_h),
+            )
+        };
         let btn_y = sheet.max.y - pad - 40.0;
         let half = (w - pad * 2.0 - 10.0) / 2.0;
         let cancel_r = Rect::from_min_size(pos2(sheet.min.x + pad, btn_y), vec2(half, 40.0));
@@ -178,8 +191,13 @@ impl MorphingModal {
         }
         glowkit_core::set_state(ui, id, next);
         let st = next;
-        let ghost_row = if auto && st.open && st.page.is_none() && now - st.page_since > 0.8 { Some(((now / 9.0) as usize) % n.max(1)) } else { None };
-        let (rect, radius) = morph(ui, id.with("m"), if st.open { sheet } else { trig }, if st.open { 26.0 } else { 20.0 }, 300.0, 25.0);
+        let ghost_row = if auto && st.open && st.page.is_none() && now - st.page_since > 0.8 {
+            Some(((now / 9.0) as usize) % n.max(1))
+        } else {
+            None
+        };
+        let (rect, radius) =
+            morph(ui, id.with("m"), if st.open { sheet } else { trig }, if st.open { 26.0 } else { 20.0 }, 300.0, 25.0);
         let k = ((rect.height() - 40.0) / (sheet.height() - 40.0).max(1.0)).clamp(0.0, 1.0);
         if ptr.is_some_and(|p| (st.open && sheet.contains(p)) || (!st.open && trig.contains(p))) {
             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -200,7 +218,13 @@ impl MorphingModal {
         // trigger label fades as the box opens
         let la = (1.0 - k * 3.0).clamp(0.0, 1.0);
         if la > 0.0 {
-            clip.text(rect.center(), Align2::CENTER_CENTER, &self.trigger, FontId::proportional(14.0), with_alpha(t.foreground, la));
+            clip.text(
+                rect.center(),
+                Align2::CENTER_CENTER,
+                &self.trigger,
+                FontId::proportional(14.0),
+                with_alpha(t.foreground, la),
+            );
         }
         let ca = ((k - 0.35) / 0.65).clamp(0.0, 1.0);
         if ca <= 0.0 {
@@ -208,12 +232,17 @@ impl MorphingModal {
         }
         // page transition: 0 = list, 1 = detail
         let pk = spring(ui, id.with("page"), if st.page.is_some() { 1.0 } else { 0.0 }, 260.0, 26.0);
-        let shown_page = glowkit_core::with_state(ui, id.with("shown"), || 0usize, |v| {
-            if let Some(p) = st.page {
-                *v = p;
-            }
-            *v
-        });
+        let shown_page = glowkit_core::with_state(
+            ui,
+            id.with("shown"),
+            || 0usize,
+            |v| {
+                if let Some(p) = st.page {
+                    *v = p;
+                }
+                *v
+            },
+        );
         let top = rect.min.y;
         let x0 = rect.min.x;
         // close button
@@ -227,7 +256,13 @@ impl MorphingModal {
         let la = ca * (1.0 - pk * 2.0).clamp(0.0, 1.0);
         if la > 0.01 {
             let dx = -pk * 24.0;
-            clip.text(pos2(x0 + pad + dx, top + 26.0), Align2::LEFT_CENTER, &self.title, FontId::proportional(15.0), with_alpha(t.foreground, la));
+            clip.text(
+                pos2(x0 + pad + dx, top + 26.0),
+                Align2::LEFT_CENTER,
+                &self.title,
+                FontId::proportional(15.0),
+                with_alpha(t.foreground, la),
+            );
             let hov = ptr.and_then(|p| (0..n).find(|&i| row_rect(i).contains(p))).or(ghost_row);
             for (i, o) in self.options.iter().enumerate() {
                 let r = row_rect(i).translate(vec2(dx, rect.min.y - sheet.min.y));
@@ -235,8 +270,21 @@ impl MorphingModal {
                 clip.rect_filled(r, cr(14.0), with_alpha(fill, la));
                 let col = if o.danger { t.destructive } else { t.foreground };
                 icon(&clip, o.icon, pos2(r.min.x + 22.0, r.center().y), 14.0, with_alpha(col, la), 1.4);
-                clip.text(pos2(r.min.x + 42.0, r.center().y), Align2::LEFT_CENTER, &o.label, FontId::proportional(13.5), with_alpha(col, la));
-                icon(&clip, BeIcon::ChevronRight, pos2(r.max.x - 18.0, r.center().y), 10.0, with_alpha(t.muted_foreground, la), 1.3);
+                clip.text(
+                    pos2(r.min.x + 42.0, r.center().y),
+                    Align2::LEFT_CENTER,
+                    &o.label,
+                    FontId::proportional(13.5),
+                    with_alpha(col, la),
+                );
+                icon(
+                    &clip,
+                    BeIcon::ChevronRight,
+                    pos2(r.max.x - 18.0, r.center().y),
+                    10.0,
+                    with_alpha(t.muted_foreground, la),
+                    1.3,
+                );
             }
         }
         let da = ca * (pk * 2.0 - 1.0).clamp(0.0, 1.0);
@@ -247,15 +295,33 @@ impl MorphingModal {
             let ic = pos2(x0 + pad + 22.0 + dx, top + pad + 22.0);
             clip.circle_filled(ic, 22.0, with_alpha(accent, 0.14 * da));
             icon(&clip, o.icon, ic, 18.0, with_alpha(accent, da), 1.6);
-            clip.text(pos2(x0 + pad + dx, top + pad + 66.0), Align2::LEFT_CENTER, &o.title, FontId::proportional(16.0), with_alpha(t.foreground, da));
+            clip.text(
+                pos2(x0 + pad + dx, top + pad + 66.0),
+                Align2::LEFT_CENTER,
+                &o.title,
+                FontId::proportional(16.0),
+                with_alpha(t.foreground, da),
+            );
             let g = clip.layout(o.body.clone(), FontId::proportional(13.0), with_alpha(t.muted_foreground, da), body_w);
             clip.galley(pos2(x0 + pad + dx, top + pad + 82.0), g, t.muted_foreground);
             let by = rect.max.y - pad - 40.0;
             let cr1 = Rect::from_min_size(pos2(x0 + pad + dx, by), vec2(half, 40.0));
             let cr2 = Rect::from_min_size(pos2(x0 + pad + half + 10.0 + dx, by), vec2(half, 40.0));
             let hov_c = ptr.is_some_and(|p| cancel_r.contains(p));
-            clip.rect(cr1, cr(20.0), with_alpha(if hov_c { hover_fill(&t) } else { well(&t) }, da), Stroke::new(1.0, with_alpha(hairline(&t).color, da)), egui::StrokeKind::Inside);
-            clip.text(cr1.center(), Align2::CENTER_CENTER, "Back", FontId::proportional(13.5), with_alpha(t.foreground, da));
+            clip.rect(
+                cr1,
+                cr(20.0),
+                with_alpha(if hov_c { hover_fill(&t) } else { well(&t) }, da),
+                Stroke::new(1.0, with_alpha(hairline(&t).color, da)),
+                egui::StrokeKind::Inside,
+            );
+            clip.text(
+                cr1.center(),
+                Align2::CENTER_CENTER,
+                "Back",
+                FontId::proportional(13.5),
+                with_alpha(t.foreground, da),
+            );
             let (bf, bt) = if o.danger { (t.destructive, Color32::WHITE) } else { (t.primary, t.primary_foreground) };
             let hov_k = ptr.is_some_and(|p| confirm_r.contains(p));
             clip.rect_filled(cr2, cr(20.0), with_alpha(if hov_k { mix(bf, bt, 0.1) } else { bf }, da));

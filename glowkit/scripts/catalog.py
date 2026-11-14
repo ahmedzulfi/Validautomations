@@ -242,7 +242,8 @@ def main():
         sections.append("\n".join(sec))
     out += ["## Summary", "", "| Library | Covered | % |", "|---|---|---|"] + summary
     out += [f"| **Total** | **{total_have} / {total_all}** | **{round(100 * total_have / max(1, total_all))}%** |", ""]
-    out += [f"glowkit itself ships **{len(demos)}** gallery entries.", ""]
+    shown = sum(1 for d in demos if d.get("showcase", True))
+    out += [f"glowkit ships **{len(demos)}** components; the gallery showcases **{shown}** of them (plain primitives are kept as building blocks but not showcased).", ""]
     out += sections
     if other:
         out += ["", "## Also covers", ""]
@@ -252,7 +253,7 @@ def main():
     open(os.path.join(root, "CATALOG.md"), "w").write("\n".join(out) + "\n")
     data["total_have"], data["total_all"] = total_have, total_all
     json.dump(data, open(os.path.join(root, "website", "catalog.json"), "w"), indent=1)
-    print(f"{len(demos)} demos; parity {total_have}/{total_all}")
+    print(f"{len(demos)} demos ({sum(1 for d in demos if d.get('showcase', True))} showcased); parity {total_have}/{total_all}")
 
 if __name__ == "__main__":
     main()

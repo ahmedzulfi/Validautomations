@@ -6,7 +6,9 @@ use super::common::{
     view_progress, wall_dt,
 };
 use egui::epaint::{Mesh, Vertex};
-use egui::{pos2, vec2, Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, TextureId, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, TextureId, Ui, Vec2, Widget,
+};
 use glowkit_core::color::{hex, with_alpha};
 use glowkit_core::noise::{fbm3, noise3};
 use glowkit_core::{paint, Theme};
@@ -118,7 +120,12 @@ impl WarpGrid {
                 disc.add_triangle(0, 1 + k, 2 + k);
             }
             painter.add(Shape::mesh(disc));
-            paint::glow(&painter, c + vec2(-b * 0.15, -b * 0.25), b * 0.5, with_alpha(Color32::WHITE, if t.dark { 0.10 } else { 0.35 }));
+            paint::glow(
+                &painter,
+                c + vec2(-b * 0.15, -b * 0.25),
+                b * 0.5,
+                with_alpha(Color32::WHITE, if t.dark { 0.10 } else { 0.35 }),
+            );
         }
         let warp = |p: Pos2| -> (Pos2, f32) {
             let d = p - c;
@@ -144,7 +151,10 @@ impl WarpGrid {
                     continue; // a line crossing the well splits around the sphere
                 }
                 let k = (ka + kb) * 0.5;
-                let col = with_alpha(lerp_c(accent, if t.dark { Color32::WHITE } else { accent }, k * 0.4), (base_a + k * 0.75).min(1.0));
+                let col = with_alpha(
+                    lerp_c(accent, if t.dark { Color32::WHITE } else { accent }, k * 0.4),
+                    (base_a + k * 0.75).min(1.0),
+                );
                 let width = 1.0 + k * 0.6;
                 let dir = (bb - a).normalized().rot90() * (width * 0.5);
                 let i = mesh.vertices.len() as u32;
@@ -321,7 +331,9 @@ impl Widget for MarbleScroll {
                         let next = (s.target / h).round() + 1.0;
                         s.target = if next > (n - 1) as f32 { 0.0 } else { next * h };
                     }
-                    let mut sp = glowkit_core::Spring { value: s.pos, velocity: s.vel, target: s.target, ..Default::default() }.with(60.0, 13.0);
+                    let mut sp =
+                        glowkit_core::Spring { value: s.pos, velocity: s.vel, target: s.target, ..Default::default() }
+                            .with(60.0, 13.0);
                     sp.step(dt);
                     s.pos = sp.value.clamp(-20.0, max + 20.0);
                     s.vel = sp.velocity;
@@ -385,7 +397,8 @@ impl Widget for MarbleScroll {
                     let mut a = 1.0;
                     if let Some(sy) = seam {
                         let edge = sy
-                            + (fbm3(kx * 7.0, time * 0.4, i as f32, 4) * 40.0 + noise3(kx * 40.0, time, 2.0) * 9.0) * (0.5 + amp * 1.5);
+                            + (fbm3(kx * 7.0, time * 0.4, i as f32, 4) * 40.0 + noise3(kx * 40.0, time, 2.0) * 9.0)
+                                * (0.5 + amp * 1.5);
                         a = ((y - edge) / 3.0 + 0.5).clamp(0.0, 1.0);
                     }
                     let shade = 1.0 - 0.25 * near * amp.min(1.0) * marble.min(1.0) * (0.5 + 0.5 * swirl);
@@ -415,7 +428,9 @@ impl Widget for MarbleScroll {
             let pts: Vec<Pos2> = (0..=80)
                 .map(|k| {
                     let kx = k as f32 / 80.0;
-                    let edge = seam + (fbm3(kx * 7.0, time * 0.4, (i0 + 1) as f32, 4) * 40.0 + noise3(kx * 40.0, time, 2.0) * 9.0) * (0.5 + amp * 1.5);
+                    let edge = seam
+                        + (fbm3(kx * 7.0, time * 0.4, (i0 + 1) as f32, 4) * 40.0 + noise3(kx * 40.0, time, 2.0) * 9.0)
+                            * (0.5 + amp * 1.5);
                     pos2(rect.min.x + kx * rect.width(), edge)
                 })
                 .collect();
@@ -599,7 +614,11 @@ impl Widget for MosaicTrail {
                     let hv = hash3(x as i32, y as i32, 5);
                     if hv > 0.55 {
                         let g = if t.dark { 0.35 } else { 0.62 };
-                        mesh_rect(&mut dots, Rect::from_center_size(c + vec2(0.0, s * 0.12), vec2(s * 0.5, s * 0.22)), lerp_c(dot, Color32::from_gray((255.0 * g) as u8), 0.5));
+                        mesh_rect(
+                            &mut dots,
+                            Rect::from_center_size(c + vec2(0.0, s * 0.12), vec2(s * 0.5, s * 0.22)),
+                            lerp_c(dot, Color32::from_gray((255.0 * g) as u8), 0.5),
+                        );
                     }
                 } else {
                     tiles.push((x, y, hh));
@@ -631,7 +650,12 @@ impl Widget for MosaicTrail {
             let i = m.vertices.len() as u32;
             let col = (hh * 1.6).clamp(0.0, 1.0);
             let tint = Color32::WHITE;
-            for (p, q) in [(r.left_top(), uv.left_top()), (r.right_top(), uv.right_top()), (r.right_bottom(), uv.right_bottom()), (r.left_bottom(), uv.left_bottom())] {
+            for (p, q) in [
+                (r.left_top(), uv.left_top()),
+                (r.right_top(), uv.right_top()),
+                (r.right_bottom(), uv.right_bottom()),
+                (r.left_bottom(), uv.left_bottom()),
+            ] {
                 m.vertices.push(Vertex { pos: p, uv: q, color: tint });
             }
             m.add_triangle(i, i + 1, i + 2);
@@ -835,7 +859,12 @@ impl Widget for StepPath<'_> {
             let x0 = cx - tw / 2.0;
             painter.galley(pos2(x0, y), gn.clone(), with_alpha(t.muted_foreground, e));
             painter.galley(pos2(x0 + gn.size().x + 5.0, y), gt, with_alpha(t.foreground, e));
-            let mut job = egui::text::LayoutJob::simple(step.body.clone(), body_f.clone(), with_alpha(t.muted_foreground, e), (col_w - 24.0).max(60.0));
+            let mut job = egui::text::LayoutJob::simple(
+                step.body.clone(),
+                body_f.clone(),
+                with_alpha(t.muted_foreground, e),
+                (col_w - 24.0).max(60.0),
+            );
             job.halign = egui::Align::Center;
             let gb = painter.layout_job(job);
             painter.galley(pos2(cx, y + 28.0), gb, with_alpha(t.muted_foreground, e));

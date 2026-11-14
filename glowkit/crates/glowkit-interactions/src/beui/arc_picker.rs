@@ -119,7 +119,11 @@ impl egui::Widget for ArcPicker<'_> {
         let hovered = resp.hovered();
         let scroll = if hovered {
             let d = ui.input(|i| i.smooth_scroll_delta);
-            if vertical { d.y } else { d.y + d.x }
+            if vertical {
+                d.y
+            } else {
+                d.y + d.x
+            }
         } else {
             0.0
         };
@@ -241,10 +245,8 @@ impl egui::Widget for ArcPicker<'_> {
             paint_rotated(&painter, label, p, FontId::proportional(self.font * scale), col, rot);
         }
         // brackets around the middle slot, sized to the selected label
-        let tw = painter
-            .layout_no_wrap(self.items[sel].clone(), FontId::proportional(self.font), t.foreground)
-            .size()
-            .x;
+        let tw =
+            painter.layout_no_wrap(self.items[sel].clone(), FontId::proportional(self.font), t.foreground).size().x;
         let bw = spring(ui, id.with("bw"), tw + 26.0, 300.0, 18.0);
         let (dir, rot) = dir_fn(0.0);
         let mid = center + dir * r;

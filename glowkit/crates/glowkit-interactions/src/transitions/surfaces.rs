@@ -1,7 +1,9 @@
 //! Surface transitions: a card that resizes (its content reflowing live), a two-page card that
 //! slides side by side, a skeleton that pulses and reveals, and a 4 x 4 dot-matrix loader.
 
-use super::common::{avatar, bar, cr, layer, material, phase, skeleton, surface, ui_layer, MotionCurve, Tween, AVATAR_TONES};
+use super::common::{
+    avatar, bar, cr, layer, material, phase, skeleton, surface, ui_layer, MotionCurve, Tween, AVATAR_TONES,
+};
 use egui::emath::TSTransform;
 use egui::{pos2, vec2, Color32, FontId, Rect, Response, Sense, Ui, UiBuilder, Vec2, Widget};
 use glowkit_core::color::mix;
@@ -29,7 +31,14 @@ pub struct ResizeCard {
 impl ResizeCard {
     /// A card at its first size, or its second when `expanded`.
     pub fn new(expanded: bool) -> Self {
-        Self { expanded, a: vec2(220.0, 112.0), b: vec2(154.0, 128.0), dur: 0.3, curve: MotionCurve::SMOOTH_OUT, text: None }
+        Self {
+            expanded,
+            a: vec2(220.0, 112.0),
+            b: vec2(154.0, 128.0),
+            dur: 0.3,
+            curve: MotionCurve::SMOOTH_OUT,
+            text: None,
+        }
     }
     /// The two sizes (default 220 x 112 and 154 x 128).
     pub fn sizes(mut self, first: Vec2, second: Vec2) -> Self {
@@ -72,7 +81,14 @@ impl Widget for ResizeCard {
         match &self.text {
             None => {
                 let w = inner.width();
-                let rows = [(0.0, 0.45, 9.0), (16.0, 1.0, 6.0), (26.0, 1.0, 6.0), (36.0, 0.7, 6.0), (56.0, 1.0, 6.0), (66.0, 1.0, 6.0)];
+                let rows = [
+                    (0.0, 0.45, 9.0),
+                    (16.0, 1.0, 6.0),
+                    (26.0, 1.0, 6.0),
+                    (36.0, 0.7, 6.0),
+                    (56.0, 1.0, 6.0),
+                    (66.0, 1.0, 6.0),
+                ];
                 for (y, k, h) in rows {
                     let r = Rect::from_min_size(inner.min + vec2(0.0, y), vec2(w * k, h));
                     clip.rect_filled(r, cr(h / 2.0), skeleton(&t));
@@ -183,7 +199,8 @@ impl SidePager {
         let h = st.height.value(now, dur, MotionCurve::SMOOTH_OUT);
         let max_h = measured.iter().copied().fold(h, f32::max);
         let (outer, response) = ui.allocate_exact_size(vec2(self.width + 40.0, max_h + 40.0), Sense::hover());
-        let card = Rect::from_min_size(pos2(outer.center().x - self.width / 2.0, outer.min.y + 20.0), vec2(self.width, h));
+        let card =
+            Rect::from_min_size(pos2(outer.center().x - self.width / 2.0, outer.min.y + 20.0), vec2(self.width, h));
         material(ui.painter(), &t, card, 16.0, surface(&t));
         let k = MotionCurve::SMOOTH_OUT.at(age / dur);
         if k < 1.0 || st.height.moving(now, dur) {
@@ -195,7 +212,12 @@ impl SidePager {
         let mut heights = measured.clone();
         let mut run = |ui: &mut Ui, p: usize, xf: TSTransform, a: f32, blur: f32, interactive: bool| {
             let used = ui_layer(ui, xf, a, blur, |ui| {
-                let mut child = ui.new_child(UiBuilder::new().max_rect(content).id_salt(("page", p)).layout(egui::Layout::top_down(egui::Align::Min)));
+                let mut child = ui.new_child(
+                    UiBuilder::new()
+                        .max_rect(content)
+                        .id_salt(("page", p))
+                        .layout(egui::Layout::top_down(egui::Align::Min)),
+                );
                 child.set_clip_rect(clip);
                 if !interactive {
                     child.disable();
@@ -209,8 +231,22 @@ impl SidePager {
             heights[p] = used + self.pad * 2.0;
         };
         if k < 1.0 && st.prev != st.page {
-            run(ui, st.prev, TSTransform::from_translation(vec2(-dir * self.distance * k, 0.0)), 1.0 - k, self.blur * k, false);
-            run(ui, st.page, TSTransform::from_translation(vec2(dir * self.distance * (1.0 - k), 0.0)), k, self.blur * (1.0 - k), true);
+            run(
+                ui,
+                st.prev,
+                TSTransform::from_translation(vec2(-dir * self.distance * k, 0.0)),
+                1.0 - k,
+                self.blur * k,
+                false,
+            );
+            run(
+                ui,
+                st.page,
+                TSTransform::from_translation(vec2(dir * self.distance * (1.0 - k), 0.0)),
+                k,
+                self.blur * (1.0 - k),
+                true,
+            );
         } else {
             run(ui, st.page, TSTransform::IDENTITY, 1.0, 0.0, true);
         }
@@ -302,7 +338,15 @@ impl Widget for SkeletonReveal {
         let t = Theme::of(ui);
         let size = vec2(self.width, 60.0);
         let (rect, response) = ui.allocate_exact_size(size + vec2(20.0, 20.0), Sense::hover());
-        let ph = phase(ui, response.id, self.loaded, self.reveal, self.reveal, MotionCurve::EASE_IN_OUT, MotionCurve::EASE_IN_OUT);
+        let ph = phase(
+            ui,
+            response.id,
+            self.loaded,
+            self.reveal,
+            self.reveal,
+            MotionCurve::EASE_IN_OUT,
+            MotionCurve::EASE_IN_OUT,
+        );
         if !self.loaded {
             glowkit_core::animate(ui);
         }
@@ -430,8 +474,16 @@ impl Widget for DotMatrixLoader {
         if !ui.is_rect_visible(rect) {
             return response;
         }
-        let base = self.base.unwrap_or(if t.dark { Color32::from_rgb(0x3A, 0x3A, 0x3E) } else { Color32::from_rgb(0xD9, 0xD9, 0xD9) });
-        let active = self.active.unwrap_or(if t.dark { Color32::from_rgb(0xB8, 0xB8, 0xC2) } else { Color32::from_rgb(0x85, 0x85, 0x8F) });
+        let base = self.base.unwrap_or(if t.dark {
+            Color32::from_rgb(0x3A, 0x3A, 0x3E)
+        } else {
+            Color32::from_rgb(0xD9, 0xD9, 0xD9)
+        });
+        let active = self.active.unwrap_or(if t.dark {
+            Color32::from_rgb(0xB8, 0xB8, 0xC2)
+        } else {
+            Color32::from_rgb(0x85, 0x85, 0x8F)
+        });
         let round = self.round.unwrap_or(matches!(self.pattern, DotPattern::Orbit | DotPattern::Pulse));
         let now = glowkit_core::time(ui);
         let c = self.cycle;

@@ -913,7 +913,7 @@ ui.add(TrailNav::new(&mut path)
         name: "Swipe Image Viewer",
         category: Category::MicroInteractions,
         description: "A photo grid that grows into a full-screen viewer: swipe to page with rubber-banded edges, double-tap to zoom, drag down to fling it home.",
-        covers: &["suiss/ui: Image Viewer"],
+        covers: &["suiss/ui: Image Viewer", "beUI: Image Viewer"],
         code: r##"ui.add(SwipeImageViewer::new().images(6).bounce(35.0).zoom(2.5));"##,
         show: |ui| {
             let mut p = params(ui, "p", [35.0, 2.5, 6.0]);

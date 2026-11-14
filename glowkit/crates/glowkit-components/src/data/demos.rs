@@ -283,7 +283,7 @@ ui.add(TreeView::new(&nodes, &mut selected).open_depth(2));"##,
             name: "Accordion",
             category: C,
             description: "Stacked sections that expand with animated height, a rotating chevron and hover underline.",
-            covers: &["shadcn/ui: Accordion", "Animate UI: Accordion", "Origin UI: Accordion", "Motion Primitives: Accordion"],
+            covers: &["shadcn/ui: Accordion", "Animate UI: Accordion", "Origin UI: Accordion", "Motion Primitives: Accordion", "Transitions.dev: Accordion"],
             code: r##"Accordion::new("faq")
     .item_text("Is it accessible?", "Yes. It supports keyboard focus and screen readers.")
     .item_text("Is it styled?", "Yes. It comes with default styles that match the other components.")

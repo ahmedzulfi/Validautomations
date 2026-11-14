@@ -146,8 +146,16 @@ impl Widget for DitherLens {
                     } else if l > bayer4(cx as usize, cy as usize) * 0.5 {
                         // faint box outline for mid-tones
                         let o = cr.shrink(cell * 0.18);
-                        mesh_rect(&mut mesh, Rect::from_min_max(o.min, pos2(o.max.x, o.min.y + 0.8)), with_alpha(light, 0.55));
-                        mesh_rect(&mut mesh, Rect::from_min_max(o.min, pos2(o.min.x + 0.8, o.max.y)), with_alpha(light, 0.55));
+                        mesh_rect(
+                            &mut mesh,
+                            Rect::from_min_max(o.min, pos2(o.max.x, o.min.y + 0.8)),
+                            with_alpha(light, 0.55),
+                        );
+                        mesh_rect(
+                            &mut mesh,
+                            Rect::from_min_max(o.min, pos2(o.min.x + 0.8, o.max.y)),
+                            with_alpha(light, 0.55),
+                        );
                     }
                 }
             }
@@ -407,7 +415,8 @@ impl Widget for HoloCard {
         let max = self.tilt.to_radians();
         let ry = glowkit_core::anim::spring(ui, id.with("ry"), -nx * max, 120.0, 14.0);
         let rx = glowkit_core::anim::spring(ui, id.with("rx"), ny * max, 120.0, 14.0);
-        let lift = glowkit_core::anim::spring(ui, id.with("lift"), if hover.is_some() { 1.0 } else { 0.0 }, 200.0, 20.0);
+        let lift =
+            glowkit_core::anim::spring(ui, id.with("lift"), if hover.is_some() { 1.0 } else { 0.0 }, 200.0, 20.0);
         glowkit_core::animate(ui);
         let cam = Cam { center: card.center(), focal: 900.0 };
         let (w, h) = (self.size.x, self.size.y);
@@ -418,30 +427,41 @@ impl Widget for HoloCard {
         };
         let painter = ui.painter_at(rect.expand(30.0));
         let radius = 22.0;
-        let outline: Vec<Pos2> = glowkit_core::paint::rounded_rect_points(Rect::from_min_size(Pos2::ZERO, self.size), radius, 6)
-            .into_iter()
-            .map(|p| map(p.to_vec2()))
-            .collect();
+        let outline: Vec<Pos2> =
+            glowkit_core::paint::rounded_rect_points(Rect::from_min_size(Pos2::ZERO, self.size), radius, 6)
+                .into_iter()
+                .map(|p| map(p.to_vec2()))
+                .collect();
         let sh = if t.dark { Color32::from_black_alpha(120) } else { Color32::from_rgba_unmultiplied(30, 20, 60, 34) };
         let shadow: Vec<Pos2> = outline.iter().map(|p| card.center() + (*p - card.center()) * 0.9).collect();
         poly_shadow(&painter, &shadow, vec2(-ry * 50.0, 26.0 + rx * 24.0 + 8.0 * lift), 34.0, sh);
         let base = self.base.unwrap_or(hex("#121219"));
         let foil = self.foil;
         let glare = vec2(0.5 - ry * 2.4, 0.42 + rx * 2.4);
-        surface_grid(&painter, None, Rect::ZERO, 18, 24, self.size, radius, |u, v| map(vec2(u * w, v * h)), |u, v| {
-            let n = noise3(u * 2.2, v * 2.6, time * 0.15);
-            let hue = 360.0 * (0.55 * u + 0.75 * v + 1.9 * ry - 1.6 * rx + 0.35 * n) + time * 8.0;
-            let film = hsv(hue, 0.5, 1.0);
-            let band = 0.5 + 0.5 * ((u * 0.8 + v * 1.4 + ry * 2.0 - rx * 1.5) * TAU * 0.9 + n * 2.0).sin();
-            let k = (0.07 + 0.2 * band * band) * foil;
-            let mut c = lerp_c(base, film, k.min(0.9));
-            let d = (vec2(u, v) - glare).length();
-            let g = (-(d * d) / 0.07).exp();
-            c = lighten(c, g * 0.22 * foil.min(1.2));
-            // foil grain
-            let gr = hash3((u * 400.0) as i32, (v * 520.0) as i32, 3) - 0.5;
-            lighten(c, (gr * 0.06).max(0.0))
-        });
+        surface_grid(
+            &painter,
+            None,
+            Rect::ZERO,
+            18,
+            24,
+            self.size,
+            radius,
+            |u, v| map(vec2(u * w, v * h)),
+            |u, v| {
+                let n = noise3(u * 2.2, v * 2.6, time * 0.15);
+                let hue = 360.0 * (0.55 * u + 0.75 * v + 1.9 * ry - 1.6 * rx + 0.35 * n) + time * 8.0;
+                let film = hsv(hue, 0.5, 1.0);
+                let band = 0.5 + 0.5 * ((u * 0.8 + v * 1.4 + ry * 2.0 - rx * 1.5) * TAU * 0.9 + n * 2.0).sin();
+                let k = (0.07 + 0.2 * band * band) * foil;
+                let mut c = lerp_c(base, film, k.min(0.9));
+                let d = (vec2(u, v) - glare).length();
+                let g = (-(d * d) / 0.07).exp();
+                c = lighten(c, g * 0.22 * foil.min(1.2));
+                // foil grain
+                let gr = hash3((u * 400.0) as i32, (v * 520.0) as i32, 3) - 0.5;
+                lighten(c, (gr * 0.06).max(0.0))
+            },
+        );
         // iridescent rim
         let rim: Vec<Pos2> = outline.clone();
         glowkit_core::paint::gradient_polyline(&painter, &rim, true, 1.2, |s| {

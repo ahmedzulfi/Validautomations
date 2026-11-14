@@ -1,5 +1,7 @@
 use super::common::{clay, ellipse_pts, idle_time, lerp_c, sstep, wall_dt};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Vec2, Widget,
+};
 use glowkit_core::anim::Spring;
 use glowkit_core::color::{shade, with_alpha};
 use glowkit_core::{hex, paint, Theme};
@@ -130,7 +132,11 @@ fn paint_tortoise(p: &egui::Painter, base: Pos2, s: f32, parts: [f32; 4], time: 
     let eye = head + vec2(5.0 * s, -5.0 * s);
     p.circle_filled(eye, 4.6 * s, hex("#FBFBF2"));
     let open = 1.0 - blink;
-    p.add(Shape::convex_polygon(ellipse_pts(eye + vec2(1.0 * s, 0.4 * s), vec2(2.6 * s, 2.8 * s * open.max(0.08)), 0.0, 16), hex("#1C1A16"), Stroke::NONE));
+    p.add(Shape::convex_polygon(
+        ellipse_pts(eye + vec2(1.0 * s, 0.4 * s), vec2(2.6 * s, 2.8 * s * open.max(0.08)), 0.0, 16),
+        hex("#1C1A16"),
+        Stroke::NONE,
+    ));
     p.circle_filled(eye + vec2(0.2, -1.4) * s, 0.9 * s * open, Color32::WHITE);
     // mouth
     let m0 = head + vec2(8.0 * s, 6.0 * s);
@@ -172,7 +178,11 @@ fn paint_tortoise(p: &egui::Painter, base: Pos2, s: f32, parts: [f32; 4], time: 
     let stops = [shade(shell, 0.16), shell, shade(shell, -0.2)];
     paint::fill_convex_fn(p, &outline, 6, paint::radial_fn(light, rx * 1.6, &stops));
     // rim band
-    p.add(Shape::convex_polygon(ellipse_pts(base + vec2(0.0, -5.0 * s), vec2(rx * 1.02, 7.0 * s), 0.0, 40), shade(shell, -0.12), Stroke::NONE));
+    p.add(Shape::convex_polygon(
+        ellipse_pts(base + vec2(0.0, -5.0 * s), vec2(rx * 1.02, 7.0 * s), 0.0, 40),
+        shade(shell, -0.12),
+        Stroke::NONE,
+    ));
     // scute pattern (projected onto the dome)
     let on_dome = |u: f32, h: f32| {
         // u -1..1 across, h 0..1 up the dome
@@ -182,7 +192,8 @@ fn paint_tortoise(p: &egui::Painter, base: Pos2, s: f32, parts: [f32; 4], time: 
     };
     let line_c = with_alpha(shade(shell, -0.32), 0.55);
     for u in [-0.55f32, 0.0, 0.55] {
-        let pts: Vec<Pos2> = (0..=10).map(|k| on_dome(u + (k as f32 / 10.0) * 0.0, 0.12 + k as f32 / 10.0 * 0.62)).collect();
+        let pts: Vec<Pos2> =
+            (0..=10).map(|k| on_dome(u + (k as f32 / 10.0) * 0.0, 0.12 + k as f32 / 10.0 * 0.62)).collect();
         p.add(Shape::line(pts, Stroke::new(1.2 * s, line_c)));
     }
     let ring: Vec<Pos2> = (0..=20).map(|k| on_dome(-0.95 + k as f32 / 20.0 * 1.9, 0.42)).collect();
@@ -200,7 +211,9 @@ fn paint_tortoise(p: &egui::Painter, base: Pos2, s: f32, parts: [f32; 4], time: 
     let studs = parts[3];
     if studs > 0.01 {
         let gold = hex("#E9B949");
-        for (k, (u, h)) in [(-0.55f32, 0.25f32), (0.0, 0.25), (0.55, 0.25), (-0.3, 0.42), (0.3, 0.42)].iter().enumerate() {
+        for (k, (u, h)) in
+            [(-0.55f32, 0.25f32), (0.0, 0.25), (0.55, 0.25), (-0.3, 0.42), (0.3, 0.42)].iter().enumerate()
+        {
             let c = on_dome(*u, *h);
             clay(p, c, Vec2::splat(3.6 * s * studs), 0.0, gold);
             let tw = ((time * 3.0 + k as f32 * 1.3).sin() * 0.5 + 0.5).powi(6) * studs;
@@ -243,7 +256,14 @@ impl Widget for TurtlePassword<'_> {
             blink: 0.0,
         });
         // card
-        paint::soft_shadow(ui.painter(), card, 16.0, 24.0, vec2(0.0, 10.0), Color32::from_black_alpha(if t.dark { 110 } else { 28 }));
+        paint::soft_shadow(
+            ui.painter(),
+            card,
+            16.0,
+            24.0,
+            vec2(0.0, 10.0),
+            Color32::from_black_alpha(if t.dark { 110 } else { 28 }),
+        );
         ui.painter().rect_filled(card, 16.0, if t.dark { shade(t.card, 0.03) } else { Color32::WHITE });
         ui.painter().rect_stroke(card, 16, Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
         // text field
@@ -269,7 +289,12 @@ impl Widget for TurtlePassword<'_> {
             }
         }
         ui.painter().rect_filled(field, 10.0, if t.dark { t.muted } else { hex("#FBFBFA") });
-        ui.painter().rect_stroke(field, 10, Stroke::new(if focused { 1.6 } else { 1.0 }, if focused { t.foreground } else { t.border }), egui::StrokeKind::Inside);
+        ui.painter().rect_stroke(
+            field,
+            10,
+            Stroke::new(if focused { 1.6 } else { 1.0 }, if focused { t.foreground } else { t.border }),
+            egui::StrokeKind::Inside,
+        );
         let edit_rect = Rect::from_min_max(field.min + vec2(12.0, 9.0), pos2(eye.min.x - 4.0, field.max.y - 7.0));
         let te = egui::TextEdit::singleline(self.text)
             .id(edit_id)
@@ -278,7 +303,9 @@ impl Widget for TurtlePassword<'_> {
             .hint_text("Enter a password")
             .font(FontId::proportional(14.0))
             .desired_width(edit_rect.width());
-        let mut child = ui.new_child(egui::UiBuilder::new().max_rect(edit_rect).layout(egui::Layout::left_to_right(egui::Align::Center)));
+        let mut child = ui.new_child(
+            egui::UiBuilder::new().max_rect(edit_rect).layout(egui::Layout::left_to_right(egui::Align::Center)),
+        );
         let r = child.add(te);
         let eye_r = ui.interact(eye, id.with("eye"), Sense::click());
         if eye_r.hovered() {
@@ -291,37 +318,50 @@ impl Widget for TurtlePassword<'_> {
         let met = rules(self.text, self.min_len);
         let count = met.iter().filter(|m| **m).count();
         let bounce = self.bounce;
-        let st = glowkit_core::with_state(ui, id, || st0.clone(), |s| {
-            (s.auto_owned, s.auto_t, s.auto_i) = st_auto;
-            if toggle_show {
-                s.show = !s.show;
-            }
-            for k in 0..4 {
-                s.parts[k].target = if count > k { 1.0 } else { 0.0 };
-                s.parts[k].stiffness = 220.0;
-                s.parts[k].damping = 9.0 / bounce;
-                s.parts[k].step(dt);
-                s.met[k] += ((if met[k] { 1.0 } else { 0.0 }) - s.met[k]) * (1.0 - (-12.0 * dt).exp());
-            }
-            s.blink = {
-                let phase = (time % 3.7) / 3.7;
-                if phase > 0.95 { ((phase - 0.95) / 0.05 * PI).sin() } else { 0.0 }
-            };
-            s.clone()
-        });
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0.clone(),
+            |s| {
+                (s.auto_owned, s.auto_t, s.auto_i) = st_auto;
+                if toggle_show {
+                    s.show = !s.show;
+                }
+                for k in 0..4 {
+                    s.parts[k].target = if count > k { 1.0 } else { 0.0 };
+                    s.parts[k].stiffness = 220.0;
+                    s.parts[k].damping = 9.0 / bounce;
+                    s.parts[k].step(dt);
+                    s.met[k] += ((if met[k] { 1.0 } else { 0.0 }) - s.met[k]) * (1.0 - (-12.0 * dt).exp());
+                }
+                s.blink = {
+                    let phase = (time % 3.7) / 3.7;
+                    if phase > 0.95 {
+                        ((phase - 0.95) / 0.05 * PI).sin()
+                    } else {
+                        0.0
+                    }
+                };
+                s.clone()
+            },
+        );
         glowkit_core::animate(ui);
         let painter = ui.painter_at(outer);
         // eye icon
         let ec = eye.center();
         let open = st.show;
-        let lid: Vec<Pos2> = (0..=16).map(|i| {
-            let a = i as f32 / 16.0 * PI;
-            ec + vec2(-a.cos() * 8.0, -a.sin() * 4.5)
-        }).collect();
-        let lid2: Vec<Pos2> = (0..=16).map(|i| {
-            let a = i as f32 / 16.0 * PI;
-            ec + vec2(-a.cos() * 8.0, a.sin() * 4.5)
-        }).collect();
+        let lid: Vec<Pos2> = (0..=16)
+            .map(|i| {
+                let a = i as f32 / 16.0 * PI;
+                ec + vec2(-a.cos() * 8.0, -a.sin() * 4.5)
+            })
+            .collect();
+        let lid2: Vec<Pos2> = (0..=16)
+            .map(|i| {
+                let a = i as f32 / 16.0 * PI;
+                ec + vec2(-a.cos() * 8.0, a.sin() * 4.5)
+            })
+            .collect();
         painter.add(Shape::line(lid, Stroke::new(1.3, t.muted_foreground)));
         painter.add(Shape::line(lid2, Stroke::new(1.3, t.muted_foreground)));
         painter.circle_stroke(ec, 2.4, Stroke::new(1.3, t.muted_foreground));
@@ -333,12 +373,37 @@ impl Widget for TurtlePassword<'_> {
         paint_scene(&scene_p, panel, time);
         let parts = std::array::from_fn(|k| st.parts[k].value.max(0.0));
         let base = pos2(panel.center().x - 18.0, panel.max.y - 34.0);
-        paint_tortoise(&scene_p, base, (panel.width() / 330.0).clamp(0.75, 1.2), parts, time, st.blink, sstep(3.0, 4.0, count as f32 + st.parts[3].value - 1.0));
+        paint_tortoise(
+            &scene_p,
+            base,
+            (panel.width() / 330.0).clamp(0.75, 1.2),
+            parts,
+            time,
+            st.blink,
+            sstep(3.0, 4.0, count as f32 + st.parts[3].value - 1.0),
+        );
         grass_blades(&scene_p, panel, time);
-        painter.rect_stroke(panel, 12, Stroke::new(6.0, if t.dark { shade(t.card, 0.03) } else { Color32::WHITE }), egui::StrokeKind::Outside);
+        painter.rect_stroke(
+            panel,
+            12,
+            Stroke::new(6.0, if t.dark { shade(t.card, 0.03) } else { Color32::WHITE }),
+            egui::StrokeKind::Outside,
+        );
         // texts
-        painter.text(pos2(x0, panel.max.y + 18.0), Align2::LEFT_TOP, "Create a password", FontId::proportional(19.0), t.foreground);
-        painter.text(pos2(x0, panel.max.y + 50.0), Align2::LEFT_TOP, "Password", FontId::proportional(12.0), t.foreground);
+        painter.text(
+            pos2(x0, panel.max.y + 18.0),
+            Align2::LEFT_TOP,
+            "Create a password",
+            FontId::proportional(19.0),
+            t.foreground,
+        );
+        painter.text(
+            pos2(x0, panel.max.y + 50.0),
+            Align2::LEFT_TOP,
+            "Password",
+            FontId::proportional(12.0),
+            t.foreground,
+        );
         // strength
         let labels = ["Too short", "Weak", "Fair", "Strong", "Very strong"];
         let colors = [t.muted_foreground, hex("#E5484D"), hex("#F59E0B"), hex("#EAB308"), hex("#22A06B")];
@@ -349,22 +414,56 @@ impl Widget for TurtlePassword<'_> {
             painter.rect_filled(r, 2.0, with_alpha(t.muted_foreground, 0.18));
             let f = (st.parts[k].value).clamp(0.0, 1.0);
             if f > 0.0 {
-                painter.rect_filled(Rect::from_min_size(r.min, vec2(r.width() * f, r.height())), 2.0, colors[count.max(1)]);
+                painter.rect_filled(
+                    Rect::from_min_size(r.min, vec2(r.width() * f, r.height())),
+                    2.0,
+                    colors[count.max(1)],
+                );
             }
         }
         if self.text.is_empty() {
-            painter.text(pos2(x0, sy + 12.0), Align2::LEFT_TOP, format!("{}'s shell grows stronger with your password.", self.name), FontId::proportional(11.0), t.muted_foreground);
+            painter.text(
+                pos2(x0, sy + 12.0),
+                Align2::LEFT_TOP,
+                format!("{}'s shell grows stronger with your password.", self.name),
+                FontId::proportional(11.0),
+                t.muted_foreground,
+            );
         } else {
-            let r = painter.text(pos2(x0, sy + 12.0), Align2::LEFT_TOP, "Strength", FontId::proportional(11.0), t.muted_foreground);
-            painter.text(pos2(r.max.x + 6.0, sy + 12.0), Align2::LEFT_TOP, labels[count], FontId::proportional(11.0), colors[count]);
+            let r = painter.text(
+                pos2(x0, sy + 12.0),
+                Align2::LEFT_TOP,
+                "Strength",
+                FontId::proportional(11.0),
+                t.muted_foreground,
+            );
+            painter.text(
+                pos2(r.max.x + 6.0, sy + 12.0),
+                Align2::LEFT_TOP,
+                labels[count],
+                FontId::proportional(11.0),
+                colors[count],
+            );
         }
         // rules
-        let names = ["A number".to_string(), "An uppercase letter".to_string(), format!("{} or more characters", self.min_len), "A symbol".to_string()];
+        let names = [
+            "A number".to_string(),
+            "An uppercase letter".to_string(),
+            format!("{} or more characters", self.min_len),
+            "A symbol".to_string(),
+        ];
         for k in 0..4 {
             let y = sy + 40.0 + k as f32 * 24.0;
             let m = st.met[k];
             let row = Rect::from_min_size(pos2(x0 - 6.0, y - 3.0), vec2(inner_w + 12.0, 22.0));
-            painter.rect_filled(row, 6.0, with_alpha(hex("#22A06B"), 0.1 * m * (1.0 - sstep(0.0, 1.0, st.parts[k].velocity.abs().min(1.0)) * 0.0)));
+            painter.rect_filled(
+                row,
+                6.0,
+                with_alpha(
+                    hex("#22A06B"),
+                    0.1 * m * (1.0 - sstep(0.0, 1.0, st.parts[k].velocity.abs().min(1.0)) * 0.0),
+                ),
+            );
             let c = pos2(x0 + 7.0, y + 8.0);
             painter.circle_stroke(c, 7.0, Stroke::new(1.0, with_alpha(t.muted_foreground, 0.5 * (1.0 - m))));
             if m > 0.01 {
@@ -372,14 +471,30 @@ impl Widget for TurtlePassword<'_> {
                 let ck = [c + vec2(-3.0, 0.2), c + vec2(-0.8, 2.6), c + vec2(3.4, -2.4)];
                 painter.add(Shape::line(ck.to_vec(), Stroke::new(1.6, with_alpha(Color32::WHITE, m))));
             }
-            painter.text(pos2(x0 + 22.0, y + 8.0), Align2::LEFT_CENTER, &names[k], FontId::proportional(12.5), lerp_c(t.muted_foreground, t.foreground, m));
+            painter.text(
+                pos2(x0 + 22.0, y + 8.0),
+                Align2::LEFT_CENTER,
+                &names[k],
+                FontId::proportional(12.5),
+                lerp_c(t.muted_foreground, t.foreground, m),
+            );
         }
         // continue
         let all = count == 4;
         let btn = Rect::from_min_size(pos2(x0, card.max.y - 56.0), vec2(inner_w, 40.0));
         let bk = st.parts[3].value.clamp(0.0, 1.0);
-        painter.rect_filled(btn, CornerRadius::same(10), lerp_c(with_alpha(t.muted_foreground, 0.18), t.foreground, bk));
-        painter.text(btn.center(), Align2::CENTER_CENTER, "Continue", FontId::proportional(14.0), if all { t.background } else { t.muted_foreground });
+        painter.rect_filled(
+            btn,
+            CornerRadius::same(10),
+            lerp_c(with_alpha(t.muted_foreground, 0.18), t.foreground, bk),
+        );
+        painter.text(
+            btn.center(),
+            Align2::CENTER_CENTER,
+            "Continue",
+            FontId::proportional(14.0),
+            if all { t.background } else { t.muted_foreground },
+        );
         response
     }
 }

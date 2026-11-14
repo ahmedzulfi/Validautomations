@@ -122,7 +122,7 @@ pub(super) fn all() -> Vec<Demo> {
             name: "Card Stack",
             category: C,
             description: "A deck of photos that fans out as you reach it: hover draws a card up, click flips it into the middle.",
-            covers: &["Bencho: Card stack"],
+            covers: &["Bencho: Card stack", "suiss/ui: Card Stack"],
             code: r##"ui.add(PhotoFan::new().cards(5).spread(85.0).bounce(5.0).corner(14.0));"##,
             show: |ui| {
                 let mut p = params(ui, "p", [5.0, 0.0, 85.0, 5.0, 14.0]);

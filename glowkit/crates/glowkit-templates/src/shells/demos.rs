@@ -325,7 +325,7 @@ pub fn all() -> Vec<Demo> {
             name: "App Shell: Sidebar",
             category: Category::Dashboards,
             description: "Collapsible sidebar (Ctrl+B springs it to an icon rail) with workspace switcher, nested groups, badges, upgrade and user cards; topbar with breadcrumb, Ctrl+K search, notifications and theme toggle.",
-            covers: &["shadcn/ui: Sidebar (sidebar-01..05)", "shadcn/ui: Dashboard 01", "Tailwind UI: Sidebar layout", "Aceternity: Sidebar"],
+            covers: &["shadcn/ui: Sidebar (sidebar-01..05)", "shadcn/ui: Dashboard 01", "Tailwind UI: Sidebar layout", "Aceternity: Sidebar", "suiss/ui: App Shell"],
             code: r##"AppShell::new(&mut route, &mut nav)
     .layout(ShellLayout::Sidebar)
     .workspaces(vec![Workspace::new("Acme Inc", "Enterprise")])

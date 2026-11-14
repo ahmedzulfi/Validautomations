@@ -237,9 +237,7 @@ impl egui::Widget for KnockoutBracket {
             }
         };
         let hovered = resp.hover_pos();
-        let hit = hovered.and_then(|p| {
-            (0..32).find(|&i| pos(0, i).distance(p) < disc + 3.0)
-        });
+        let hit = hovered.and_then(|p| (0..32).find(|&i| pos(0, i).distance(p) < disc + 3.0));
         // timeline
         let pace = self.pace;
         let dur = 0.8 + pace * ROUNDS as f32 + 0.6;
@@ -336,7 +334,14 @@ impl egui::Widget for KnockoutBracket {
                 let rr = if r == ROUNDS { disc * (1.0 + 0.9 * eased) } else { disc };
                 let lost = r < ROUNDS && round_t(r + 1) >= 1.0 && bracket[r + 1][i / 2] != team;
                 let dim = if hit.is_some() && !on_path(r, i) { 1.0 - 0.6 * focus } else { 1.0 };
-                paint_flag(&painter, p, rr, flags[team], if r == ROUNDS { gold } else { ring }, dim * if lost { 0.55 } else { 1.0 });
+                paint_flag(
+                    &painter,
+                    p,
+                    rr,
+                    flags[team],
+                    if r == ROUNDS { gold } else { ring },
+                    dim * if lost { 0.55 } else { 1.0 },
+                );
             }
         }
         if champ_t > 0.5 {

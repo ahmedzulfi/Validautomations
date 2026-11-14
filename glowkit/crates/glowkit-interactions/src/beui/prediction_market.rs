@@ -109,7 +109,8 @@ impl egui::Widget for PredictionMarket {
         let painter = ui.painter().clone();
         let w = self.width;
         let pad = 16.0;
-        let title_g = painter.layout(self.title.clone(), FontId::proportional(15.0), t.foreground, w - pad * 2.0 - 56.0);
+        let title_g =
+            painter.layout(self.title.clone(), FontId::proportional(15.0), t.foreground, w - pad * 2.0 - 56.0);
         let head_h = (title_g.size().y + 22.0).max(46.0) + pad;
         let n = self.outcomes.len().min(3);
         let row_h = 58.0;
@@ -121,7 +122,9 @@ impl egui::Widget for PredictionMarket {
         let idle = idle_for(ui, id, resp.hovered());
         let auto = self.autoplay && idle > 1.5;
         let inner = Rect::from_min_size(pos2(rect.min.x + 8.0, rect.min.y + head_h), vec2(w - 16.0, inner_h));
-        let btn_rect = |i: usize| Rect::from_min_size(pos2(inner.max.x - 74.0, inner.min.y + 10.0 + i as f32 * row_h), vec2(62.0, 38.0));
+        let btn_rect = |i: usize| {
+            Rect::from_min_size(pos2(inner.max.x - 74.0, inner.min.y + 10.0 + i as f32 * row_h), vec2(62.0, 38.0))
+        };
         let mark = pos2(inner.max.x - 26.0, inner.max.y - 22.0);
         let mut bought = None;
         for i in 0..n {
@@ -148,7 +151,15 @@ impl egui::Widget for PredictionMarket {
                         v
                     })
                     .collect();
-                MarketState { probs: probs0.clone(), history, volume: vol0, saved: false, last_auto: now, seed: 1, flash: None }
+                MarketState {
+                    probs: probs0.clone(),
+                    history,
+                    volume: vol0,
+                    saved: false,
+                    last_auto: now,
+                    seed: 1,
+                    flash: None,
+                }
             },
             |s| {
                 let mut moved = None;
@@ -200,11 +211,21 @@ impl egui::Widget for PredictionMarket {
         if self.live {
             let pulse = ((now * 3.0).sin() * 0.5 + 0.5) as f32;
             painter.circle_filled(pos2(mx + 4.0, my), 3.5, t.destructive);
-            painter.circle_stroke(pos2(mx + 4.0, my), 3.5 + pulse * 3.0, Stroke::new(1.0, with_alpha(t.destructive, 1.0 - pulse)));
+            painter.circle_stroke(
+                pos2(mx + 4.0, my),
+                3.5 + pulse * 3.0,
+                Stroke::new(1.0, with_alpha(t.destructive, 1.0 - pulse)),
+            );
             mx += 13.0;
             glowkit_core::animate(ui);
         }
-        painter.text(pos2(mx, my), Align2::LEFT_CENTER, &self.meta, FontId::proportional(12.0), if self.live { t.destructive } else { t.muted_foreground });
+        painter.text(
+            pos2(mx, my),
+            Align2::LEFT_CENTER,
+            &self.meta,
+            FontId::proportional(12.0),
+            if self.live { t.destructive } else { t.muted_foreground },
+        );
         // inner well
         painter.rect_filled(inner, cr(20.0), well(&t));
         let green = t.success;
@@ -216,7 +237,13 @@ impl egui::Widget for PredictionMarket {
             let mono = o.name.chars().next().unwrap_or('?').to_string();
             painter.circle_filled(pos2(x + 12.0, y - 2.0), 12.0, with_alpha(o.color, 0.18));
             painter.text(pos2(x + 12.0, y - 2.0), Align2::CENTER_CENTER, mono, FontId::proportional(12.0), o.color);
-            painter.text(pos2(x + 32.0, y - 2.0), Align2::LEFT_CENTER, &o.name, FontId::proportional(14.0), t.foreground);
+            painter.text(
+                pos2(x + 32.0, y - 2.0),
+                Align2::LEFT_CENTER,
+                &o.name,
+                FontId::proportional(14.0),
+                t.foreground,
+            );
             // probability bar
             let bw = spring(ui, id.with(("bar", i)), p * 120.0, 180.0, 16.0);
             let by = y + 18.0;
@@ -224,15 +251,28 @@ impl egui::Widget for PredictionMarket {
             // multiplier
             let mult = format!("{:.1}×", (1.0 / p.max(0.01)).min(99.0));
             let b = btn_rect(i);
-            painter.text(pos2(b.min.x - 10.0, b.center().y), Align2::RIGHT_CENTER, mult, FontId::proportional(13.0), t.muted_foreground);
+            painter.text(
+                pos2(b.min.x - 10.0, b.center().y),
+                Align2::RIGHT_CENTER,
+                mult,
+                FontId::proportional(13.0),
+                t.muted_foreground,
+            );
             // price button: green for the favourite, red for the other
             let col = if p >= 0.5 { green } else { red };
-            let flash = st.flash.filter(|f| f.0 == i).map(|f| (1.0 - (now - f.1) as f32 / 0.6).clamp(0.0, 1.0)).unwrap_or(0.0);
+            let flash =
+                st.flash.filter(|f| f.0 == i).map(|f| (1.0 - (now - f.1) as f32 / 0.6).clamp(0.0, 1.0)).unwrap_or(0.0);
             if flash > 0.0 {
                 glowkit_core::animate(ui);
             }
             let bb = b.expand(flash * 2.0);
-            painter.rect(bb, cr(10.0), with_alpha(col, 0.16 + 0.2 * flash), Stroke::new(1.0, with_alpha(col, 0.45)), egui::StrokeKind::Inside);
+            painter.rect(
+                bb,
+                cr(10.0),
+                with_alpha(col, 0.16 + 0.2 * flash),
+                Stroke::new(1.0, with_alpha(col, 0.45)),
+                egui::StrokeKind::Inside,
+            );
             let shadow = Rect::from_min_max(pos2(bb.min.x + 3.0, bb.max.y - 2.0), pos2(bb.max.x - 3.0, bb.max.y));
             painter.rect_filled(shadow, cr(2.0), with_alpha(col, 0.25));
             let pct = format!("{}%", (p * 100.0).round() as i32);
@@ -246,13 +286,24 @@ impl egui::Widget for PredictionMarket {
         let pts: Vec<Pos2> = hist
             .iter()
             .enumerate()
-            .map(|(k, v)| pos2(spark.min.x + k as f32 / (hist.len() - 1).max(1) as f32 * spark.width(), spark.max.y - (v - lo) / (hi - lo).max(1e-3) * spark.height()))
+            .map(|(k, v)| {
+                pos2(
+                    spark.min.x + k as f32 / (hist.len() - 1).max(1) as f32 * spark.width(),
+                    spark.max.y - (v - lo) / (hi - lo).max(1e-3) * spark.height(),
+                )
+            })
             .collect();
         let up = hist.last().copied().unwrap_or(0.0) >= hist.first().copied().unwrap_or(0.0);
         let sc = if up { green } else { red };
         paint::area_fill(&painter, &pts, spark.max.y, with_alpha(sc, 0.25), with_alpha(sc, 0.0));
         painter.add(Shape::line(pts, Stroke::new(1.5, sc)));
-        painter.text(pos2(spark.max.x + 10.0, fy), Align2::LEFT_CENTER, format!("{} vol.", short_money(st.volume)), FontId::proportional(12.0), t.muted_foreground);
+        painter.text(
+            pos2(spark.max.x + 10.0, fy),
+            Align2::LEFT_CENTER,
+            format!("{} vol.", short_money(st.volume)),
+            FontId::proportional(12.0),
+            t.muted_foreground,
+        );
         let pop = spring(ui, id.with("save"), if st.saved { 1.0 } else { 0.0 }, 500.0, 14.0);
         if pop > 0.02 {
             let pts = [(-0.55, -0.8), (0.55, -0.8), (0.55, 0.85), (0.0, 0.45), (-0.55, 0.85)];

@@ -168,7 +168,15 @@ fn knob(ui: &mut Ui, key: &str, label: &str, default: f32, range: std::ops::Rang
     knob_with(ui, key, label, default, range, suffix, None)
 }
 
-fn knob_with(ui: &mut Ui, key: &str, label: &str, default: f32, range: std::ops::RangeInclusive<f32>, suffix: &str, decimals: Option<usize>) -> f32 {
+fn knob_with(
+    ui: &mut Ui,
+    key: &str,
+    label: &str,
+    default: f32,
+    range: std::ops::RangeInclusive<f32>,
+    suffix: &str,
+    decimals: Option<usize>,
+) -> f32 {
     let base: egui::Id = ui.data(|d| d.get_temp(egui::Id::unique("tx_knob_base"))).unwrap_or(ui.scope_id());
     let id = base.with(key);
     let mut v: f32 = glowkit_core::state(ui, id, || default);
@@ -182,7 +190,14 @@ fn knob_with(ui: &mut Ui, key: &str, label: &str, default: f32, range: std::ops:
 }
 
 /// Same as [`knob`] with decimals.
-fn knob_f(ui: &mut Ui, key: &str, label: &str, default: f32, range: std::ops::RangeInclusive<f32>, suffix: &str) -> f32 {
+fn knob_f(
+    ui: &mut Ui,
+    key: &str,
+    label: &str,
+    default: f32,
+    range: std::ops::RangeInclusive<f32>,
+    suffix: &str,
+) -> f32 {
     knob_with(ui, key, label, default, range, suffix, Some(2))
 }
 
@@ -200,7 +215,11 @@ fn ghost(ui: &Ui, tip: Pos2, alpha: f32) {
     let (fill, line) = if t.dark { (Color32::WHITE, Color32::BLACK) } else { (Color32::BLACK, Color32::WHITE) };
     let c = tip + vec2(3.5, 9.0);
     for i in 0..pts.len() {
-        painter.add(Shape::convex_polygon(vec![c, pts[i], pts[(i + 1) % pts.len()]], with_alpha(fill, alpha), Stroke::NONE));
+        painter.add(Shape::convex_polygon(
+            vec![c, pts[i], pts[(i + 1) % pts.len()]],
+            with_alpha(fill, alpha),
+            Stroke::NONE,
+        ));
     }
     let mut closed = pts.clone();
     closed.push(pts[0]);
@@ -210,11 +229,16 @@ fn ghost(ui: &Ui, tip: Pos2, alpha: f32) {
 /// Smoothly move a remembered ghost position toward `target`.
 fn ghost_follow(ui: &Ui, key: &str, target: Pos2) -> Pos2 {
     let dt = glowkit_core::dt(ui);
-    glowkit_core::with_state(ui, ui.scope_id().with(key), || target, |p| {
-        let k = 1.0 - (-14.0 * dt).exp();
-        *p += (target - *p) * k;
-        *p
-    })
+    glowkit_core::with_state(
+        ui,
+        ui.scope_id().with(key),
+        || target,
+        |p| {
+            let k = 1.0 - (-14.0 * dt).exp();
+            *p += (target - *p) * k;
+            *p
+        },
+    )
 }
 
 const REASONING: &str = "The list stutters when it scrolls, so start with what changes per frame. Each row re-measures its text on every paint, which is wasted work once the width is known.\n\nCaching the layout per row and keying it on width should remove most of that. The images are the other suspect: they decode on the main thread the first time they come into view.\n\nIf decoding moves off the scroll path and the rows keep their measured heights, the frame time should drop well under budget. Worth checking the long rows with emoji, since they take the slow shaping path.";

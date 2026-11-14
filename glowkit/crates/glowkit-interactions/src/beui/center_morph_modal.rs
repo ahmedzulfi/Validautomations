@@ -142,13 +142,18 @@ impl CenterMorphModal {
                 }
             }
         }
-        let st = glowkit_core::with_state(ui, id, || st0, |s| {
-            if toggle || (auto && now - s.since > if s.open { 3.0 } else { 1.5 }) {
-                s.open = !s.open;
-                s.since = now;
-            }
-            *s
-        });
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0,
+            |s| {
+                if toggle || (auto && now - s.since > if s.open { 3.0 } else { 1.5 }) {
+                    s.open = !s.open;
+                    s.since = now;
+                }
+                *s
+            },
+        );
         if auto {
             glowkit_core::animate(ui);
         }
@@ -178,13 +183,24 @@ impl CenterMorphModal {
             let hov = ptr.is_some_and(|p| trig.contains(p));
             let fill = if hov { mix(t.primary, t.primary_foreground, 0.1) } else { t.primary };
             painter.rect_filled(rect, cr(r), fill);
-            painter.text(rect.center(), Align2::CENTER_CENTER, &self.trigger, FontId::proportional(14.0), t.primary_foreground);
+            painter.text(
+                rect.center(),
+                Align2::CENTER_CENTER,
+                &self.trigger,
+                FontId::proportional(14.0),
+                t.primary_foreground,
+            );
             return fired;
         }
         if ch < 8.0 {
             // the bright seam
             painter.rect_filled(rect.expand2(vec2(0.0, 1.0)), cr(2.0), with_alpha(t.foreground, 0.85));
-            glowkit_core::paint::glow_ellipse(&painter, rect.center(), vec2(cw * 0.55, 16.0), with_alpha(t.foreground, 0.1));
+            glowkit_core::paint::glow_ellipse(
+                &painter,
+                rect.center(),
+                vec2(cw * 0.55, 16.0),
+                with_alpha(t.foreground, 0.1),
+            );
             return fired;
         }
         card(&painter, &t, rect, r, 0.5 + 0.8 * k);
@@ -207,13 +223,24 @@ impl CenterMorphModal {
         let x0 = dialog.min.x + pad;
         let mut y = dialog.min.y + pad;
         let (a, dy) = line(0);
-        clip.text(pos2(x0, y + 8.0 + dy), Align2::LEFT_CENTER, &self.eyebrow, FontId::proportional(12.0), with_alpha(t.muted_foreground, a));
+        clip.text(
+            pos2(x0, y + 8.0 + dy),
+            Align2::LEFT_CENTER,
+            &self.eyebrow,
+            FontId::proportional(12.0),
+            with_alpha(t.muted_foreground, a),
+        );
         let hov_close = ptr.is_some_and(|p| close_c.distance(p) < 14.0);
-        clip.circle_filled(pos2(close_c.x, close_c.y + dy), 13.0, with_alpha(hover_fill(&t), a * if hov_close { 1.0 } else { 0.7 }));
+        clip.circle_filled(
+            pos2(close_c.x, close_c.y + dy),
+            13.0,
+            with_alpha(hover_fill(&t), a * if hov_close { 1.0 } else { 0.7 }),
+        );
         icon(&clip, BeIcon::Close, pos2(close_c.x, close_c.y + dy), 9.0, with_alpha(t.muted_foreground, a), 1.4);
         y += 18.0;
         let (a, dy) = line(1);
-        let tg = clip.layout(self.title.clone(), FontId::proportional(18.0), with_alpha(t.foreground, a), inner_w - 30.0);
+        let tg =
+            clip.layout(self.title.clone(), FontId::proportional(18.0), with_alpha(t.foreground, a), inner_w - 30.0);
         clip.galley(pos2(x0, y + 4.0 + dy), tg, t.foreground);
         y += title_g.size().y + 10.0;
         let (a, dy) = line(2);
@@ -227,16 +254,39 @@ impl CenterMorphModal {
             let (a, dy) = line(4 + i);
             let cy = y + 13.0 + dy;
             icon(&clip, BeIcon::Check, pos2(x0 + 6.0, cy), 10.0, with_alpha(t.muted_foreground, a), 1.5);
-            clip.text(pos2(x0 + 22.0, cy), Align2::LEFT_CENTER, b, FontId::proportional(12.5), with_alpha(t.foreground, a));
+            clip.text(
+                pos2(x0 + 22.0, cy),
+                Align2::LEFT_CENTER,
+                b,
+                FontId::proportional(12.5),
+                with_alpha(t.foreground, a),
+            );
             y += 26.0;
         }
         let (a, dy) = line(4 + self.bullets.len());
         let c = cta.translate(vec2(0.0, dy));
         let hov = ptr.is_some_and(|p| cta.contains(p));
-        clip.rect_filled(c, cr(20.0), with_alpha(if hov { mix(t.primary, t.primary_foreground, 0.1) } else { t.primary }, a));
+        clip.rect_filled(
+            c,
+            cr(20.0),
+            with_alpha(if hov { mix(t.primary, t.primary_foreground, 0.1) } else { t.primary }, a),
+        );
         let lw = text_width(&clip, &self.action, 13.5);
-        clip.text(c.center() - vec2(8.0, 0.0), Align2::CENTER_CENTER, &self.action, FontId::proportional(13.5), with_alpha(t.primary_foreground, a));
-        icon(&clip, BeIcon::ArrowUpRight, pos2(c.center().x + lw / 2.0 + 4.0, c.center().y), 9.0, with_alpha(t.primary_foreground, a), 1.4);
+        clip.text(
+            c.center() - vec2(8.0, 0.0),
+            Align2::CENTER_CENTER,
+            &self.action,
+            FontId::proportional(13.5),
+            with_alpha(t.primary_foreground, a),
+        );
+        icon(
+            &clip,
+            BeIcon::ArrowUpRight,
+            pos2(c.center().x + lw / 2.0 + 4.0, c.center().y),
+            9.0,
+            with_alpha(t.primary_foreground, a),
+            1.4,
+        );
         fired
     }
 }

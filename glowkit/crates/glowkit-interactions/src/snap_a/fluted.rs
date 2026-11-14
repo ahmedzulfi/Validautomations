@@ -33,7 +33,16 @@ impl Default for FlutedGlass {
 impl FlutedGlass {
     /// Fluted glass over a built-in painted scene.
     pub fn new() -> Self {
-        Self { image: None, image_aspect: PaintedScene::ASPECT, scene: 5, ribs: 30, strength: 1.0, size: None, caption: None, autoplay: true }
+        Self {
+            image: None,
+            image_aspect: PaintedScene::ASPECT,
+            scene: 5,
+            ribs: 30,
+            strength: 1.0,
+            size: None,
+            caption: None,
+            autoplay: true,
+        }
     }
     /// Your own picture (`aspect` = width / height), shown with cover-fit.
     pub fn image(mut self, tex: TextureId, aspect: f32) -> Self {
@@ -175,7 +184,13 @@ impl Widget for FlutedGlass {
         painter.add(Shape::mesh(hl));
         if let Some(c) = &self.caption {
             let pos = rect.left_bottom() + vec2(16.0, -16.0);
-            painter.text(pos + vec2(0.0, 1.0), Align2::LEFT_BOTTOM, c, FontId::proportional(15.0), Color32::from_black_alpha(120));
+            painter.text(
+                pos + vec2(0.0, 1.0),
+                Align2::LEFT_BOTTOM,
+                c,
+                FontId::proportional(15.0),
+                Color32::from_black_alpha(120),
+            );
             painter.text(pos, Align2::LEFT_BOTTOM, c, FontId::proportional(15.0), Color32::WHITE);
         }
         response

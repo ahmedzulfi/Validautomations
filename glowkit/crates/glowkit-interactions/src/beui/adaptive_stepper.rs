@@ -109,7 +109,13 @@ impl egui::Widget for AdaptiveStepper<'_> {
         } else {
             0
         };
-        let clicked_dir = if mr.clicked() || mr.drag_started() { -1 } else if pr.clicked() || pr.drag_started() { 1 } else { 0 };
+        let clicked_dir = if mr.clicked() || mr.drag_started() {
+            -1
+        } else if pr.clicked() || pr.drag_started() {
+            1
+        } else {
+            0
+        };
         let text_now = v.to_string();
         let (min, max, step) = (self.min, self.max, self.step);
         let mut delta = 0i64;
@@ -149,12 +155,17 @@ impl egui::Widget for AdaptiveStepper<'_> {
                 *self.value = nv;
                 resp.mark_changed();
                 let txt = nv.to_string();
-                glowkit_core::with_state(ui, id, || initial_state(&txt, now), |s| {
-                    s.prev = s.shown.clone();
-                    s.shown = txt.clone();
-                    s.changed_at = now;
-                    s.dir = if delta > 0 { 1.0 } else { -1.0 };
-                });
+                glowkit_core::with_state(
+                    ui,
+                    id,
+                    || initial_state(&txt, now),
+                    |s| {
+                        s.prev = s.shown.clone();
+                        s.shown = txt.clone();
+                        s.changed_at = now;
+                        s.dir = if delta > 0 { 1.0 } else { -1.0 };
+                    },
+                );
             }
         }
         if auto || press_dir != 0 {
@@ -176,7 +187,13 @@ impl egui::Widget for AdaptiveStepper<'_> {
             painter.circle(c, rad, if resp_b.hovered() { hover_fill(&t) } else { surface(&t) }, hairline(&t));
             icon(&painter, ic, c, h * 0.32 * k, with_alpha(t.foreground, k), 1.6);
         }
-        painter.rect(pill, egui::CornerRadius::same(pr_.round().min(255.0) as u8), surface(&t), hairline(&t), egui::StrokeKind::Inside);
+        painter.rect(
+            pill,
+            egui::CornerRadius::same(pr_.round().min(255.0) as u8),
+            surface(&t),
+            hairline(&t),
+            egui::StrokeKind::Inside,
+        );
         // rolling digits, right aligned on the pill centre
         let since = (now - st.changed_at) as f32;
         let p = (since / 0.28).clamp(0.0, 1.0);
@@ -202,9 +219,21 @@ impl egui::Widget for AdaptiveStepper<'_> {
             } else {
                 let d = st.dir;
                 if let Some(oc) = old_ch {
-                    clip.text(pos2(x, y - d * roll * e), Align2::CENTER_CENTER, oc.to_string(), font.clone(), with_alpha(t.foreground, 1.0 - p));
+                    clip.text(
+                        pos2(x, y - d * roll * e),
+                        Align2::CENTER_CENTER,
+                        oc.to_string(),
+                        font.clone(),
+                        with_alpha(t.foreground, 1.0 - p),
+                    );
                 }
-                clip.text(pos2(x, y + d * roll * (1.0 - e)), Align2::CENTER_CENTER, ch.to_string(), font.clone(), with_alpha(mix(t.foreground, t.accent, 1.0 - p), p.max(0.2)));
+                clip.text(
+                    pos2(x, y + d * roll * (1.0 - e)),
+                    Align2::CENTER_CENTER,
+                    ch.to_string(),
+                    font.clone(),
+                    with_alpha(mix(t.foreground, t.accent, 1.0 - p), p.max(0.2)),
+                );
             }
         }
         resp

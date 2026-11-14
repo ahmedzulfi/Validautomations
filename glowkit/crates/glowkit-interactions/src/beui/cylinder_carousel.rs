@@ -49,7 +49,15 @@ impl Default for CylinderCarousel {
 impl CylinderCarousel {
     /// A carousel of the built-in painted scenes.
     pub fn new() -> Self {
-        Self { mode: CylinderMode::Concave, count: 12, textures: Vec::new(), item: 84.0, radius: None, size: None, autoplay: true }
+        Self {
+            mode: CylinderMode::Concave,
+            count: 12,
+            textures: Vec::new(),
+            item: 84.0,
+            radius: None,
+            size: None,
+            autoplay: true,
+        }
     }
     /// Concave or convex.
     pub fn mode(mut self, m: CylinderMode) -> Self {
@@ -193,7 +201,12 @@ impl egui::Widget for CylinderCarousel {
             } else {
                 self.textures[i % self.textures.len()]
             };
-            paint::glow_ellipse(&inner, p + vec2(0.0, rad * 1.05), vec2(rad * squash * 0.9, rad * 0.16), with_alpha(Color32::BLACK, 0.16 * fade));
+            paint::glow_ellipse(
+                &inner,
+                p + vec2(0.0, rad * 1.05),
+                vec2(rad * squash * 0.9, rad * 0.16),
+                with_alpha(Color32::BLACK, 0.16 * fade),
+            );
             let mut mesh = Mesh::with_texture(tex);
             let nseg = 44;
             let uv_c = pos2(0.5 + a.sin() * 0.15, 0.5);
@@ -223,7 +236,11 @@ impl egui::Widget for CylinderCarousel {
                 inner.add(Shape::convex_polygon(pts, with_alpha(Color32::BLACK, shade_a * fade), Stroke::NONE));
             }
             // a soft rim light
-            inner.add(Shape::ellipse_stroke(p, vec2(rad * squash, rad), Stroke::new(1.0, with_alpha(Color32::WHITE, 0.18 * fade))));
+            inner.add(Shape::ellipse_stroke(
+                p,
+                vec2(rad * squash, rad),
+                Stroke::new(1.0, with_alpha(Color32::WHITE, 0.18 * fade)),
+            ));
         }
         resp
     }

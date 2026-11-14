@@ -107,7 +107,12 @@ fn pill_bars(
         }
         let o = hl(i, active == Some(i));
         if o > 0.01 {
-            painter.rect_stroke(tr.expand(3.0), cr(r + 3.0), Stroke::new(1.5, fade(mix(t.border, t.foreground, 0.55), o)), egui::StrokeKind::Inside);
+            painter.rect_stroke(
+                tr.expand(3.0),
+                cr(r + 3.0),
+                Stroke::new(1.5, fade(mix(t.border, t.foreground, 0.55), o)),
+                egui::StrokeKind::Inside,
+            );
         }
         if let Some(l) = labels.get(i) {
             let c = if active == Some(i) { t.foreground } else { faint(t) };
@@ -188,14 +193,26 @@ impl BoardEarnings {
         Self {
             title: title.into(),
             series: vec![
-                BoardSeries::new("Weekly", &wl, vec![420.0, 610.0, 380.0, 720.0, 690.0, 540.0, 810.0, 760.0, 590.0, 880.0, 940.0, 712.0]).delta("+6.2%"),
+                BoardSeries::new(
+                    "Weekly",
+                    &wl,
+                    vec![420.0, 610.0, 380.0, 720.0, 690.0, 540.0, 810.0, 760.0, 590.0, 880.0, 940.0, 712.0],
+                )
+                .delta("+6.2%"),
                 BoardSeries::new(
                     "Monthly",
                     &MONTHS,
-                    vec![2900.0, 7200.0, 9400.0, 7000.0, 3700.0, 2200.0, 3900.0, 5000.0, 6800.0, 4400.0, 11400.0, 8200.0],
+                    vec![
+                        2900.0, 7200.0, 9400.0, 7000.0, 3700.0, 2200.0, 3900.0, 5000.0, 6800.0, 4400.0, 11400.0, 8200.0,
+                    ],
                 )
                 .delta("+14.8%"),
-                BoardSeries::new("Yearly", &["2021", "2022", "2023", "2024", "2025", "2026"], vec![31000.0, 42000.0, 39000.0, 56000.0, 64000.0, 72100.0]).delta("+12.6%"),
+                BoardSeries::new(
+                    "Yearly",
+                    &["2021", "2022", "2023", "2024", "2025", "2026"],
+                    vec![31000.0, 42000.0, 39000.0, 56000.0, 64000.0, 72100.0],
+                )
+                .delta("+12.6%"),
             ],
             prefix: "$".into(),
             color: None,
@@ -265,7 +282,10 @@ impl egui::Widget for BoardEarnings {
 
         // chart
         let axis_w = 46.0;
-        let area = Rect::from_min_max(pos2(rect.min.x + pad + axis_w, rect.min.y + 88.0), pos2(rect.max.x - pad, rect.max.y - 12.0));
+        let area = Rect::from_min_max(
+            pos2(rect.min.x + pad + axis_w, rect.min.y + 88.0),
+            pos2(rect.max.x - pad, rect.max.y - 12.0),
+        );
         let max = s.values.iter().copied().fold(0.0, f32::max);
         let (axis_max, step) = nice_axis(max, 4);
         let axis_max_s = glowkit_core::anim::spring(ui, id.with("axis"), axis_max, 160.0, 22.0);
@@ -274,7 +294,14 @@ impl egui::Widget for BoardEarnings {
         while v <= axis_max + 1e-3 {
             let y = area.min.y + plot_h * (1.0 - v / axis_max_s);
             if y >= area.min.y - 4.0 {
-                text(&painter, pos2(area.min.x - 12.0, y), Align2::RIGHT_CENTER, format!("{}{}", self.prefix, compact(v, true)), f(11.5), faint(&t));
+                text(
+                    &painter,
+                    pos2(area.min.x - 12.0, y),
+                    Align2::RIGHT_CENTER,
+                    format!("{}{}", self.prefix, compact(v, true)),
+                    f(11.5),
+                    faint(&t),
+                );
             }
             v += step;
         }
@@ -289,7 +316,8 @@ impl egui::Widget for BoardEarnings {
             ptr.filter(|p| area.contains(*p)).map(|p| (((p.x - area.min.x) / slot) as usize).min(n - 1))
         };
         let active = hovered_now.or(forced);
-        let hls: Vec<f32> = (0..s.values.len()).map(|i| flag(ui, id.with(("hl", i)), active == Some(i), 14.0)).collect();
+        let hls: Vec<f32> =
+            (0..s.values.len()).map(|i| flag(ui, id.with(("hl", i)), active == Some(i), 14.0)).collect();
         pill_bars(&painter, &t, area, &shown, &s.labels, axis_max_s, color, ptr, forced, &|i, _| hls[i]);
 
         // headline
@@ -299,7 +327,14 @@ impl egui::Widget for BoardEarnings {
         };
         let shown_v = tween(ui, id.with("head"), value, 0.0, 0.9);
         text(&painter, pos2(rect.min.x + pad, rect.min.y + 26.0), Align2::LEFT_CENTER, &title, f(13.0), dim(&t));
-        let hr = text(&painter, pos2(rect.min.x + pad, rect.min.y + 54.0), Align2::LEFT_CENTER, format!("{}{}", self.prefix, thousands(shown_v as f64)), f(26.0), t.foreground);
+        let hr = text(
+            &painter,
+            pos2(rect.min.x + pad, rect.min.y + 54.0),
+            Align2::LEFT_CENTER,
+            format!("{}{}", self.prefix, thousands(shown_v as f64)),
+            f(26.0),
+            t.foreground,
+        );
         if !s.delta.is_empty() && active.is_none() {
             chip(&painter, &t, pos2(hr.max.x + 8.0, hr.center().y + 1.0), &s.delta, !s.delta.starts_with('-'));
         }
@@ -426,12 +461,14 @@ impl egui::Widget for BoardSteps {
         let hl = [flag(ui, id.with("lh"), l.hovered(), 14.0), flag(ui, id.with("rh"), r.hovered(), 14.0)];
         range_pill(&painter, &t, pr, label, hl);
         let color = self.color.unwrap_or(pal(&t)[TEAL]);
-        let area = Rect::from_min_max(pos2(rect.min.x + pad, rect.min.y + 84.0), pos2(rect.max.x - pad, rect.max.y - 10.0));
+        let area =
+            Rect::from_min_max(pos2(rect.min.x + pad, rect.min.y + 84.0), pos2(rect.max.x - pad, rect.max.y - 10.0));
         let axis_max = self.goal.unwrap_or_else(|| vals.iter().copied().fold(1.0, f32::max)).max(1.0);
         let shown = stagger_values(ui, id, shown_week, vals, el, 0.05);
         let forced = ghost(ui, id.with("ghost"), self.autoplay, response.hovered(), 7, 0.5);
         let ptr = response.hover_pos();
-        let hov = ptr.filter(|p| area.contains(*p)).map(|p| (((p.x - area.min.x) / (area.width() / 7.0)) as usize).min(6));
+        let hov =
+            ptr.filter(|p| area.contains(*p)).map(|p| (((p.x - area.min.x) / (area.width() / 7.0)) as usize).min(6));
         let active = hov.or(forced);
         let hls: Vec<f32> = (0..7).map(|i| flag(ui, id.with(("hl", i)), active == Some(i), 14.0)).collect();
         let labels: Vec<String> = DAYS.iter().map(|s| s.to_string()).collect();
@@ -442,7 +479,14 @@ impl egui::Widget for BoardSteps {
         };
         let v = tween(ui, id.with("head"), value, 0.0, 0.9);
         text(&painter, pos2(rect.min.x + pad, rect.min.y + 26.0), Align2::LEFT_CENTER, &title, f(13.0), dim(&t));
-        let hr = text(&painter, pos2(rect.min.x + pad, rect.min.y + 54.0), Align2::LEFT_CENTER, thousands(v as f64), f(26.0), t.foreground);
+        let hr = text(
+            &painter,
+            pos2(rect.min.x + pad, rect.min.y + 54.0),
+            Align2::LEFT_CENTER,
+            thousands(v as f64),
+            f(26.0),
+            t.foreground,
+        );
         text(&painter, pos2(hr.max.x + 6.0, hr.max.y - 9.0), Align2::LEFT_CENTER, unit, f(12.0), dim(&t));
         for q in [&l, &r] {
             if q.hovered() {
@@ -536,12 +580,22 @@ impl egui::Widget for BoardOrders {
         let lx = rect.max.x - pad;
         let r2 = text(&painter, pos2(lx, rect.min.y + 26.0), Align2::RIGHT_CENTER, "Last year", f(12.5), dim(&t));
         painter.circle_filled(pos2(r2.min.x - 9.0, r2.center().y), 3.5, c_last);
-        let r1 = text(&painter, pos2(r2.min.x - 24.0, rect.min.y + 26.0), Align2::RIGHT_CENTER, "This year", f(12.5), dim(&t));
+        let r1 = text(
+            &painter,
+            pos2(r2.min.x - 24.0, rect.min.y + 26.0),
+            Align2::RIGHT_CENTER,
+            "This year",
+            f(12.5),
+            dim(&t),
+        );
         painter.circle_filled(pos2(r1.min.x - 9.0, r1.center().y), 3.5, c_this);
 
         // plot
         let axis_w = 40.0;
-        let area = Rect::from_min_max(pos2(rect.min.x + pad + axis_w, rect.min.y + 112.0), pos2(rect.max.x - pad, rect.max.y - 12.0));
+        let area = Rect::from_min_max(
+            pos2(rect.min.x + pad + axis_w, rect.min.y + 112.0),
+            pos2(rect.max.x - pad, rect.max.y - 12.0),
+        );
         let plot = Rect::from_min_max(area.min, pos2(area.max.x, area.max.y - 24.0));
         let max = self.this.iter().chain(self.last.iter()).copied().fold(0.0, f32::max);
         let (axis_max, step) = nice_axis(max, 3);
@@ -549,7 +603,10 @@ impl egui::Widget for BoardOrders {
         while v <= axis_max + 1e-3 {
             let y = plot.max.y - plot.height() * v / axis_max;
             text(&painter, pos2(plot.min.x - 14.0, y), Align2::RIGHT_CENTER, compact(v, false), f(11.5), faint(&t));
-            painter.line_segment([pos2(plot.min.x, y), pos2(plot.max.x, y)], Stroke::new(1.0, fade(hairline(&t), if v == 0.0 { 1.0 } else { 0.45 })));
+            painter.line_segment(
+                [pos2(plot.min.x, y), pos2(plot.max.x, y)],
+                Stroke::new(1.0, fade(hairline(&t), if v == 0.0 { 1.0 } else { 0.45 })),
+            );
             v += step;
         }
         let slot = plot.width() / 12.0;
@@ -562,7 +619,10 @@ impl egui::Widget for BoardOrders {
             let cx = plot.min.x + slot * (i as f32 + 0.5);
             let hf = flag(ui, id.with(("hl", i)), active == Some(i), 14.0);
             if hf > 0.01 {
-                let band = Rect::from_min_max(pos2(cx - slot * 0.46, plot.min.y - 6.0), pos2(cx + slot * 0.46, plot.max.y + 4.0));
+                let band = Rect::from_min_max(
+                    pos2(cx - slot * 0.46, plot.min.y - 6.0),
+                    pos2(cx + slot * 0.46, plot.max.y + 4.0),
+                );
                 painter.rect_filled(band, cr(8.0), fade(tile_bg(&t), hf * if t.dark { 0.7 } else { 1.0 }));
             }
             let dimk = 1.0 - 0.45 * flag(ui, id.with(("dm", i)), active.is_some() && active != Some(i), 12.0);
@@ -588,9 +648,23 @@ impl egui::Widget for BoardOrders {
         let va = tween(ui, id.with("ha"), a, 0.0, 0.9);
         let vb = tween(ui, id.with("hb"), b, 0.0, 0.9);
         text(&painter, pos2(rect.min.x + pad, rect.min.y + 26.0), Align2::LEFT_CENTER, &title, f(13.0), dim(&t));
-        let hr = text(&painter, pos2(rect.min.x + pad, rect.min.y + 56.0), Align2::LEFT_CENTER, thousands(va as f64), f(26.0), t.foreground);
+        let hr = text(
+            &painter,
+            pos2(rect.min.x + pad, rect.min.y + 56.0),
+            Align2::LEFT_CENTER,
+            thousands(va as f64),
+            f(26.0),
+            t.foreground,
+        );
         chip(&painter, &t, pos2(hr.max.x + 8.0, hr.center().y + 1.0), &pct(a, b), a >= b);
-        text(&painter, pos2(rect.min.x + pad, rect.min.y + 84.0), Align2::LEFT_CENTER, format!("{} last year", thousands(vb as f64)), f(12.5), faint(&t));
+        text(
+            &painter,
+            pos2(rect.min.x + pad, rect.min.y + 84.0),
+            Align2::LEFT_CENTER,
+            format!("{} last year", thousands(vb as f64)),
+            f(12.5),
+            faint(&t),
+        );
         response
     }
 }
@@ -707,7 +781,8 @@ impl BoardStageBars {
     }
 }
 
-const STAGE_GLYPHS: [Glyph; 6] = [Glyph::Eye, Glyph::UserPlus, Glyph::Bolt, Glyph::Crown, Glyph::Users, Glyph::Building];
+const STAGE_GLYPHS: [Glyph; 6] =
+    [Glyph::Eye, Glyph::UserPlus, Glyph::Bolt, Glyph::Crown, Glyph::Users, Glyph::Building];
 
 impl egui::Widget for BoardStageBars {
     fn ui(self, ui: &mut Ui) -> Response {
@@ -738,13 +813,21 @@ impl egui::Widget for BoardStageBars {
         let rows_top = rect.min.y + 94.0;
         let tiles_top = rows_top + n as f32 * row_h + 10.0;
         let tw = (rect.width() - 16.0 - 16.0) / 3.0;
-        let tile_rect = |i: usize| Rect::from_min_size(pos2(rect.min.x + 8.0 + (i % 3) as f32 * (tw + 8.0), tiles_top + (i / 3) as f32 * 63.0), vec2(tw, 55.0));
+        let tile_rect = |i: usize| {
+            Rect::from_min_size(
+                pos2(rect.min.x + 8.0 + (i % 3) as f32 * (tw + 8.0), tiles_top + (i / 3) as f32 * 63.0),
+                vec2(tw, 55.0),
+            )
+        };
 
         // focus
         let mut focus = None;
         if let Some(mp) = response.hover_pos() {
             for i in 0..n {
-                let rr = Rect::from_min_max(pos2(rect.min.x, rows_top + i as f32 * row_h), pos2(rect.max.x, rows_top + (i + 1) as f32 * row_h));
+                let rr = Rect::from_min_max(
+                    pos2(rect.min.x, rows_top + i as f32 * row_h),
+                    pos2(rect.max.x, rows_top + (i + 1) as f32 * row_h),
+                );
                 if rr.contains(mp) || (self.tiles && tile_rect(i).contains(mp)) {
                     focus = Some(i);
                 }
@@ -758,7 +841,14 @@ impl egui::Widget for BoardStageBars {
             let fo = flag(ui, id.with(("fo", i)), focus == Some(i), 12.0);
             let other = flag(ui, id.with(("ot", i)), focus.is_some() && focus != Some(i), 10.0);
             let a = 1.0 - 0.6 * other;
-            text(&painter, pos2(x0 - 12.0, y), Align2::RIGHT_CENTER, &s.label, f(13.5), fade(mix(dim(&t), t.foreground, fo), a.max(0.5)));
+            text(
+                &painter,
+                pos2(x0 - 12.0, y),
+                Align2::RIGHT_CENTER,
+                &s.label,
+                f(13.5),
+                fade(mix(dim(&t), t.foreground, fo), a.max(0.5)),
+            );
             let tr = Rect::from_min_max(pos2(x0, y - self.bar_h / 2.0), pos2(x1, y + self.bar_h / 2.0));
             painter.rect_filled(tr, cr(self.bar_h / 2.0), track(&t));
             let g = ease_out(entry_k(ui, el, 0.06 * i as f32, 0.9));
@@ -767,15 +857,48 @@ impl egui::Widget for BoardStageBars {
             let fr = Rect::from_min_size(tr.min, vec2(fw, self.bar_h));
             let c = mix(col(i), shade(col(i), -0.1), fo);
             painter.rect_filled(fr, cr(self.bar_h / 2.0), fade(c, a));
-            let gc = if t.dark { fade(egui::Color32::from_gray(20), a) } else { fade(egui::Color32::from_gray(25), a * 0.9) };
-            glyph(&painter, STAGE_GLYPHS[i % STAGE_GLYPHS.len()], pos2(fr.min.x + self.bar_h / 2.0 + 1.0, y), self.bar_h * 0.55, gc);
-            text(&painter, pos2(x1 + 52.0, y), Align2::RIGHT_CENTER, thousands(s.value as f64), f(13.5), fade(t.foreground, a));
-            text(&painter, pos2(x1 + 56.0, y), Align2::LEFT_CENTER, format!("{:.0}%", s.value / top * 100.0), f(11.5), fade(faint(&t), a));
+            let gc = if t.dark {
+                fade(egui::Color32::from_gray(20), a)
+            } else {
+                fade(egui::Color32::from_gray(25), a * 0.9)
+            };
+            glyph(
+                &painter,
+                STAGE_GLYPHS[i % STAGE_GLYPHS.len()],
+                pos2(fr.min.x + self.bar_h / 2.0 + 1.0, y),
+                self.bar_h * 0.55,
+                gc,
+            );
+            text(
+                &painter,
+                pos2(x1 + 52.0, y),
+                Align2::RIGHT_CENTER,
+                thousands(s.value as f64),
+                f(13.5),
+                fade(t.foreground, a),
+            );
+            text(
+                &painter,
+                pos2(x1 + 56.0, y),
+                Align2::LEFT_CENTER,
+                format!("{:.0}%", s.value / top * 100.0),
+                f(11.5),
+                fade(faint(&t), a),
+            );
             if self.tiles {
                 let ta = ease_out(entry_k(ui, el, 0.4 + 0.05 * i as f32, 0.45));
                 let mut tp = painter.clone();
                 tp.multiply_opacity(ta.max(0.001) * (1.0 - 0.4 * other));
-                stat_tile(&tp, &t, tile_rect(i).translate(vec2(0.0, (1.0 - ta) * 6.0)), &s.label, &thousands(s.value as f64), Some(col(i)), fo, false);
+                stat_tile(
+                    &tp,
+                    &t,
+                    tile_rect(i).translate(vec2(0.0, (1.0 - ta) * 6.0)),
+                    &s.label,
+                    &thousands(s.value as f64),
+                    Some(col(i)),
+                    fo,
+                    false,
+                );
             }
         }
 
@@ -786,7 +909,14 @@ impl egui::Widget for BoardStageBars {
         };
         let v = tween(ui, id.with("head"), value, 0.0, 0.9);
         text(&painter, pos2(rect.min.x + pad, rect.min.y + 26.0), Align2::LEFT_CENTER, &title, f(13.0), dim(&t));
-        let hr = text(&painter, pos2(rect.min.x + pad, rect.min.y + 54.0), Align2::LEFT_CENTER, thousands(v as f64), f(26.0), t.foreground);
+        let hr = text(
+            &painter,
+            pos2(rect.min.x + pad, rect.min.y + 54.0),
+            Align2::LEFT_CENTER,
+            thousands(v as f64),
+            f(26.0),
+            t.foreground,
+        );
         let chip_s = match focus {
             Some(i) if i > 0 => format!("{:.0}%", self.stages[i].value / top * 100.0),
             _ => self.delta.clone(),

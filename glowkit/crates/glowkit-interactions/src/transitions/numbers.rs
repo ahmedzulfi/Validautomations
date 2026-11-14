@@ -409,7 +409,8 @@ impl Widget for DrumCounter {
         let font = FontId::proportional(self.size);
         let em = self.size;
         let text = self.format(self.value);
-        let digit_w = (0..10).map(|d| super::common::text_width(ui.painter(), &d.to_string(), &font)).fold(0.0, f32::max);
+        let digit_w =
+            (0..10).map(|d| super::common::text_width(ui.painter(), &d.to_string(), &font)).fold(0.0, f32::max);
         let sep_w = super::common::text_width(ui.painter(), ",", &font);
         let cells: Vec<char> = text.chars().collect();
         let width_of = |cs: &[char]| cs.iter().map(|c| if c.is_ascii_digit() { digit_w } else { sep_w }).sum::<f32>();
@@ -509,7 +510,8 @@ impl Widget for DrumCounter {
                 let y = radius * ang.sin();
                 let near = ad.min(1.0);
                 let s = lerp(center_scale, 0.7, near) * col_scale;
-                let a = lerp(1.0, 0.17, near) * if ad > 0.5 { look } else { 1.0 } * (1.0 - span(ad, 1.0, 1.6)) * fade_in;
+                let a =
+                    lerp(1.0, 0.17, near) * if ad > 0.5 { look } else { 1.0 } * (1.0 - span(ad, 1.0, 1.6)) * fade_in;
                 let bl = lerp(0.042, 0.083, near) * em * look;
                 let center = pos2(cx, cy + y + col_dy);
                 layer(ui, xf_around(center, s, vec2(0.0, 0.0)), a, bl, |p| {

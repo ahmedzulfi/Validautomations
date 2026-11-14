@@ -39,7 +39,16 @@ pub struct PetalDissolve {
 impl PetalDissolve {
     /// Dissolve `word`.
     pub fn new(word: impl Into<String>) -> Self {
-        Self { word: word.into(), size: 72.0, colors: None, wind: 1.0, density: 7, progress: None, height: 300.0, autoplay: true }
+        Self {
+            word: word.into(),
+            size: 72.0,
+            colors: None,
+            wind: 1.0,
+            density: 7,
+            progress: None,
+            height: 300.0,
+            autoplay: true,
+        }
     }
     /// Font size (default 72).
     pub fn size(mut self, s: f32) -> Self {
@@ -143,7 +152,11 @@ impl Widget for PetalDissolve {
         }
         let painter = ui.painter_at(rect);
         let ink_c = if t.dark { hex("#E8E2D6") } else { hex("#1C1917") };
-        let colors = self.colors.unwrap_or(if t.dark { [hex("#C8102E"), hex("#F4F1EA")] } else { [hex("#C8102E"), hex("#F6B3BF")] });
+        let colors = self.colors.unwrap_or(if t.dark {
+            [hex("#C8102E"), hex("#F4F1EA")]
+        } else {
+            [hex("#C8102E"), hex("#F6B3BF")]
+        });
         // tessellate the word once into glyph quads
         let font = FontId::proportional(self.size);
         let mut ink = Ink::new(&painter);
@@ -193,14 +206,19 @@ impl Widget for PetalDissolve {
                     let r1 = r0 + vec2(cw, ch);
                     let home = r0.lerp(r1, 0.5);
                     // erosion sweeps from left to right with some scatter
-                    let delay = ((home.x - (word_c.x - word_w * 0.5)) / word_w).clamp(0.0, 1.0) * 1.4 + h01(idx * 7) * 0.5;
+                    let delay =
+                        ((home.x - (word_c.x - word_w * 0.5)) / word_w).clamp(0.0, 1.0) * 1.4 + h01(idx * 7) * 0.5;
                     let tau = st.t - delay;
                     let piece = 1.0 - sstep(0.0, 0.18, tau);
                     if piece > 0.0 {
                         let off = if tau > 0.0 { path(tau, idx, wind) * 0.3 } else { Vec2::ZERO };
                         let base = letters.vertices.len() as u32;
                         for p in [r0, pos2(r1.x, r0.y), r1, pos2(r0.x, r1.y)] {
-                            letters.vertices.push(Vertex { pos: p + off, uv: uv_at(p), color: with_alpha(ink_c, piece) });
+                            letters.vertices.push(Vertex {
+                                pos: p + off,
+                                uv: uv_at(p),
+                                color: with_alpha(ink_c, piece),
+                            });
                         }
                         letters.add_triangle(base, base + 1, base + 2);
                         letters.add_triangle(base, base + 2, base + 3);

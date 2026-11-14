@@ -134,9 +134,8 @@ impl egui::Widget for SortableStack<'_> {
         }
 
         // ---- interaction
-        let grip_hit = |i: usize, p: egui::Pos2| {
-            Rect::from_min_size(pos2(rect.min.x, slot_y(i)), vec2(52.0, CARD_H)).contains(p)
-        };
+        let grip_hit =
+            |i: usize, p: egui::Pos2| Rect::from_min_size(pos2(rect.min.x, slot_y(i)), vec2(52.0, CARD_H)).contains(p);
         let card_hit = |i: usize, p: egui::Pos2| {
             Rect::from_min_size(pos2(rect.min.x, slot_y(i)), vec2(self.width, CARD_H)).contains(p)
         };
@@ -306,21 +305,35 @@ impl egui::Widget for SortableStack<'_> {
             painter.rect(card, cr(r), fill, hairline(&t), egui::StrokeKind::Inside);
             let cy = card.center().y;
             // grip
-            icon(&painter, BeIcon::Grip, pos2(card.min.x + 26.0, cy), 12.0, mix(t.muted_foreground, t.foreground, lift), 1.3);
+            icon(
+                &painter,
+                BeIcon::Grip,
+                pos2(card.min.x + 26.0, cy),
+                12.0,
+                mix(t.muted_foreground, t.foreground, lift),
+                1.3,
+            );
             // tile
             let tile = Rect::from_center_size(pos2(card.min.x + 76.0, cy), vec2(38.0, 38.0));
             painter.rect_filled(tile, cr(10.0), with_alpha(it.color, if t.dark { 0.18 } else { 0.14 }));
             icon(&painter, it.icon, tile.center(), 16.0, it.color, 1.6);
             let tx = tile.max.x + 14.0;
             let title_col = if it.done { t.muted_foreground } else { t.foreground };
-            let tr = painter.text(pos2(tx, cy - 9.0), Align2::LEFT_CENTER, &it.title, FontId::proportional(14.5), title_col);
+            let tr =
+                painter.text(pos2(tx, cy - 9.0), Align2::LEFT_CENTER, &it.title, FontId::proportional(14.5), title_col);
             if it.done {
                 painter.line_segment(
                     [pos2(tr.min.x, tr.center().y + 1.0), pos2(tr.max.x, tr.center().y + 1.0)],
                     Stroke::new(1.2, t.muted_foreground),
                 );
             }
-            painter.text(pos2(tx, cy + 10.0), Align2::LEFT_CENTER, &it.subtitle, FontId::proportional(12.0), t.muted_foreground);
+            painter.text(
+                pos2(tx, cy + 10.0),
+                Align2::LEFT_CENTER,
+                &it.subtitle,
+                FontId::proportional(12.0),
+                t.muted_foreground,
+            );
             // live number for the slot it is heading to
             let shown = order_target(i);
             painter.text(

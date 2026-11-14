@@ -437,11 +437,8 @@ impl Crumple {
             let amp = 1.0 / (1.0 + k as f32 * 0.35);
             (vec2(a.cos(), a.sin()), f, ph, amp)
         });
-        let tumble = (
-            (h01(seed * 5 + 91) - 0.5) * 2.6,
-            (h01(seed * 7 + 37) - 0.5) * 3.2,
-            (h01(seed * 3 + 13) - 0.5) * 2.0,
-        );
+        let tumble =
+            ((h01(seed * 5 + 91) - 0.5) * 2.6, (h01(seed * 7 + 37) - 0.5) * 3.2, (h01(seed * 3 + 13) - 0.5) * 2.0);
         Self { folds, tumble }
     }
 
@@ -768,7 +765,12 @@ pub(crate) fn clay(painter: &Painter, c: Pos2, r: Vec2, angle: f32, base: Color3
     let lo = glowkit_core::color::shade(base, -0.16);
     let light = c + vec2(-r.x * 0.35, -r.y * 0.45);
     let stops = [hi, base, lo];
-    glowkit_core::paint::fill_convex_fn(painter, &pts, 5, glowkit_core::paint::radial_fn(light, r.x.max(r.y) * 1.7, &stops));
+    glowkit_core::paint::fill_convex_fn(
+        painter,
+        &pts,
+        5,
+        glowkit_core::paint::radial_fn(light, r.x.max(r.y) * 1.7, &stops),
+    );
 }
 
 /// A soft shadow under any convex quad: an opaque core fading to nothing over `blur` points.

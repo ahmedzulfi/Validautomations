@@ -95,13 +95,20 @@ impl<'a> TunerDial<'a> {
 impl Widget for TunerDial<'_> {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
-        let (rect, mut response) = ui.allocate_exact_size(vec2(ui.available_width(), self.height), Sense::click_and_drag());
+        let (rect, mut response) =
+            ui.allocate_exact_size(vec2(ui.available_width(), self.height), Sense::click_and_drag());
         let id = response.id;
         let dt = glowkit_core::dt(ui);
         let wdt = wall_dt(ui);
         let idle = idle_time(ui, id, rect);
         let stations = if self.stations.is_empty() {
-            vec![(89.1, "Harbour Jazz".to_string()), (93.4, "Paper Lantern".into()), (97.9, "Night Owl".into()), (101.5, "Static Garden".into()), (104.8, "Coastline FM".into())]
+            vec![
+                (89.1, "Harbour Jazz".to_string()),
+                (93.4, "Paper Lantern".into()),
+                (97.9, "Night Owl".into()),
+                (101.5, "Static Garden".into()),
+                (104.8, "Coastline FM".into()),
+            ]
         } else {
             self.stations.clone()
         };
@@ -111,7 +118,8 @@ impl Widget for TunerDial<'_> {
         let drag = if response.dragged() { response.drag_delta().x } else { 0.0 };
         let dragging = response.dragged();
         let released = response.drag_stopped();
-        let wheel = if response.hovered() { ui.input(|i| i.smooth_scroll_delta.x + i.smooth_scroll_delta.y) } else { 0.0 };
+        let wheel =
+            if response.hovered() { ui.input(|i| i.smooth_scroll_delta.x + i.smooth_scroll_delta.y) } else { 0.0 };
         if response.hovered() {
             ui.ctx().set_cursor_icon(if dragging { egui::CursorIcon::Grabbing } else { egui::CursorIcon::Grab });
         }
@@ -145,7 +153,11 @@ impl Widget for TunerDial<'_> {
                     if s.auto_t <= 0.0 {
                         // fling: either to a station or somewhere in between
                         let pick = glowkit_core::rng::hash01(seed) * (station_units.len() as f32 + 1.5);
-                        let goal = if (pick as usize) < station_units.len() { station_units[pick as usize] } else { (glowkit_core::rng::hash01(seed + 9) * hi).round() };
+                        let goal = if (pick as usize) < station_units.len() {
+                            station_units[pick as usize]
+                        } else {
+                            (glowkit_core::rng::hash01(seed + 9) * hi).round()
+                        };
                         s.target = Some(goal);
                         s.auto_t = 3.2;
                     }
@@ -204,7 +216,12 @@ impl Widget for TunerDial<'_> {
         let cx = rect.center().x;
         let base_y = rect.min.y + rect.height() * 0.52;
         // soft spotlight behind the dial
-        paint::glow_ellipse(&painter, pos2(cx, base_y - 10.0), vec2(rect.width() * 0.32, 90.0), with_alpha(if t.dark { Color32::WHITE } else { hex("#FFF8EC") }, if t.dark { 0.03 } else { 0.6 }));
+        paint::glow_ellipse(
+            &painter,
+            pos2(cx, base_y - 10.0),
+            vec2(rect.width() * 0.32, 90.0),
+            with_alpha(if t.dark { Color32::WHITE } else { hex("#FFF8EC") }, if t.dark { 0.03 } else { 0.6 }),
+        );
         // ticks
         let half = rect.width() * 0.5;
         let first = (st.shown - half / px).floor() as i32 - 1;
@@ -217,15 +234,34 @@ impl Widget for TunerDial<'_> {
             let x = cx + (i as f32 - st.shown) * px;
             let d = ((x - cx) / half).abs();
             let bell = (1.0 - d * d).max(0.0);
-            let major = (i as f32 * self.step + self.min).fract().abs() < 1e-3 || (i as f32 * self.step + self.min).fract() > 0.999;
+            let major = (i as f32 * self.step + self.min).fract().abs() < 1e-3
+                || (i as f32 * self.step + self.min).fract() > 0.999;
             let mid = !major && i % 5 == 0;
-            let h = (if major { 34.0 } else if mid { 24.0 } else { 16.0 }) * (0.45 + 0.55 * bell);
-            let a = (if major { 0.9 } else if mid { 0.55 } else { 0.32 }) * sstep(1.0, 0.55, d);
+            let h = (if major {
+                34.0
+            } else if mid {
+                24.0
+            } else {
+                16.0
+            }) * (0.45 + 0.55 * bell);
+            let a = (if major {
+                0.9
+            } else if mid {
+                0.55
+            } else {
+                0.32
+            }) * sstep(1.0, 0.55, d);
             let w = if major { 1.6 } else { 1.0 };
             painter.line_segment([pos2(x, base_y - h), pos2(x, base_y)], Stroke::new(w, with_alpha(ink, a)));
             if major {
                 let f = (self.min + i as f32 * self.step).round();
-                painter.text(pos2(x, base_y + 14.0), Align2::CENTER_CENTER, format!("{f:.0}"), FontId::monospace(9.0), with_alpha(t.muted_foreground, a));
+                painter.text(
+                    pos2(x, base_y + 14.0),
+                    Align2::CENTER_CENTER,
+                    format!("{f:.0}"),
+                    FontId::monospace(9.0),
+                    with_alpha(t.muted_foreground, a),
+                );
             }
         }
         // station markers
@@ -245,7 +281,11 @@ impl Widget for TunerDial<'_> {
         painter.line_segment([pill.center_bottom(), needle_bottom], Stroke::new(2.6, needle));
         painter.circle_filled(needle_bottom, 2.6, needle);
         painter.rect_filled(pill, 15.0, needle);
-        painter.rect_filled(Rect::from_min_size(pill.min + vec2(6.0, 3.0), vec2(pill.width() - 12.0, 10.0)), 5.0, with_alpha(Color32::WHITE, 0.12));
+        painter.rect_filled(
+            Rect::from_min_size(pill.min + vec2(6.0, 3.0), vec2(pill.width() - 12.0, 10.0)),
+            5.0,
+            with_alpha(Color32::WHITE, 0.12),
+        );
         // odometer digits: value*10 as an integer, with a decimal point before the last digit
         let v10 = self.min * 10.0 + st.shown * self.step * 10.0;
         let font = FontId::monospace(16.0);
@@ -268,8 +308,20 @@ impl Widget for TunerDial<'_> {
             let a = (whole as i64).rem_euclid(10);
             let b = (a + 1) % 10;
             let cxd = x + dw.x * 0.5;
-            clip.text(pos2(cxd, pill_c.y - roll * dw.y), Align2::CENTER_CENTER, a.to_string(), font.clone(), Color32::WHITE);
-            clip.text(pos2(cxd, pill_c.y + (1.0 - roll) * dw.y), Align2::CENTER_CENTER, b.to_string(), font.clone(), Color32::WHITE);
+            clip.text(
+                pos2(cxd, pill_c.y - roll * dw.y),
+                Align2::CENTER_CENTER,
+                a.to_string(),
+                font.clone(),
+                Color32::WHITE,
+            );
+            clip.text(
+                pos2(cxd, pill_c.y + (1.0 - roll) * dw.y),
+                Align2::CENTER_CENTER,
+                b.to_string(),
+                font.clone(),
+                Color32::WHITE,
+            );
         }
         // readout under the dial
         let info_y = base_y + 46.0;
@@ -277,10 +329,19 @@ impl Widget for TunerDial<'_> {
         let chip = Rect::from_center_size(pos2(cx - 34.0, info_y), vec2(22.0, 13.0));
         painter.rect_filled(chip, 3.0, with_alpha(ink, 0.8));
         painter.text(chip.center(), Align2::CENTER_CENTER, "FM", FontId::monospace(8.0), t.background);
-        painter.text(pos2(chip.max.x + 6.0, info_y), Align2::LEFT_CENTER, format!("{freq:.1} MHz"), FontId::monospace(10.0), t.muted_foreground);
+        painter.text(
+            pos2(chip.max.x + 6.0, info_y),
+            Align2::LEFT_CENTER,
+            format!("{freq:.1} MHz"),
+            FontId::monospace(10.0),
+            t.muted_foreground,
+        );
         for b in 0..4 {
             let lit = (b as f32) < 1.0 + st.lock * 3.0;
-            let r = Rect::from_min_size(pos2(cx + 52.0 + b as f32 * 4.0, info_y + 4.0 - (b + 1) as f32 * 2.5), vec2(2.5, (b + 1) as f32 * 2.5));
+            let r = Rect::from_min_size(
+                pos2(cx + 52.0 + b as f32 * 4.0, info_y + 4.0 - (b + 1) as f32 * 2.5),
+                vec2(2.5, (b + 1) as f32 * 2.5),
+            );
             painter.rect_filled(r, 0.5, with_alpha(ink, if lit { 0.8 } else { 0.2 }));
         }
         let name = stations.iter().find(|(f, _)| (f - freq).abs() < 0.05).map(|(_, n)| n.as_str());
@@ -290,7 +351,13 @@ impl Widget for TunerDial<'_> {
             _ => ("Between stations", "Turn to a marked channel", with_alpha(t.muted_foreground, 0.9)),
         };
         painter.text(pos2(cx, info_y + 24.0), Align2::CENTER_CENTER, title, FontId::proportional(17.0), col);
-        painter.text(pos2(cx, info_y + 43.0), Align2::CENTER_CENTER, sub, FontId::proportional(10.5), with_alpha(t.muted_foreground, 0.7));
+        painter.text(
+            pos2(cx, info_y + 43.0),
+            Align2::CENTER_CENTER,
+            sub,
+            FontId::proportional(10.5),
+            with_alpha(t.muted_foreground, 0.7),
+        );
         response
     }
 }

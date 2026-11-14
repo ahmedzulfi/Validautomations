@@ -147,7 +147,11 @@ impl Widget for Meniscus {
         let pointer = ui.input(|i| i.pointer.interact_pos());
         let on_dock = pointer.is_some_and(|p| dock_rect.contains(p));
         if on_dock {
-            ui.ctx().set_cursor_icon(if response.dragged() { egui::CursorIcon::Grabbing } else { egui::CursorIcon::Grab });
+            ui.ctx().set_cursor_icon(if response.dragged() {
+                egui::CursorIcon::Grabbing
+            } else {
+                egui::CursorIcon::Grab
+            });
         }
         let started = response.drag_started() && on_dock;
         let dragging = response.dragged();
@@ -175,39 +179,45 @@ impl Widget for Meniscus {
             }
             home
         };
-        let st = glowkit_core::with_state(ui, id, || st0, |s| {
-            if s.init {
-                s.init = false;
-            }
-            if started {
-                if let Some(p) = pointer {
-                    s.grab = Some(pos2(s.x.value, s.y.value) - p);
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0,
+            |s| {
+                if s.init {
+                    s.init = false;
                 }
-            }
-            if let (true, Some(g), Some(p)) = (dragging, s.grab, pointer) {
-                s.x.target = p.x + g.x;
-                s.y.target = p.y + g.y;
-                s.ghost = 0.0;
-            } else if autoplay {
-                s.ghost += wdt;
-                let p = path(s.ghost);
-                s.x.target = p.x;
-                s.y.target = p.y;
-                ghost_draw = Some((pos2(s.x.value, s.y.value) + vec2(30.0, 4.0), (1.2..7.0).contains(&(s.ghost % 8.0))));
-            }
-            if stopped {
-                s.grab = None;
-            }
-            if tapped {
-                s.frosted = !s.frosted;
-            }
-            s.x.target = s.x.target.clamp(rect.min.x + dock_size.x * 0.5, rect.max.x - dock_size.x * 0.5);
-            s.y.target = s.y.target.clamp(rect.min.y + dock_size.y * 0.5, rect.max.y - dock_size.y * 0.5);
-            s.x.step(dt);
-            s.y.step(dt);
-            s.frost += ((if s.frosted { 1.0 } else { 0.0 }) - s.frost) * (1.0 - (-6.0 * dt).exp());
-            *s
-        });
+                if started {
+                    if let Some(p) = pointer {
+                        s.grab = Some(pos2(s.x.value, s.y.value) - p);
+                    }
+                }
+                if let (true, Some(g), Some(p)) = (dragging, s.grab, pointer) {
+                    s.x.target = p.x + g.x;
+                    s.y.target = p.y + g.y;
+                    s.ghost = 0.0;
+                } else if autoplay {
+                    s.ghost += wdt;
+                    let p = path(s.ghost);
+                    s.x.target = p.x;
+                    s.y.target = p.y;
+                    ghost_draw =
+                        Some((pos2(s.x.value, s.y.value) + vec2(30.0, 4.0), (1.2..7.0).contains(&(s.ghost % 8.0))));
+                }
+                if stopped {
+                    s.grab = None;
+                }
+                if tapped {
+                    s.frosted = !s.frosted;
+                }
+                s.x.target = s.x.target.clamp(rect.min.x + dock_size.x * 0.5, rect.max.x - dock_size.x * 0.5);
+                s.y.target = s.y.target.clamp(rect.min.y + dock_size.y * 0.5, rect.max.y - dock_size.y * 0.5);
+                s.x.step(dt);
+                s.y.step(dt);
+                s.frost += ((if s.frosted { 1.0 } else { 0.0 }) - s.frost) * (1.0 - (-6.0 * dt).exp());
+                *s
+            },
+        );
         glowkit_core::animate(ui);
         if !ui.is_rect_visible(rect) {
             return response;
@@ -238,8 +248,16 @@ impl Widget for Meniscus {
         if self.backdrop == MeniscusBackdrop::Pool {
             // lane marking
             let lane = with_alpha(hex("#1D3A6E"), 0.82);
-            painter.rect_filled(Rect::from_min_size(pos2(rect.center().x + 70.0, rect.min.y), vec2(22.0, rect.height())), 0.0, lane);
-            painter.rect_filled(Rect::from_center_size(pos2(rect.center().x + 81.0, rect.min.y + 40.0), vec2(90.0, 20.0)), 0.0, lane);
+            painter.rect_filled(
+                Rect::from_min_size(pos2(rect.center().x + 70.0, rect.min.y), vec2(22.0, rect.height())),
+                0.0,
+                lane,
+            );
+            painter.rect_filled(
+                Rect::from_center_size(pos2(rect.center().x + 81.0, rect.min.y + 40.0), vec2(90.0, 20.0)),
+                0.0,
+                lane,
+            );
         }
         // ---- glass field
         let dock = Rect::from_center_size(pos2(st.x.value, st.y.value), dock_size);
@@ -251,52 +269,89 @@ impl Widget for Meniscus {
         };
         let area = card.union(dock).expand(k + 4.0).intersect(rect);
         // soft shadow under the glass
-        iso_fill(&painter, area.translate(vec2(0.0, 10.0)), 6.0, |p| -(field(p - vec2(0.0, 10.0)) - 4.0), |_| Color32::from_black_alpha(14));
-        iso_fill(&painter, area.translate(vec2(0.0, 6.0)), 6.0, |p| -field(p - vec2(0.0, 6.0)), |_| Color32::from_black_alpha(16));
+        iso_fill(
+            &painter,
+            area.translate(vec2(0.0, 10.0)),
+            6.0,
+            |p| -(field(p - vec2(0.0, 10.0)) - 4.0),
+            |_| Color32::from_black_alpha(14),
+        );
+        iso_fill(
+            &painter,
+            area.translate(vec2(0.0, 6.0)),
+            6.0,
+            |p| -field(p - vec2(0.0, 6.0)),
+            |_| Color32::from_black_alpha(16),
+        );
         let refr = 16.0 * self.refraction;
         let frost = st.frost;
         let pond = self.backdrop == MeniscusBackdrop::Pool;
-        let segs = iso_fill(&painter, area, 3.5, |p| -field(p), |p| {
-            let d = -field(p);
-            let e = 1.0 - (d / 16.0).clamp(0.0, 1.0);
-            let h = 1.5;
-            let g = vec2(field(p + vec2(h, 0.0)) - field(p - vec2(h, 0.0)), field(p + vec2(0.0, h)) - field(p - vec2(0.0, h)));
-            let n = if g.length() > 1e-4 { g.normalized() } else { Vec2::ZERO };
-            // the rim bends light inward; split channels for a slight fringe
-            let off = n * refr * e * e;
-            let mut c = if e > 0.05 {
-                let r = bg_fn(p + off * 1.12, time)[0];
-                let gch = bg_fn(p + off, time)[1];
-                let b = bg_fn(p + off * 0.88, time)[2];
-                [r, gch, b]
-            } else {
-                bg_fn(p, time)
-            };
-            if frost > 0.01 {
-                let blur = [bg_fn(p + vec2(9.0, 4.0), time), bg_fn(p + vec2(-7.0, -6.0), time), bg_fn(p + vec2(3.0, 9.0), time)];
-                for ch in 0..3 {
-                    let avg = (blur[0][ch] + blur[1][ch] + blur[2][ch] + c[ch]) / 4.0;
-                    c[ch] = c[ch] + (avg * 0.85 + 0.15 - c[ch]) * frost;
+        let segs = iso_fill(
+            &painter,
+            area,
+            3.5,
+            |p| -field(p),
+            |p| {
+                let d = -field(p);
+                let e = 1.0 - (d / 16.0).clamp(0.0, 1.0);
+                let h = 1.5;
+                let g = vec2(
+                    field(p + vec2(h, 0.0)) - field(p - vec2(h, 0.0)),
+                    field(p + vec2(0.0, h)) - field(p - vec2(0.0, h)),
+                );
+                let n = if g.length() > 1e-4 { g.normalized() } else { Vec2::ZERO };
+                // the rim bends light inward; split channels for a slight fringe
+                let off = n * refr * e * e;
+                let mut c = if e > 0.05 {
+                    let r = bg_fn(p + off * 1.12, time)[0];
+                    let gch = bg_fn(p + off, time)[1];
+                    let b = bg_fn(p + off * 0.88, time)[2];
+                    [r, gch, b]
+                } else {
+                    bg_fn(p, time)
+                };
+                if frost > 0.01 {
+                    let blur = [
+                        bg_fn(p + vec2(9.0, 4.0), time),
+                        bg_fn(p + vec2(-7.0, -6.0), time),
+                        bg_fn(p + vec2(3.0, 9.0), time),
+                    ];
+                    for ch in 0..3 {
+                        let avg = (blur[0][ch] + blur[1][ch] + blur[2][ch] + c[ch]) / 4.0;
+                        c[ch] = c[ch] + (avg * 0.85 + 0.15 - c[ch]) * frost;
+                    }
                 }
-            }
-            // glass body: a touch brighter, cooler, with a lit upper rim
-            let top = (-n.y).max(0.0) * e;
-            let tint = if pond { [0.96, 1.0, 1.02] } else { [1.0, 1.0, 1.0] };
-            let lift = 0.06 + 0.35 * top * e;
-            to_c([
-                (c[0] * tint[0] + lift).min(1.0),
-                (c[1] * tint[1] + lift).min(1.0),
-                (c[2] * tint[2] + lift).min(1.0),
-            ])
-        });
+                // glass body: a touch brighter, cooler, with a lit upper rim
+                let top = (-n.y).max(0.0) * e;
+                let tint = if pond { [0.96, 1.0, 1.02] } else { [1.0, 1.0, 1.0] };
+                let lift = 0.06 + 0.35 * top * e;
+                to_c([
+                    (c[0] * tint[0] + lift).min(1.0),
+                    (c[1] * tint[1] + lift).min(1.0),
+                    (c[2] * tint[2] + lift).min(1.0),
+                ])
+            },
+        );
         for (a, b) in segs {
             painter.line_segment([a, b], Stroke::new(1.2, with_alpha(Color32::WHITE, 0.7)));
         }
         // ---- content on the glass
         let ink = hex("#0E2A33");
         painter.text(card.min + vec2(18.0, 14.0), Align2::LEFT_TOP, &self.title, FontId::proportional(17.0), ink);
-        painter.text(card.min + vec2(18.0, 38.0), Align2::LEFT_TOP, &self.subtitle, FontId::proportional(11.0), with_alpha(ink, 0.65));
-        painter.text(card.right_center() - vec2(18.0, 0.0), Align2::RIGHT_CENTER, "01", FontId::monospace(10.0), with_alpha(ink, 0.6));
+        painter.text(
+            card.min + vec2(18.0, 38.0),
+            Align2::LEFT_TOP,
+            &self.subtitle,
+            FontId::proportional(11.0),
+            with_alpha(ink, 0.65),
+        );
+        painter.text(
+            card.right_center() - vec2(18.0, 0.0),
+            Align2::RIGHT_CENTER,
+            "01",
+            FontId::monospace(10.0),
+            with_alpha(ink, 0.6),
+        );
         // dock icons
         let icons = 4;
         for i in 0..icons {

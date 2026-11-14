@@ -1,4 +1,4 @@
-use super::common::{cached_ink, idle_time, lerp_c, wall_dt, Cam, Sheet, Soup, V3, PAPER, PAPER_BACK};
+use super::common::{cached_ink, idle_time, lerp_c, wall_dt, Cam, Sheet, Soup, PAPER, PAPER_BACK, V3};
 use super::posters::{poster_bg, poster_ink, poster_title, POSTERS};
 use egui::{pos2, vec2, Align2, FontId, Rect, Response, Sense, Stroke, Ui, Vec2, Widget};
 use glowkit_core::color::with_alpha;
@@ -44,7 +44,15 @@ impl Default for PleatedStrip {
 impl PleatedStrip {
     /// A strip of the built-in generated posters.
     pub fn new() -> Self {
-        Self { count: 12, height: 420.0, radius: None, poster: vec2(160.0, 150.0), pleat: 22.0, progress: None, autoplay: true }
+        Self {
+            count: 12,
+            height: 420.0,
+            radius: None,
+            poster: vec2(160.0, 150.0),
+            pleat: 22.0,
+            progress: None,
+            autoplay: true,
+        }
     }
     /// Number of posters (designs repeat; default 12).
     pub fn count(mut self, n: usize) -> Self {
@@ -96,11 +104,15 @@ impl Widget for PleatedStrip {
         let fold = self.pleat;
         let r = self.radius.unwrap_or(self.height * 0.44);
         let drum_x = rect.min.x + rect.width() * 0.42;
-        let list = Rect::from_min_max(pos2(rect.min.x + rect.width() * 0.62, rect.min.y + 30.0), pos2(rect.max.x - 20.0, rect.max.y - 20.0));
+        let list = Rect::from_min_max(
+            pos2(rect.min.x + rect.width() * 0.62, rect.min.y + 30.0),
+            pos2(rect.max.x - 20.0, rect.max.y - 20.0),
+        );
         let row_h = ((list.height() - 70.0) / n as f32).min(22.0);
         let mut clicked_row = None;
         for i in 0..n {
-            let rr = Rect::from_min_size(pos2(list.min.x, list.min.y + 70.0 + i as f32 * row_h), vec2(list.width(), row_h));
+            let rr =
+                Rect::from_min_size(pos2(list.min.x, list.min.y + 70.0 + i as f32 * row_h), vec2(list.width(), row_h));
             let resp = ui.interact(rr, id.with(("row", i)), Sense::click());
             if resp.hovered() {
                 ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -258,30 +270,99 @@ impl Widget for PleatedStrip {
         let lx = rect.min.x + 18.0;
         let ly = rect.center().y - 40.0;
         painter.text(pos2(lx, ly), Align2::LEFT_TOP, "STUDIO FERRO", FontId::monospace(10.5), t.foreground);
-        painter.text(pos2(lx, ly + 18.0), Align2::LEFT_TOP, "Posters, sleeves & type", FontId::proportional(11.0), t.muted_foreground);
-        painter.text(pos2(lx, ly + 33.0), Align2::LEFT_TOP, "Lisbon, PT", FontId::proportional(11.0), t.muted_foreground);
+        painter.text(
+            pos2(lx, ly + 18.0),
+            Align2::LEFT_TOP,
+            "Posters, sleeves & type",
+            FontId::proportional(11.0),
+            t.muted_foreground,
+        );
+        painter.text(
+            pos2(lx, ly + 33.0),
+            Align2::LEFT_TOP,
+            "Lisbon, PT",
+            FontId::proportional(11.0),
+            t.muted_foreground,
+        );
         for (k, l) in ["Instagram", "Are.na", "Email"].iter().enumerate() {
-            painter.text(pos2(lx, ly + 60.0 + k as f32 * 15.0), Align2::LEFT_TOP, *l, FontId::proportional(11.0), t.foreground);
+            painter.text(
+                pos2(lx, ly + 60.0 + k as f32 * 15.0),
+                Align2::LEFT_TOP,
+                *l,
+                FontId::proportional(11.0),
+                t.foreground,
+            );
         }
         painter.circle_filled(pos2(lx + 3.0, rect.max.y - 16.0), 3.0, t.success);
-        painter.text(pos2(lx + 12.0, rect.max.y - 16.0), Align2::LEFT_CENTER, "Booking from February", FontId::proportional(10.5), t.muted_foreground);
+        painter.text(
+            pos2(lx + 12.0, rect.max.y - 16.0),
+            Align2::LEFT_CENTER,
+            "Booking from February",
+            FontId::proportional(10.5),
+            t.muted_foreground,
+        );
         // ---- title + list
         let cur = (st.offset.round().rem_euclid(nf)) as usize % n;
-        painter.text(list.min, Align2::LEFT_TOP, format!("{:02} / {:02}", cur + 1, n), FontId::monospace(10.0), t.muted_foreground);
-        painter.text(list.min + vec2(0.0, 16.0), Align2::LEFT_TOP, poster_title(cur % POSTERS), FontId::proportional(22.0), t.foreground);
-        painter.text(list.min + vec2(0.0, 44.0), Align2::LEFT_TOP, "Poster series, 2026", FontId::proportional(11.0), t.muted_foreground);
+        painter.text(
+            list.min,
+            Align2::LEFT_TOP,
+            format!("{:02} / {:02}", cur + 1, n),
+            FontId::monospace(10.0),
+            t.muted_foreground,
+        );
+        painter.text(
+            list.min + vec2(0.0, 16.0),
+            Align2::LEFT_TOP,
+            poster_title(cur % POSTERS),
+            FontId::proportional(22.0),
+            t.foreground,
+        );
+        painter.text(
+            list.min + vec2(0.0, 44.0),
+            Align2::LEFT_TOP,
+            "Poster series, 2026",
+            FontId::proportional(11.0),
+            t.muted_foreground,
+        );
         for i in 0..n {
             let y = list.min.y + 70.0 + i as f32 * row_h;
             let on = i == cur;
             if on {
-                painter.line_segment([pos2(list.min.x, y + 3.0), pos2(list.min.x, y + row_h - 3.0)], Stroke::new(2.0, t.accent));
+                painter.line_segment(
+                    [pos2(list.min.x, y + 3.0), pos2(list.min.x, y + row_h - 3.0)],
+                    Stroke::new(2.0, t.accent),
+                );
             }
             let c = if on { t.foreground } else { with_alpha(t.muted_foreground, 0.8) };
-            painter.text(pos2(list.min.x + 10.0, y + row_h * 0.5), Align2::LEFT_CENTER, format!("{:02}", i + 1), FontId::monospace(9.5), with_alpha(c, 0.6));
-            painter.text(pos2(list.min.x + 36.0, y + row_h * 0.5), Align2::LEFT_CENTER, poster_title(i % POSTERS), FontId::proportional(12.0), c);
-            painter.text(pos2(list.max.x, y + row_h * 0.5), Align2::RIGHT_CENTER, format!("{}", 2026 - (i % 3) as i32), FontId::monospace(9.5), with_alpha(c, 0.6));
+            painter.text(
+                pos2(list.min.x + 10.0, y + row_h * 0.5),
+                Align2::LEFT_CENTER,
+                format!("{:02}", i + 1),
+                FontId::monospace(9.5),
+                with_alpha(c, 0.6),
+            );
+            painter.text(
+                pos2(list.min.x + 36.0, y + row_h * 0.5),
+                Align2::LEFT_CENTER,
+                poster_title(i % POSTERS),
+                FontId::proportional(12.0),
+                c,
+            );
+            painter.text(
+                pos2(list.max.x, y + row_h * 0.5),
+                Align2::RIGHT_CENTER,
+                format!("{}", 2026 - (i % 3) as i32),
+                FontId::monospace(9.5),
+                with_alpha(c, 0.6),
+            );
         }
-        painter.text(pos2(list.max.x, rect.max.y - 12.0), Align2::RIGHT_BOTTOM, "Scroll, drag or click a title", FontId::proportional(10.5), t.muted_foreground);
+        painter.text(
+            pos2(list.max.x, rect.max.y - 12.0),
+            Align2::RIGHT_BOTTOM,
+            "Scroll, drag or click a title",
+            FontId::proportional(10.5),
+            t.muted_foreground,
+        );
         response
     }
 }

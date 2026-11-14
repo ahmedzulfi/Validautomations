@@ -248,7 +248,6 @@ fn dot_field(p: &egui::Painter, area: Rect, t: &Theme, time: f32) {
     }
 }
 
-
 /// Gallery order: blocks and rich interactions first, primitives last.
 pub const CATEGORY_ORDER: [Category; 20] = [
     Category::Blocks,
@@ -276,9 +275,24 @@ pub const CATEGORY_ORDER: [Category; 20] = [
 /// Plain primitives that stay in the library (templates are built from them) but are not
 /// showcased in the gallery, which shows blocks and distinctive components only.
 pub const PRIMITIVES: [&str; 18] = [
-    "button", "input", "password-input", "switch", "checkbox", "slider", "select", "tag-input",
-    "segmented-control", "accordion", "avatar", "tooltip", "dialog", "sheet", "dropdown-menu", "navbar",
-    "stepper", "tabs",
+    "button",
+    "input",
+    "password-input",
+    "switch",
+    "checkbox",
+    "slider",
+    "select",
+    "tag-input",
+    "segmented-control",
+    "accordion",
+    "avatar",
+    "tooltip",
+    "dialog",
+    "sheet",
+    "dropdown-menu",
+    "navbar",
+    "stepper",
+    "tabs",
 ];
 
 /// Showcased demos in gallery order.

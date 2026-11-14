@@ -147,7 +147,8 @@ fn box_blur(src: &[f32], w: usize, h: usize, r: usize) -> Vec<f32> {
 /// texture's brightness (multiply it by vertex colors to get a grainy fill).
 pub(crate) fn text_mask(ctx: &Context, text: &str, font: &FontId, grain: bool) -> Arc<TextMask> {
     let ppp = ctx.pixels_per_point();
-    let key = Id::unique(("snap_b_text_mask", text, font.size.to_bits(), format!("{:?}", font.family), ppp.to_bits(), grain));
+    let key =
+        Id::unique(("snap_b_text_mask", text, font.size.to_bits(), format!("{:?}", font.family), ppp.to_bits(), grain));
     if let Some(m) = ctx.data(|d| d.get_temp::<Arc<TextMask>>(key)) {
         return m;
     }
@@ -334,7 +335,13 @@ pub(crate) fn mask_glow(painter: &Painter, mask: &TextMask, center: Pos2, radius
     for i in 0..taps {
         let a = i as f32 / taps as f32 * std::f32::consts::TAU;
         let rr = radius * if i % 2 == 0 { 1.0 } else { 0.55 };
-        paint_mask_flat(painter, mask, center + vec2(a.cos(), a.sin()) * rr, 1.0, color.gamma_multiply(1.0 / taps as f32 * 2.0));
+        paint_mask_flat(
+            painter,
+            mask,
+            center + vec2(a.cos(), a.sin()) * rr,
+            1.0,
+            color.gamma_multiply(1.0 / taps as f32 * 2.0),
+        );
     }
 }
 
@@ -568,7 +575,11 @@ pub(crate) fn poly_shadow(painter: &Painter, pts: &[Pos2], offset: Vec2, spread:
                 *p + d / l * grow + offset
             })
             .collect();
-        painter.add(Shape::convex_polygon(poly, color.gamma_multiply(1.0 / layers as f32 * 1.4 * f), egui::Stroke::NONE));
+        painter.add(Shape::convex_polygon(
+            poly,
+            color.gamma_multiply(1.0 / layers as f32 * 1.4 * f),
+            egui::Stroke::NONE,
+        ));
     }
 }
 
@@ -583,14 +594,19 @@ pub(crate) fn wall_dt(ui: &Ui) -> f32 {
 /// Seconds since the pointer last interacted with `response` (0 while interacting).
 pub(crate) fn idle_time(ui: &Ui, id: Id, active: bool) -> f32 {
     let dt = wall_dt(ui);
-    glowkit_core::with_state(ui, id.with("snap_b_idle"), || 10.0f32, |s| {
-        if active {
-            *s = 0.0;
-        } else {
-            *s += dt;
-        }
-        *s
-    })
+    glowkit_core::with_state(
+        ui,
+        id.with("snap_b_idle"),
+        || 10.0f32,
+        |s| {
+            if active {
+                *s = 0.0;
+            } else {
+                *s += dt;
+            }
+            *s
+        },
+    )
 }
 
 /// A ghost pointer that wanders a Lissajous path over `rect`, for idle autoplay.
@@ -669,14 +685,7 @@ struct SnapState {
 /// A snapping index carousel: drag / wheel / arrow keys move between integer slots with a
 /// spring, autoplay steps every `interval` seconds when idle (0 = off). Returns the continuous
 /// position (unbounded; wrap it yourself). `step_px` is how many points of drag equal one slot.
-pub(crate) fn drive_snap(
-    ui: &Ui,
-    id: Id,
-    response: &Response,
-    step_px: f32,
-    interval: f32,
-    nudge: f32,
-) -> f32 {
+pub(crate) fn drive_snap(ui: &Ui, id: Id, response: &Response, step_px: f32, interval: f32, nudge: f32) -> f32 {
     let dt = glowkit_core::dt(ui);
     let wdt = wall_dt(ui);
     let hovered = response.hovered() || response.dragged();
@@ -692,9 +701,7 @@ pub(crate) fn drive_snap(
         0.0
     };
     let keys = if response.hovered() || response.has_focus() {
-        ui.input(|i| {
-            (i.key_pressed(egui::Key::ArrowRight) as i32 - i.key_pressed(egui::Key::ArrowLeft) as i32) as f32
-        })
+        ui.input(|i| (i.key_pressed(egui::Key::ArrowRight) as i32 - i.key_pressed(egui::Key::ArrowLeft) as i32) as f32)
     } else {
         0.0
     };
@@ -732,8 +739,13 @@ pub(crate) fn drive_snap(
                 s.target = s.target.round() + 1.0;
                 s.timer = 0.0;
             }
-            let mut sp = glowkit_core::Spring { value: s.pos, velocity: s.vel, target: s.target, ..glowkit_core::Spring::new(0.0) }
-                .with(140.0, 19.0);
+            let mut sp = glowkit_core::Spring {
+                value: s.pos,
+                velocity: s.vel,
+                target: s.target,
+                ..glowkit_core::Spring::new(0.0)
+            }
+            .with(140.0, 19.0);
             sp.step(dt);
             s.pos = sp.value;
             s.vel = sp.velocity;
@@ -934,12 +946,7 @@ pub(crate) fn dashed(painter: &Painter, pts: &[Pos2], dash: f32, gap: f32, phase
 
 /// Paint a galley whose glyph vertices are pushed through `map` (local point relative to the
 /// galley's top-left -> screen). Lets text ride tilted / curved surfaces.
-pub(crate) fn galley_mapped(
-    painter: &Painter,
-    galley: &Arc<egui::Galley>,
-    color: Color32,
-    map: impl Fn(Vec2) -> Pos2,
-) {
+pub(crate) fn galley_mapped(painter: &Painter, galley: &Arc<egui::Galley>, color: Color32, map: impl Fn(Vec2) -> Pos2) {
     let [tw, th] = painter.fonts(|fo| fo.font_image_size());
     let norm = vec2(1.0 / tw.max(1) as f32, 1.0 / th.max(1) as f32);
     for row in &galley.rows {

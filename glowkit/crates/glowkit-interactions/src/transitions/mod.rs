@@ -12,9 +12,14 @@ mod surfaces;
 mod text;
 
 pub use common::MotionCurve;
-pub use controls::{AvatarStack, BellBadge, BounceSwitch, DissolveSearch, DrawnCheckbox, LearnMoreLink, ShakeField, SuccessCheck, SwapIcon, SwapIconPair};
+pub use controls::{
+    AvatarStack, BellBadge, BounceSwitch, DissolveSearch, DrawnCheckbox, LearnMoreLink, ShakeField, SuccessCheck,
+    SwapIcon, SwapIconPair,
+};
 pub use numbers::{DrumCounter, PopNumber, SubtleNumber};
-pub use overlays::{BannerStack, DropdownSurface, MorphMenu, PopModal, RevealPanel, SlideToast, StackBanner, TooltipBar};
+pub use overlays::{
+    BannerStack, DropdownSurface, MorphMenu, PopModal, RevealPanel, SlideToast, StackBanner, TooltipBar,
+};
 pub use surfaces::{DotMatrixLoader, DotPattern, ResizeCard, SidePager, SkeletonReveal};
 pub use text::{ReasoningScroll, StaggerReveal, StateText, StreamText, ThinkingText};
 

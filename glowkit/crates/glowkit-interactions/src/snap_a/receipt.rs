@@ -1,6 +1,8 @@
 use super::common::{cached_ink, idle_time, lerp_c, sstep, wall_dt, Cam, Ink, Sheet, Soup, V3};
 use egui::epaint::Mesh;
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Vec2, Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::{hex, paint, Theme};
 
@@ -156,7 +158,13 @@ fn print_receipt(ink: &mut Ink, w: f32, brand: &str, plan: &ReceiptPlan) {
     dashed(ink, y + 4.0, w);
     ink.text(pos2(14.0, y + 20.0), Align2::LEFT_TOP, "TOTAL", FontId::monospace(8.0), ink_c);
     ink.text(pos2(14.0, y + 31.0), Align2::LEFT_TOP, "PER MONTH", FontId::monospace(5.0), soft);
-    ink.text(pos2(w - 14.0, y + 14.0), Align2::RIGHT_TOP, &format!("${:.2}", plan.price), FontId::monospace(22.0), ink_c);
+    ink.text(
+        pos2(w - 14.0, y + 14.0),
+        Align2::RIGHT_TOP,
+        &format!("${:.2}", plan.price),
+        FontId::monospace(22.0),
+        ink_c,
+    );
     // barcode
     let mut x = 30.0;
     let mut k = 99u64 + plan.price as u64;
@@ -213,7 +221,8 @@ fn paint_sea(painter: &egui::Painter, r: Rect, hour: f32, time: f32) {
     });
     // sun / moon
     let night = (hour - 1.0).clamp(0.0, 1.0);
-    let sun = pos2(r.min.x + r.width() * 0.84, r.min.y + r.height() * (0.5 - 0.22 * (1.0 - (hour - 0.9).abs().min(1.0))));
+    let sun =
+        pos2(r.min.x + r.width() * 0.84, r.min.y + r.height() * (0.5 - 0.22 * (1.0 - (hour - 0.9).abs().min(1.0))));
     paint::glow(painter, sun, 40.0, with_alpha(lerp_c(hex("#FFE7C2"), hex("#DDE6FF"), night), 0.5));
     painter.circle_filled(sun, 11.0, lerp_c(hex("#FFF4DF"), hex("#F2F4FF"), night));
     if night > 0.3 {
@@ -230,7 +239,8 @@ fn paint_sea(painter: &egui::Painter, r: Rect, hour: f32, time: f32) {
                 pos2(x, y + ((x * 0.03 + time * 0.8 + i as f32).sin()) * (1.0 + depth * 2.0))
             })
             .collect();
-        painter.add(Shape::line(pts, Stroke::new(0.6 + depth, with_alpha(Color32::WHITE, 0.06 + 0.08 * (1.0 - depth)))));
+        painter
+            .add(Shape::line(pts, Stroke::new(0.6 + depth, with_alpha(Color32::WHITE, 0.06 + 0.08 * (1.0 - depth)))));
     }
     // shore
     let shore_y = r.max.y - r.height() * 0.06;
@@ -261,7 +271,12 @@ impl Widget for ReceiptPrinter {
         // plan rows on the right
         let row_h = 46.0;
         let rows_top = right.min.y + 118.0;
-        let row_rect = |i: usize| Rect::from_min_size(pos2(right.min.x, rows_top + i as f32 * (row_h + 6.0)), vec2(right.width().min(380.0), row_h));
+        let row_rect = |i: usize| {
+            Rect::from_min_size(
+                pos2(right.min.x, rows_top + i as f32 * (row_h + 6.0)),
+                vec2(right.width().min(380.0), row_h),
+            )
+        };
         let mut picked = None;
         for i in 0..n {
             let r = ui.interact(row_rect(i), id.with(("plan", i)), Sense::click());
@@ -294,68 +309,73 @@ impl Widget for ReceiptPrinter {
         let drag_end = paper_resp.drag_stopped();
         let speed = self.feed_speed;
         let autoplay = self.autoplay && idle > 2.5;
-        let st = glowkit_core::with_state(ui, id, || st0, |s| {
-            if let Some(p) = picked {
-                if p != s.plan {
-                    s.plan = p;
-                    s.rewinding = s.feed > 0.0;
-                }
-                s.auto_t = 5.0;
-            }
-            if autoplay {
-                s.auto_t -= wdt;
-                if s.auto_t <= 0.0 {
-                    s.auto_n += 1;
-                    if s.auto_n % 3 == 0 && s.feed > 0.95 && s.torn.is_none() {
-                        s.torn = Some((0.0, vec2(0.0, 40.0), 0.0));
-                        s.kept = Some(s.shown);
-                        s.feed = 0.0;
-                    } else {
-                        s.plan = (s.plan + 1) % n;
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0,
+            |s| {
+                if let Some(p) = picked {
+                    if p != s.plan {
+                        s.plan = p;
                         s.rewinding = s.feed > 0.0;
                     }
-                    s.auto_t = 4.6;
+                    s.auto_t = 5.0;
                 }
-            }
-            // drag the paper down to tear it off
-            if drag_dy != 0.0 && s.feed > 0.6 && !s.rewinding {
-                s.drag = (s.drag + drag_dy).max(0.0);
-                if s.drag > 46.0 {
-                    s.torn = Some((0.0, vec2(0.0, s.drag * 4.0), 0.0));
-                    s.kept = Some(s.shown);
-                    s.feed = 0.0;
-                    s.drag = 0.0;
+                if autoplay {
+                    s.auto_t -= wdt;
+                    if s.auto_t <= 0.0 {
+                        s.auto_n += 1;
+                        if s.auto_n % 3 == 0 && s.feed > 0.95 && s.torn.is_none() {
+                            s.torn = Some((0.0, vec2(0.0, 40.0), 0.0));
+                            s.kept = Some(s.shown);
+                            s.feed = 0.0;
+                        } else {
+                            s.plan = (s.plan + 1) % n;
+                            s.rewinding = s.feed > 0.0;
+                        }
+                        s.auto_t = 4.6;
+                    }
                 }
-            }
-            if drag_end || drag_dy == 0.0 {
-                s.drag *= (-12.0 * dt).exp();
-            }
-            if s.rewinding {
-                s.feed -= dt * 2.4 * speed;
-                if s.feed <= 0.0 {
-                    s.feed = 0.0;
-                    s.rewinding = false;
+                // drag the paper down to tear it off
+                if drag_dy != 0.0 && s.feed > 0.6 && !s.rewinding {
+                    s.drag = (s.drag + drag_dy).max(0.0);
+                    if s.drag > 46.0 {
+                        s.torn = Some((0.0, vec2(0.0, s.drag * 4.0), 0.0));
+                        s.kept = Some(s.shown);
+                        s.feed = 0.0;
+                        s.drag = 0.0;
+                    }
                 }
-            } else {
-                if s.feed <= 0.0 {
-                    s.shown = s.plan;
+                if drag_end || drag_dy == 0.0 {
+                    s.drag *= (-12.0 * dt).exp();
                 }
-                if s.torn.is_none_or(|(tt, _, _)| tt > 0.5) {
-                    s.feed = (s.feed + dt * 0.62 * speed).min(1.0);
+                if s.rewinding {
+                    s.feed -= dt * 2.4 * speed;
+                    if s.feed <= 0.0 {
+                        s.feed = 0.0;
+                        s.rewinding = false;
+                    }
+                } else {
+                    if s.feed <= 0.0 {
+                        s.shown = s.plan;
+                    }
+                    if s.torn.is_none_or(|(tt, _, _)| tt > 0.5) {
+                        s.feed = (s.feed + dt * 0.62 * speed).min(1.0);
+                    }
                 }
-            }
-            if let Some((tt, v, a)) = s.torn.as_mut() {
-                *tt += dt;
-                v.y += 900.0 * dt;
-                *a += dt * 0.9;
-                if *tt > 1.3 {
-                    s.torn = None;
+                if let Some((tt, v, a)) = s.torn.as_mut() {
+                    *tt += dt;
+                    v.y += 900.0 * dt;
+                    *a += dt * 0.9;
+                    if *tt > 1.3 {
+                        s.torn = None;
+                    }
                 }
-            }
-            let target_hour = if n > 1 { s.plan as f32 / (n - 1) as f32 * 2.0 } else { 1.0 };
-            s.hour += (target_hour - s.hour) * (1.0 - (-3.0 * dt).exp());
-            *s
-        });
+                let target_hour = if n > 1 { s.plan as f32 / (n - 1) as f32 * 2.0 } else { 1.0 };
+                s.hour += (target_hour - s.hour) * (1.0 - (-3.0 * dt).exp());
+                *s
+            },
+        );
         glowkit_core::animate(ui);
         if !ui.is_rect_visible(rect) {
             return response;
@@ -363,13 +383,22 @@ impl Widget for ReceiptPrinter {
         let painter = ui.painter_at(rect);
         // ---- scene card
         let cr = CornerRadius::same((t.radius * 1.4) as u8);
-        paint::soft_shadow(&painter, scene, t.radius * 1.4, 18.0, vec2(0.0, 8.0), Color32::from_black_alpha(if t.dark { 90 } else { 30 }));
+        paint::soft_shadow(
+            &painter,
+            scene,
+            t.radius * 1.4,
+            18.0,
+            vec2(0.0, 8.0),
+            Color32::from_black_alpha(if t.dark { 90 } else { 30 }),
+        );
         let scene_p = painter.with_clip_rect(scene);
         paint_sea(&scene_p, scene, st.hour, time);
         scene_p.rect_stroke(scene, cr, Stroke::new(1.0, with_alpha(Color32::WHITE, 0.15)), egui::StrokeKind::Inside);
         // receipt (behind the printer front)
         let plan = &self.plans[st.shown.min(n - 1)];
-        let ink = cached_ink(ui, id.with(("receipt", st.shown, plan.price.to_bits())), 6.0, |ink| print_receipt(ink, paper_w, &self.brand, plan));
+        let ink = cached_ink(ui, id.with(("receipt", st.shown, plan.price.to_bits())), 6.0, |ink| {
+            print_receipt(ink, paper_w, &self.brand, plan)
+        });
         let paper = hex("#F7F4EC");
         let draw_paper = |soup: &mut Soup, cam: &Cam, len: f32, sway: f32, alpha: f32| {
             let len = len.max(2.0);
@@ -440,29 +469,76 @@ impl Widget for ReceiptPrinter {
         let amber = hex("#FFB547");
         let shown_price = self.plans[st.plan.min(n - 1)].price;
         paint::glow(&scene_p, lcd.center(), 30.0, with_alpha(amber, 0.12));
-        scene_p.text(lcd.right_center() - vec2(8.0, 0.0), Align2::RIGHT_CENTER, format!("${shown_price:.2}"), FontId::monospace(14.0), amber);
+        scene_p.text(
+            lcd.right_center() - vec2(8.0, 0.0),
+            Align2::RIGHT_CENTER,
+            format!("${shown_price:.2}"),
+            FontId::monospace(14.0),
+            amber,
+        );
         // plan keys
         for i in 0..n {
-            let kr = Rect::from_min_size(pos2(lcd.max.x + 10.0 + i as f32 * 38.0, printer.min.y + 11.0), vec2(32.0, 28.0));
+            let kr =
+                Rect::from_min_size(pos2(lcd.max.x + 10.0 + i as f32 * 38.0, printer.min.y + 11.0), vec2(32.0, 28.0));
             if kr.max.x > printer.max.x - 8.0 {
                 break;
             }
             let on = i == st.plan;
-            scene_p.rect_filled(kr.translate(vec2(0.0, if on { 1.5 } else { 0.0 })), 6.0, if on { hex("#4A4A50") } else { hex("#2C2C30") });
-            scene_p.circle_filled(kr.center_top() + vec2(0.0, 6.0), 1.6, if on { hex("#7CFF9A") } else { hex("#55555B") });
-            scene_p.text(kr.center() + vec2(0.0, 4.0), Align2::CENTER_CENTER, &self.plans[i].name, FontId::proportional(7.5), hex("#D8D8DC"));
+            scene_p.rect_filled(
+                kr.translate(vec2(0.0, if on { 1.5 } else { 0.0 })),
+                6.0,
+                if on { hex("#4A4A50") } else { hex("#2C2C30") },
+            );
+            scene_p.circle_filled(
+                kr.center_top() + vec2(0.0, 6.0),
+                1.6,
+                if on { hex("#7CFF9A") } else { hex("#55555B") },
+            );
+            scene_p.text(
+                kr.center() + vec2(0.0, 4.0),
+                Align2::CENTER_CENTER,
+                &self.plans[i].name,
+                FontId::proportional(7.5),
+                hex("#D8D8DC"),
+            );
         }
 
         // ---- right column
         let red = hex("#C62E2E");
         painter.text(right.min, Align2::LEFT_TOP, "first invoice is on the house", FontId::proportional(12.0), red);
-        painter.text(right.min + vec2(0.0, 22.0), Align2::LEFT_TOP, &self.headline.0, FontId::proportional(30.0), t.foreground);
-        painter.text(right.min + vec2(0.0, 56.0), Align2::LEFT_TOP, &self.headline.1, FontId::proportional(30.0), t.foreground);
-        painter.text(right.min + vec2(0.0, 96.0), Align2::LEFT_TOP, "Track time, send invoices, get paid the same afternoon.", FontId::proportional(12.5), t.muted_foreground);
+        painter.text(
+            right.min + vec2(0.0, 22.0),
+            Align2::LEFT_TOP,
+            &self.headline.0,
+            FontId::proportional(30.0),
+            t.foreground,
+        );
+        painter.text(
+            right.min + vec2(0.0, 56.0),
+            Align2::LEFT_TOP,
+            &self.headline.1,
+            FontId::proportional(30.0),
+            t.foreground,
+        );
+        painter.text(
+            right.min + vec2(0.0, 96.0),
+            Align2::LEFT_TOP,
+            "Track time, send invoices, get paid the same afternoon.",
+            FontId::proportional(12.5),
+            t.muted_foreground,
+        );
         for i in 0..n {
             let r = row_rect(i);
             let on = i == st.plan;
-            let fill = if on { if t.dark { t.muted } else { Color32::WHITE } } else { with_alpha(t.muted, 0.35) };
+            let fill = if on {
+                if t.dark {
+                    t.muted
+                } else {
+                    Color32::WHITE
+                }
+            } else {
+                with_alpha(t.muted, 0.35)
+            };
             painter.rect_filled(r, 10.0, fill);
             if on {
                 painter.rect_stroke(r, 10, Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
@@ -473,10 +549,28 @@ impl Widget for ReceiptPrinter {
                 painter.circle_filled(dot, 3.2, t.foreground);
             }
             let p = &self.plans[i];
-            painter.text(pos2(r.min.x + 34.0, r.min.y + 9.0), Align2::LEFT_TOP, &p.name, FontId::proportional(14.0), t.foreground);
-            painter.text(pos2(r.min.x + 34.0, r.min.y + 27.0), Align2::LEFT_TOP, &p.blurb, FontId::proportional(11.0), t.muted_foreground);
+            painter.text(
+                pos2(r.min.x + 34.0, r.min.y + 9.0),
+                Align2::LEFT_TOP,
+                &p.name,
+                FontId::proportional(14.0),
+                t.foreground,
+            );
+            painter.text(
+                pos2(r.min.x + 34.0, r.min.y + 27.0),
+                Align2::LEFT_TOP,
+                &p.blurb,
+                FontId::proportional(11.0),
+                t.muted_foreground,
+            );
             let price = if p.price == 0.0 { "Free".to_string() } else { format!("${:.0} /mo", p.price) };
-            painter.text(pos2(r.max.x - 14.0, r.center().y), Align2::RIGHT_CENTER, price, FontId::proportional(13.0), t.foreground);
+            painter.text(
+                pos2(r.max.x - 14.0, r.center().y),
+                Align2::RIGHT_CENTER,
+                price,
+                FontId::proportional(13.0),
+                t.foreground,
+            );
         }
         let cta_y = rows_top + n as f32 * (row_h + 6.0) + 14.0;
         let (label, fill) = match st.kept {
@@ -487,7 +581,13 @@ impl Widget for ReceiptPrinter {
         let cta = Rect::from_min_size(pos2(right.min.x, cta_y), vec2(g.size().x + 32.0, 38.0));
         painter.rect_filled(cta, 19.0, fill);
         painter.galley(cta.center() - g.size() * 0.5, g, contrast(fill));
-        painter.text(pos2(cta.max.x + 16.0, cta.center().y), Align2::LEFT_CENTER, "Drag the receipt down to tear it off", FontId::proportional(11.0), t.muted_foreground);
+        painter.text(
+            pos2(cta.max.x + 16.0, cta.center().y),
+            Align2::LEFT_CENTER,
+            "Drag the receipt down to tear it off",
+            FontId::proportional(11.0),
+            t.muted_foreground,
+        );
         response
     }
 }

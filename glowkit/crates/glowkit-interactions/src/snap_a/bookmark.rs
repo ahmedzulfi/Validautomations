@@ -59,7 +59,12 @@ impl CardBookmark {
     pub fn new() -> Self {
         Self {
             cards: vec![
-                BookmarkCard::new("Start Here.", "Your brand deserves a second look.", "Nova Collective", hex("#3B4FE0")),
+                BookmarkCard::new(
+                    "Start Here.",
+                    "Your brand deserves a second look.",
+                    "Nova Collective",
+                    hex("#3B4FE0"),
+                ),
                 BookmarkCard::new("+240%", "Growth that compounds every quarter.", "Bright Path", hex("#E8452C")),
                 BookmarkCard::new("See It.", "The work speaks before we do.", "North Field", hex("#8B3FE0")),
             ],
@@ -125,7 +130,9 @@ fn ribbons(p: &egui::Painter, r: Rect, n: usize, color: Color32, time: f32, k: f
                 let u = j as f32 / 48.0;
                 let x = r.min.x + u * r.width();
                 let twist = (u * 3.4 + time * 0.5 + f * 1.6).sin();
-                let y = r.center().y + (u * 5.0 + time * (0.6 + 0.9 * k) + f * 0.9).sin() * r.height() * 0.24 * twist + (f - 0.5) * r.height() * 0.22 * (u * 2.6 + time * 0.3).cos();
+                let y = r.center().y
+                    + (u * 5.0 + time * (0.6 + 0.9 * k) + f * 0.9).sin() * r.height() * 0.24 * twist
+                    + (f - 0.5) * r.height() * 0.22 * (u * 2.6 + time * 0.3).cos();
                 pos2(x, y)
             })
             .collect();
@@ -149,7 +156,8 @@ impl Widget for CardBookmark {
         let scale = (rect.width() / (total + 20.0)).min(1.0);
         let cs = self.card * scale;
         let x0 = rect.center().x - (n as f32 * cs.x + (n as f32 - 1.0) * gap) * 0.5;
-        let card_rect = |i: usize| Rect::from_min_size(pos2(x0 + i as f32 * (cs.x + gap), rect.center().y - cs.y * 0.5), cs);
+        let card_rect =
+            |i: usize| Rect::from_min_size(pos2(x0 + i as f32 * (cs.x + gap), rect.center().y - cs.y * 0.5), cs);
         let mut hovered = None;
         let mut clicked = None;
         for i in 0..n {
@@ -195,9 +203,21 @@ impl Widget for CardBookmark {
             let radius = 14.0 * scale;
             // glow
             if k > 0.01 {
-                paint::glow_ellipse(&painter, r.center() + vec2(0.0, 20.0), vec2(r.width() * 0.75, r.height() * 0.6), with_alpha(c.color, 0.28 * k));
+                paint::glow_ellipse(
+                    &painter,
+                    r.center() + vec2(0.0, 20.0),
+                    vec2(r.width() * 0.75, r.height() * 0.6),
+                    with_alpha(c.color, 0.28 * k),
+                );
             }
-            paint::soft_shadow(&painter, r.shrink(4.0), radius, 18.0, vec2(0.0, 8.0), Color32::from_black_alpha(if t.dark { 120 } else { 26 }));
+            paint::soft_shadow(
+                &painter,
+                r.shrink(4.0),
+                radius,
+                18.0,
+                vec2(0.0, 8.0),
+                Color32::from_black_alpha(if t.dark { 120 } else { 26 }),
+            );
             let (body, tabp) = card_shape(r, tab, radius);
             let top = lerp_c(idle_fill, shade(c.color, 0.08), k);
             let bottom = lerp_c(idle_fill, shade(c.color, -0.2), k);
@@ -212,22 +232,46 @@ impl Widget for CardBookmark {
             }
             // brand on the tab line
             let on = lerp_c(if t.dark { hex("#E4E4E7") } else { hex("#18181B") }, Color32::WHITE, k);
-            painter.text(pos2(r.max.x - 12.0 * scale, r.min.y + tab + 9.0 * scale), Align2::RIGHT_CENTER, format!("— {}®", c.brand), FontId::proportional(8.5 * scale.max(0.8)), on);
+            painter.text(
+                pos2(r.max.x - 12.0 * scale, r.min.y + tab + 9.0 * scale),
+                Align2::RIGHT_CENTER,
+                format!("— {}®", c.brand),
+                FontId::proportional(8.5 * scale.max(0.8)),
+                on,
+            );
             // art panel
-            let art = Rect::from_min_max(pos2(r.min.x + 10.0 * scale, r.min.y + tab + 20.0 * scale), pos2(r.max.x - 10.0 * scale, r.min.y + tab + r.height() * 0.52));
+            let art = Rect::from_min_max(
+                pos2(r.min.x + 10.0 * scale, r.min.y + tab + 20.0 * scale),
+                pos2(r.max.x - 10.0 * scale, r.min.y + tab + r.height() * 0.52),
+            );
             let art_bg = lerp_c(if t.dark { hex("#0B0B0E") } else { hex("#121216") }, shade(c.color, -0.32), k);
             painter.rect_filled(art, 10.0 * scale, art_bg);
             let ap = painter.with_clip_rect(art.shrink(1.0).intersect(painter.clip_rect()));
             ribbons(&ap, art, self.waves, c.color, time + i as f32 * 1.7, k);
-            let tg = painter.layout(c.tagline.clone(), FontId::proportional(10.5 * scale.max(0.8)), Color32::WHITE, art.width() * 0.62);
+            let tg = painter.layout(
+                c.tagline.clone(),
+                FontId::proportional(10.5 * scale.max(0.8)),
+                Color32::WHITE,
+                art.width() * 0.62,
+            );
             painter.galley(pos2(art.min.x + 10.0 * scale, art.center().y + 4.0), tg, Color32::WHITE);
             // title
             let title_c = lerp_c(if t.dark { hex("#6B6B73") } else { hex("#A1A1AA") }, Color32::WHITE, k);
-            painter.text(pos2(r.min.x + 14.0 * scale, art.max.y + 26.0 * scale), Align2::LEFT_CENTER, &c.title, FontId::proportional(25.0 * scale.max(0.7)), title_c);
+            painter.text(
+                pos2(r.min.x + 14.0 * scale, art.max.y + 26.0 * scale),
+                Align2::LEFT_CENTER,
+                &c.title,
+                FontId::proportional(25.0 * scale.max(0.7)),
+                title_c,
+            );
             // dots
             for d in 0..3 {
                 let on_dot = d == 0;
-                let col = if on_dot { lerp_c(t.muted_foreground, c.color, 0.5 + 0.5 * k) } else { with_alpha(c.color, 0.4 + 0.3 * k) };
+                let col = if on_dot {
+                    lerp_c(t.muted_foreground, c.color, 0.5 + 0.5 * k)
+                } else {
+                    with_alpha(c.color, 0.4 + 0.3 * k)
+                };
                 painter.circle_filled(pos2(r.min.x + 16.0 * scale + d as f32 * 7.0, r.max.y - 14.0 * scale), 2.0, col);
             }
         }

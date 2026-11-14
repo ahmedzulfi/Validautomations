@@ -1,13 +1,22 @@
 use super::common::{lerp_c, sstep, sticky};
 use egui::epaint::{Mesh, Vertex};
-use egui::{pos2, vec2, Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, TextureId, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, TextureId, Ui, Vec2, Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::paint::rounded_rect_points;
 use glowkit_core::Theme;
 use glowkit_effects::PaintedScene;
 
 /// A rounded rect filled with a texture, where `uv_of` maps screen points to texture coords.
-fn textured_round_rect(painter: &egui::Painter, r: Rect, radius: f32, tex: TextureId, uv_of: impl Fn(Pos2) -> Pos2, tint: Color32) {
+fn textured_round_rect(
+    painter: &egui::Painter,
+    r: Rect,
+    radius: f32,
+    tex: TextureId,
+    uv_of: impl Fn(Pos2) -> Pos2,
+    tint: Color32,
+) {
     if r.width() < 1.0 || r.height() < 1.0 {
         return;
     }
@@ -166,8 +175,16 @@ impl Widget for ApertureZoom {
         // caption
         let c = sstep(0.82, 1.0, p);
         if c > 0.0 {
-            let g1 = painter.layout_no_wrap(self.caption.0.clone(), FontId::monospace(8.5), with_alpha(Color32::WHITE, 0.6 * c));
-            let g2 = painter.layout_no_wrap(self.caption.1.clone(), FontId::proportional(12.0), with_alpha(Color32::WHITE, c));
+            let g1 = painter.layout_no_wrap(
+                self.caption.0.clone(),
+                FontId::monospace(8.5),
+                with_alpha(Color32::WHITE, 0.6 * c),
+            );
+            let g2 = painter.layout_no_wrap(
+                self.caption.1.clone(),
+                FontId::proportional(12.0),
+                with_alpha(Color32::WHITE, c),
+            );
             let w = g1.size().x + g2.size().x + 34.0;
             let pill = Rect::from_center_size(pos2(st.center().x, st.max.y - 46.0 + (1.0 - c) * 12.0), vec2(w, 28.0));
             painter.rect_filled(pill, 14.0, Color32::from_black_alpha((150.0 * c) as u8));
@@ -306,7 +323,13 @@ impl Widget for ZoomReveal {
         // the words ride the frame's edges
         let font = FontId::proportional(self.font_size);
         let gap = 10.0;
-        painter.text(pos2(win.min.x - gap, st.center().y), Align2::RIGHT_CENTER, &self.left, font.clone(), t.foreground);
+        painter.text(
+            pos2(win.min.x - gap, st.center().y),
+            Align2::RIGHT_CENTER,
+            &self.left,
+            font.clone(),
+            t.foreground,
+        );
         painter.text(pos2(win.max.x + gap, st.center().y), Align2::LEFT_CENTER, &self.right, font, t.foreground);
         // play label
         let a = sstep(0.82, 1.0, p);

@@ -248,7 +248,7 @@ ui.add(SlideToConfirm::new("Slide to pay").dark(true).confirmed_label("Paid"));"
             name: "Pull to Refresh",
             category: C,
             description: "Pull the card down and it stretches while a ring of dots fills in; let go past the line to refresh.",
-            covers: &["Bencho: Pull to refresh"],
+            covers: &["Bencho: Pull to refresh", "suiss/ui: Pull To Refresh"],
             code: r##"let out = PullToRefresh::new().size(egui::vec2(300.0, 196.0)).show(ui, |ui, rect| {
     // paint or lay out the card content in `rect`
 });
@@ -341,7 +341,7 @@ ui.add(AssetSwap::new(assets).amount(0.05));"##,
             name: "Like",
             category: C,
             description: "Press the heart: it pops with a burst while the count rolls up a digit.",
-            covers: &["Bencho: Like"],
+            covers: &["Bencho: Like", "Transitions.dev: Like Button"],
             code: r##"let mut liked = false;
 ui.add(LikeButton::new(&mut liked, 1_299));
 ui.add(LikeButton::new(&mut liked, 99).burst(LikeBurst::Firework).color(theme.foreground));"##,

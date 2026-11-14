@@ -266,7 +266,7 @@
     }));
     const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
     fetch("catalog.json").then((r) => r.json()).then((data) => {
-      const demos = data.demos;
+      const demos = data.demos.filter((d) => d.showcase !== false);
       document.getElementById("pill-count").textContent = `${demos.length} components across ${Object.keys(demos.reduce((a, d) => ((a[d.category] = 1), a), {})).length} categories`;
       const cats = {};
       demos.forEach((d) => (cats[d.category] = (cats[d.category] || 0) + 1));

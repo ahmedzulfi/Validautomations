@@ -5,8 +5,8 @@
 //! grid, a marbling scroll story, a mosaic trail, a step path, quote and story decks and a
 //! particle globe.
 
-pub(crate) mod common;
 mod carousels;
+pub(crate) mod common;
 mod decks;
 mod globe;
 mod nav;

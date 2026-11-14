@@ -289,7 +289,7 @@ ui.add(StackCards::new(&faces).card_size(vec2(200.0, 260.0)));"##,
             name: "Folder",
             category: C,
             description: "A folder that opens on click: the flap tilts down, papers fan out and lean toward the pointer.",
-            covers: &["React Bits: Folder"],
+            covers: &["React Bits: Folder", "beUI: Card Folder"],
             code: r##"ui.add(Folder::new().color(hex("#5227FF")).size(1.4).papers(["Q3 plan", "Notes", "Ideas"]));"##,
             show: |ui| {
                 ui.add_space(10.0);
@@ -371,7 +371,7 @@ ui.add(StackCards::new(&faces).card_size(vec2(200.0, 260.0)));"##,
             name: "Animated Tabs",
             category: C,
             description: "A highlight springs between tabs, stretching as it travels; a softer hover highlight follows the pointer.",
-            covers: &["Motion Primitives: Animated Background", "Aceternity: Tabs", "Magic UI: Animated tabs", "shadcn: Tabs (animated)"],
+            covers: &["Motion Primitives: Animated Background", "Aceternity: Tabs", "Magic UI: Animated tabs", "shadcn: Tabs (animated)", "Transitions.dev: Tabs Sliding"],
             code: r##"ui.add(AnimatedTabs::new(&mut tab, &["Overview", "Usage", "API"]));
 ui.add(AnimatedTabs::new(&mut tab, &labels).style(TabHighlight::Underline));"##,
             show: |ui| {
@@ -531,7 +531,7 @@ AnimatedBeam::new(hub.center(), b.center()).reverse(true).paint(ui);
             name: "Masonry",
             category: C,
             description: "A masonry grid whose tiles glide to their new places on springs whenever the layout changes.",
-            covers: &["React Bits: Masonry", "Magic UI: Bento-style grid reflow"],
+            covers: &["React Bits: Masonry", "Magic UI: Bento-style grid reflow", "beUI: Infinite Masonry"],
             code: r##"Masonry::new(&heights).order(&order).columns(4).show(ui, |ui, i, rect| {
     ui.painter().rect_filled(rect, 12, colors[i]);
 });"##,

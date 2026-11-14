@@ -6,10 +6,19 @@ use glowkit_core::{Rng, Theme};
 
 /// Paint `text` as an odometer: every digit rolls vertically to its value on its own spring
 /// (digits further right are a touch quicker). Returns the painted width.
-pub(crate) fn odometer(ui: &Ui, painter: &Painter, id: egui::Id, text: &str, center: Pos2, size: f32, color: Color32) -> f32 {
+pub(crate) fn odometer(
+    ui: &Ui,
+    painter: &Painter,
+    id: egui::Id,
+    text: &str,
+    center: Pos2,
+    size: f32,
+    color: Color32,
+) -> f32 {
     let font = FontId::proportional(size);
     let dw = text_width(painter, "0", size);
-    let widths: Vec<f32> = text.chars().map(|c| if c.is_ascii_digit() { dw } else { text_width(painter, &c.to_string(), size) }).collect();
+    let widths: Vec<f32> =
+        text.chars().map(|c| if c.is_ascii_digit() { dw } else { text_width(painter, &c.to_string(), size) }).collect();
     let target_w: f32 = widths.iter().sum();
     let w = spring(ui, id.with("odo_w"), target_w, 300.0, 26.0);
     let mut x = center.x + w / 2.0;
@@ -28,7 +37,13 @@ pub(crate) fn odometer(ui: &Ui, painter: &Painter, id: egui::Id, text: &str, cen
                 let y = center.y + (dy - frac) * h;
                 let a = 1.0 - ((y - center.y).abs() / h).clamp(0.0, 1.0);
                 if a > 0.01 {
-                    clip.text(pos2(cx, y), Align2::CENTER_CENTER, digit.to_string(), font.clone(), with_alpha(color, a));
+                    clip.text(
+                        pos2(cx, y),
+                        Align2::CENTER_CENTER,
+                        digit.to_string(),
+                        font.clone(),
+                        with_alpha(color, a),
+                    );
                 }
             }
         } else {
@@ -138,7 +153,13 @@ impl egui::Widget for WalletCard<'_> {
         // header
         let hy = rect.min.y + 40.0;
         orb(&painter, pos2(rect.min.x + pad + 13.0, hy), 13.0, [hex("#5EEAD4"), hex("#A7F3D0")]);
-        let nr = painter.text(pos2(rect.min.x + pad + 34.0, hy), Align2::LEFT_CENTER, &self.name, FontId::proportional(14.5), t.foreground);
+        let nr = painter.text(
+            pos2(rect.min.x + pad + 34.0, hy),
+            Align2::LEFT_CENTER,
+            &self.name,
+            FontId::proportional(14.5),
+            t.foreground,
+        );
         icon(&painter, BeIcon::ChevronDown, pos2(nr.max.x + 12.0, hy), 9.0, t.muted_foreground, 1.4);
         icon(&painter, BeIcon::Search, pos2(rect.max.x - pad - 44.0, hy), 14.0, t.muted_foreground, 1.4);
         let bell = pos2(rect.max.x - pad - 8.0, hy);
@@ -146,7 +167,13 @@ impl egui::Widget for WalletCard<'_> {
         let pulse = ((now * 2.0).sin() * 0.5 + 0.5) as f32;
         painter.circle_filled(bell + vec2(5.0, -6.0), 3.5 + pulse * 0.6, t.info);
         // balance label + eye
-        let lr = painter.text(pos2(rect.center().x - 6.0, rect.min.y + 100.0), Align2::CENTER_CENTER, "Balance", FontId::proportional(12.0), t.muted_foreground);
+        let lr = painter.text(
+            pos2(rect.center().x - 6.0, rect.min.y + 100.0),
+            Align2::CENTER_CENTER,
+            "Balance",
+            FontId::proportional(12.0),
+            t.muted_foreground,
+        );
         let eye_c = pos2(lr.max.x + 12.0, lr.center().y);
         let hov_eye = ptr.is_some_and(|p| p.distance(eye_c) < 12.0);
         if hov_eye {
@@ -160,13 +187,25 @@ impl egui::Widget for WalletCard<'_> {
         let text = format!("${}", money(*self.balance));
         if hide < 0.98 {
             let a = 1.0 - hide;
-            odometer(ui, &painter, id.with("odo"), &text, fig_c + vec2(0.0, -hide * 8.0), 34.0, with_alpha(t.foreground, a));
+            odometer(
+                ui,
+                &painter,
+                id.with("odo"),
+                &text,
+                fig_c + vec2(0.0, -hide * 8.0),
+                34.0,
+                with_alpha(t.foreground, a),
+            );
         }
         if hide > 0.02 {
             let n = 6;
             for i in 0..n {
                 let x = fig_c.x + (i as f32 - (n - 1) as f32 / 2.0) * 22.0 * hide;
-                painter.circle_filled(pos2(x, fig_c.y + (1.0 - hide) * 8.0), 6.0 * hide, with_alpha(t.foreground, hide));
+                painter.circle_filled(
+                    pos2(x, fig_c.y + (1.0 - hide) * 8.0),
+                    6.0 * hide,
+                    with_alpha(t.foreground, hide),
+                );
             }
         }
         // delta pill
@@ -187,22 +226,47 @@ impl egui::Widget for WalletCard<'_> {
         painter.line_segment([a, b], egui::Stroke::new(1.5, col));
         painter.line_segment([b, b + vec2(-4.0, 0.0)], egui::Stroke::new(1.5, col));
         painter.line_segment([b, b + vec2(0.0, 4.0 * dy)], egui::Stroke::new(1.5, col));
-        painter.text(pos2(pill.min.x + 28.0, pill.center().y), Align2::LEFT_CENTER, dtext, FontId::proportional(12.5), col);
+        painter.text(
+            pos2(pill.min.x + 28.0, pill.center().y),
+            Align2::LEFT_CENTER,
+            dtext,
+            FontId::proportional(12.5),
+            col,
+        );
         // actions
-        let acts = [(BeIcon::ArrowUp, "Send"), (BeIcon::Download, "Deposit"), (BeIcon::Swap, "Swap"), (BeIcon::Card, "Buy")];
+        let acts =
+            [(BeIcon::ArrowUp, "Send"), (BeIcon::Download, "Deposit"), (BeIcon::Swap, "Swap"), (BeIcon::Card, "Buy")];
         let step = (w - pad * 2.0) / 4.0;
         for (i, (ic, label)) in acts.iter().enumerate() {
             let c = pos2(rect.min.x + pad + step * (i as f32 + 0.5), rect.max.y - 66.0);
             let r = Rect::from_center_size(c, vec2(48.0, 48.0));
             let ar = ui.interact(r, id.with(("act", i)), Sense::click());
-            let press = spring(ui, id.with(("press", i)), if ar.is_pointer_button_down_on() { 1.0 } else if ar.hovered() { 0.4 } else { 0.0 }, 500.0, 18.0);
+            let press = spring(
+                ui,
+                id.with(("press", i)),
+                if ar.is_pointer_button_down_on() {
+                    1.0
+                } else if ar.hovered() {
+                    0.4
+                } else {
+                    0.0
+                },
+                500.0,
+                18.0,
+            );
             if ar.hovered() {
                 ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
             }
             let rad = 24.0 - press * 2.5;
             painter.circle_filled(c, rad, mix(well(&t), hover_fill(&t), press.clamp(0.0, 1.0)));
             icon(&painter, *ic, c, 16.0, t.foreground, 1.5);
-            painter.text(c + vec2(0.0, 38.0), Align2::CENTER_CENTER, *label, FontId::proportional(12.0), t.muted_foreground);
+            painter.text(
+                c + vec2(0.0, 38.0),
+                Align2::CENTER_CENTER,
+                *label,
+                FontId::proportional(12.0),
+                t.muted_foreground,
+            );
         }
         resp
     }

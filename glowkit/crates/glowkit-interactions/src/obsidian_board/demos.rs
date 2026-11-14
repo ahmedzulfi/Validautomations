@@ -33,7 +33,14 @@ fn centered(ui: &mut Ui, rect: Rect, key: &str, f: impl FnOnce(&mut Ui)) {
 
 /// The live component centered in a stage of `height`, with a row of parameter sliders below
 /// (`n` sliders, stacked on narrow screens).
-fn bench<P>(ui: &mut Ui, height: f32, n: usize, p: &mut P, component: impl FnOnce(&mut Ui, &mut P), controls: impl FnOnce(&mut Ui, &mut P)) {
+fn bench<P>(
+    ui: &mut Ui,
+    height: f32,
+    n: usize,
+    p: &mut P,
+    component: impl FnOnce(&mut Ui, &mut P),
+    controls: impl FnOnce(&mut Ui, &mut P),
+) {
     let w = ui.available_width();
     let (rect, _) = ui.allocate_exact_size(vec2(w, height), Sense::hover());
     centered(ui, rect, "stage", |ui| component(ui, p));

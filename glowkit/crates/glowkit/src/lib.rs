@@ -34,12 +34,12 @@ pub use glowkit_charts as charts;
 pub use glowkit_components as components;
 #[cfg(feature = "effects")]
 pub use glowkit_effects as effects;
+#[cfg(feature = "interactions")]
+pub use glowkit_interactions as interactions;
 #[cfg(feature = "motion")]
 pub use glowkit_motion as motion;
 #[cfg(feature = "templates")]
 pub use glowkit_templates as templates;
-#[cfg(feature = "interactions")]
-pub use glowkit_interactions as interactions;
 #[cfg(feature = "text")]
 pub use glowkit_text as text;
 

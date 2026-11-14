@@ -46,13 +46,15 @@ fn dump_json() -> String {
         }
         format!("\"{o}\"")
     }
-    let items: Vec<String> = ui::showcase(glowkit::all_demos())
+    let shown: Vec<&str> = ui::showcase(glowkit::all_demos()).iter().map(|d| d.id).collect();
+    let items: Vec<String> = glowkit::all_demos()
         .iter()
         .map(|d| {
             let covers: Vec<String> = d.covers.iter().map(|c| esc(c)).collect();
             format!(
-                "  {{\"id\": {}, \"name\": {}, \"category\": {}, \"description\": {}, \"covers\": [{}], \"code\": {}}}",
+                "  {{\"id\": {}, \"showcase\": {}, \"name\": {}, \"category\": {}, \"description\": {}, \"covers\": [{}], \"code\": {}}}",
                 esc(d.id),
+                shown.contains(&d.id),
                 esc(d.name),
                 esc(d.category.label()),
                 esc(d.description),

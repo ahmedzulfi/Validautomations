@@ -3,8 +3,8 @@
 //! checkbox and a double-bounce switch.
 
 use super::common::{
-    avatar, bell, change, chip, cr, layer, material, more_chip, phase, round_line, soft_disc, span, surface, text_width, trim,
-    ui_layer, xf_around, MotionCurve, Tween, AVATAR_TONES,
+    avatar, bell, change, chip, cr, layer, material, more_chip, phase, round_line, soft_disc, span, surface,
+    text_width, trim, ui_layer, xf_around, MotionCurve, Tween, AVATAR_TONES,
 };
 use egui::emath::TSTransform;
 use egui::{pos2, vec2, Align2, Color32, FontId, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2, Widget};
@@ -76,7 +76,13 @@ impl Widget for BellBadge {
         let c = rect.center();
         let btn = Rect::from_center_size(c, Vec2::splat(self.size));
         let hover = response.hovered();
-        material(painter, &t, btn, self.size / 2.0, if hover { mix(surface(&t), t.foreground, 0.03) } else { surface(&t) });
+        material(
+            painter,
+            &t,
+            btn,
+            self.size / 2.0,
+            if hover { mix(surface(&t), t.foreground, 0.03) } else { surface(&t) },
+        );
         let ring_a = if self.ring && ph.on && ph.age < 0.9 {
             let k = ph.age / 0.9;
             (k * PI * 6.0).sin() * 0.32 * (1.0 - k).powi(2)
@@ -101,7 +107,11 @@ impl Widget for BellBadge {
             return response;
         }
         // a small bump when the number changes while shown
-        let bump = if ph.on && ph.age > self.open_dur && cnt.age < 0.4 { 1.0 + 0.18 * (1.0 - MotionCurve::BOUNCE.at(cnt.age / 0.4)) } else { 1.0 };
+        let bump = if ph.on && ph.age > self.open_dur && cnt.age < 0.4 {
+            1.0 + 0.18 * (1.0 - MotionCurve::BOUNCE.at(cnt.age / 0.4))
+        } else {
+            1.0
+        };
         let shown_count = if ph.on { self.count } else { cnt.prev.max(1) };
         let label = if shown_count > 99 { "99+".to_string() } else { shown_count.to_string() };
         let font = FontId::proportional(self.size * 0.27);
@@ -228,7 +238,8 @@ impl Widget for SwapIcon<'_> {
             *self.on = !*self.on;
             response.mark_changed();
         }
-        let ph = phase(ui, response.id, *self.on, self.dur, self.dur, MotionCurve::EASE_IN_OUT, MotionCurve::EASE_IN_OUT);
+        let ph =
+            phase(ui, response.id, *self.on, self.dur, self.dur, MotionCurve::EASE_IN_OUT, MotionCurve::EASE_IN_OUT);
         if !ui.is_rect_visible(rect) {
             return response;
         }
@@ -316,7 +327,8 @@ impl SuccessCheck {
 
 impl Widget for SuccessCheck {
     fn ui(self, ui: &mut Ui) -> Response {
-        let (rect, response) = ui.allocate_exact_size(vec2(self.size + 40.0, self.size + self.rise.abs() + 30.0), Sense::hover());
+        let (rect, response) =
+            ui.allocate_exact_size(vec2(self.size + 40.0, self.size + self.rise.abs() + 30.0), Sense::hover());
         let ph = phase(ui, response.id, self.shown, self.dur + 0.1, self.dur, MotionCurve::LINEAR, MotionCurve::LINEAR);
         if !ui.is_rect_visible(rect) {
             return response;
@@ -343,7 +355,14 @@ impl Widget for SuccessCheck {
         let painter = ui.painter().clone();
         let mut pt = painter.clone();
         pt.multiply_opacity(alpha);
-        paint::soft_shadow(&pt, Rect::from_center_size(c + vec2(0.0, 3.0), Vec2::splat(self.size * 0.8)), r, 14.0, Vec2::ZERO, with_alpha(col, 0.35));
+        paint::soft_shadow(
+            &pt,
+            Rect::from_center_size(c + vec2(0.0, 3.0), Vec2::splat(self.size * 0.8)),
+            r,
+            14.0,
+            Vec2::ZERO,
+            with_alpha(col, 0.35),
+        );
         soft_disc(&pt, c, r, blur, col);
         let s = self.size / 48.0;
         let (sn, cs) = ang.sin_cos();
@@ -604,7 +623,8 @@ impl Widget for ShakeField<'_> {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
         let h = 38.0;
-        let (rect, response) = ui.allocate_exact_size(vec2(self.width + 2.0 * self.distance + 4.0, h + 26.0), Sense::hover());
+        let (rect, response) =
+            ui.allocate_exact_size(vec2(self.width + 2.0 * self.distance + 4.0, h + 26.0), Sense::hover());
         let now = ui.input(|i| i.time);
         let err = self.error.is_some();
         let attempt = self.attempt;
@@ -634,14 +654,20 @@ impl Widget for ShakeField<'_> {
             ui.ctx().request_repaint();
         }
         let dx = shake_offset(age, self.distance);
-        let field = Rect::from_min_size(pos2(rect.center().x - self.width / 2.0 + dx, rect.min.y + 2.0), vec2(self.width, h));
+        let field =
+            Rect::from_min_size(pos2(rect.center().x - self.width / 2.0 + dx, rect.min.y + 2.0), vec2(self.width, h));
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
             let bad = t.destructive;
             let border = mix(if t.dark { with_alpha(Color32::WHITE, 0.12) } else { t.border }, bad, red);
             painter.rect(field, cr(10.0), surface(&t), Stroke::new(1.0, border), egui::StrokeKind::Inside);
             if red > 0.0 {
-                painter.rect_stroke(field.expand(2.0), cr(12.0), Stroke::new(3.0, with_alpha(bad, 0.12 * red)), egui::StrokeKind::Inside);
+                painter.rect_stroke(
+                    field.expand(2.0),
+                    cr(12.0),
+                    Stroke::new(3.0, with_alpha(bad, 0.12 * red)),
+                    egui::StrokeKind::Inside,
+                );
             }
             if let Some(msg) = &self.error {
                 painter.text(
@@ -654,7 +680,10 @@ impl Widget for ShakeField<'_> {
             }
         }
         let edit_rect = field.shrink2(vec2(12.0, 8.0));
-        let mut te = egui::TextEdit::singleline(self.text).frame(egui::Frame::NONE).desired_width(edit_rect.width()).font(FontId::proportional(14.0));
+        let mut te = egui::TextEdit::singleline(self.text)
+            .frame(egui::Frame::NONE)
+            .desired_width(edit_rect.width())
+            .font(FontId::proportional(14.0));
         if !self.hint.is_empty() {
             te = te.hint_text(self.hint.clone());
         }
@@ -737,14 +766,22 @@ impl Widget for DissolveSearch<'_> {
         let text_x = pill.min.x + 36.0;
         let clear_c = pos2(pill.max.x - 19.0, pill.center().y);
         let clear_resp = if has {
-            Some(ui.interact(Rect::from_center_size(clear_c, Vec2::splat(22.0)), id.with("clear"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand))
+            Some(
+                ui.interact(Rect::from_center_size(clear_c, Vec2::splat(22.0)), id.with("clear"), Sense::click())
+                    .on_hover_cursor(egui::CursorIcon::PointingHand),
+            )
         } else {
             None
         };
         let mut dust: Option<Dust> = glowkit_core::state(ui, id.with("dust"), || None);
         if has && (self.clear_now || clear_resp.as_ref().is_some_and(|r| r.clicked())) {
             let galley_h = ui.painter().layout_no_wrap("Ag".into(), font.clone(), Color32::WHITE).size().y;
-            dust = Some(Dust { text: self.text.clone(), origin: pos2(text_x, pill.center().y - galley_h / 2.0), since: now, seed: now.to_bits() });
+            dust = Some(Dust {
+                text: self.text.clone(),
+                origin: pos2(text_x, pill.center().y - galley_h / 2.0),
+                since: now,
+                seed: now.to_bits(),
+            });
             self.text.clear();
             glowkit_core::set_state(ui, id.with("dust"), dust.clone());
         }
@@ -771,11 +808,17 @@ impl Widget for DissolveSearch<'_> {
                 let tail = self.dur * 0.35;
                 let each = self.dur * 0.4;
                 // haze
-                let env = if age < self.dur * 0.15 { age / (self.dur * 0.15) } else { 1.0 - span(age, self.dur * 0.15, self.dur) };
+                let env = if age < self.dur * 0.15 {
+                    age / (self.dur * 0.15)
+                } else {
+                    1.0 - span(age, self.dur * 0.15, self.dur)
+                };
                 let haze = if t.dark { Color32::WHITE } else { Color32::BLACK };
                 let w = g.size.x.min(pill.width() - 70.0);
                 let clip = painter.with_clip_rect(rect.expand(12.0));
-                for (dx, rw, rh, a) in [(0.5, 0.4, 7.0, 0.22), (0.72, 0.28, 8.0, 0.18), (0.3, 0.32, 6.0, 0.16), (0.58, 0.45, 5.0, 0.14)] {
+                for (dx, rw, rh, a) in
+                    [(0.5, 0.4, 7.0, 0.22), (0.72, 0.28, 8.0, 0.18), (0.3, 0.32, 6.0, 0.16), (0.58, 0.45, 5.0, 0.14)]
+                {
                     paint::glow_ellipse(
                         &clip,
                         pos2(d.origin.x + w * dx, pill.center().y + 4.0 + age * 6.0),
@@ -795,16 +838,23 @@ impl Widget for DissolveSearch<'_> {
                     let p0 = d.origin + gb.offset;
                     if local < each {
                         let off = vec2(jx * 3.0 * k, self.fly * jy * k);
-                        layer(ui, TSTransform::from_translation(off), 1.0 - span(local, each * 0.1, each), 2.5 * k, |pt| {
-                            pt.text(p0, Align2::LEFT_TOP, gb.ch, font.clone(), t.foreground);
-                        });
+                        layer(
+                            ui,
+                            TSTransform::from_translation(off),
+                            1.0 - span(local, each * 0.1, each),
+                            2.5 * k,
+                            |pt| {
+                                pt.text(p0, Align2::LEFT_TOP, gb.ch, font.clone(), t.foreground);
+                            },
+                        );
                     }
                     // dust motes
                     let dk = span(local, 0.0, each * 1.6);
                     if dk > 0.0 && dk < 1.0 {
                         for m in 0..4 {
                             let mut r2 = Rng::new(d.seed ^ ((i * 7 + m) as u64).wrapping_mul(0x9E37_79B9));
-                            let start = p0 + vec2(r2.range(0.0, gb.size.x), r2.range(gb.size.y * 0.25, gb.size.y * 0.85));
+                            let start =
+                                p0 + vec2(r2.range(0.0, gb.size.x), r2.range(gb.size.y * 0.25, gb.size.y * 0.85));
                             let vel = vec2(r2.range(-6.0, 10.0), r2.range(6.0, 22.0));
                             let e = MotionCurve::SMOOTH_OUT.at(dk);
                             let pos = start + vel * e;
@@ -837,7 +887,13 @@ impl Widget for DissolveSearch<'_> {
         let k = if !self.text.is_empty() && arrive.prev { MotionCurve::SMOOTH_OUT.at(arrive.age / 0.4) } else { 1.0 };
         let edit = Rect::from_min_max(pos2(text_x - 2.0, pill.min.y + 8.0), pos2(clear_c.x - 14.0, pill.max.y - 8.0));
         ui_layer(ui, TSTransform::from_translation(vec2(0.0, self.fly * 0.5 * (1.0 - k))), k, 2.0 * (1.0 - k), |ui| {
-            ui.put(edit, egui::TextEdit::singleline(self.text).frame(egui::Frame::NONE).font(font.clone()).desired_width(edit.width()));
+            ui.put(
+                edit,
+                egui::TextEdit::singleline(self.text)
+                    .frame(egui::Frame::NONE)
+                    .font(font.clone())
+                    .desired_width(edit.width()),
+            );
         });
         // clear button
         let ck = glowkit_core::anim::follow(ui, id.with("clr"), has as u8 as f32, 20.0);
@@ -1005,21 +1061,41 @@ impl Widget for DrawnCheckbox<'_> {
         let t = Theme::of(ui);
         let font = FontId::proportional(14.0);
         let tw = if self.label.is_empty() { 0.0 } else { text_width(ui.painter(), &self.label, &font) + 10.0 };
-        let (rect, mut response) = ui.allocate_exact_size(vec2(self.size + tw + 4.0, self.size.max(22.0)), Sense::click());
+        let (rect, mut response) =
+            ui.allocate_exact_size(vec2(self.size + tw + 4.0, self.size.max(22.0)), Sense::click());
         response = response.on_hover_cursor(egui::CursorIcon::PointingHand);
         if response.clicked() {
             *self.on = !*self.on;
             response.mark_changed();
         }
         let on = *self.on;
-        let fill = phase(ui, response.id.with("fill"), on, self.box_dur, self.box_dur, MotionCurve::SMOOTH_OUT, MotionCurve::SMOOTH_OUT);
-        let draw = phase(ui, response.id.with("draw"), on, self.draw_dur, self.undraw_dur, MotionCurve::SMOOTH_OUT, MotionCurve::SMOOTH_OUT);
+        let fill = phase(
+            ui,
+            response.id.with("fill"),
+            on,
+            self.box_dur,
+            self.box_dur,
+            MotionCurve::SMOOTH_OUT,
+            MotionCurve::SMOOTH_OUT,
+        );
+        let draw = phase(
+            ui,
+            response.id.with("draw"),
+            on,
+            self.draw_dur,
+            self.undraw_dur,
+            MotionCurve::SMOOTH_OUT,
+            MotionCurve::SMOOTH_OUT,
+        );
         if !ui.is_rect_visible(rect) {
             return response;
         }
         let painter = ui.painter();
         let press = if response.is_pointer_button_down_on() { 0.9 } else { 1.0 };
-        let b = Rect::from_center_size(pos2(rect.min.x + 2.0 + self.size / 2.0, rect.center().y), Vec2::splat(self.size * press));
+        let b = Rect::from_center_size(
+            pos2(rect.min.x + 2.0 + self.size / 2.0, rect.center().y),
+            Vec2::splat(self.size * press),
+        );
         let ink = self.color.unwrap_or(if t.dark { hex("#EDEDED") } else { hex("#0D0D0D") });
         let k = fill.p.clamp(0.0, 1.0);
         let off = surface(&t);
@@ -1117,7 +1193,11 @@ impl Widget for BounceSwitch<'_> {
         // keyframes in eased time: 0 -> end + overshoot (55%) -> end (80%) -> end
         let u = MotionCurve::new(0.34, 1.35, 0.64, 1.0).at(ph.t).clamp(0.0, 1.0);
         let x = if ph.age > 1e5 {
-            if on { travel } else { 0.0 }
+            if on {
+                travel
+            } else {
+                0.0
+            }
         } else {
             let (a, b, ovs) = if on { (0.0, travel, ov) } else { (travel, 0.0, -ov) };
             if u < 0.55 {
@@ -1131,7 +1211,10 @@ impl Widget for BounceSwitch<'_> {
         // a little stretch while it travels
         let speed = if ph.t < 1.0 { (1.0 - (2.0 * ph.t - 1.0).abs()).max(0.0) } else { 0.0 };
         let thumb_w = 22.0 * s + 3.0 * s * speed;
-        let thumb = Rect::from_min_size(pos2(track.min.x + 4.0 * s + x - if on { 3.0 * s * speed } else { 0.0 }, track.center().y - 7.0 * s), vec2(thumb_w, 14.0 * s));
+        let thumb = Rect::from_min_size(
+            pos2(track.min.x + 4.0 * s + x - if on { 3.0 * s * speed } else { 0.0 }, track.center().y - 7.0 * s),
+            vec2(thumb_w, 14.0 * s),
+        );
         paint::soft_shadow(painter, thumb, 7.0 * s, 4.0, vec2(0.0, 1.0), Color32::from_black_alpha(40));
         let thumb_col = if on { glowkit_core::color::contrast_text(on_col) } else { Color32::WHITE };
         painter.rect_filled(thumb, cr(7.0 * s), thumb_col);

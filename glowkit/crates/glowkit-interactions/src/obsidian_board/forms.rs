@@ -172,7 +172,8 @@ impl egui::Widget for BoardQuestionnaire<'_> {
         }
 
         let slide = {
-            let prev: Slide = glowkit_core::state(ui, id.with("slide"), || Slide { step: st.step, dir: 0.0, at: now - 5.0 });
+            let prev: Slide =
+                glowkit_core::state(ui, id.with("slide"), || Slide { step: st.step, dir: 0.0, at: now - 5.0 });
             let s = if prev.step != st.step {
                 Slide { step: st.step, dir: if st.step > prev.step { 1.0 } else { -1.0 }, at: now }
             } else {
@@ -203,7 +204,14 @@ impl egui::Widget for BoardQuestionnaire<'_> {
             icon_check(&painter, c, 16.0, p[EMERALD], 2.0);
             text(&painter, pos2(c.x, c.y + 36.0), Align2::CENTER_CENTER, "Answers sent", f(14.5), t.foreground);
             let n: usize = st.picks.iter().map(|v| v.iter().filter(|b| **b).count()).sum();
-            text(&painter, pos2(c.x, c.y + 56.0), Align2::CENTER_CENTER, format!("{n} choices across {} questions", self.questions.len()), f(12.5), dim(&t));
+            text(
+                &painter,
+                pos2(c.x, c.y + 56.0),
+                Align2::CENTER_CENTER,
+                format!("{n} choices across {} questions", self.questions.len()),
+                f(12.5),
+                dim(&t),
+            );
             let rr = Rect::from_center_size(pos2(rect.max.x - pad - 9.0, rect.min.y + 22.0), vec2(20.0, 20.0));
             let r = ui.interact(rr, id.with("again"), Sense::click());
             painter.circle_filled(rr.center(), 10.0, track(&t));
@@ -218,7 +226,14 @@ impl egui::Widget for BoardQuestionnaire<'_> {
         let qi = st.step;
         let q = &self.questions[qi];
         // header
-        text(&cp, pos2(rect.min.x + pad + ox, rect.min.y + 24.0), Align2::LEFT_CENTER, &q.prompt, f(14.0), t.foreground);
+        text(
+            &cp,
+            pos2(rect.min.x + pad + ox, rect.min.y + 24.0),
+            Align2::LEFT_CENTER,
+            &q.prompt,
+            f(14.0),
+            t.foreground,
+        );
         let xr = Rect::from_center_size(pos2(rect.max.x - pad - 9.0, rect.min.y + 24.0), vec2(20.0, 20.0));
         let xresp = ui.interact(xr, id.with("x"), Sense::click());
         let xh = flag(ui, id.with("xh"), xresp.hovered(), 14.0);
@@ -273,7 +288,13 @@ impl egui::Widget for BoardQuestionnaire<'_> {
             let mc = pos2(rr.max.x - 26.0, rr.center().y);
             if q.multi || is_other {
                 let b = Rect::from_center_size(mc, vec2(16.0, 16.0));
-                cp.rect(b, cr(4.0), mix(tile_bg(&t), blue, sk), Stroke::new(1.0, mix(neutral(&t), blue, sk)), egui::StrokeKind::Inside);
+                cp.rect(
+                    b,
+                    cr(4.0),
+                    mix(tile_bg(&t), blue, sk),
+                    Stroke::new(1.0, mix(neutral(&t), blue, sk)),
+                    egui::StrokeKind::Inside,
+                );
                 if sk > 0.02 {
                     icon_check(&cp, mc, 10.0 * (0.5 + 0.5 * ease_back(sk)), fade(Color32::WHITE, sk), 1.7);
                 }
@@ -317,8 +338,21 @@ impl egui::Widget for BoardQuestionnaire<'_> {
         let nh = flag(ui, id.with("nh"), nresp.hovered(), 14.0);
         painter.rect_filled(nr, cr(8.0), mix(blue, glowkit_core::color::shade(blue, -0.08), nh));
         text(&painter, nr.center(), Align2::CENTER_CENTER, next_l, f(13.5), Color32::WHITE);
-        painter.rect(pr, cr(8.0), if can_prev { tile_bg(&t) } else { track(&t) }, Stroke::new(1.0, hairline(&t)), egui::StrokeKind::Inside);
-        text(&painter, pr.center(), Align2::CENTER_CENTER, "Previous", f(13.5), if can_prev { t.foreground } else { faint(&t) });
+        painter.rect(
+            pr,
+            cr(8.0),
+            if can_prev { tile_bg(&t) } else { track(&t) },
+            Stroke::new(1.0, hairline(&t)),
+            egui::StrokeKind::Inside,
+        );
+        text(
+            &painter,
+            pr.center(),
+            Align2::CENTER_CENTER,
+            "Previous",
+            f(13.5),
+            if can_prev { t.foreground } else { faint(&t) },
+        );
         for r in [&nresp, &presp] {
             if r.hovered() {
                 ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -394,7 +428,12 @@ impl BoardNotice {
         }
     }
     /// A system notice with an icon badge.
-    pub fn system(icon: BoardNoticeIcon, title: impl Into<String>, body: impl Into<String>, time: impl Into<String>) -> Self {
+    pub fn system(
+        icon: BoardNoticeIcon,
+        title: impl Into<String>,
+        body: impl Into<String>,
+        time: impl Into<String>,
+    ) -> Self {
         Self { mention: false, icon, initials: String::new(), ..Self::mention("", title, body, time) }
     }
     /// Inline action buttons.
@@ -470,16 +509,34 @@ impl egui::Widget for BoardNotifications<'_> {
         sheet(&painter, &t, rect, 18.0);
         let pad = 16.0;
         let unread = self.items.iter().filter(|n| n.unread).count();
-        text(&painter, pos2(rect.min.x + pad, rect.min.y + 28.0), Align2::LEFT_CENTER, "Notifications", f(17.0), t.foreground);
+        text(
+            &painter,
+            pos2(rect.min.x + pad, rect.min.y + 28.0),
+            Align2::LEFT_CENTER,
+            "Notifications",
+            f(17.0),
+            t.foreground,
+        );
         let ur = tween(ui, id.with("unread"), unread as f32, unread as f32, 0.4);
-        text(&painter, pos2(rect.min.x + pad, rect.min.y + 52.0), Align2::LEFT_CENTER, format!("{} unread", ur.round()), f(13.0), dim(&t));
+        text(
+            &painter,
+            pos2(rect.min.x + pad, rect.min.y + 52.0),
+            Align2::LEFT_CENTER,
+            format!("{} unread", ur.round()),
+            f(13.0),
+            dim(&t),
+        );
         let mw = text_w(&painter, "Mark all read", f(13.5)) + 22.0;
         let mr = Rect::from_min_size(pos2(rect.max.x - pad - mw, rect.min.y + 16.0), vec2(mw, 30.0));
         let mresp = ui.interact(mr, id.with("markall"), Sense::click());
         let mh = flag(ui, id.with("mh"), mresp.hovered(), 14.0);
         let any = flag(ui, id.with("any"), unread > 0, 8.0);
         let blue = p[BLUE];
-        painter.rect_filled(mr, cr(8.0), fade(mix(tile_bg(&t), blue, if t.dark { 0.2 + 0.1 * mh } else { 0.12 + 0.06 * mh }), 0.4 + 0.6 * any));
+        painter.rect_filled(
+            mr,
+            cr(8.0),
+            fade(mix(tile_bg(&t), blue, if t.dark { 0.2 + 0.1 * mh } else { 0.12 + 0.06 * mh }), 0.4 + 0.6 * any),
+        );
         text(&painter, mr.center(), Align2::CENTER_CENTER, "Mark all read", f(13.5), fade(blue, 0.45 + 0.55 * any));
         if mresp.hovered() {
             ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -491,13 +548,20 @@ impl egui::Widget for BoardNotifications<'_> {
         // tabs
         let seg = Rect::from_min_size(pos2(rect.min.x + pad, rect.min.y + 70.0), vec2(rect.width() - pad * 2.0, 36.0));
         painter.rect_filled(seg, cr(10.0), track(&t));
-        let counts = [self.items.len(), self.items.iter().filter(|n| n.mention).count(), self.items.iter().filter(|n| !n.mention).count()];
+        let counts = [
+            self.items.len(),
+            self.items.iter().filter(|n| n.mention).count(),
+            self.items.iter().filter(|n| !n.mention).count(),
+        ];
         let names = ["All", "Mentions", "System"];
         let tw = (seg.width() - 6.0) / 3.0;
         let mut tab: usize = glowkit_core::state(ui, id.with("tab"), || 0);
         let mut over_tabs = false;
         for i in 0..3 {
-            let r = Rect::from_min_size(pos2(seg.min.x + 3.0 + i as f32 * tw, seg.min.y + 3.0), vec2(tw, seg.height() - 6.0));
+            let r = Rect::from_min_size(
+                pos2(seg.min.x + 3.0 + i as f32 * tw, seg.min.y + 3.0),
+                vec2(tw, seg.height() - 6.0),
+            );
             let resp = ui.interact(r, id.with(("tab", i)), Sense::click());
             over_tabs |= resp.hovered();
             if resp.hovered() {
@@ -533,7 +597,8 @@ impl egui::Widget for BoardNotifications<'_> {
         }
 
         // list
-        let list = Rect::from_min_max(pos2(rect.min.x + 8.0, seg.max.y + 10.0), pos2(rect.max.x - 8.0, rect.max.y - 8.0));
+        let list =
+            Rect::from_min_max(pos2(rect.min.x + 8.0, seg.max.y + 10.0), pos2(rect.max.x - 8.0, rect.max.y - 8.0));
         painter.rect_filled(list, cr(14.0), frame_bg(&t));
         let lp = painter.with_clip_rect(list.shrink(1.0).intersect(painter.clip_rect()));
         let vis: Vec<usize> = (0..self.items.len())
@@ -592,9 +657,21 @@ impl egui::Widget for BoardNotifications<'_> {
             match entry_c {
                 None => {
                     // group heading
-                    let g = vis.iter().map(|i| &self.items[*i].group).find(|g| **g != groups_seen).cloned().unwrap_or_default();
+                    let g = vis
+                        .iter()
+                        .map(|i| &self.items[*i].group)
+                        .find(|g| **g != groups_seen)
+                        .cloned()
+                        .unwrap_or_default();
                     groups_seen = g.clone();
-                    text(&lp, pos2(list.min.x + 12.0, ky + 14.0 + dy), Align2::LEFT_CENTER, g, f(12.0), fade(faint(&t), a));
+                    text(
+                        &lp,
+                        pos2(list.min.x + 12.0, ky + 14.0 + dy),
+                        Align2::LEFT_CENTER,
+                        g,
+                        f(12.0),
+                        fade(faint(&t), a),
+                    );
                 }
                 Some((i, g)) => {
                     let r = Rect::from_min_size(pos2(list.min.x + 8.0, ky + dy), vec2(inner_w, ch));
@@ -607,7 +684,12 @@ impl egui::Widget for BoardNotifications<'_> {
                     let av = pos2(r.min.x + 30.0, r.min.y + 30.0);
                     if n.mention {
                         let c = avatar_color(&t, &n.initials);
-                        paint::gradient_circle(&cp, av, 19.0, &[glowkit_core::color::shade(c, 0.08), glowkit_core::color::shade(c, -0.06)]);
+                        paint::gradient_circle(
+                            &cp,
+                            av,
+                            19.0,
+                            &[glowkit_core::color::shade(c, 0.08), glowkit_core::color::shade(c, -0.06)],
+                        );
                         text(&cp, av, Align2::CENTER_CENTER, &n.initials, f(13.0), Color32::WHITE);
                     } else {
                         let (c, gl) = match n.icon {
@@ -630,7 +712,9 @@ impl egui::Widget for BoardNotifications<'_> {
                     let maxw = tr.min.x - tx - 8.0;
                     if text_w(&cp, &title, f(14.0)) > maxw {
                         let mut ch: Vec<char> = title.chars().collect();
-                        while ch.len() > 3 && text_w(&cp, &format!("{}…", ch.iter().collect::<String>()), f(14.0)) > maxw {
+                        while ch.len() > 3
+                            && text_w(&cp, &format!("{}…", ch.iter().collect::<String>()), f(14.0)) > maxw
+                        {
                             ch.pop();
                         }
                         title = format!("{}…", ch.iter().collect::<String>());
@@ -650,7 +734,13 @@ impl egui::Widget for BoardNotifications<'_> {
                                 cp.rect_filled(br, cr(8.0), mix(blue, glowkit_core::color::shade(blue, -0.08), bh));
                                 text(&cp, br.center(), Align2::CENTER_CENTER, a_label, f(13.5), Color32::WHITE);
                             } else {
-                                cp.rect(br, cr(8.0), mix(tile_bg(&t), track(&t), bh), Stroke::new(1.0, hairline(&t)), egui::StrokeKind::Inside);
+                                cp.rect(
+                                    br,
+                                    cr(8.0),
+                                    mix(tile_bg(&t), track(&t), bh),
+                                    Stroke::new(1.0, hairline(&t)),
+                                    egui::StrokeKind::Inside,
+                                );
                                 text(&cp, br.center(), Align2::CENTER_CENTER, a_label, f(13.5), t.foreground);
                             }
                             if bresp.hovered() {
@@ -685,15 +775,34 @@ impl egui::Widget for BoardNotifications<'_> {
             painter.line_segment([c + vec2(8.0, -1.0), c + vec2(9.5, 7.0)], st);
             painter.line_segment([c + vec2(-11.0, 7.0), c + vec2(11.0, 7.0)], st);
             painter.circle_filled(c + vec2(0.0, 10.5), 2.0, fade(dim(&t), a));
-            text(&painter, c + vec2(0.0, 46.0), Align2::CENTER_CENTER, "You're all caught up", f(14.0), fade(t.foreground, a));
-            text(&painter, c + vec2(0.0, 66.0), Align2::CENTER_CENTER, "New activity will show up here.", f(12.5), fade(dim(&t), a));
+            text(
+                &painter,
+                c + vec2(0.0, 46.0),
+                Align2::CENTER_CENTER,
+                "You're all caught up",
+                f(14.0),
+                fade(t.foreground, a),
+            );
+            text(
+                &painter,
+                c + vec2(0.0, 66.0),
+                Align2::CENTER_CENTER,
+                "New activity will show up here.",
+                f(12.5),
+                fade(dim(&t), a),
+            );
         }
         // fade the scroll edges
         if scroll_s > 1.0 || scroll_s < max_scroll - 1.0 {
             let bg = frame_bg(&t);
-            let r = Rect::from_min_max(pos2(list.min.x + 8.0, list.max.y - 22.0), pos2(list.max.x - 8.0, list.max.y - 1.0));
+            let r =
+                Rect::from_min_max(pos2(list.min.x + 8.0, list.max.y - 22.0), pos2(list.max.x - 8.0, list.max.y - 1.0));
             if scroll_s < max_scroll - 1.0 {
-                paint::quad(&painter, [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()], [Color32::TRANSPARENT, Color32::TRANSPARENT, bg, bg]);
+                paint::quad(
+                    &painter,
+                    [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()],
+                    [Color32::TRANSPARENT, Color32::TRANSPARENT, bg, bg],
+                );
             }
         }
         response

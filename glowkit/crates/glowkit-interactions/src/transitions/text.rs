@@ -78,7 +78,8 @@ impl Widget for StateText {
         let font = FontId::proportional(self.size);
         let color = self.color.unwrap_or(t.foreground);
         let g = ui.painter().layout_no_wrap(self.text.clone(), font.clone(), color);
-        let (rect, response) = ui.allocate_exact_size(vec2(g.size().x + 8.0, g.size().y + self.distance * 2.0 + 6.0), Sense::hover());
+        let (rect, response) =
+            ui.allocate_exact_size(vec2(g.size().x + 8.0, g.size().y + self.distance * 2.0 + 6.0), Sense::hover());
         let ch = change(ui, response.id, &self.text, self.dur * 2.0 + 0.05);
         if !ui.is_rect_visible(rect) {
             return response;
@@ -96,9 +97,15 @@ impl Widget for StateText {
             });
         } else {
             let k = self.curve.at((ch.age - self.dur) / self.dur);
-            layer(ui, TSTransform::from_translation(vec2(0.0, self.distance * (1.0 - k))), k, self.blur * (1.0 - k), |p| {
-                p.galley_with_override_text_color(at(&g), g.clone(), color);
-            });
+            layer(
+                ui,
+                TSTransform::from_translation(vec2(0.0, self.distance * (1.0 - k))),
+                k,
+                self.blur * (1.0 - k),
+                |p| {
+                    p.galley_with_override_text_color(at(&g), g.clone(), color);
+                },
+            );
         }
         response
     }
@@ -262,16 +269,28 @@ impl Widget for StaggerReveal {
                     let Some(first) = pieces.first() else { continue };
                     let word: String = pieces.iter().map(|gb| gb.ch).collect();
                     let p0 = origin + first.offset;
-                    layer(ui, TSTransform::from_translation(vec2(0.0, self.distance * (1.0 - k))), k * hide, self.blur * (1.0 - k), |p| {
-                        p.text(p0, Align2::LEFT_TOP, &word, g.font.clone(), *col);
-                    });
+                    layer(
+                        ui,
+                        TSTransform::from_translation(vec2(0.0, self.distance * (1.0 - k))),
+                        k * hide,
+                        self.blur * (1.0 - k),
+                        |p| {
+                            p.text(p0, Align2::LEFT_TOP, &word, g.font.clone(), *col);
+                        },
+                    );
                 }
             } else {
                 let k = progress(unit);
                 unit += 1;
-                layer(ui, TSTransform::from_translation(vec2(0.0, self.distance * (1.0 - k))), k * hide, self.blur * (1.0 - k), |p| {
-                    p.galley_with_override_text_color(origin, g.galley.clone(), *col);
-                });
+                layer(
+                    ui,
+                    TSTransform::from_translation(vec2(0.0, self.distance * (1.0 - k))),
+                    k * hide,
+                    self.blur * (1.0 - k),
+                    |p| {
+                        p.galley_with_override_text_color(origin, g.galley.clone(), *col);
+                    },
+                );
             }
             y += g.size.y + gap;
         }
@@ -368,11 +387,7 @@ impl Widget for ThinkingText {
         } else {
             self.states.first().cloned().unwrap_or_default()
         };
-        let widest = self
-            .states
-            .iter()
-            .map(|s| super::common::text_width(ui.painter(), s, &font))
-            .fold(0.0, f32::max);
+        let widest = self.states.iter().map(|s| super::common::text_width(ui.painter(), s, &font)).fold(0.0, f32::max);
         let (rect, response) =
             ui.allocate_exact_size(vec2(widest + 8.0, self.size * 1.4 + self.distance * 2.0), Sense::hover());
         let ch = change(ui, response.id, &text, self.swap * 2.0 + 0.1);
@@ -408,10 +423,14 @@ impl Widget for ThinkingText {
             paint(ui.painter(), &text);
         } else if ch.age < sw {
             let k = MotionCurve::EASE_IN_OUT.at(ch.age / sw);
-            layer(ui, TSTransform::from_translation(vec2(0.0, -self.distance * k)), 1.0 - k, 2.0 * k, |p| paint(p, &ch.prev));
+            layer(ui, TSTransform::from_translation(vec2(0.0, -self.distance * k)), 1.0 - k, 2.0 * k, |p| {
+                paint(p, &ch.prev)
+            });
         } else {
             let k = MotionCurve::EASE_IN_OUT.at((ch.age - sw - 0.05) / sw);
-            layer(ui, TSTransform::from_translation(vec2(0.0, self.distance * (1.0 - k))), k, 2.0 * (1.0 - k), |p| paint(p, &text));
+            layer(ui, TSTransform::from_translation(vec2(0.0, self.distance * (1.0 - k))), k, 2.0 * (1.0 - k), |p| {
+                paint(p, &text)
+            });
         }
         response
     }

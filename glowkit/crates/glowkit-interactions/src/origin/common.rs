@@ -194,7 +194,13 @@ pub(crate) fn scale_color(c: Color32, k: f32) -> Color32 {
 
 /// Pointer position inside `rect` if hovering, else a smooth ghost path (for idle showcases).
 /// Returns `(position, is_real_pointer)`.
-pub(crate) fn pointer_or_ghost(ui: &Ui, rect: Rect, response: &Response, time: f32, ghost: bool) -> (Option<Pos2>, bool) {
+pub(crate) fn pointer_or_ghost(
+    ui: &Ui,
+    rect: Rect,
+    response: &Response,
+    time: f32,
+    ghost: bool,
+) -> (Option<Pos2>, bool) {
     if let Some(p) = response.hover_pos() {
         return (Some(p), true);
     }

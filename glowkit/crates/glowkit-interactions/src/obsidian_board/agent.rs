@@ -156,15 +156,27 @@ impl egui::Widget for BoardAgentLimits {
         }
         let used: f32 = self.buckets.iter().map(|b| b.tokens).sum();
         let used_s = tween(ui, id.with("used"), used, 0.0, 1.0);
-        text(&painter, pos2(rect.min.x + pad, rect.min.y + 24.0), Align2::LEFT_CENTER, "Context window", f(13.5), dim(&t));
+        text(
+            &painter,
+            pos2(rect.min.x + pad, rect.min.y + 24.0),
+            Align2::LEFT_CENTER,
+            "Context window",
+            f(13.5),
+            dim(&t),
+        );
         let chev_c = pos2(rect.max.x - pad - 5.0, rect.min.y + 24.0);
         // rotate the chevron by drawing up/down mix
         let k = ok.clamp(0.0, 1.0);
         let s = 3.5;
-        let pts = vec![chev_c + vec2(-s, -s * 0.5 * (1.0 - 2.0 * k)), chev_c + vec2(0.0, s * 0.5 * (1.0 - 2.0 * k)), chev_c + vec2(s, -s * 0.5 * (1.0 - 2.0 * k))];
+        let pts = vec![
+            chev_c + vec2(-s, -s * 0.5 * (1.0 - 2.0 * k)),
+            chev_c + vec2(0.0, s * 0.5 * (1.0 - 2.0 * k)),
+            chev_c + vec2(s, -s * 0.5 * (1.0 - 2.0 * k)),
+        ];
         painter.add(Shape::line(pts, Stroke::new(1.4, dim(&t))));
         let pct = format!("({:.0}%)", used_s / self.max * 100.0);
-        let pr = text(&painter, pos2(chev_c.x - 14.0, rect.min.y + 24.0), Align2::RIGHT_CENTER, &pct, f(13.5), t.foreground);
+        let pr =
+            text(&painter, pos2(chev_c.x - 14.0, rect.min.y + 24.0), Align2::RIGHT_CENTER, &pct, f(13.5), t.foreground);
         text(
             &painter,
             pos2(pr.min.x - 4.0, rect.min.y + 24.0),
@@ -187,7 +199,12 @@ impl egui::Widget for BoardAgentLimits {
             }
             let c = b.color.unwrap_or(cols[i % cols.len()]);
             let r = Rect::from_min_size(pos2(x, bar.min.y), vec2((w - 1.5).max(1.0), bar.height()));
-            let corner = egui::CornerRadius { nw: if i == 0 { 3 } else { 0 }, sw: if i == 0 { 3 } else { 0 }, ne: if i + 1 == n { 3 } else { 0 }, se: if i + 1 == n { 3 } else { 0 } };
+            let corner = egui::CornerRadius {
+                nw: if i == 0 { 3 } else { 0 },
+                sw: if i == 0 { 3 } else { 0 },
+                ne: if i + 1 == n { 3 } else { 0 },
+                se: if i + 1 == n { 3 } else { 0 },
+            };
             painter.rect_filled(r, corner, c);
             x += w;
         }
@@ -198,16 +215,34 @@ impl egui::Widget for BoardAgentLimits {
             let clip = Rect::from_min_max(pos2(rect.min.x, top), pos2(rect.max.x, top + detail_h * ok));
             let mut dp = painter.with_clip_rect(clip.intersect(painter.clip_rect()));
             dp.multiply_opacity(ok.clamp(0.0, 1.0));
-            let mut rows: Vec<(String, f32, Color32)> =
-                self.buckets.iter().enumerate().map(|(i, b)| (b.name.clone(), b.tokens, b.color.unwrap_or(cols[i % cols.len()]))).collect();
+            let mut rows: Vec<(String, f32, Color32)> = self
+                .buckets
+                .iter()
+                .enumerate()
+                .map(|(i, b)| (b.name.clone(), b.tokens, b.color.unwrap_or(cols[i % cols.len()])))
+                .collect();
             rows.push(("Free space".into(), (self.max - used).max(0.0), neutral(&t)));
             for (i, (name, v, c)) in rows.iter().enumerate() {
                 let y = top + 6.0 + i as f32 * row_h + row_h / 2.0;
                 let dy = (1.0 - ok) * 6.0 * (i as f32 * 0.3 + 1.0);
                 swatch(&dp, pos2(rect.min.x + pad + 4.5, y - dy), *c);
                 text(&dp, pos2(rect.min.x + pad + 16.0, y - dy), Align2::LEFT_CENTER, name, f(13.0), t.foreground);
-                text(&dp, pos2(rect.max.x - pad, y - dy), Align2::RIGHT_CENTER, format!("{:.1}%", v / self.max * 100.0), f(12.5), faint(&t));
-                text(&dp, pos2(rect.max.x - pad - 54.0, y - dy), Align2::RIGHT_CENTER, compact(*v, false), f(13.0), dim(&t));
+                text(
+                    &dp,
+                    pos2(rect.max.x - pad, y - dy),
+                    Align2::RIGHT_CENTER,
+                    format!("{:.1}%", v / self.max * 100.0),
+                    f(12.5),
+                    faint(&t),
+                );
+                text(
+                    &dp,
+                    pos2(rect.max.x - pad - 54.0, y - dy),
+                    Align2::RIGHT_CENTER,
+                    compact(*v, false),
+                    f(13.0),
+                    dim(&t),
+                );
             }
         }
         let y0 = top + detail_h * ok.max(0.0);
@@ -217,14 +252,40 @@ impl egui::Widget for BoardAgentLimits {
         for (i, l) in self.limits.iter().enumerate() {
             let y = y0 + 44.0 + i as f32 * 44.0;
             let a = ease_out(entry_k(ui, el, 0.2 + 0.08 * i as f32, 0.5));
-            let pr = text(&painter, pos2(rect.max.x - pad, y + 12.0), Align2::RIGHT_CENTER, format!("{:.0}%", l.used * 100.0), f(13.5), fade(t.foreground, a));
-            text(&painter, pos2(pr.min.x - 12.0, y + 12.0), Align2::RIGHT_CENTER, &l.reset, f(12.5), fade(faint(&t), a));
-            text(&painter, pos2(rect.min.x + pad, y + 12.0), Align2::LEFT_CENTER, &l.name, f(13.5), fade(t.foreground, a));
+            let pr = text(
+                &painter,
+                pos2(rect.max.x - pad, y + 12.0),
+                Align2::RIGHT_CENTER,
+                format!("{:.0}%", l.used * 100.0),
+                f(13.5),
+                fade(t.foreground, a),
+            );
+            text(
+                &painter,
+                pos2(pr.min.x - 12.0, y + 12.0),
+                Align2::RIGHT_CENTER,
+                &l.reset,
+                f(12.5),
+                fade(faint(&t), a),
+            );
+            text(
+                &painter,
+                pos2(rect.min.x + pad, y + 12.0),
+                Align2::LEFT_CENTER,
+                &l.name,
+                f(13.5),
+                fade(t.foreground, a),
+            );
             let bar = Rect::from_min_size(pos2(rect.min.x + pad, y + 27.0), vec2(rect.width() - pad * 2.0, 5.0));
             painter.rect_filled(bar, cr(2.5), track(&t));
-            let u = tween(ui, id.with(("l", i)), l.used, 0.0, 0.9) * ease_out(entry_k(ui, el, 0.3 + 0.1 * i as f32, 0.9));
+            let u =
+                tween(ui, id.with(("l", i)), l.used, 0.0, 0.9) * ease_out(entry_k(ui, el, 0.3 + 0.1 * i as f32, 0.9));
             if u > 0.0 {
-                painter.rect_filled(Rect::from_min_size(bar.min, vec2((bar.width() * u).max(5.0), 5.0)), cr(2.5), p[BLUE]);
+                painter.rect_filled(
+                    Rect::from_min_size(bar.min, vec2((bar.width() * u).max(5.0), 5.0)),
+                    cr(2.5),
+                    p[BLUE],
+                );
             }
         }
         response
@@ -300,12 +361,21 @@ impl egui::Widget for BoardAgentProgress {
         let active = (self.progress.floor() as usize).min(n.saturating_sub(1));
         let now = glowkit_core::time(ui);
         let head_y = rect.min.y + 23.0;
-        let label = if done_all { "All steps completed".to_string() } else { format!("Working · {} of {}", active + 1, n) };
+        let label =
+            if done_all { "All steps completed".to_string() } else { format!("Working · {} of {}", active + 1, n) };
         if done_all {
             text(&painter, pos2(rect.min.x + pad, head_y), Align2::LEFT_CENTER, &label, f(13.5), dim(&t));
         } else {
             let g = painter.layout_no_wrap(label.clone(), f(13.5), t.foreground);
-            shimmer_text(&painter, pos2(rect.min.x + pad, head_y - g.size().y / 2.0), &label, f(13.5), dim(&t), t.foreground, now * 0.55);
+            shimmer_text(
+                &painter,
+                pos2(rect.min.x + pad, head_y - g.size().y / 2.0),
+                &label,
+                f(13.5),
+                dim(&t),
+                t.foreground,
+                now * 0.55,
+            );
             glowkit_core::animate(ui);
         }
         // overall mini ring when collapsed
@@ -324,7 +394,10 @@ impl egui::Widget for BoardAgentProgress {
         let bh = flag(ui, id.with("bh"), bresp.hovered(), 14.0);
         painter.rect_filled(br, cr(5.0), mix(track(&t), mix(track(&t), t.foreground, 0.1), bh));
         let k = ck.clamp(0.0, 1.0);
-        painter.line_segment([pos2(br.min.x + 6.0, br.center().y), pos2(br.max.x - 6.0, br.center().y)], Stroke::new(1.5, dim(&t)));
+        painter.line_segment(
+            [pos2(br.min.x + 6.0, br.center().y), pos2(br.max.x - 6.0, br.center().y)],
+            Stroke::new(1.5, dim(&t)),
+        );
         if k > 0.01 {
             painter.line_segment(
                 [pos2(br.center().x, br.center().y - 4.0 * k), pos2(br.center().x, br.center().y + 4.0 * k)],
@@ -379,7 +452,10 @@ impl egui::Widget for BoardAgentProgress {
             let tr = text(&rp, pos2(ic.x + 16.0, y), Align2::LEFT_CENTER, s, f(13.5), tc);
             if done > 0.01 {
                 let w = tr.width() * ease_out(done);
-                rp.line_segment([pos2(tr.min.x, tr.center().y + 0.5), pos2(tr.min.x + w, tr.center().y + 0.5)], Stroke::new(1.0, faint(&t)));
+                rp.line_segment(
+                    [pos2(tr.min.x, tr.center().y + 0.5), pos2(tr.min.x + w, tr.center().y + 0.5)],
+                    Stroke::new(1.0, faint(&t)),
+                );
             }
         }
         response
@@ -463,7 +539,15 @@ impl BoardAgentThinking {
 }
 
 /// Paint a thinking indicator in a box of `size` centered at `c`.
-pub(crate) fn paint_indicator(painter: &Painter, style: BoardThinkingStyle, c: Pos2, size: f32, ph: f32, col: Color32, faint_c: Color32) {
+pub(crate) fn paint_indicator(
+    painter: &Painter,
+    style: BoardThinkingStyle,
+    c: Pos2,
+    size: f32,
+    ph: f32,
+    col: Color32,
+    faint_c: Color32,
+) {
     let s = size / 2.0;
     match style {
         BoardThinkingStyle::DotWave => {
@@ -489,7 +573,13 @@ pub(crate) fn paint_indicator(painter: &Painter, style: BoardThinkingStyle, c: P
         BoardThinkingStyle::Stars => {
             for (k, (dx, dy, sz)) in [(-0.3, 0.25, 0.75), (0.45, -0.35, 0.45), (-0.45, -0.5, 0.32)].iter().enumerate() {
                 let tw = ((ph * 1.1 + k as f32 * 0.33).rem_euclid(1.0) * TAU).sin() * 0.5 + 0.5;
-                paint::sparkle(painter, c + vec2(dx * s, dy * s), s * sz * (0.55 + 0.45 * tw), tw * 0.5, mix(faint_c, col, 0.35 + 0.65 * tw));
+                paint::sparkle(
+                    painter,
+                    c + vec2(dx * s, dy * s),
+                    s * sz * (0.55 + 0.45 * tw),
+                    tw * 0.5,
+                    mix(faint_c, col, 0.35 + 0.65 * tw),
+                );
             }
         }
         BoardThinkingStyle::Infinity => {
@@ -530,7 +620,15 @@ impl egui::Widget for BoardAgentThinking {
         let ic = pos2(rect.min.x + 9.0, rect.center().y);
         paint_indicator(painter, self.style, ic, 16.0, now, col, faint_c);
         let lx = rect.min.x + 28.0;
-        shimmer_text(painter, pos2(lx, rect.center().y - lw.y / 2.0), &self.label, font, mix(t.muted_foreground, frame_bg(&t), 0.2), t.foreground, now * 0.5);
+        shimmer_text(
+            painter,
+            pos2(lx, rect.center().y - lw.y / 2.0),
+            &self.label,
+            font,
+            mix(t.muted_foreground, frame_bg(&t), 0.2),
+            t.foreground,
+            now * 0.5,
+        );
         text(painter, pos2(lx + lw.x + 10.0, rect.center().y + 0.5), Align2::LEFT_CENTER, timer, mono(12.5), faint(&t));
         response
     }
@@ -637,7 +735,12 @@ impl egui::Widget for BoardComposerLoader<'_> {
         if on > 0.01 {
             let c0 = self.colors[0];
             let c1 = self.colors[self.colors.len() / 2];
-            paint::glow_ellipse(&painter, rect.center(), vec2(rect.width() * 0.62, 52.0), fade(mix(c0, c1, 0.5), 0.1 * on));
+            paint::glow_ellipse(
+                &painter,
+                rect.center(),
+                vec2(rect.width() * 0.62, 52.0),
+                fade(mix(c0, c1, 0.5), 0.1 * on),
+            );
             glowkit_core::animate(ui);
         }
         let sc = if t.dark { Color32::from_black_alpha(80) } else { Color32::from_rgba_unmultiplied(20, 20, 40, 16) };
@@ -664,7 +767,12 @@ impl egui::Widget for BoardComposerLoader<'_> {
             (k, gradient(&stops, d / tail))
         };
         // base hairline
-        painter.rect_stroke(rect, cr(radius), Stroke::new(1.0, fade(hairline(&t), 1.0 - 0.6 * on)), egui::StrokeKind::Inside);
+        painter.rect_stroke(
+            rect,
+            cr(radius),
+            Stroke::new(1.0, fade(hairline(&t), 1.0 - 0.6 * on)),
+            egui::StrokeKind::Inside,
+        );
         if on > 0.01 {
             // inward bloom: glows along the band, clipped to the pill
             let inner = painter.with_clip_rect(rect.shrink(1.0).intersect(painter.clip_rect()));
@@ -706,11 +814,25 @@ impl egui::Widget for BoardComposerLoader<'_> {
         let plus = pos2(rect.min.x + 26.0, rect.center().y);
         painter.circle_filled(plus, 16.0, frame_bg(&t));
         icon_plus(&painter, plus, 11.0, t.foreground);
-        text(&painter, pos2(rect.min.x + 52.0, rect.center().y), Align2::LEFT_CENTER, &self.placeholder, f(14.0), faint(&t));
+        text(
+            &painter,
+            pos2(rect.min.x + 52.0, rect.center().y),
+            Align2::LEFT_CENTER,
+            &self.placeholder,
+            f(14.0),
+            faint(&t),
+        );
         let mic = pos2(send.min.x - 26.0, rect.center().y);
         painter.circle_stroke(mic, 16.0, Stroke::new(1.0, hairline(&t)));
         icon_mic(&painter, mic, 15.0, t.foreground);
-        let mr = text(&painter, pos2(mic.x - 46.0, rect.center().y), Align2::RIGHT_CENTER, &self.model, f(13.5), t.foreground);
+        let mr = text(
+            &painter,
+            pos2(mic.x - 46.0, rect.center().y),
+            Align2::RIGHT_CENTER,
+            &self.model,
+            f(13.5),
+            t.foreground,
+        );
         chevron(&painter, pos2(mr.max.x + 12.0, rect.center().y), 7.0, Dir::Down, dim(&t));
         let sh = flag(ui, id.with("sh"), sresp.hovered(), 14.0);
         painter.circle_filled(send.center(), 18.0, mix(p[BLUE], egui::Color32::from_rgb(20, 90, 230), sh * 0.6));
@@ -864,7 +986,8 @@ impl egui::Widget for BoardWebSearch {
         let id = ui.next_auto_id();
         let row_h = 30.0;
         let n = self.steps.len();
-        let shown = glowkit_core::anim::spring(ui, id.with("shown"), self.progress.min(n as f32 + 1.0), 120.0, 18.0).max(0.0);
+        let shown =
+            glowkit_core::anim::spring(ui, id.with("shown"), self.progress.min(n as f32 + 1.0), 120.0, 18.0).max(0.0);
         let rows_vis = shown.min(n as f32);
         let done = shown > n as f32 + 0.5;
         let h = 30.0 + rows_vis * row_h + 32.0;
@@ -931,7 +1054,14 @@ impl egui::Widget for BoardWebSearch {
                 right -= site_marks(&rp, &t, pos2(right, y), &s.sites, a) + 10.0;
             }
             if s.results > 0 {
-                let rr = text(&rp, pos2(right, y), Align2::RIGHT_CENTER, format!("{} results", s.results), f(12.5), fade(faint(&t), a));
+                let rr = text(
+                    &rp,
+                    pos2(right, y),
+                    Align2::RIGHT_CENTER,
+                    format!("{} results", s.results),
+                    f(12.5),
+                    fade(faint(&t), a),
+                );
                 right = rr.min.x - 14.0;
             }
             // elide long text
@@ -939,7 +1069,8 @@ impl egui::Widget for BoardWebSearch {
             let mut label = s.text.clone();
             if text_w(&rp, &label, f(13.5)) > maxw {
                 let mut chars: Vec<char> = label.chars().collect();
-                while chars.len() > 3 && text_w(&rp, &format!("{}…", chars.iter().collect::<String>()), f(13.5)) > maxw {
+                while chars.len() > 3 && text_w(&rp, &format!("{}…", chars.iter().collect::<String>()), f(13.5)) > maxw
+                {
                     chars.pop();
                 }
                 label = format!("{}…", chars.iter().collect::<String>().trim_end());
@@ -948,9 +1079,24 @@ impl egui::Widget for BoardWebSearch {
             let active = !done && i + 1 == rows_vis.ceil() as usize;
             if active {
                 let g = rp.layout_no_wrap(label.clone(), f(13.5), Color32::WHITE);
-                shimmer_text(&rp, pos2(ix + 14.0, y - g.size().y / 2.0), &label, f(13.5), fade(dim(&t), a), fade(t.foreground, a), now * 0.6);
+                shimmer_text(
+                    &rp,
+                    pos2(ix + 14.0, y - g.size().y / 2.0),
+                    &label,
+                    f(13.5),
+                    fade(dim(&t), a),
+                    fade(t.foreground, a),
+                    now * 0.6,
+                );
             } else {
-                text(&rp, pos2(ix + 14.0, y), Align2::LEFT_CENTER, label, f(13.5), fade(mix(dim(&t), t.foreground, 0.55), a));
+                text(
+                    &rp,
+                    pos2(ix + 14.0, y),
+                    Align2::LEFT_CENTER,
+                    label,
+                    f(13.5),
+                    fade(mix(dim(&t), t.foreground, 0.55), a),
+                );
             }
         }
         // working / done row
@@ -962,8 +1108,23 @@ impl egui::Widget for BoardWebSearch {
         } else {
             icon_sparkles(&painter, pos2(x0 + 7.0, wy), 14.0, faint(&t), now * 0.7);
             let g = painter.layout_no_wrap("Working".into(), f(13.5), Color32::WHITE);
-            shimmer_text(&painter, pos2(x0 + 22.0, wy - g.size().y / 2.0), "Working", f(13.5), faint(&t), dim(&t), now * 0.5);
-            text(&painter, pos2(x0 + 22.0 + g.size().x + 8.0, wy + 0.5), Align2::LEFT_CENTER, format!("{secs:.1}s"), mono(12.0), faint(&t));
+            shimmer_text(
+                &painter,
+                pos2(x0 + 22.0, wy - g.size().y / 2.0),
+                "Working",
+                f(13.5),
+                faint(&t),
+                dim(&t),
+                now * 0.5,
+            );
+            text(
+                &painter,
+                pos2(x0 + 22.0 + g.size().x + 8.0, wy + 0.5),
+                Align2::LEFT_CENTER,
+                format!("{secs:.1}s"),
+                mono(12.0),
+                faint(&t),
+            );
             glowkit_core::animate(ui);
         }
         response

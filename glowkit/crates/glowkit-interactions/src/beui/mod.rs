@@ -7,7 +7,12 @@ mod availability_scheduler;
 mod bloom_menu;
 mod bounce_sidebar;
 mod bouncy_accordion;
+mod card_dealer;
+mod center_morph_modal;
+pub(crate) mod common;
 mod cylinder_carousel;
+#[cfg(feature = "demos")]
+mod demos;
 mod expandable_action_bar;
 mod expandable_control;
 mod expanding_arrow_button;
@@ -21,15 +26,10 @@ mod overflow_actions;
 mod prediction_market;
 mod project_folder;
 mod shared_layout_bg;
+mod sortable_stack;
 mod swipeable_list;
 mod wallet_card;
-mod card_dealer;
-mod center_morph_modal;
-mod sortable_stack;
 mod wheel_picker;
-pub(crate) mod common;
-#[cfg(feature = "demos")]
-mod demos;
 
 pub use adaptive_stepper::AdaptiveStepper;
 pub use arc_picker::{ArcPicker, ArcSide};
@@ -39,6 +39,7 @@ pub use bounce_sidebar::BounceSidebar;
 pub use bouncy_accordion::BouncyAccordion;
 pub use card_dealer::CardDealer;
 pub use center_morph_modal::CenterMorphModal;
+pub use common::BeIcon;
 pub use cylinder_carousel::{CylinderCarousel, CylinderMode};
 pub use expandable_action_bar::ExpandableActionBar;
 pub use expandable_control::ExpandableControl;
@@ -53,10 +54,9 @@ pub use overflow_actions::OverflowActions;
 pub use prediction_market::PredictionMarket;
 pub use project_folder::ProjectFolder;
 pub use shared_layout_bg::SharedLayoutBg;
+pub use sortable_stack::{SortableStack, SortableTask};
 pub use swipeable_list::SwipeableList;
 pub use wallet_card::WalletCard;
-pub use common::BeIcon;
-pub use sortable_stack::{SortableStack, SortableTask};
 pub use wheel_picker::WheelPicker;
 
 /// Gallery demos for this module.

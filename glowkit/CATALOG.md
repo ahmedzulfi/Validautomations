@@ -14,7 +14,7 @@ Some items are hard or impossible in an immediate-mode GPU painter without image
 | [React Bits](https://reactbits.dev) | 114 / 114 | 100% |
 | [Magic UI](https://magicui.design) | 69 / 69 | 100% |
 | [Aceternity UI](https://ui.aceternity.com) | 79 / 79 | 100% |
-| [Motion Primitives](https://motion-primitives.com) | 31 / 33 | 94% |
+| [Motion Primitives](https://motion-primitives.com) | 33 / 33 | 100% |
 | [shadcn/ui](https://ui.shadcn.com) | 34 / 58 | 59% |
 | [Vercel AI Elements](https://ai-sdk.dev/elements) | 33 / 33 | 100% |
 | [prompt-kit](https://www.prompt-kit.com) | 19 / 19 | 100% |
@@ -22,11 +22,18 @@ Some items are hard or impossible in an immediate-mode GPU painter without image
 | [Evil Charts](https://evilcharts.com) | 6 / 6 | 100% |
 | [MVP Blocks](https://blocks.mvp-subha.me) | 25 / 25 | 100% |
 | [React Flow](https://reactflow.dev) | 12 / 12 | 100% |
-| [Bencho](https://bencho.dev) | 45 / 47 | 96% |
+| [Bencho](https://bencho.dev) | 46 / 47 | 98% |
+| [Transitions.dev](https://transitions.dev) | 33 / 33 | 100% |
+| [suiss/ui](https://suiss.app/ui) | 20 / 20 | 100% |
+| [ObsidianUI](https://obsidianui.dev) | 10 / 10 | 100% |
+| [beUI](https://beui.dev) | 32 / 32 | 100% |
+| [Originkit](https://originkit.dev) | 26 / 26 | 100% |
+| [Snapblocks](https://www.snapblocks.site) | 42 / 42 | 100% |
+| [BoardUI](https://boardui.com) | 18 / 18 | 100% |
 | [Tremor](https://tremor.so) | 12 / 12 | 100% |
-| **Total** | **495 / 523** | **95%** |
+| **Total** | **679 / 704** | **96%** |
 
-glowkit itself ships **458** gallery entries.
+glowkit ships **621** components; the gallery showcases **603** of them (plain primitives are kept as building blocks but not showcased).
 
 ## React Bits
 
@@ -310,7 +317,7 @@ glowkit itself ships **458** gallery entries.
 | Gradient text | ✅ `gradient-text` |
 ## Motion Primitives
 
-31 of 33 covered.
+33 of 33 covered.
 
 | Component | glowkit |
 |---|---|
@@ -322,7 +329,7 @@ glowkit itself ships **458** gallery entries.
 | Carousel | ✅ `carousel` |
 | Cursor | ✅ `smooth-cursor` |
 | Dialog | ✅ `dialog` |
-| Disclosure | ⬜ open |
+| Disclosure | ✅ `beui-bouncy-accordion` |
 | Dock | ✅ `dock` |
 | Glow Effect | ✅ `shiny-button` |
 | Image Comparison | ✅ `compare-slider` |
@@ -330,7 +337,7 @@ glowkit itself ships **458** gallery entries.
 | Infinite Slider | ✅ `marquee` |
 | Magnetic | ✅ `magnet`, `magnetic-button` |
 | Morphing Dialog | ✅ `expandable-card`, `shared-element` |
-| Morphing Popover | ⬜ open |
+| Morphing Popover | ✅ `beui-morphing-modal` |
 | Progressive Blur | ✅ `gradual-blur` |
 | Scroll Progress | ✅ `scroll-linked` |
 | Sliding Number | ✅ `sliding-number` |
@@ -560,7 +567,7 @@ glowkit itself ships **458** gallery entries.
 | Undo Redo | ✅ `node-editor` |
 ## Bencho
 
-45 of 47 covered.
+46 of 47 covered.
 
 | Component | glowkit |
 |---|---|
@@ -610,7 +617,230 @@ glowkit itself ships **458** gallery entries.
 | Palette | ✅ `palette` |
 | Aspect ratio | ⬜ open |
 | Dragging ball | ✅ `drag-ball` |
-| Search | ⬜ open |
+| Search | ✅ `beui-morphing-search` |
+## Transitions.dev
+
+33 of 33 covered.
+
+| Component | glowkit |
+|---|---|
+| Card Resize | ✅ `tx-card-resize` |
+| Number Pop In | ✅ `tx-number-pop-in` |
+| Number Subtle Change | ✅ `tx-number-subtle-change` |
+| Notification Badge | ✅ `tx-notification-badge` |
+| Text States Swap | ✅ `tx-text-states-swap` |
+| Menu Dropdown | ✅ `tx-menu-dropdown` |
+| Dropdown Menu Morph | ✅ `tx-dropdown-menu-morph` |
+| Modal Open Close | ✅ `tx-modal-open-close` |
+| Panel Reveal | ✅ `tx-panel-reveal` |
+| Page Side By Side | ✅ `tx-page-side-by-side` |
+| Icon Swap | ✅ `tx-icon-swap` |
+| Success Check | ✅ `tx-success-check` |
+| Avatar Group Hover | ✅ `tx-avatar-group-hover` |
+| Error State Shake | ✅ `tx-error-state-shake` |
+| Input Clear With Dissolve | ✅ `tx-input-clear-with-dissolve` |
+| Skeleton Loader And Reveal | ✅ `tx-skeleton-loader-and-reveal` |
+| Texts Reveal | ✅ `tx-texts-reveal` |
+| Tooltip Open Close | ✅ `tx-tooltip-open-close` |
+| Toast Open Close | ✅ `tx-toast-open-close` |
+| Learn More Hover | ✅ `tx-learn-more-hover` |
+| Banner Stacking | ✅ `tx-banner-stacking` |
+| Checkbox Check | ✅ `tx-checkbox-check` |
+| Spinning Counter | ✅ `tx-spinning-counter` |
+| Matrix Dot Loader | ✅ `tx-matrix-dot-loader` |
+| Thinking States | ✅ `tx-thinking-states` |
+| Reasoning Stream | ✅ `tx-reasoning-stream` |
+| Streaming Text | ✅ `tx-streaming-text` |
+| Toggle | ✅ `tx-toggle` |
+| Shimmer Text | ✅ `shiny-text` |
+| Tabs Sliding | ✅ `animated-tabs` |
+| 3D Tilt | ✅ `tilt-card` |
+| Accordion | ✅ `accordion` |
+| Like Button | ✅ `like` |
+## suiss/ui
+
+20 of 20 covered (interactions and patterns).
+
+| Component | glowkit |
+|---|---|
+| Card Stack | ✅ `card-stack` |
+| Image Viewer | ✅ `swipe-image-viewer` |
+| Island | ✅ `live-island` |
+| OTP Autofill | ✅ `otp-autofill` |
+| Preview Menu | ✅ `preview-menu` |
+| Pull To Refresh | ✅ `pull` |
+| Reorder List | ✅ `reorder-list` |
+| Search Reveal | ✅ `search-reveal` |
+| Section Index | ✅ `section-index` |
+| Selection List | ✅ `selection-list` |
+| Stepper | ✅ `stepper` |
+| Swipe Actions | ✅ `swipe-actions` |
+| Tip | ✅ `coach-tip` |
+| Top Banner | ✅ `top-banner` |
+| Trail | ✅ `trail-nav` |
+| Undo Bar | ✅ `undo-bar` |
+| Action Bar | ✅ `action-bar-sheet` |
+| Confirm | ✅ `confirm-sheet` |
+| Command Palette | ✅ `command-palette` |
+| App Shell | ✅ `shell-sidebar` |
+## ObsidianUI
+
+10 of 10 covered (free showcase components).
+
+| Component | glowkit |
+|---|---|
+| Draggable Marquee | ✅ `draggable-marquee` |
+| Flip Text | ✅ `flip-letters` |
+| Hover Image | ✅ `hover-image-list` |
+| Parallax Slider | ✅ `parallax-slider` |
+| Split Showcase | ✅ `split-showcase` |
+| V Prism | ✅ `prism-beam` |
+| Status Bars | ✅ `uptime-bars` |
+| Text Stream | ✅ `text-reel` |
+| Art Gallery | ✅ `lens-gallery` |
+| Active Sessions | ✅ `active-sessions` |
+## beUI
+
+32 of 32 covered (distinctive motion, blocks and agent components).
+
+| Component | glowkit |
+|---|---|
+| Arc Picker | ✅ `beui-arc-picker` |
+| Wheel Picker | ✅ `beui-wheel-picker` |
+| Sortable Stack | ✅ `beui-sortable-stack` |
+| Card Dealer | ✅ `beui-card-dealer` |
+| Bloom Menu | ✅ `beui-bloom-menu` |
+| Cylinder Carousel | ✅ `beui-cylinder-carousel` |
+| Expandable Action Bar | ✅ `beui-expandable-action-bar` |
+| Expandable Control | ✅ `beui-expandable-control` |
+| Morphing Search | ✅ `beui-morphing-search` |
+| Morphing Modal | ✅ `beui-morphing-modal` |
+| Center Morph Modal | ✅ `beui-center-morph-modal` |
+| Shared Layout Background | ✅ `beui-shared-layout-bg` |
+| Knockout Bracket | ✅ `beui-knockout-bracket` |
+| Availability Scheduler | ✅ `beui-availability-scheduler` |
+| Project Folder | ✅ `beui-project-folder` |
+| Wallet Card | ✅ `beui-wallet-card` |
+| Prediction Market | ✅ `beui-prediction-market` |
+| File Diff | ✅ `beui-file-diff` |
+| Bouncy Accordion | ✅ `beui-bouncy-accordion` |
+| Bounce Sidebar | ✅ `beui-bounce-sidebar` |
+| Expanding Arrow Button | ✅ `beui-expanding-arrow-button` |
+| Overflow Actions | ✅ `beui-overflow-actions` |
+| Feedback Widget | ✅ `beui-feedback-widget` |
+| Swipeable List | ✅ `beui-swipeable-list` |
+| Notification Stack | ✅ `beui-notification-stack` |
+| Adaptive Stepper | ✅ `beui-adaptive-stepper` |
+| Before After Slider | ✅ `compare-slider` |
+| Dynamic Island | ✅ `morphing-island` |
+| Voice Orb | ✅ `ai-voice-orb` |
+| Image Viewer | ✅ `swipe-image-viewer` |
+| Infinite Masonry | ✅ `masonry` |
+| Card Folder | ✅ `folder` |
+## Originkit
+
+26 of 26 covered (featured creative components).
+
+| Component | glowkit |
+|---|---|
+| Tornado | ✅ `tornado` |
+| Light Cables | ✅ `light-cables` |
+| Particle Saturn | ✅ `particle-saturn` |
+| Accretion Disc | ✅ `accretion-disc` |
+| Cosmic Orb | ✅ `cosmic-orb` |
+| Cursor Ring Field | ✅ `cursor-ring-field` |
+| Wire Terrain | ✅ `wire-terrain` |
+| Ribbon Glow | ✅ `ribbon-glow` |
+| Venom Button | ✅ `venom-button` |
+| Spider Button | ✅ `spider-button` |
+| Single Glass Keyboard | ✅ `single-glass-keyboard` |
+| Plush Tile | ✅ `plush-tile` |
+| Velour Bolster | ✅ `velour-bolster` |
+| Gallery Tunnel | ✅ `gallery-tunnel` |
+| Spiral Images | ✅ `spiral-images` |
+| Coverflow Gallery | ✅ `coverflow-gallery` |
+| Matrix Junction | ✅ `matrix-junction` |
+| Cloud Sky | ✅ `cloud-sky` |
+| Still Sunset Meadow | ✅ `still-sunset-meadow` |
+| Glimmer Vale | ✅ `glimmer-vale` |
+| Corolla Gleam | ✅ `corolla-gleam` |
+| Fluid Trail | ✅ `fluid-trail` |
+| Hover Image Reveal | ✅ `hover-image-reveal` |
+| Cobalt Sprite | ✅ `cobalt-sprite` |
+| Globe | ✅ `globe` |
+| Glass Icon | ✅ `glass-icons` |
+## Snapblocks
+
+42 of 42 covered (selected distinctive components).
+
+| Component | glowkit |
+|---|---|
+| Crumple Reveal | ✅ `snap-crumple-reveal` |
+| Crumple Carousel | ✅ `snap-crumple-carousel` |
+| Tear Ticket | ✅ `snap-tear-ticket` |
+| Receipt Printer | ✅ `snap-receipt-printer` |
+| Pour | ✅ `snap-pour` |
+| Tuner | ✅ `snap-tuner` |
+| Turtle Password | ✅ `snap-turtle-password` |
+| Cookie Frog | ✅ `snap-cookie-frog` |
+| Clothes Line | ✅ `snap-clothes-line` |
+| Unfurl | ✅ `snap-unfurl` |
+| Pleated Strip | ✅ `snap-pleated-strip` |
+| Elastic Frame | ✅ `snap-elastic-frame` |
+| Fluted Glass | ✅ `snap-fluted-glass` |
+| Meniscus | ✅ `snap-meniscus` |
+| Ink Reveal | ✅ `snap-ink-reveal` |
+| Ink Trail | ✅ `snap-ink-trail` |
+| Petal Dissolve | ✅ `snap-petal-dissolve` |
+| Aperture Zoom | ✅ `snap-aperture-zoom` |
+| Zoom Reveal | ✅ `snap-zoom-reveal` |
+| Card Bookmark | ✅ `snap-card-bookmark` |
+| Molten Text | ✅ `snap-molten-text` |
+| Chrome Text | ✅ `snap-chrome-text` |
+| Grain Text | ✅ `snap-grain-text` |
+| Dither Text | ✅ `snap-dither-text` |
+| Dither Lens | ✅ `snap-dither-lens` |
+| Halftone Logo | ✅ `snap-halftone-logo` |
+| Holo Card | ✅ `snap-holo-card` |
+| Glass Tabs | ✅ `snap-glass-tabs` |
+| Morph Navbar | ✅ `snap-morph-navbar` |
+| Liquid Glass Button | ✅ `snap-liquid-glass-button` |
+| DNA Carousel | ✅ `snap-dna-carousel` |
+| Arc Carousel | ✅ `snap-arc-carousel` |
+| Wave Gallery | ✅ `snap-wave-gallery` |
+| Image Tunnel | ✅ `snap-image-tunnel` |
+| Spiral Slider | ✅ `snap-spiral-slider` |
+| Warp Grid | ✅ `snap-warp-grid` |
+| Marble Scroll | ✅ `snap-marble-scroll` |
+| Mosaic Trail | ✅ `snap-mosaic-trail` |
+| Step Path | ✅ `snap-step-path` |
+| Quote Deck | ✅ `snap-quote-deck` |
+| Story Deck | ✅ `snap-story-deck` |
+| Particle Globe | ✅ `snap-particle-globe` |
+## BoardUI
+
+18 of 18 covered (dashboard cards and AI components (plain controls excluded)).
+
+| Component | glowkit |
+|---|---|
+| Sankey Chart Card | ✅ `board-sankey-card` |
+| Activity Rings Card | ✅ `board-activity-rings-card` |
+| Sleep Score Card | ✅ `board-sleep-score-card` |
+| Contributions Card | ✅ `board-contributions-card` |
+| Earnings Chart Card | ✅ `board-earnings-chart-card` |
+| Most Active Days Card | ✅ `board-most-active-days-card` |
+| Stage Bars Card | ✅ `board-stage-bars-card` |
+| Orders Chart Card | ✅ `board-orders-chart-card` |
+| Agent Limits Card | ✅ `board-agent-limits-card` |
+| Agent Progress | ✅ `board-agent-progress` |
+| Agent Thinking | ✅ `board-agent-thinking` |
+| Composer Loader | ✅ `board-composer-loader` |
+| Web Search | ✅ `board-web-search` |
+| Meter | ✅ `board-meter` |
+| Steps Card | ✅ `board-steps-card` |
+| Questionnaire | ✅ `board-questionnaire` |
+| Notification Center | ✅ `board-notification-center` |
+| AI Profile | ✅ `board-ai-profile` |
 ## Tremor
 
 12 of 12 covered.

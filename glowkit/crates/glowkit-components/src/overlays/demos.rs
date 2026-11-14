@@ -382,7 +382,7 @@ let picked = DropdownMenu::new(vec![
             name: "Dynamic Island",
             category: C,
             description: "A black pill that morphs between idle, compact status, call, media player and notification layouts with springy resizing and cross-faded content.",
-            covers: &["Cult UI: Dynamic Island", "Aceternity: Dynamic Island", "Apple: Dynamic Island (pattern)", "Motion Primitives: Toolbar Dynamic", "Motion Primitives: Toolbar Expandable", "Bencho: Dynamic island"],
+            covers: &["Cult UI: Dynamic Island", "Aceternity: Dynamic Island", "Apple: Dynamic Island (pattern)", "Motion Primitives: Toolbar Dynamic", "Motion Primitives: Toolbar Expandable", "Bencho: Dynamic island", "beUI: Dynamic Island"],
             code: r##"ui.add(MorphingIsland::new(IslandView::Music {
     title: "Midnight City".into(),
     artist: "M83".into(),

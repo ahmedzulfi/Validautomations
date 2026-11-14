@@ -143,7 +143,14 @@ pub(crate) fn mono(size: f32) -> FontId {
 }
 
 /// Paint text and return its rect.
-pub(crate) fn text(painter: &Painter, pos: Pos2, align: Align2, s: impl ToString, font: FontId, color: Color32) -> Rect {
+pub(crate) fn text(
+    painter: &Painter,
+    pos: Pos2,
+    align: Align2,
+    s: impl ToString,
+    font: FontId,
+    color: Color32,
+) -> Rect {
     painter.text(pos, align, s.to_string(), font, color)
 }
 
@@ -153,7 +160,15 @@ pub(crate) fn text_w(painter: &Painter, s: &str, font: FontId) -> f32 {
 }
 
 /// Text with a soft highlight sweeping across it (a "shimmer" label).
-pub(crate) fn shimmer_text(painter: &Painter, pos: Pos2, s: &str, font: FontId, base: Color32, hi: Color32, phase: f32) {
+pub(crate) fn shimmer_text(
+    painter: &Painter,
+    pos: Pos2,
+    s: &str,
+    font: FontId,
+    base: Color32,
+    hi: Color32,
+    phase: f32,
+) {
     let g = painter.layout_no_wrap(s.to_string(), font, Color32::WHITE);
     let w = g.size().x.max(1.0);
     let band = w * 0.45 + 30.0;
@@ -392,7 +407,15 @@ pub(crate) fn tabs_layout(painter: &Painter, right: Pos2, labels: &[&str], size:
 }
 
 /// Paint segmented tabs from [`tabs_layout`] rects with the knob at `knob` (x, w).
-pub(crate) fn tabs_paint(painter: &Painter, t: &Theme, rects: &[Rect], labels: &[&str], sel: usize, knob: (f32, f32), size: f32) {
+pub(crate) fn tabs_paint(
+    painter: &Painter,
+    t: &Theme,
+    rects: &[Rect],
+    labels: &[&str],
+    sel: usize,
+    knob: (f32, f32),
+    size: f32,
+) {
     if let Some(r0) = rects.first() {
         let k = Rect::from_min_size(pos2(knob.0, r0.min.y), vec2(knob.1, r0.height()));
         if t.dark {
@@ -433,7 +456,16 @@ pub(crate) fn swatch(painter: &Painter, c: Pos2, color: Color32) {
 
 #[allow(clippy::too_many_arguments)]
 /// A white stat tile: optional colour swatch + label on top, value below.
-pub(crate) fn stat_tile(painter: &Painter, t: &Theme, rect: Rect, label: &str, value: &str, color: Option<Color32>, focus: f32, value_first: bool) {
+pub(crate) fn stat_tile(
+    painter: &Painter,
+    t: &Theme,
+    rect: Rect,
+    label: &str,
+    value: &str,
+    color: Option<Color32>,
+    focus: f32,
+    value_first: bool,
+) {
     tile(painter, t, rect, 10.0);
     if focus > 0.01 {
         let c = color.unwrap_or(t.foreground);
@@ -601,10 +633,12 @@ pub(crate) fn glyph(painter: &Painter, g: Glyph, c: Pos2, size: f32, color: Colo
     let p = |x: f32, y: f32| c + vec2(x * s, y * s);
     match g {
         Glyph::Eye => {
-            let up: Vec<Pos2> = (0..=16).map(|i| {
-                let u = i as f32 / 16.0 * 2.0 - 1.0;
-                p(u * 0.95, -(1.0 - u * u) * 0.55)
-            }).collect();
+            let up: Vec<Pos2> = (0..=16)
+                .map(|i| {
+                    let u = i as f32 / 16.0 * 2.0 - 1.0;
+                    p(u * 0.95, -(1.0 - u * u) * 0.55)
+                })
+                .collect();
             let dn: Vec<Pos2> = up.iter().map(|q| pos2(q.x, c.y + (c.y - q.y))).collect();
             painter.add(Shape::line(up, st));
             painter.add(Shape::line(dn, st));
@@ -612,10 +646,12 @@ pub(crate) fn glyph(painter: &Painter, g: Glyph, c: Pos2, size: f32, color: Colo
         }
         Glyph::UserPlus => {
             painter.circle_stroke(p(-0.2, -0.38), s * 0.3, st);
-            let arc: Vec<Pos2> = (0..=12).map(|i| {
-                let a = PI + PI * i as f32 / 12.0;
-                p(-0.2, 0.75) + vec2(a.cos() * s * 0.62, a.sin() * s * 0.6)
-            }).collect();
+            let arc: Vec<Pos2> = (0..=12)
+                .map(|i| {
+                    let a = PI + PI * i as f32 / 12.0;
+                    p(-0.2, 0.75) + vec2(a.cos() * s * 0.62, a.sin() * s * 0.6)
+                })
+                .collect();
             painter.add(Shape::line(arc, st));
             painter.line_segment([p(0.55, 0.0), p(0.95, 0.0)], st);
             painter.line_segment([p(0.75, -0.2), p(0.75, 0.2)], st);
@@ -628,43 +664,62 @@ pub(crate) fn glyph(painter: &Painter, g: Glyph, c: Pos2, size: f32, color: Colo
         }
         Glyph::Crown => {
             painter.add(Shape::closed_line(
-                vec![p(-0.85, 0.55), p(-0.85, -0.45), p(-0.4, 0.0), p(0.0, -0.65), p(0.4, 0.0), p(0.85, -0.45), p(0.85, 0.55)],
+                vec![
+                    p(-0.85, 0.55),
+                    p(-0.85, -0.45),
+                    p(-0.4, 0.0),
+                    p(0.0, -0.65),
+                    p(0.4, 0.0),
+                    p(0.85, -0.45),
+                    p(0.85, 0.55),
+                ],
                 st,
             ));
         }
         Glyph::Users => {
             for (dx, k) in [(-0.3, 1.0), (0.38, 0.85)] {
                 painter.circle_stroke(p(dx, -0.35), s * 0.27 * k, st);
-                let arc: Vec<Pos2> = (0..=12).map(|i| {
-                    let a = PI + PI * i as f32 / 12.0;
-                    p(dx, 0.75) + vec2(a.cos() * s * 0.5 * k, a.sin() * s * 0.55 * k)
-                }).collect();
+                let arc: Vec<Pos2> = (0..=12)
+                    .map(|i| {
+                        let a = PI + PI * i as f32 / 12.0;
+                        p(dx, 0.75) + vec2(a.cos() * s * 0.5 * k, a.sin() * s * 0.55 * k)
+                    })
+                    .collect();
                 painter.add(Shape::line(arc, st));
             }
         }
         Glyph::Building => {
-            painter.rect_stroke(Rect::from_min_max(p(-0.75, -0.8), p(0.15, 0.85)), cr(1.0), st, egui::StrokeKind::Middle);
+            painter.rect_stroke(
+                Rect::from_min_max(p(-0.75, -0.8), p(0.15, 0.85)),
+                cr(1.0),
+                st,
+                egui::StrokeKind::Middle,
+            );
             painter.rect_stroke(Rect::from_min_max(p(0.15, -0.2), p(0.8, 0.85)), cr(1.0), st, egui::StrokeKind::Middle);
             for y in [-0.45, 0.0, 0.45] {
                 painter.line_segment([p(-0.48, y), p(-0.15, y)], st);
             }
         }
         Glyph::Cloud => {
-            let pts: Vec<Pos2> = (0..=28).map(|i| {
-                let a = PI * 0.85 + PI * 1.3 * i as f32 / 28.0;
-                let bump = 1.0 + 0.25 * (a * 3.0).sin().abs();
-                p(0.0, 0.05) + vec2(a.cos() * s * 0.8, a.sin() * s * 0.55 * bump)
-            }).collect();
+            let pts: Vec<Pos2> = (0..=28)
+                .map(|i| {
+                    let a = PI * 0.85 + PI * 1.3 * i as f32 / 28.0;
+                    let bump = 1.0 + 0.25 * (a * 3.0).sin().abs();
+                    p(0.0, 0.05) + vec2(a.cos() * s * 0.8, a.sin() * s * 0.55 * bump)
+                })
+                .collect();
             painter.add(Shape::line(pts, st));
             painter.line_segment([p(0.0, -0.05), p(0.0, 0.85)], st);
             painter.add(Shape::line(vec![p(-0.3, 0.55), p(0.0, 0.85), p(0.3, 0.55)], st));
         }
         Glyph::At => {
             painter.circle_stroke(c, s * 0.35, st);
-            let pts: Vec<Pos2> = (0..=28).map(|i| {
-                let a = 0.2 + TAU * 0.8 * i as f32 / 28.0;
-                c + vec2(a.cos(), a.sin()) * s * 0.85
-            }).collect();
+            let pts: Vec<Pos2> = (0..=28)
+                .map(|i| {
+                    let a = 0.2 + TAU * 0.8 * i as f32 / 28.0;
+                    c + vec2(a.cos(), a.sin()) * s * 0.85
+                })
+                .collect();
             painter.add(Shape::line(pts, st));
             painter.line_segment([p(0.35, -0.35), p(0.35, 0.3)], st);
         }
@@ -690,7 +745,15 @@ pub(crate) fn ring_arc(painter: &Painter, c: Pos2, r: f32, a0: f32, sweep: f32, 
 }
 
 /// Concentric activity rings. `rings` = (progress, colour, emphasis 0..1) from outside in.
-pub(crate) fn paint_rings(painter: &Painter, t: &Theme, c: Pos2, radius: f32, width: f32, gap: f32, rings: &[(f32, Color32, f32)]) {
+pub(crate) fn paint_rings(
+    painter: &Painter,
+    t: &Theme,
+    c: Pos2,
+    radius: f32,
+    width: f32,
+    gap: f32,
+    rings: &[(f32, Color32, f32)],
+) {
     let start = -PI / 2.0;
     for (i, (p, col, emph)) in rings.iter().enumerate() {
         let r = radius - width / 2.0 - i as f32 * (width + gap);
@@ -709,7 +772,12 @@ pub(crate) fn paint_rings(painter: &Painter, t: &Theme, c: Pos2, radius: f32, wi
                 // second lap: soft shadow at the head so the overlap reads
                 let head = start + TAU * p;
                 let hp = c + vec2(head.cos(), head.sin()) * r;
-                paint::glow(painter, hp + vec2(-head.sin(), head.cos()) * width * 0.3, width * 0.9, Color32::from_black_alpha(40));
+                paint::glow(
+                    painter,
+                    hp + vec2(-head.sin(), head.cos()) * width * 0.3,
+                    width * 0.9,
+                    Color32::from_black_alpha(40),
+                );
                 ring_arc(painter, c, r, start + TAU, TAU * (p - 1.0).min(1.0), width, shade(col, 0.03));
             }
         }

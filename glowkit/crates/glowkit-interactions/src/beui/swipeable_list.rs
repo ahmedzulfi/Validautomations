@@ -40,7 +40,13 @@ impl SwipeableList {
         Self { title: title.into(), rows: Vec::new(), width: 380.0, autoplay: true }
     }
     /// Add a row: icon, title, subtitle and a time stamp.
-    pub fn row(mut self, icon: BeIcon, title: impl Into<String>, subtitle: impl Into<String>, time: impl Into<String>) -> Self {
+    pub fn row(
+        mut self,
+        icon: BeIcon,
+        title: impl Into<String>,
+        subtitle: impl Into<String>,
+        time: impl Into<String>,
+    ) -> Self {
         self.rows.push((icon, title.into(), subtitle.into(), time.into()));
         self
     }
@@ -86,7 +92,8 @@ impl egui::Widget for SwipeableList {
         let hovering = pointer.is_some_and(|p| rect.contains(p));
         let idle = idle_for(ui, id, hovering || st.drag.is_some());
         let auto = self.autoplay && idle > 2.5;
-        let (mut ptr, mut down, mut pressed) = (pointer, ui.input(|i| i.pointer.primary_down()), ui.input(|i| i.pointer.primary_pressed()));
+        let (mut ptr, mut down, mut pressed) =
+            (pointer, ui.input(|i| i.pointer.primary_down()), ui.input(|i| i.pointer.primary_pressed()));
         let click = ui.input(|i| i.pointer.primary_clicked());
         // row tops from animated heights
         let mut tops = Vec::with_capacity(n);
@@ -95,7 +102,8 @@ impl egui::Widget for SwipeableList {
             tops.push(y);
             y += (ROW_H + GAP) * st.height[i].value.max(0.0);
         }
-        let row_rect = |i: usize| Rect::from_min_size(pos2(rect.min.x + pad, tops[i]), vec2(self.width - pad * 2.0, ROW_H));
+        let row_rect =
+            |i: usize| Rect::from_min_size(pos2(rect.min.x + pad, tops[i]), vec2(self.width - pad * 2.0, ROW_H));
         let reset_r = Rect::from_min_size(pos2(rect.max.x - pad - 78.0, rect.min.y + 14.0), vec2(78.0, 30.0));
         // ---- autoplay: a ghost finger swipes
         let mut ghost: Option<(Pos2, f32, bool)> = None;
@@ -230,12 +238,36 @@ impl egui::Widget for SwipeableList {
         let card_h = head + (0..n).map(|i| (ROW_H + GAP) * st.height[i].value.max(0.0)).sum::<f32>() + foot;
         let body = Rect::from_min_size(rect.min, vec2(self.width, card_h.max(head + foot)));
         card(&painter, &t, body, 26.0, 0.6);
-        painter.text(pos2(body.min.x + 18.0, body.min.y + 24.0), Align2::LEFT_CENTER, &self.title, FontId::proportional(14.5), t.foreground);
-        painter.text(pos2(body.min.x + 18.0, body.min.y + 42.0), Align2::LEFT_CENTER, &st.status, FontId::proportional(11.5), t.muted_foreground);
+        painter.text(
+            pos2(body.min.x + 18.0, body.min.y + 24.0),
+            Align2::LEFT_CENTER,
+            &self.title,
+            FontId::proportional(14.5),
+            t.foreground,
+        );
+        painter.text(
+            pos2(body.min.x + 18.0, body.min.y + 42.0),
+            Align2::LEFT_CENTER,
+            &st.status,
+            FontId::proportional(11.5),
+            t.muted_foreground,
+        );
         let hov_reset = pointer.is_some_and(|p| reset_r.contains(p));
-        painter.rect(reset_r, cr(15.0), if hov_reset { hover_fill(&t) } else { well(&t) }, hairline(&t), egui::StrokeKind::Inside);
+        painter.rect(
+            reset_r,
+            cr(15.0),
+            if hov_reset { hover_fill(&t) } else { well(&t) },
+            hairline(&t),
+            egui::StrokeKind::Inside,
+        );
         icon(&painter, BeIcon::Refresh, pos2(reset_r.min.x + 18.0, reset_r.center().y), 11.0, t.muted_foreground, 1.3);
-        painter.text(pos2(reset_r.min.x + 30.0, reset_r.center().y), Align2::LEFT_CENTER, "Reset", FontId::proportional(12.5), t.muted_foreground);
+        painter.text(
+            pos2(reset_r.min.x + 30.0, reset_r.center().y),
+            Align2::LEFT_CENTER,
+            "Reset",
+            FontId::proportional(12.5),
+            t.muted_foreground,
+        );
         let clip = painter.with_clip_rect(body.shrink(1.0));
         for (i, (ic, title, sub, time)) in self.rows.iter().enumerate() {
             let hk = st.height[i].value;
@@ -244,14 +276,22 @@ impl egui::Widget for SwipeableList {
             }
             let r = row_rect(i);
             let off = st.off[i].value;
-            let rc = clip.with_clip_rect(Rect::from_min_max(r.min, pos2(r.max.x, r.min.y + ROW_H * hk.min(1.0))).intersect(body.shrink(1.0)));
+            let rc = clip.with_clip_rect(
+                Rect::from_min_max(r.min, pos2(r.max.x, r.min.y + ROW_H * hk.min(1.0))).intersect(body.shrink(1.0)),
+            );
             // actions behind the row grow into view
             let reveal = (-off / -OPEN).clamp(0.0, 1.6);
             if reveal > 0.01 {
                 let amber = t.warning;
                 let red = t.destructive;
                 let del_w = if reveal > 1.0 { 52.0 + (reveal - 1.0) * 160.0 } else { 52.0 };
-                for (k, (col, ic2, cx)) in [(amber, BeIcon::Clock, r.max.x - 87.0), (red, BeIcon::Trash, r.max.x - 29.0 - (del_w - 52.0) / 2.0)].iter().enumerate() {
+                for (k, (col, ic2, cx)) in [
+                    (amber, BeIcon::Clock, r.max.x - 87.0),
+                    (red, BeIcon::Trash, r.max.x - 29.0 - (del_w - 52.0) / 2.0),
+                ]
+                .iter()
+                .enumerate()
+                {
                     let s = (reveal * 1.2 - k as f32 * 0.15).clamp(0.0, 1.0);
                     let w = if k == 1 { del_w } else { 52.0 };
                     let br = Rect::from_center_size(pos2(*cx, r.center().y), vec2(w * s.max(0.01), (ROW_H - 12.0) * s));
@@ -265,13 +305,43 @@ impl egui::Widget for SwipeableList {
             let tile = Rect::from_center_size(pos2(row.min.x + 34.0, row.center().y), vec2(38.0, 38.0));
             rc.rect_filled(tile, cr(11.0), well(&t));
             icon(&rc, *ic, tile.center(), 15.0, t.muted_foreground, 1.3);
-            rc.text(pos2(row.min.x + 66.0, row.center().y - 9.0), Align2::LEFT_CENTER, title, FontId::proportional(14.0), t.foreground);
-            rc.text(pos2(row.min.x + 66.0, row.center().y + 10.0), Align2::LEFT_CENTER, sub, FontId::proportional(12.0), t.muted_foreground);
-            rc.text(pos2(row.max.x - 16.0, row.center().y), Align2::RIGHT_CENTER, time, FontId::proportional(12.5), t.muted_foreground);
+            rc.text(
+                pos2(row.min.x + 66.0, row.center().y - 9.0),
+                Align2::LEFT_CENTER,
+                title,
+                FontId::proportional(14.0),
+                t.foreground,
+            );
+            rc.text(
+                pos2(row.min.x + 66.0, row.center().y + 10.0),
+                Align2::LEFT_CENTER,
+                sub,
+                FontId::proportional(12.0),
+                t.muted_foreground,
+            );
+            rc.text(
+                pos2(row.max.x - 16.0, row.center().y),
+                Align2::RIGHT_CENTER,
+                time,
+                FontId::proportional(12.5),
+                t.muted_foreground,
+            );
         }
         let fy = body.max.y - foot / 2.0 - 2.0;
-        painter.text(pos2(body.min.x + 18.0, fy), Align2::LEFT_CENTER, format!("{alive} open"), FontId::proportional(11.5), t.muted_foreground);
-        painter.text(pos2(body.max.x - 18.0, fy), Align2::RIGHT_CENTER, "Today", FontId::proportional(11.5), t.muted_foreground);
+        painter.text(
+            pos2(body.min.x + 18.0, fy),
+            Align2::LEFT_CENTER,
+            format!("{alive} open"),
+            FontId::proportional(11.5),
+            t.muted_foreground,
+        );
+        painter.text(
+            pos2(body.max.x - 18.0, fy),
+            Align2::RIGHT_CENTER,
+            "Today",
+            FontId::proportional(11.5),
+            t.muted_foreground,
+        );
         if let Some((p, a, held)) = ghost {
             if held {
                 painter.circle_filled(p, 14.0, with_alpha(t.foreground, 0.12 * a));

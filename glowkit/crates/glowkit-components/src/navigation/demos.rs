@@ -259,7 +259,7 @@ FloatingNavbar::new(&mut active, &[
             name: "Stepper",
             category: C,
             description: "A wizard header: numbered steps joined by a line that fills as you advance, check marks for completed steps and a pulsing ring on the current one.",
-            covers: &["Origin UI: Stepper", "Kibo UI: Stepper", "Mantine: Stepper", "MUI: Stepper"],
+            covers: &["Origin UI: Stepper", "Kibo UI: Stepper", "Mantine: Stepper", "MUI: Stepper", "suiss/ui: Stepper"],
             code: r##"ui.add(Stepper::new(&mut step, &[
     ("Account", "Create your login"),
     ("Profile", "Tell us about you"),
@@ -296,7 +296,7 @@ FloatingNavbar::new(&mut active, &[
             name: "Command Palette",
             category: C,
             description: "A ⌘K / Ctrl+K palette: modal search with grouped fuzzy results, a gliding highlight and full keyboard navigation.",
-            covers: &["shadcn/ui: Command", "cmdk: Command Menu", "Origin UI: Command", "Kibo UI: Command"],
+            covers: &["shadcn/ui: Command", "cmdk: Command Menu", "Origin UI: Command", "Kibo UI: Command", "suiss/ui: Command Palette"],
             code: r##"CommandPalette::toggle_on_shortcut(ui.ctx(), &mut open);
 if let Some(cmd) = CommandPalette::new(&mut open)
     .group("Suggestions", vec![

@@ -240,7 +240,8 @@ impl egui::Widget for BoardSankey {
         // ---- layout
         frame(&painter, &t, rect, 16.0);
         let pad = 18.0;
-        let chart = Rect::from_min_max(pos2(rect.min.x + pad, rect.min.y + 96.0), pos2(rect.max.x - pad, rect.max.y - 40.0));
+        let chart =
+            Rect::from_min_max(pos2(rect.min.x + pad, rect.min.y + 96.0), pos2(rect.max.x - pad, rect.max.y - 40.0));
         let lw = left.iter().map(|n| text_w(&painter, &n.0, f(13.0))).fold(40.0, f32::max) + 12.0;
         let rw = right
             .iter()
@@ -254,7 +255,8 @@ impl egui::Widget for BoardSankey {
         let scale_l = (h - self.gap * (left.len().max(1) - 1) as f32) / total;
         let scale_r = (h - self.gap * (right.len().max(1) - 1) as f32) / total;
         let scale = scale_l.min(scale_r).max(0.0);
-        let col_h = |n: &[(String, f32)]| n.iter().map(|x| x.1 * scale).sum::<f32>() + self.gap * (n.len().max(1) - 1) as f32;
+        let col_h =
+            |n: &[(String, f32)]| n.iter().map(|x| x.1 * scale).sum::<f32>() + self.gap * (n.len().max(1) - 1) as f32;
         let mut ly = Vec::new();
         let mut y = chart.center().y - col_h(&left) / 2.0;
         for n in &left {
@@ -268,7 +270,8 @@ impl egui::Widget for BoardSankey {
             y += n.1 * scale + self.gap;
         }
         // link ends: at the source ordered by target, at the target ordered by source
-        let mut links: Vec<Link> = raw.iter().map(|&(s, d, v)| Link { s, d, v, y0: 0.0, y1: 0.0, w: v * scale }).collect();
+        let mut links: Vec<Link> =
+            raw.iter().map(|&(s, d, v)| Link { s, d, v, y0: 0.0, y1: 0.0, w: v * scale }).collect();
         let mut order: Vec<usize> = (0..links.len()).collect();
         order.sort_by_key(|&k| (links[k].s, links[k].d));
         let mut cur = ly.clone();
@@ -295,13 +298,15 @@ impl egui::Widget for BoardSankey {
         let mut hit = None;
         if let Some(mp) = response.hover_pos() {
             for (i, n) in left.iter().enumerate() {
-                let r = Rect::from_min_size(pos2(chart.min.x, ly[i]), vec2(lw + node_w, n.1 * scale)).expand2(vec2(0.0, 4.0));
+                let r = Rect::from_min_size(pos2(chart.min.x, ly[i]), vec2(lw + node_w, n.1 * scale))
+                    .expand2(vec2(0.0, 4.0));
                 if r.contains(mp) {
                     hit = Some(Hit::Left(i));
                 }
             }
             for (i, n) in right.iter().enumerate() {
-                let r = Rect::from_min_max(pos2(xr, ry[i]), pos2(chart.max.x, ry[i] + n.1 * scale)).expand2(vec2(0.0, 4.0));
+                let r =
+                    Rect::from_min_max(pos2(xr, ry[i]), pos2(chart.max.x, ry[i] + n.1 * scale)).expand2(vec2(0.0, 4.0));
                 if r.contains(mp) {
                     hit = Some(Hit::Right(i));
                 }
@@ -335,7 +340,11 @@ impl egui::Widget for BoardSankey {
                 Some(Hit::Left(step))
             } else if step < left.len() + 2 {
                 let k = (step * 7 + 3) % links.len().max(1);
-                if links.is_empty() { None } else { Some(Hit::Link(k)) }
+                if links.is_empty() {
+                    None
+                } else {
+                    Some(Hit::Link(k))
+                }
             } else if step == left.len() + 2 && !right.is_empty() {
                 Some(Hit::Right(0))
             } else {
@@ -379,7 +388,14 @@ impl egui::Widget for BoardSankey {
         };
         let shown = tween(ui, id.with("head"), value, 0.0, 0.9);
         text(&painter, pos2(rect.min.x + pad, rect.min.y + 26.0), Align2::LEFT_CENTER, &title, f(13.0), dim(&t));
-        text(&painter, pos2(rect.min.x + pad, rect.min.y + 56.0), Align2::LEFT_CENTER, fmt_val(shown.round(), &self.unit), f(26.0), t.foreground);
+        text(
+            &painter,
+            pos2(rect.min.x + pad, rect.min.y + 56.0),
+            Align2::LEFT_CENTER,
+            fmt_val(shown.round(), &self.unit),
+            f(26.0),
+            t.foreground,
+        );
         if let Some(pl) = &self.period {
             let w = pill_w(&painter, pl, true);
             let r = Rect::from_min_size(pos2(rect.max.x - pad - w, rect.min.y + 16.0), vec2(w, 30.0));
@@ -421,7 +437,14 @@ impl egui::Widget for BoardSankey {
             let cy = ly[i] + hgt / 2.0;
             let la = a * ease_out(entry_k(ui, el, 0.1 + 0.05 * i as f32, 0.5));
             text(&painter, pos2(xl - 10.0, cy - 8.0), Align2::RIGHT_CENTER, &n.0, f(13.0), fade(t.foreground, la));
-            text(&painter, pos2(xl - 10.0, cy + 8.0), Align2::RIGHT_CENTER, fmt_val(n.1, &self.unit), f(11.5), fade(faint(&t), la));
+            text(
+                &painter,
+                pos2(xl - 10.0, cy + 8.0),
+                Align2::RIGHT_CENTER,
+                fmt_val(n.1, &self.unit),
+                f(11.5),
+                fade(faint(&t), la),
+            );
         }
         for (j, n) in right.iter().enumerate() {
             let k = ease_back(entry_k(ui, el, 0.9 + 0.05 * j as f32, 0.55));
@@ -431,7 +454,14 @@ impl egui::Widget for BoardSankey {
             painter.rect_filled(r, cr(3.0), fade(sink_col, a));
             let cy = ry[j] + hgt / 2.0;
             let la = a * ease_out(entry_k(ui, el, 1.0 + 0.05 * j as f32, 0.5));
-            let nr = text(&painter, pos2(xr + node_w + 10.0, cy), Align2::LEFT_CENTER, &n.0, f(13.0), fade(t.foreground, la));
+            let nr = text(
+                &painter,
+                pos2(xr + node_w + 10.0, cy),
+                Align2::LEFT_CENTER,
+                &n.0,
+                f(13.0),
+                fade(t.foreground, la),
+            );
             let share = format!(" · {:.0}%", n.1 / total_r.max(1e-3) * 100.0);
             text(&painter, pos2(nr.max.x, cy), Align2::LEFT_CENTER, share, f(12.0), fade(faint(&t), la));
         }

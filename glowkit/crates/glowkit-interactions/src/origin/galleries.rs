@@ -1,9 +1,12 @@
 //! Image galleries in motion: a tunnel flight, a spiral vortex, a 3D coverflow and a hover list
 //! with a floating image window.
 
-use super::common::{h01, idle_secs, lerp_rgb, textured_quad, strip};
+use super::common::{h01, idle_secs, lerp_rgb, strip, textured_quad};
 use egui::epaint::{Mesh, Vertex};
-use egui::{pos2, vec2, Align2, Color32, CursorIcon, FontId, Painter, Pos2, Rect, Response, Sense, Shape, Stroke, TextureId, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CursorIcon, FontId, Painter, Pos2, Rect, Response, Sense, Shape, Stroke, TextureId,
+    Ui, Vec2, Widget,
+};
 use glowkit_core::anim::Spring;
 use glowkit_core::color::{hex, with_alpha};
 use glowkit_core::{paint, Theme};
@@ -23,7 +26,16 @@ fn cover_uv(tex: f32, frame: f32) -> Rect {
 
 /// A rotated, rounded image card (texture cropped to cover).
 #[allow(clippy::too_many_arguments)]
-fn image_card(painter: &Painter, tex: TextureId, tex_aspect: f32, center: Pos2, size: Vec2, angle: f32, radius: f32, tint: Color32) {
+fn image_card(
+    painter: &Painter,
+    tex: TextureId,
+    tex_aspect: f32,
+    center: Pos2,
+    size: Vec2,
+    angle: f32,
+    radius: f32,
+    tint: Color32,
+) {
     let uv = cover_uv(tex_aspect, size.x / size.y.max(1.0));
     let local = Rect::from_center_size(Pos2::ZERO, size);
     let pts = paint::rounded_rect_points(local, radius.min(size.min_elem() * 0.5), 5);
@@ -133,15 +145,20 @@ impl Widget for GalleryTunnel {
         let auto = response.hover_pos().is_none() && (time % 6.0) > 4.6;
         let clicked = response.clicked();
         let speed = self.speed;
-        let fl = glowkit_core::with_state(ui, id.with("flight"), || Flight { z: 0.0, boost: Spring::new(0.0).with(60.0, 12.0) }, |f| {
-            f.boost.target = if down || auto { 1.0 } else { 0.0 };
-            if clicked {
-                f.boost.velocity += 6.0;
-            }
-            f.boost.step(dt);
-            f.z += dt * speed * (1.2 + f.boost.value.max(0.0) * 5.0);
-            *f
-        });
+        let fl = glowkit_core::with_state(
+            ui,
+            id.with("flight"),
+            || Flight { z: 0.0, boost: Spring::new(0.0).with(60.0, 12.0) },
+            |f| {
+                f.boost.target = if down || auto { 1.0 } else { 0.0 };
+                if clicked {
+                    f.boost.velocity += 6.0;
+                }
+                f.boost.step(dt);
+                f.z += dt * speed * (1.2 + f.boost.value.max(0.0) * 5.0);
+                *f
+            },
+        );
         let target = match response.hover_pos() {
             Some(p) => (p - rect.center()) / (rect.size() * 0.5),
             None => vec2((time * 0.3).sin() * 0.4, (time * 0.23).cos() * 0.3),
@@ -199,13 +216,27 @@ impl Widget for GalleryTunnel {
                         textured_quad(&painter, tex, q, 4, |_, v| with_alpha(Color32::WHITE, alpha(v)));
                     } else {
                         let c = colors[(seed as usize / 3) % colors.len()];
-                        paint::quad(&painter, q, [lerp_rgb(bg, c, f1), lerp_rgb(bg, c, f1), lerp_rgb(bg, c, f0), lerp_rgb(bg, c, f0)]);
+                        paint::quad(
+                            &painter,
+                            q,
+                            [lerp_rgb(bg, c, f1), lerp_rgb(bg, c, f1), lerp_rgb(bg, c, f0), lerp_rgb(bg, c, f0)],
+                        );
                     }
                 }
             }
             // wire frame of the ring at z0 and the longitudinal edges
             let ring = |z: f32| -> Vec<Pos2> {
-                vec![proj(-hx, -hy, z), proj(0.0, -hy, z), proj(hx, -hy, z), proj(hx, 0.0, z), proj(hx, hy, z), proj(0.0, hy, z), proj(-hx, hy, z), proj(-hx, 0.0, z), proj(-hx, -hy, z)]
+                vec![
+                    proj(-hx, -hy, z),
+                    proj(0.0, -hy, z),
+                    proj(hx, -hy, z),
+                    proj(hx, 0.0, z),
+                    proj(hx, hy, z),
+                    proj(0.0, hy, z),
+                    proj(-hx, hy, z),
+                    proj(-hx, 0.0, z),
+                    proj(-hx, -hy, z),
+                ]
             };
             let a0 = with_alpha(wire, f0 * 0.9);
             painter.add(Shape::line(ring(z0), Stroke::new(1.0, a0)));
@@ -213,7 +244,13 @@ impl Widget for GalleryTunnel {
             let r1 = ring(z1);
             let mut mesh = Mesh::default();
             for k in 0..8 {
-                strip(&mut mesh, &[r1[k], r0[k]], |_| 0.8, |i| with_alpha(wire, if i == 0 { f1 } else { f0 } * 0.8), |_| Color32::TRANSPARENT);
+                strip(
+                    &mut mesh,
+                    &[r1[k], r0[k]],
+                    |_| 0.8,
+                    |i| with_alpha(wire, if i == 0 { f1 } else { f0 } * 0.8),
+                    |_| Color32::TRANSPARENT,
+                );
             }
             painter.add(Shape::mesh(mesh));
         }
@@ -228,7 +265,13 @@ impl Widget for GalleryTunnel {
                 let p0 = proj(d.x, d.y, z);
                 let p1 = proj(d.x, d.y, z + 0.8 * b);
                 let c = with_alpha(if t.dark { Color32::WHITE } else { hex("#18181B") }, 0.35 * b.min(1.0));
-                strip(&mut mesh, &[p1, p0], |_| 1.0, |k| if k == 0 { Color32::TRANSPARENT } else { c }, |_| Color32::TRANSPARENT);
+                strip(
+                    &mut mesh,
+                    &[p1, p0],
+                    |_| 1.0,
+                    |k| if k == 0 { Color32::TRANSPARENT } else { c },
+                    |_| Color32::TRANSPARENT,
+                );
             }
             painter.add(Shape::mesh(mesh));
         }
@@ -309,10 +352,15 @@ impl Widget for SpiralGallery {
         let dt = glowkit_core::dt(ui);
         let slow = glowkit_core::anim::follow(ui, id.with("slow"), if response.hovered() { 0.25 } else { 1.0 }, 3.0);
         let speed = self.speed;
-        let phase = glowkit_core::with_state(ui, id.with("phase"), || 0.0f32, |p| {
-            *p += dt * 0.035 * speed * slow;
-            *p
-        });
+        let phase = glowkit_core::with_state(
+            ui,
+            id.with("phase"),
+            || 0.0f32,
+            |p| {
+                *p += dt * 0.035 * speed * slow;
+                *p
+            },
+        );
         let painter = ui.painter_at(rect);
         let bg = if t.dark { hex("#030305") } else { t.background };
         painter.rect_filled(rect, 0.0, bg);
@@ -321,7 +369,8 @@ impl Widget for SpiralGallery {
         let c = rect.center();
         let rmax = rect.size().length() * 0.52;
         let n = self.cards;
-        let mut items: Vec<(f32, usize)> = (0..n).map(|i| (((i as f32 / n as f32) - phase).rem_euclid(1.0), i)).collect();
+        let mut items: Vec<(f32, usize)> =
+            (0..n).map(|i| (((i as f32 / n as f32) - phase).rem_euclid(1.0), i)).collect();
         items.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
         for (s, i) in items {
             // s: 0 = center, 1 = outer edge
@@ -333,9 +382,25 @@ impl Widget for SpiralGallery {
             let fade = (s * 6.0).min(1.0);
             let tint = lerp_rgb(bg, Color32::WHITE, fade);
             if s > 0.2 {
-                paint::soft_shadow(&painter, Rect::from_center_size(p + vec2(0.0, w * 0.06), sz * 0.9), w * 0.12, w * 0.12, Vec2::ZERO, with_alpha(Color32::BLACK, 0.25 * fade));
+                paint::soft_shadow(
+                    &painter,
+                    Rect::from_center_size(p + vec2(0.0, w * 0.06), sz * 0.9),
+                    w * 0.12,
+                    w * 0.12,
+                    Vec2::ZERO,
+                    with_alpha(Color32::BLACK, 0.25 * fade),
+                );
             }
-            image_card(&painter, textures[i % textures.len()], aspect, p, sz, ang + PI * 0.5 + 0.15 * (i as f32).sin(), w * 0.12, tint);
+            image_card(
+                &painter,
+                textures[i % textures.len()],
+                aspect,
+                p,
+                sz,
+                ang + PI * 0.5 + 0.15 * (i as f32).sin(),
+                w * 0.12,
+                tint,
+            );
         }
         // the eye of the vortex
         if t.dark {
@@ -430,7 +495,11 @@ impl Widget for CoverflowGallery<'_> {
         let t = Theme::of(ui);
         let textures = if self.images.is_empty() { scenes(ui) } else { self.images.clone() };
         let n = textures.len().max(1);
-        let titles: Vec<String> = if self.titles.is_empty() { (0..n).map(|i| PaintedScene::name(i).to_string()).collect() } else { self.titles.clone() };
+        let titles: Vec<String> = if self.titles.is_empty() {
+            (0..n).map(|i| PaintedScene::name(i).to_string()).collect()
+        } else {
+            self.titles.clone()
+        };
         let aspect = if self.images.is_empty() { PaintedScene::ASPECT } else { self.aspect };
         let now = ui.input(|i| i.time);
         let dt = glowkit_core::dt(ui);
@@ -445,41 +514,47 @@ impl Widget for CoverflowGallery<'_> {
         };
         let drag_dx = response.drag_delta().x;
         let released = response.drag_stopped();
-        let click_x = if response.clicked() { response.interact_pointer_pos().map(|p| p.x - rect.center().x) } else { None };
+        let click_x =
+            if response.clicked() { response.interact_pointer_pos().map(|p| p.x - rect.center().x) } else { None };
         let mut index = (*self.index).min(n - 1);
         let auto_secs = self.autoplay as f64;
         let start = index as f32;
-        let st = glowkit_core::with_state(ui, id.with("flow"), || Flow { pos: Spring::new(start).with(120.0, 20.0), drag: 0.0, last_auto: now }, |s| {
-            if drag_dx != 0.0 {
-                s.drag += drag_dx / spacing;
-                s.last_auto = now;
-            }
-            if released {
-                let target = (index as f32 - s.drag).round().clamp(0.0, (n - 1) as f32);
-                s.pos.value -= s.drag;
-                s.drag = 0.0;
-                index = target as usize;
-            }
-            if let Some(x) = click_x {
-                if x.abs() > card_w * 0.5 {
-                    index = if x > 0.0 { (index + 1).min(n - 1) } else { index.saturating_sub(1) };
+        let st = glowkit_core::with_state(
+            ui,
+            id.with("flow"),
+            || Flow { pos: Spring::new(start).with(120.0, 20.0), drag: 0.0, last_auto: now },
+            |s| {
+                if drag_dx != 0.0 {
+                    s.drag += drag_dx / spacing;
+                    s.last_auto = now;
                 }
-                s.last_auto = now;
-            }
-            if left {
-                index = index.saturating_sub(1);
-            }
-            if right {
-                index = (index + 1).min(n - 1);
-            }
-            if auto_secs > 0.0 && idle > 1.0 && now - s.last_auto > auto_secs {
-                index = (index + 1) % n;
-                s.last_auto = now;
-            }
-            s.pos.target = index as f32;
-            s.pos.step(dt);
-            *s
-        });
+                if released {
+                    let target = (index as f32 - s.drag).round().clamp(0.0, (n - 1) as f32);
+                    s.pos.value -= s.drag;
+                    s.drag = 0.0;
+                    index = target as usize;
+                }
+                if let Some(x) = click_x {
+                    if x.abs() > card_w * 0.5 {
+                        index = if x > 0.0 { (index + 1).min(n - 1) } else { index.saturating_sub(1) };
+                    }
+                    s.last_auto = now;
+                }
+                if left {
+                    index = index.saturating_sub(1);
+                }
+                if right {
+                    index = (index + 1).min(n - 1);
+                }
+                if auto_secs > 0.0 && idle > 1.0 && now - s.last_auto > auto_secs {
+                    index = (index + 1) % n;
+                    s.last_auto = now;
+                }
+                s.pos.target = index as f32;
+                s.pos.step(dt);
+                *s
+            },
+        );
         if index != *self.index {
             *self.index = index;
             response.mark_changed();
@@ -529,14 +604,30 @@ impl Widget for CoverflowGallery<'_> {
             let tint = with_alpha(tint, fade);
             // shadow
             let bb = Rect::from_points(&q);
-            paint::soft_shadow(&painter, bb.shrink(6.0).translate(vec2(0.0, 10.0)), 14.0, 22.0, Vec2::ZERO, with_alpha(Color32::BLACK, if t.dark { 0.55 } else { 0.18 } * fade));
+            paint::soft_shadow(
+                &painter,
+                bb.shrink(6.0).translate(vec2(0.0, 10.0)),
+                14.0,
+                22.0,
+                Vec2::ZERO,
+                with_alpha(Color32::BLACK, if t.dark { 0.55 } else { 0.18 } * fade),
+            );
             if self.reflection {
                 let refl = [q[3], q[2], q[2] + (q[2] - q[1]) * 0.2, q[3] + (q[3] - q[0]) * 0.2];
                 let rc = |v: f32| with_alpha(tint, 0.16 * (1.0 - v) * fade);
                 let mut m = Mesh::with_texture(textures[i % textures.len()]);
-                let uvs = [pos2(uv.min.x, uv.max.y), pos2(uv.max.x, uv.max.y), pos2(uv.max.x, uv.max.y - uv.height() * 0.2), pos2(uv.min.x, uv.max.y - uv.height() * 0.2)];
+                let uvs = [
+                    pos2(uv.min.x, uv.max.y),
+                    pos2(uv.max.x, uv.max.y),
+                    pos2(uv.max.x, uv.max.y - uv.height() * 0.2),
+                    pos2(uv.min.x, uv.max.y - uv.height() * 0.2),
+                ];
                 for k in 0..4 {
-                    m.vertices.push(Vertex { pos: refl[k] + vec2(0.0, 4.0), uv: uvs[k], color: rc(if k < 2 { 0.0 } else { 1.0 }) });
+                    m.vertices.push(Vertex {
+                        pos: refl[k] + vec2(0.0, 4.0),
+                        uv: uvs[k],
+                        color: rc(if k < 2 { 0.0 } else { 1.0 }),
+                    });
                 }
                 m.add_triangle(0, 1, 2);
                 m.add_triangle(0, 2, 3);
@@ -550,7 +641,11 @@ impl Widget for CoverflowGallery<'_> {
                 let r = q[1].lerp(q[2], v);
                 for k in 0..=sub {
                     let u = k as f32 / sub as f32;
-                    m.vertices.push(Vertex { pos: l.lerp(r, u), uv: pos2(uv.min.x + u * uv.width(), uv.min.y + v * uv.height()), color: tint });
+                    m.vertices.push(Vertex {
+                        pos: l.lerp(r, u),
+                        uv: pos2(uv.min.x + u * uv.width(), uv.min.y + v * uv.height()),
+                        color: tint,
+                    });
                 }
             }
             let w = (sub + 1) as u32;
@@ -568,8 +663,20 @@ impl Widget for CoverflowGallery<'_> {
         let active = pos.round().clamp(0.0, (n - 1) as f32) as usize;
         let near = 1.0 - ((pos - active as f32).abs() * 2.0).min(1.0);
         let ty = center.y + card_h * 0.5 + card_h * 0.2 + 12.0;
-        painter.text(pos2(center.x, ty + (1.0 - near) * 6.0), Align2::CENTER_CENTER, &titles[active % titles.len()], FontId::proportional(18.0), with_alpha(t.foreground, near));
-        painter.text(pos2(center.x, ty + 22.0), Align2::CENTER_CENTER, format!("{:02} / {:02}", active + 1, n), FontId::monospace(11.0), with_alpha(t.muted_foreground, 0.8));
+        painter.text(
+            pos2(center.x, ty + (1.0 - near) * 6.0),
+            Align2::CENTER_CENTER,
+            &titles[active % titles.len()],
+            FontId::proportional(18.0),
+            with_alpha(t.foreground, near),
+        );
+        painter.text(
+            pos2(center.x, ty + 22.0),
+            Align2::CENTER_CENTER,
+            format!("{:02} / {:02}", active + 1, n),
+            FontId::monospace(11.0),
+            with_alpha(t.muted_foreground, 0.8),
+        );
         response.on_hover_cursor(CursorIcon::Grab)
     }
 }
@@ -598,7 +705,14 @@ pub struct HoverImageReveal {
 impl HoverImageReveal {
     /// A reveal list of `items` (images default to the built-in painted scenes).
     pub fn new(items: Vec<String>) -> Self {
-        Self { items, images: Vec::new(), aspect: PaintedScene::ASPECT, font_size: 34.0, window: vec2(200.0, 136.0), autoplay: true }
+        Self {
+            items,
+            images: Vec::new(),
+            aspect: PaintedScene::ASPECT,
+            font_size: 34.0,
+            window: vec2(200.0, 136.0),
+            autoplay: true,
+        }
     }
     /// One image per row (textures of aspect `aspect`).
     pub fn images(mut self, images: Vec<TextureId>, aspect: f32) -> Self {
@@ -669,7 +783,14 @@ impl Widget for HoverImageReveal {
         let st = glowkit_core::with_state(
             ui,
             id.with("reveal"),
-            || Reveal { x: Spring::new(target.x).with(160.0, 18.0), y: Spring::new(target.y).with(160.0, 18.0), show: Spring::new(0.0).with(220.0, 20.0), row: 0, prev: 0, switch_t: 1.0 },
+            || Reveal {
+                x: Spring::new(target.x).with(160.0, 18.0),
+                y: Spring::new(target.y).with(160.0, 18.0),
+                show: Spring::new(0.0).with(220.0, 20.0),
+                row: 0,
+                prev: 0,
+                switch_t: 1.0,
+            },
             |s| {
                 if let Some(p) = pointer {
                     s.x.target = p.x;
@@ -712,12 +833,37 @@ impl Widget for HoverImageReveal {
             let tilt = (vel / 3000.0).clamp(-0.25, 0.25);
             let c = pos2(st.x.value, st.y.value) + vec2(self.window.x * 0.62, 0.0);
             let sz = self.window * (0.6 + 0.4 * show);
-            paint::soft_shadow(&painter, Rect::from_center_size(c + vec2(0.0, 12.0), sz), 12.0, 24.0, Vec2::ZERO, with_alpha(Color32::BLACK, 0.3 * show.min(1.0)));
+            paint::soft_shadow(
+                &painter,
+                Rect::from_center_size(c + vec2(0.0, 12.0), sz),
+                12.0,
+                24.0,
+                Vec2::ZERO,
+                with_alpha(Color32::BLACK, 0.3 * show.min(1.0)),
+            );
             let e = glowkit_core::ease(glowkit_core::Easing::OutCubic, st.switch_t);
             let a = show.min(1.0);
-            image_card(&painter, textures[st.prev % textures.len()], aspect, c, sz, tilt, 12.0, with_alpha(Color32::WHITE, a * (1.0 - e)));
+            image_card(
+                &painter,
+                textures[st.prev % textures.len()],
+                aspect,
+                c,
+                sz,
+                tilt,
+                12.0,
+                with_alpha(Color32::WHITE, a * (1.0 - e)),
+            );
             // incoming image slides up into the window
-            image_card(&painter, textures[st.row % textures.len()], aspect, c + vec2(0.0, (1.0 - e) * 14.0), sz, tilt, 12.0, with_alpha(Color32::WHITE, a * e));
+            image_card(
+                &painter,
+                textures[st.row % textures.len()],
+                aspect,
+                c + vec2(0.0, (1.0 - e) * 14.0),
+                sz,
+                tilt,
+                12.0,
+                with_alpha(Color32::WHITE, a * e),
+            );
         }
         let _ = h01;
         response

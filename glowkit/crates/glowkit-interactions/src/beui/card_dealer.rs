@@ -147,7 +147,15 @@ impl egui::Widget for CardDealer {
         let st = glowkit_core::with_state(
             ui,
             id,
-            || DealerState { cards: Vec::new(), queue: if auto { 5 } else { 0 }, next_deal: 0.0, seed: 11, last_auto: now, auto_step: 0, hop: -10.0 },
+            || DealerState {
+                cards: Vec::new(),
+                queue: if auto { 5 } else { 0 },
+                next_deal: 0.0,
+                seed: 11,
+                last_auto: now,
+                auto_step: 0,
+                hop: -10.0,
+            },
             |s| {
                 if auto && now - s.last_auto > 1.5 {
                     s.last_auto = now;
@@ -242,7 +250,8 @@ impl egui::Widget for CardDealer {
                     c.flip.step(dt);
                     busy |= !(c.x.is_settled() && c.y.is_settled() && c.rot.is_settled());
                 }
-                s.cards.retain(|c| !(c.leaving && (c.x.value - deck.x).abs() < 2.0 && (c.y.value - deck.y).abs() < 2.0));
+                s.cards
+                    .retain(|c| !(c.leaving && (c.x.value - deck.x).abs() < 2.0 && (c.y.value - deck.y).abs() < 2.0));
                 (s.cards.clone(), busy)
             },
         );
@@ -275,7 +284,13 @@ impl egui::Widget for CardDealer {
             } else {
                 (if hov { hover_fill(&t) } else { well(&t) }, t.foreground)
             };
-            painter.rect(r, cr(16.0), fill, if *primary { Stroke::NONE } else { hairline(&t) }, egui::StrokeKind::Inside);
+            painter.rect(
+                r,
+                cr(16.0),
+                fill,
+                if *primary { Stroke::NONE } else { hairline(&t) },
+                egui::StrokeKind::Inside,
+            );
             painter.text(r.center(), Align2::CENTER_CENTER, *label, FontId::proportional(13.0), fg);
         }
         resp

@@ -36,7 +36,13 @@ pub(crate) fn poster_ink(ink: &mut Ink, k: usize, size: Vec2) {
         0 => {
             for i in 0..5 {
                 let c = lerp_c(Color32::WHITE, hex("#8A8A8A"), i as f32 / 4.0);
-                ink.text(pos2(w * 0.5, h * 0.14 + i as f32 * h * 0.17), Align2::CENTER_TOP, "CREASE", FontId::proportional(38.0 * s), c);
+                ink.text(
+                    pos2(w * 0.5, h * 0.14 + i as f32 * h * 0.17),
+                    Align2::CENTER_TOP,
+                    "CREASE",
+                    FontId::proportional(38.0 * s),
+                    c,
+                );
             }
         }
         1 => {
@@ -44,7 +50,13 @@ pub(crate) fn poster_ink(ink: &mut Ink, k: usize, size: Vec2) {
             ink.poly(vec![p(0.16, 0.34), p(0.84, 0.22), p(0.47, 0.44)], Color32::WHITE);
             ink.poly(vec![p(0.47, 0.44), p(0.84, 0.22), p(0.53, 0.6)], hex("#F3D2D2"));
             ink.text(pos2(w * 0.1, h * 0.86), Align2::LEFT_TOP, "Take off from", small.clone(), Color32::WHITE);
-            ink.text(pos2(w * 0.1, h * 0.86 + 9.0 * s), Align2::LEFT_TOP, "any flat surface.", small.clone(), Color32::WHITE);
+            ink.text(
+                pos2(w * 0.1, h * 0.86 + 9.0 * s),
+                Align2::LEFT_TOP,
+                "any flat surface.",
+                small.clone(),
+                Color32::WHITE,
+            );
             ink.text(pos2(w * 0.9, h * 0.05), Align2::RIGHT_TOP, "/ 07", small, Color32::WHITE);
         }
         2 => {
@@ -54,9 +66,19 @@ pub(crate) fn poster_ink(ink: &mut Ink, k: usize, size: Vec2) {
             for i in 0..6 {
                 let y = c.y + r * 0.15 + i as f32 * r * 0.15;
                 let hh = 1.0 + i as f32 * 0.9;
-                ink.rect(egui::Rect::from_min_size(pos2(c.x - r - 2.0, y), vec2(2.0 * r + 4.0, hh * s)), 0.0, hex("#F25A24"));
+                ink.rect(
+                    egui::Rect::from_min_size(pos2(c.x - r - 2.0, y), vec2(2.0 * r + 4.0, hh * s)),
+                    0.0,
+                    hex("#F25A24"),
+                );
             }
-            ink.text(pos2(w * 0.1, h * 0.84), Align2::LEFT_TOP, "Soft Hours", FontId::proportional(22.0 * s), hex("#2B1306"));
+            ink.text(
+                pos2(w * 0.1, h * 0.84),
+                Align2::LEFT_TOP,
+                "Soft Hours",
+                FontId::proportional(22.0 * s),
+                hex("#2B1306"),
+            );
             ink.text(pos2(w * 0.9, h * 0.05), Align2::RIGHT_TOP, "06:12 - 07:40", small, hex("#2B1306"));
         }
         3 => {
@@ -65,13 +87,20 @@ pub(crate) fn poster_ink(ink: &mut Ink, k: usize, size: Vec2) {
             ink.ring(c, r, 1.6 * s, hex("#222222"));
             ink.line(vec![c + vec2(-r * 0.32, -r * 0.2), c + vec2(-r * 0.32, -r * 0.05)], 2.0 * s, hex("#222222"));
             ink.line(vec![c + vec2(r * 0.32, -r * 0.2), c + vec2(r * 0.32, -r * 0.05)], 2.0 * s, hex("#222222"));
-            let smile: Vec<Pos2> =
-                (0..=16).map(|i| {
+            let smile: Vec<Pos2> = (0..=16)
+                .map(|i| {
                     let a = 0.5 + i as f32 / 16.0 * 2.1;
                     c + vec2(a.cos() * r * 0.55, a.sin() * r * 0.5 + r * 0.02)
-                }).collect();
+                })
+                .collect();
             ink.line(smile, 1.8 * s, hex("#222222"));
-            ink.text(pos2(w * 0.5, h * 0.8), Align2::CENTER_TOP, "keep it light", FontId::proportional(17.0 * s), hex("#222222"));
+            ink.text(
+                pos2(w * 0.5, h * 0.8),
+                Align2::CENTER_TOP,
+                "keep it light",
+                FontId::proportional(17.0 * s),
+                hex("#222222"),
+            );
         }
         4 => {
             let g = ink.galley("FOLD", FontId::proportional(76.0 * s), hex("#111111"));
@@ -96,15 +125,32 @@ pub(crate) fn poster_ink(ink: &mut Ink, k: usize, size: Vec2) {
         6 => {
             for i in 0..7 {
                 let x = if i % 2 == 0 { w * 0.08 } else { w * 0.2 };
-                ink.text(pos2(x, h * 0.1 + i as f32 * h * 0.115), Align2::LEFT_TOP, "300 gsm", FontId::proportional(26.0 * s), hex("#D8CCFF"));
+                ink.text(
+                    pos2(x, h * 0.1 + i as f32 * h * 0.115),
+                    Align2::LEFT_TOP,
+                    "300 gsm",
+                    FontId::proportional(26.0 * s),
+                    hex("#D8CCFF"),
+                );
             }
         }
         _ => {
             let c = pos2(w * 0.5, h * 0.44);
             for i in 0..7 {
-                ink.ring(c, w * (0.05 + i as f32 * 0.055), 2.0 * s, lerp_c(hex("#BFF5D6"), hex("#3FB58A"), i as f32 / 6.0));
+                ink.ring(
+                    c,
+                    w * (0.05 + i as f32 * 0.055),
+                    2.0 * s,
+                    lerp_c(hex("#BFF5D6"), hex("#3FB58A"), i as f32 / 6.0),
+                );
             }
-            ink.text(pos2(w * 0.1, h * 0.84), Align2::LEFT_TOP, "Rings", FontId::proportional(24.0 * s), hex("#E9FFF4"));
+            ink.text(
+                pos2(w * 0.1, h * 0.84),
+                Align2::LEFT_TOP,
+                "Rings",
+                FontId::proportional(24.0 * s),
+                hex("#E9FFF4"),
+            );
             ink.text(pos2(w * 0.9, h * 0.05), Align2::RIGHT_TOP, "02 / 08", small, hex("#E9FFF4"));
         }
     }

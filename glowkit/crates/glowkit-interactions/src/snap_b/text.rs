@@ -111,13 +111,8 @@ impl Widget for MoltenText {
         glowkit_core::animate(ui);
         let time = glowkit_core::time(ui) * self.head.speed;
         let painter = ui.painter_at(rect.expand(40.0));
-        let pal = self.palette.unwrap_or([
-            hex("#1E0400"),
-            hex("#7A1000"),
-            hex("#D93A00"),
-            hex("#FF8A1E"),
-            hex("#FFE7A8"),
-        ]);
+        let pal =
+            self.palette.unwrap_or([hex("#1E0400"), hex("#7A1000"), hex("#D93A00"), hex("#FF8A1E"), hex("#FFE7A8")]);
         let origin = rect.center() - mask.size / 2.0;
         let glow_a = if t.dark { 0.38 } else { 0.14 };
         mask_glow(&painter, &mask, rect.center(), font.size * 0.12, with_alpha(pal[3], glow_a));
@@ -319,9 +314,10 @@ impl Widget for GrainText {
         glowkit_core::animate(ui);
         let time = glowkit_core::time(ui) * self.head.speed;
         let painter = ui.painter_at(rect.expand(30.0));
-        let stops = self.colors.clone().unwrap_or_else(|| {
-            vec![hex("#FF6B2C"), hex("#E2566E"), hex("#9B5A8C"), hex("#5B4BA0"), hex("#FF8A3D")]
-        });
+        let stops = self
+            .colors
+            .clone()
+            .unwrap_or_else(|| vec![hex("#FF6B2C"), hex("#E2566E"), hex("#9B5A8C"), hex("#5B4BA0"), hex("#FF8A3D")]);
         let origin = rect.center() - mask.size / 2.0;
         let sz = mask.size;
         let k = 1.6 / font.size;

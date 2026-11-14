@@ -102,12 +102,19 @@ fn rolling_number(painter: &egui::Painter, right: Pos2, value: f32, font: FontId
     let target = value.round().max(0.0) as u32;
     let digits = format!("{target}").len().max(format!("{}", value.ceil() as u32).len());
     let dw = painter.layout_no_wrap("0".into(), font.clone(), color).size();
-    let p = painter.with_clip_rect(clip.intersect(Rect::from_center_size(right - vec2(dw.x * digits as f32 * 0.5, 0.0), vec2(dw.x * digits as f32 + 4.0, dw.y))));
+    let p = painter.with_clip_rect(clip.intersect(Rect::from_center_size(
+        right - vec2(dw.x * digits as f32 * 0.5, 0.0),
+        vec2(dw.x * digits as f32 + 4.0, dw.y),
+    )));
     for d in 0..digits {
         let place = 10f32.powi(d as i32);
         let v = value / place;
         let whole = v.floor();
-        let roll = if d == 0 { sstep(0.0, 1.0, value.fract()) } else { (value.rem_euclid(place) - (place - 1.0)).clamp(0.0, 1.0) };
+        let roll = if d == 0 {
+            sstep(0.0, 1.0, value.fract())
+        } else {
+            (value.rem_euclid(place) - (place - 1.0)).clamp(0.0, 1.0)
+        };
         let a = (whole as u32) % 10;
         let b = (a + 1) % 10;
         let x = right.x - (d as f32 + 0.5) * dw.x;
@@ -139,7 +146,8 @@ impl Widget for PourFilter<'_> {
             .iter()
             .map(|s| ui.painter().layout_no_wrap(s.clone(), font.clone(), Color32::WHITE).size().x + pad * 2.0)
             .collect();
-        let count_w = 50.0 + ui.painter().layout_no_wrap(self.noun.clone(), font.clone(), Color32::WHITE).size().x + pad;
+        let count_w =
+            50.0 + ui.painter().layout_no_wrap(self.noun.clone(), font.clone(), Color32::WHITE).size().x + pad;
         let total_w = count_w + widths.iter().sum::<f32>() + gap * n as f32;
         let x0 = rect.center().x - total_w * 0.5;
         let cy = rect.center().y;
@@ -171,7 +179,8 @@ impl Widget for PourFilter<'_> {
         // clicks
         let mut toggled = None;
         for i in 0..n {
-            let x = st0.x.get(i).map_or(layout[i], |s| if s.value == 0.0 && s.target == 0.0 { layout[i] } else { s.value });
+            let x =
+                st0.x.get(i).map_or(layout[i], |s| if s.value == 0.0 && s.target == 0.0 { layout[i] } else { s.value });
             let r = ui.interact(chip_rect(i, x), id.with(("chip", i)), Sense::click());
             if r.hovered() {
                 ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -227,43 +236,48 @@ impl Widget for PourFilter<'_> {
         }
         let visc = self.viscosity;
         let target_count = count_for(self.total, &sel);
-        let st = glowkit_core::with_state(ui, id, || st0.clone(), |s| {
-            s.order = order.clone();
-            s.selected = sel.clone();
-            s.x.resize(n, Spring::new(0.0));
-            s.fill.resize(n, 0.0);
-            for i in 0..n {
-                if s.x[i].value == 0.0 && s.x[i].target == 0.0 {
-                    s.x[i] = Spring::new(layout[i]).with(260.0, 22.0);
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0.clone(),
+            |s| {
+                s.order = order.clone();
+                s.selected = sel.clone();
+                s.x.resize(n, Spring::new(0.0));
+                s.fill.resize(n, 0.0);
+                for i in 0..n {
+                    if s.x[i].value == 0.0 && s.x[i].target == 0.0 {
+                        s.x[i] = Spring::new(layout[i]).with(260.0, 22.0);
+                    }
+                    s.x[i].target = layout[i];
+                    s.x[i].step(dt);
+                    // ink floods the chip once it has nearly arrived; drains straight away
+                    let near = (s.x[i].value - layout[i]).abs() < widths[i] * 0.6;
+                    let goal = if sel[i] && near { 1.0 } else { 0.0 };
+                    let rate = if goal > s.fill[i] { 3.2 / visc } else { 4.5 };
+                    s.fill[i] += (goal - s.fill[i]).clamp(-rate * dt, rate * dt);
                 }
-                s.x[i].target = layout[i];
-                s.x[i].step(dt);
-                // ink floods the chip once it has nearly arrived; drains straight away
-                let near = (s.x[i].value - layout[i]).abs() < widths[i] * 0.6;
-                let goal = if sel[i] && near { 1.0 } else { 0.0 };
-                let rate = if goal > s.fill[i] { 3.2 / visc } else { 4.5 };
-                s.fill[i] += (goal - s.fill[i]).clamp(-rate * dt, rate * dt);
-            }
-            if s.count.value == 0.0 {
-                s.count = Spring::new(target_count).with(60.0, 16.0);
-            }
-            s.count.target = target_count;
-            s.count.step(dt);
-            if toggled.is_some() && s.ghost < 0.0 {
-                s.ghost = -1.0;
-            }
-            if autoplay || s.ghost >= 0.0 {
-                s.ghost += wdt;
-                if s.ghost < 0.0 {
-                    s.ghost = 0.0;
+                if s.count.value == 0.0 {
+                    s.count = Spring::new(target_count).with(60.0, 16.0);
                 }
-                if s.ghost > 2.3 {
+                s.count.target = target_count;
+                s.count.step(dt);
+                if toggled.is_some() && s.ghost < 0.0 {
                     s.ghost = -1.0;
-                    s.script += 1;
                 }
-            }
-            s.clone()
-        });
+                if autoplay || s.ghost >= 0.0 {
+                    s.ghost += wdt;
+                    if s.ghost < 0.0 {
+                        s.ghost = 0.0;
+                    }
+                    if s.ghost > 2.3 {
+                        s.ghost = -1.0;
+                        s.script += 1;
+                    }
+                }
+                s.clone()
+            },
+        );
         glowkit_core::animate(ui);
         if !ui.is_rect_visible(rect) {
             return response;
@@ -292,7 +306,9 @@ impl Widget for PourFilter<'_> {
         };
         let area = Rect::from_min_max(pos2(x0 - 12.0, cy - chip_h), pos2(rect.max.x, cy + chip_h));
         let ink_hi = glowkit_core::color::shade(ink, 0.08);
-        let segs = iso_fill(&painter, area, 2.5, field, |p| super::common::lerp_c(ink_hi, ink, sstep(cy - chip_h * 0.5, cy + 2.0, p.y)));
+        let segs = iso_fill(&painter, area, 2.5, field, |p| {
+            super::common::lerp_c(ink_hi, ink, sstep(cy - chip_h * 0.5, cy + 2.0, p.y))
+        });
         for (a, b) in segs {
             painter.line_segment([a, b], Stroke::new(1.0, ink));
         }
@@ -302,7 +318,12 @@ impl Widget for PourFilter<'_> {
             let r = chip_rect(i, st.x[i].value);
             let f = st.fill[i];
             if f < 0.98 {
-                painter.rect_stroke(r.shrink(0.5), chip_h * 0.5, Stroke::new(1.1, with_alpha(ink, 1.0 - f)), egui::StrokeKind::Inside);
+                painter.rect_stroke(
+                    r.shrink(0.5),
+                    chip_h * 0.5,
+                    Stroke::new(1.1, with_alpha(ink, 1.0 - f)),
+                    egui::StrokeKind::Inside,
+                );
             }
             let col = glowkit_core::color::mix(ink, on_ink, sstep(0.35, 0.8, f));
             painter.text(r.center(), Align2::CENTER_CENTER, &self.tags[i], font.clone(), col);
@@ -310,9 +331,18 @@ impl Widget for PourFilter<'_> {
         // count + divider
         let num_right = pos2(count_rect.min.x + 14.0 + 18.0, cy);
         rolling_number(&painter, num_right, st.count.value, FontId::proportional(14.0), on_ink, area);
-        painter.text(num_right + vec2(6.0, 0.0), Align2::LEFT_CENTER, &self.noun, font.clone(), with_alpha(on_ink, 0.75));
+        painter.text(
+            num_right + vec2(6.0, 0.0),
+            Align2::LEFT_CENTER,
+            &self.noun,
+            font.clone(),
+            with_alpha(on_ink, 0.75),
+        );
         if st.fill.iter().any(|f| *f > 0.5) {
-            painter.line_segment([pos2(count_rect.max.x - 1.0, cy - 8.0), pos2(count_rect.max.x - 1.0, cy + 8.0)], Stroke::new(1.0, with_alpha(on_ink, 0.3)));
+            painter.line_segment(
+                [pos2(count_rect.max.x - 1.0, cy - 8.0), pos2(count_rect.max.x - 1.0, cy + 8.0)],
+                Stroke::new(1.0, with_alpha(on_ink, 0.3)),
+            );
         }
         if let Some((tip, pressed, a)) = ghost_draw {
             ghost_cursor(&painter, t.dark, tip, a, pressed);

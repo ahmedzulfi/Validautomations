@@ -29,7 +29,8 @@ pub(crate) fn sample_counts(seed: u64) -> Vec<u32> {
     for d in 0..365 {
         let wd = d % 7;
         streak = (streak * 0.82 + rng.range(-0.6, 1.0)).clamp(-1.0, 2.2);
-        let base = if wd >= 5 { 0.6 } else { 1.6 } + streak + glowkit_core::noise::noise2(d as f32 * 0.07, seed as f32) * 1.6;
+        let base =
+            if wd >= 5 { 0.6 } else { 1.6 } + streak + glowkit_core::noise::noise2(d as f32 * 0.07, seed as f32) * 1.6;
         let v = (base * 2.2 + rng.range(-1.0, 1.4)).max(0.0);
         out.push(if rng.bool(0.16) { 0 } else { v.round() as u32 });
     }
@@ -174,7 +175,10 @@ pub(crate) fn heat_grid(
     for col in 0..53 {
         for row in 0..7 {
             let s = col * 7 + row;
-            let r = Rect::from_min_size(pos2(ox + col as f32 * (cell + gap), area.min.y + row as f32 * (cell + gap)), vec2(cell, cell));
+            let r = Rect::from_min_size(
+                pos2(ox + col as f32 * (cell + gap), area.min.y + row as f32 * (cell + gap)),
+                vec2(cell, cell),
+            );
             let day = s as isize - first_wd as isize;
             if day < 0 || day as usize >= counts.len() {
                 continue;
@@ -202,7 +206,14 @@ pub(crate) fn heat_grid(
     for (m, start) in MONTH_START.iter().enumerate() {
         let col = (start + first_wd) / 7;
         let x = ox + col as f32 * (cell + gap) + if m == 0 { 0.0 } else { cell * 0.2 };
-        text(painter, pos2(x.max(ox), area.min.y + 7.0 * (cell + gap) + 9.0), Align2::LEFT_CENTER, MONTHS[m], f(12.0), faint(&t));
+        text(
+            painter,
+            pos2(x.max(ox), area.min.y + 7.0 * (cell + gap) + 9.0),
+            Align2::LEFT_CENTER,
+            MONTHS[m],
+            f(12.0),
+            faint(&t),
+        );
     }
     // tooltip
     if let Some(d) = hovered {
@@ -341,7 +352,10 @@ pub(crate) fn contributions_body(
         let tw = (rect.width() - 16.0 - gap * (n as f32 - 1.0)) / n as f32;
         for (i, s) in stats.iter().enumerate() {
             let k = ease_out(entry_k(ui, el, 0.06 * i as f32, 0.45));
-            let r = Rect::from_min_size(pos2(rect.min.x + 8.0 + i as f32 * (tw + gap), y + (1.0 - k) * 8.0), vec2(tw, 58.0));
+            let r = Rect::from_min_size(
+                pos2(rect.min.x + 8.0 + i as f32 * (tw + gap), y + (1.0 - k) * 8.0),
+                vec2(tw, 58.0),
+            );
             let mut tp = painter.clone();
             tp.multiply_opacity(k.max(0.001));
             if inverted {
@@ -380,7 +394,8 @@ pub(crate) fn contributions_body(
         // a ghost pointer drifting along the grid
         let ph = (idle * 0.11).fract();
         let row = 1.5 + 2.5 * (1.0 + (idle * 0.9).sin());
-        hover = Some(pos2(area.min.x + area.width() * (0.08 + 0.84 * ph), area.min.y + row * (area.height() - 22.0) / 7.0));
+        hover =
+            Some(pos2(area.min.x + area.width() * (0.08 + 0.84 * ph), area.min.y + row * (area.height() - 22.0) / 7.0));
     }
     heat_grid(ui, painter, id, area, counts, first_wd, mode, accent, el, hover);
 }

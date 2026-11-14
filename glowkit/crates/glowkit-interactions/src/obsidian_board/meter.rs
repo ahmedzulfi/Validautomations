@@ -123,9 +123,19 @@ impl egui::Widget for BoardMeter {
         let reading = if self.percent {
             format!("{:.0}%", frac * 100.0)
         } else if self.integer {
-            format!("{} of {}{}", shown_v.round(), self.max.round(), if self.unit.is_empty() { String::new() } else { format!(" {}", self.unit) })
+            format!(
+                "{} of {}{}",
+                shown_v.round(),
+                self.max.round(),
+                if self.unit.is_empty() { String::new() } else { format!(" {}", self.unit) }
+            )
         } else {
-            format!("{:.1} of {}{}", shown_v, trim_num(self.max), if self.unit.is_empty() { String::new() } else { format!(" {}", self.unit) })
+            format!(
+                "{:.1} of {}{}",
+                shown_v,
+                trim_num(self.max),
+                if self.unit.is_empty() { String::new() } else { format!(" {}", self.unit) }
+            )
         };
         text(&painter, pos2(rect.max.x, rect.min.y + 11.0), Align2::RIGHT_CENTER, reading, f(13.5), dim(&t));
         let bar = Rect::from_min_size(pos2(rect.min.x, rect.min.y + 26.0), vec2(rect.width(), self.thickness));
@@ -135,7 +145,12 @@ impl egui::Widget for BoardMeter {
             let fr = Rect::from_min_size(bar.min, vec2((bar.width() * frac).max(self.thickness), self.thickness));
             if lvl > 1.4 {
                 let breathe = 0.5 + 0.5 * (glowkit_core::time(ui) * 2.4).sin();
-                paint::glow(&painter, pos2(fr.max.x - r, fr.center().y), 14.0 + 4.0 * breathe, fade(col, 0.22 * (lvl - 1.4) / 0.6 * (0.6 + 0.4 * breathe)));
+                paint::glow(
+                    &painter,
+                    pos2(fr.max.x - r, fr.center().y),
+                    14.0 + 4.0 * breathe,
+                    fade(col, 0.22 * (lvl - 1.4) / 0.6 * (0.6 + 0.4 * breathe)),
+                );
                 glowkit_core::animate(ui);
             }
             painter.rect_filled(fr, cr(r), col);

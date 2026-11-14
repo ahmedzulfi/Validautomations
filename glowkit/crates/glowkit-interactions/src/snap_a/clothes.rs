@@ -1,6 +1,8 @@
 use super::common::{idle_time, wall_dt};
 use egui::epaint::{Mesh, Vertex};
-use egui::{pos2, vec2, Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, TextureId, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, TextureId, Ui, Vec2, Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::{hex, Theme};
 use glowkit_effects::PaintedScene;
@@ -141,7 +143,16 @@ impl Widget for ClothesLine {
         let wdt = wall_dt(ui);
         let idle = idle_time(ui, id, rect);
         let pics: Vec<(TextureId, String, String)> = if self.pictures.is_empty() {
-            let subs = ["Late June", "Market haul", "Shot on film", "Saturday", "Day off", "After rain", "Early swim", "Picnic"];
+            let subs = [
+                "Late June",
+                "Market haul",
+                "Shot on film",
+                "Saturday",
+                "Day off",
+                "After rain",
+                "Early swim",
+                "Picnic",
+            ];
             (0..PaintedScene::COUNT)
                 .map(|i| (PaintedScene::texture(ui.ctx(), i), PaintedScene::name(i).to_string(), subs[i].to_string()))
                 .collect()
@@ -246,7 +257,10 @@ impl Widget for ClothesLine {
         // twist
         for (i, w) in rope.windows(2).enumerate() {
             if i % 2 == 0 {
-                painter.line_segment([w[0] + vec2(0.0, -0.8), w[1] + vec2(0.0, 0.8)], Stroke::new(0.8, with_alpha(Color32::BLACK, 0.18)));
+                painter.line_segment(
+                    [w[0] + vec2(0.0, -0.8), w[1] + vec2(0.0, 0.8)],
+                    Stroke::new(0.8, with_alpha(Color32::BLACK, 0.18)),
+                );
             }
         }
         let paper_edge = if t.dark { hex("#2A2A2E") } else { Color32::WHITE };
@@ -270,9 +284,19 @@ impl Widget for ClothesLine {
             // shadow
             let sh_off = vec2(6.0, 10.0) + vec2(4.0, 6.0) * lift;
             let quad = [pos_of(0.0, 0.0), pos_of(1.0, 0.0), pos_of(1.0, 1.0), pos_of(0.0, 1.0)].map(|p| p + sh_off);
-            super::common::soft_quad(&painter, quad, 14.0 + 6.0 * lift, Color32::from_black_alpha(if t.dark { 90 } else { 40 }));
+            super::common::soft_quad(
+                &painter,
+                quad,
+                14.0 + 6.0 * lift,
+                Color32::from_black_alpha(if t.dark { 90 } else { 40 }),
+            );
             // paper border then the picture
-            let border = card_mesh(TextureId::default(), pos_of, |_, _| paper_edge, Rect::from_min_max(egui::epaint::WHITE_UV, egui::epaint::WHITE_UV));
+            let border = card_mesh(
+                TextureId::default(),
+                pos_of,
+                |_, _| paper_edge,
+                Rect::from_min_max(egui::epaint::WHITE_UV, egui::epaint::WHITE_UV),
+            );
             painter.add(Shape::mesh(border));
             let inset = 5.0 / w;
             let inset_y = 5.0 / h;
@@ -285,7 +309,12 @@ impl Widget for ClothesLine {
                 let c = (255.0 * k) as u8;
                 Color32::from_rgb(c, c, c)
             };
-            let pic = card_mesh(pics[i].0, |u, v| pos_of(inset + u * (1.0 - 2.0 * inset), inset_y + v * (1.0 - 2.0 * inset_y)), shade_k, uv);
+            let pic = card_mesh(
+                pics[i].0,
+                |u, v| pos_of(inset + u * (1.0 - 2.0 * inset), inset_y + v * (1.0 - 2.0 * inset_y)),
+                shade_k,
+                uv,
+            );
             painter.add(Shape::mesh(pic));
             if lift > 0.05 {
                 let wuv = Rect::from_min_max(egui::epaint::WHITE_UV, egui::epaint::WHITE_UV);
@@ -297,8 +326,20 @@ impl Widget for ClothesLine {
                 );
                 painter.add(Shape::mesh(fade));
                 let a = pos_of(0.5, 0.86);
-                painter.text(a, Align2::CENTER_CENTER, &pics[i].1, FontId::proportional(13.0), with_alpha(Color32::WHITE, lift));
-                painter.text(a + vec2(0.0, 14.0), Align2::CENTER_CENTER, &pics[i].2, FontId::proportional(9.5), with_alpha(Color32::WHITE, 0.8 * lift));
+                painter.text(
+                    a,
+                    Align2::CENTER_CENTER,
+                    &pics[i].1,
+                    FontId::proportional(13.0),
+                    with_alpha(Color32::WHITE, lift),
+                );
+                painter.text(
+                    a + vec2(0.0, 14.0),
+                    Align2::CENTER_CENTER,
+                    &pics[i].2,
+                    FontId::proportional(9.5),
+                    with_alpha(Color32::WHITE, 0.8 * lift),
+                );
             }
             // clip on top of the rope
             match self.clip {
@@ -307,21 +348,47 @@ impl Widget for ClothesLine {
                     let pts = |dx: f32| {
                         let a = peg + vec2(dx - 3.0, -12.0);
                         let r = Rect::from_min_size(a, vec2(6.0, 26.0));
-                        [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()].map(|p| peg + (p - peg).rot(th * 0.6)).to_vec()
+                        [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()]
+                            .map(|p| peg + (p - peg).rot(th * 0.6))
+                            .to_vec()
                     };
-                    painter.add(Shape::convex_polygon(pts(-2.0), glowkit_core::color::shade(wood, -0.06), Stroke::NONE));
-                    painter.add(Shape::convex_polygon(pts(2.0), wood, Stroke::new(0.6, with_alpha(Color32::BLACK, 0.25))));
-                    painter.line_segment([peg + vec2(-4.0, 0.0), peg + vec2(4.0, 0.0)], Stroke::new(1.6, hex("#8E9198")));
+                    painter.add(Shape::convex_polygon(
+                        pts(-2.0),
+                        glowkit_core::color::shade(wood, -0.06),
+                        Stroke::NONE,
+                    ));
+                    painter.add(Shape::convex_polygon(
+                        pts(2.0),
+                        wood,
+                        Stroke::new(0.6, with_alpha(Color32::BLACK, 0.25)),
+                    ));
+                    painter
+                        .line_segment([peg + vec2(-4.0, 0.0), peg + vec2(4.0, 0.0)], Stroke::new(1.6, hex("#8E9198")));
                 }
                 LineClip::Binder => {
-                    let body = [peg + vec2(-9.0, -2.0), peg + vec2(9.0, -2.0), peg + vec2(11.0, 12.0), peg + vec2(-11.0, 12.0)];
+                    let body = [
+                        peg + vec2(-9.0, -2.0),
+                        peg + vec2(9.0, -2.0),
+                        peg + vec2(11.0, 12.0),
+                        peg + vec2(-11.0, 12.0),
+                    ];
                     painter.add(Shape::convex_polygon(body.to_vec(), hex("#1D1D20"), Stroke::NONE));
-                    painter.add(Shape::line(vec![peg + vec2(-6.0, 0.0), peg + vec2(-4.0, -14.0), peg + vec2(4.0, -14.0), peg + vec2(6.0, 0.0)], Stroke::new(1.4, hex("#B9BCC2"))));
+                    painter.add(Shape::line(
+                        vec![
+                            peg + vec2(-6.0, 0.0),
+                            peg + vec2(-4.0, -14.0),
+                            peg + vec2(4.0, -14.0),
+                            peg + vec2(6.0, 0.0),
+                        ],
+                        Stroke::new(1.4, hex("#B9BCC2")),
+                    ));
                 }
                 LineClip::Tape => {
                     let r = Rect::from_center_size(Pos2::ZERO, vec2(44.0, 16.0));
                     let rot = -0.12 + 0.24 * glowkit_core::rng::hash01(i as u64 + 2);
-                    let pts = [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()].map(|p| peg + vec2(0.0, 4.0) + p.to_vec2().rot(rot + th)).to_vec();
+                    let pts = [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()]
+                        .map(|p| peg + vec2(0.0, 4.0) + p.to_vec2().rot(rot + th))
+                        .to_vec();
                     painter.add(Shape::convex_polygon(pts, with_alpha(hex("#EFE4C8"), 0.82), Stroke::NONE));
                 }
             }

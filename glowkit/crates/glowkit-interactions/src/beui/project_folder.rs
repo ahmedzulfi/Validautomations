@@ -128,11 +128,20 @@ impl egui::Widget for ProjectFolder {
             return resp;
         }
         let painter = ui.painter().clone();
-        let body = Rect::from_min_size(pos2(rect.center().x - w / 2.0, rect.max.y - body_h - 10.0 + op * 14.0), vec2(w, body_h));
+        let body = Rect::from_min_size(
+            pos2(rect.center().x - w / 2.0, rect.max.y - body_h - 10.0 + op * 14.0),
+            vec2(w, body_h),
+        );
         // the back of the folder (a tab and a panel)
         let back_col = if t.dark { shade(t.muted, 0.1) } else { mix(t.card, t.muted, 0.6) };
         let back = Rect::from_min_max(pos2(body.min.x, body.min.y - page_size.y * 0.55), body.max);
-        painter.rect(back, cr(18.0), back_col, Stroke::new(1.0, if t.dark { with_alpha(Color32::WHITE, 0.07) } else { t.border }), egui::StrokeKind::Inside);
+        painter.rect(
+            back,
+            cr(18.0),
+            back_col,
+            Stroke::new(1.0, if t.dark { with_alpha(Color32::WHITE, 0.07) } else { t.border }),
+            egui::StrokeKind::Inside,
+        );
         // pages
         let n = self.files.clamp(1, 7);
         let mid = (n as f32 - 1.0) / 2.0;
@@ -146,7 +155,13 @@ impl egui::Widget for ProjectFolder {
         for i in order {
             let d = i as f32 - mid;
             // each page rides its own spring, so the fan ripples
-            let hv = spring(ui, id.with(("pj", i)), if hover { 1.0 } else { 0.0 }, 200.0 + d.abs() * 70.0, 13.0 + d.abs() * 2.0);
+            let hv = spring(
+                ui,
+                id.with(("pj", i)),
+                if hover { 1.0 } else { 0.0 },
+                200.0 + d.abs() * 70.0,
+                13.0 + d.abs() * 2.0,
+            );
             let spread = w * 0.17 * (1.0 + 0.25 * hv * self.fan);
             let rest_x = rect.center().x + d * spread;
             let lift = (1.0 - d.abs() / (mid + 1.0)) * (8.0 + 16.0 * hv * self.fan);
@@ -165,13 +180,40 @@ impl egui::Widget for ProjectFolder {
         let front = Rect::from_min_max(pos2(body.min.x, body.min.y + body_h * 0.18 - hv * 3.0), body.max);
         paint::soft_shadow(&painter, front, 18.0, 14.0, vec2(0.0, 2.0), shadow_color(&t, 0.3));
         let glass = if t.dark { with_alpha(shade(t.muted, 0.08), 0.94) } else { with_alpha(Color32::WHITE, 0.9) };
-        painter.rect(front, cr(18.0), glass, Stroke::new(1.0, if t.dark { with_alpha(Color32::WHITE, 0.1) } else { t.border }), egui::StrokeKind::Inside);
+        painter.rect(
+            front,
+            cr(18.0),
+            glass,
+            Stroke::new(1.0, if t.dark { with_alpha(Color32::WHITE, 0.1) } else { t.border }),
+            egui::StrokeKind::Inside,
+        );
         let pad = 18.0;
-        painter.text(pos2(front.min.x + pad, front.min.y + 30.0), Align2::LEFT_CENTER, &self.title, FontId::proportional(17.0), t.foreground);
+        painter.text(
+            pos2(front.min.x + pad, front.min.y + 30.0),
+            Align2::LEFT_CENTER,
+            &self.title,
+            FontId::proportional(17.0),
+            t.foreground,
+        );
         let ly = front.max.y - 42.0;
-        painter.line_segment([pos2(front.min.x, ly), pos2(front.max.x, ly)], Stroke::new(1.0, if t.dark { with_alpha(Color32::WHITE, 0.07) } else { t.border }));
-        painter.text(pos2(front.min.x + pad, front.max.y - 21.0), Align2::LEFT_CENTER, format!("{} files", self.files), FontId::proportional(12.5), t.foreground);
-        painter.text(pos2(front.max.x - pad, front.max.y - 21.0), Align2::RIGHT_CENTER, &self.updated, FontId::proportional(12.5), t.muted_foreground);
+        painter.line_segment(
+            [pos2(front.min.x, ly), pos2(front.max.x, ly)],
+            Stroke::new(1.0, if t.dark { with_alpha(Color32::WHITE, 0.07) } else { t.border }),
+        );
+        painter.text(
+            pos2(front.min.x + pad, front.max.y - 21.0),
+            Align2::LEFT_CENTER,
+            format!("{} files", self.files),
+            FontId::proportional(12.5),
+            t.foreground,
+        );
+        painter.text(
+            pos2(front.max.x - pad, front.max.y - 21.0),
+            Align2::RIGHT_CENTER,
+            &self.updated,
+            FontId::proportional(12.5),
+            t.muted_foreground,
+        );
         resp
     }
 }

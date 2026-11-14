@@ -1,5 +1,5 @@
 use super::common::{
-    cached_ink, ghost_cursor, idle_time, lerp_c, sstep, wall_dt, Cam, Ink, Sheet, Soup, V3, PAPER_BACK,
+    cached_ink, ghost_cursor, idle_time, lerp_c, sstep, wall_dt, Cam, Ink, Sheet, Soup, PAPER_BACK, V3,
 };
 use super::crumple::{desk_color, paint_desk};
 use egui::{pos2, vec2, Align2, Color32, FontId, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Vec2, Widget};
@@ -134,10 +134,22 @@ impl TearTicket {
 fn print_stub(ink: &mut Ink, size: Vec2, accent: Color32, berth: &str) {
     let s = size.x / 110.0;
     ink.rect(Rect::from_min_size(Pos2::ZERO, vec2(size.x, 24.0 * s)), 0.0, accent);
-    ink.text(pos2(size.x * 0.5, 12.0 * s), Align2::CENTER_CENTER, "ADMIT ONE", FontId::monospace(8.0 * s), hex("#FBEFE6"));
+    ink.text(
+        pos2(size.x * 0.5, 12.0 * s),
+        Align2::CENTER_CENTER,
+        "ADMIT ONE",
+        FontId::monospace(8.0 * s),
+        hex("#FBEFE6"),
+    );
     ink.text(pos2(size.x * 0.5, 34.0 * s), Align2::CENTER_TOP, "BERTH", FontId::monospace(6.5 * s), hex("#6B6460"));
     ink.text(pos2(size.x * 0.5, 44.0 * s), Align2::CENTER_TOP, berth, FontId::proportional(30.0 * s), hex("#2A2624"));
-    ink.text(pos2(size.x * 0.5, 80.0 * s), Align2::CENTER_TOP, "Coach 07 · Lower", FontId::proportional(6.5 * s), hex("#6B6460"));
+    ink.text(
+        pos2(size.x * 0.5, 80.0 * s),
+        Align2::CENTER_TOP,
+        "Coach 07 · Lower",
+        FontId::proportional(6.5 * s),
+        hex("#6B6460"),
+    );
     // barcode
     let mut x = 14.0 * s;
     let mut k = 7u64;
@@ -147,7 +159,13 @@ fn print_stub(ink: &mut Ink, size: Vec2, accent: Color32, berth: &str) {
         ink.rect(Rect::from_min_size(pos2(x, 100.0 * s), vec2(w, 22.0 * s)), 0.0, hex("#2A2624"));
         x += w + (1 + (k >> 50) % 3) as f32 * 0.9 * s;
     }
-    ink.text(pos2(size.x * 0.5, 126.0 * s), Align2::CENTER_TOP, "Nº 004821", FontId::monospace(5.5 * s), hex("#6B6460"));
+    ink.text(
+        pos2(size.x * 0.5, 126.0 * s),
+        Align2::CENTER_TOP,
+        "Nº 004821",
+        FontId::monospace(5.5 * s),
+        hex("#6B6460"),
+    );
 }
 
 impl Widget for TearTicket {
@@ -171,7 +189,11 @@ impl Widget for TearTicket {
         let pointer = ui.input(|i| i.pointer.interact_pos());
         let on_stub = pointer.is_some_and(|p| stub.expand(6.0).contains(p)) && st0.phase == Phase::Attached;
         if on_stub || response.dragged() && st0.grab.is_some() {
-            ui.ctx().set_cursor_icon(if response.dragged() { egui::CursorIcon::Grabbing } else { egui::CursorIcon::Grab });
+            ui.ctx().set_cursor_icon(if response.dragged() {
+                egui::CursorIcon::Grabbing
+            } else {
+                egui::CursorIcon::Grab
+            });
         }
         let started = response.drag_started() && on_stub;
         let dragging = response.dragged();
@@ -293,19 +315,68 @@ impl Widget for TearTicket {
 
         // ---- ticket body (flat paper)
         let body_r = 6.0 * k;
-        paint::soft_shadow(&painter, body.translate(vec2(0.0, 6.0)), body_r, 16.0, Vec2::ZERO, Color32::from_black_alpha(40));
+        paint::soft_shadow(
+            &painter,
+            body.translate(vec2(0.0, 6.0)),
+            body_r,
+            16.0,
+            Vec2::ZERO,
+            Color32::from_black_alpha(40),
+        );
         painter.rect_filled(body, egui::CornerRadius { nw: body_r as u8, sw: body_r as u8, ne: 0, se: 0 }, paper);
-        painter.rect_filled(Rect::from_min_size(body.min, vec2(5.0 * k, body.height())), egui::CornerRadius { nw: body_r as u8, sw: body_r as u8, ne: 0, se: 0 }, accent);
+        painter.rect_filled(
+            Rect::from_min_size(body.min, vec2(5.0 * k, body.height())),
+            egui::CornerRadius { nw: body_r as u8, sw: body_r as u8, ne: 0, se: 0 },
+            accent,
+        );
         let x0 = body.min.x + 22.0 * k;
         let ink = hex("#2A2624");
         let soft = hex("#7A726C");
-        painter.text(pos2(x0, body.min.y + 16.0 * k), Align2::LEFT_TOP, &self.operator, FontId::monospace(7.5 * k), soft);
-        painter.text(pos2(body.max.x - 16.0 * k, body.min.y + 16.0 * k), Align2::RIGHT_TOP, "Nº 004821", FontId::monospace(7.5 * k), accent);
-        let r = painter.text(pos2(x0, body.min.y + 32.0 * k), Align2::LEFT_TOP, &self.from, FontId::proportional(27.0 * k), ink);
-        let r2 = painter.text(pos2(r.max.x + 7.0 * k, r.max.y - 5.0 * k), Align2::LEFT_BOTTOM, "to", FontId::proportional(14.0 * k), accent);
-        painter.text(pos2(r2.max.x + 7.0 * k, r.min.y), Align2::LEFT_TOP, &self.to, FontId::proportional(27.0 * k), ink);
-        painter.text(pos2(x0, body.min.y + 68.0 * k), Align2::LEFT_TOP, "Departs 21:10  ·  Arrives 08:05", FontId::monospace(7.0 * k), soft);
-        for (i, (lab, val)) in [("COACH", "07"), ("BERTH", self.berth.as_str()), ("CLASS", "I"), ("DATE", "14 Nov")].iter().enumerate() {
+        painter.text(
+            pos2(x0, body.min.y + 16.0 * k),
+            Align2::LEFT_TOP,
+            &self.operator,
+            FontId::monospace(7.5 * k),
+            soft,
+        );
+        painter.text(
+            pos2(body.max.x - 16.0 * k, body.min.y + 16.0 * k),
+            Align2::RIGHT_TOP,
+            "Nº 004821",
+            FontId::monospace(7.5 * k),
+            accent,
+        );
+        let r = painter.text(
+            pos2(x0, body.min.y + 32.0 * k),
+            Align2::LEFT_TOP,
+            &self.from,
+            FontId::proportional(27.0 * k),
+            ink,
+        );
+        let r2 = painter.text(
+            pos2(r.max.x + 7.0 * k, r.max.y - 5.0 * k),
+            Align2::LEFT_BOTTOM,
+            "to",
+            FontId::proportional(14.0 * k),
+            accent,
+        );
+        painter.text(
+            pos2(r2.max.x + 7.0 * k, r.min.y),
+            Align2::LEFT_TOP,
+            &self.to,
+            FontId::proportional(27.0 * k),
+            ink,
+        );
+        painter.text(
+            pos2(x0, body.min.y + 68.0 * k),
+            Align2::LEFT_TOP,
+            "Departs 21:10  ·  Arrives 08:05",
+            FontId::monospace(7.0 * k),
+            soft,
+        );
+        for (i, (lab, val)) in
+            [("COACH", "07"), ("BERTH", self.berth.as_str()), ("CLASS", "I"), ("DATE", "14 Nov")].iter().enumerate()
+        {
             let x = x0 + i as f32 * 62.0 * k;
             painter.text(pos2(x, body.min.y + 90.0 * k), Align2::LEFT_TOP, *lab, FontId::monospace(6.0 * k), soft);
             painter.text(pos2(x, body.min.y + 100.0 * k), Align2::LEFT_TOP, *val, FontId::proportional(13.0 * k), ink);
@@ -316,7 +387,8 @@ impl Widget for TearTicket {
                 .map(|i| {
                     let u = i as f32 / 60.0;
                     let x = body.min.x + 8.0 * k + u * (body.width() - 10.0 * k);
-                    let y = body.max.y - 22.0 * k + ((u * 9.0 + w as f32 * 0.7).sin() * 5.0 + (u * 23.0 + w as f32).sin() * 1.5) * k;
+                    let y = body.max.y - 22.0 * k
+                        + ((u * 9.0 + w as f32 * 0.7).sin() * 5.0 + (u * 23.0 + w as f32).sin() * 1.5) * k;
                     pos2(x, y)
                 })
                 .collect();
@@ -335,9 +407,10 @@ impl Widget for TearTicket {
         // ---- stub (bent paper mesh)
         let stub_size = stub.size();
         let berth = self.berth.clone();
-        let ink_mesh = cached_ink(ui, id.with(("stub", berth.clone(), (k * 100.0) as i32, accent.to_array())), 6.0, |ink| {
-            print_stub(ink, stub_size, accent, &berth)
-        });
+        let ink_mesh =
+            cached_ink(ui, id.with(("stub", berth.clone(), (k * 100.0) as i32, accent.to_array())), 6.0, |ink| {
+                print_stub(ink, stub_size, accent, &berth)
+            });
         let mut soup = Soup::new();
         let mut cam = Cam::new(stub.center());
         cam.focal = 900.0;
@@ -388,7 +461,14 @@ impl Widget for TearTicket {
                     ink_bias: 400.0,
                 };
                 if lift < 0.02 && angle.abs() < 0.01 {
-                    paint::soft_shadow(&painter, stub.translate(vec2(0.0, 6.0)), body_r, 16.0, Vec2::ZERO, Color32::from_black_alpha((40.0 * alpha) as u8));
+                    paint::soft_shadow(
+                        &painter,
+                        stub.translate(vec2(0.0, 6.0)),
+                        body_r,
+                        16.0,
+                        Vec2::ZERO,
+                        Color32::from_black_alpha((40.0 * alpha) as u8),
+                    );
                 } else {
                     // a lifted corner throws a wider, softer shadow
                     let c = stub.center() + vec2(14.0, 14.0) * (lift + angle.abs());
@@ -404,7 +484,12 @@ impl Widget for TearTicket {
                     }
                 }
                 if st.phase == Phase::Attached && lift < 0.02 && angle.abs() < 0.01 {
-                    painter.rect_stroke(stub, egui::CornerRadius { ne: body_r as u8, se: body_r as u8, nw: 0, sw: 0 }, Stroke::new(0.8, with_alpha(paper, 0.9)), egui::StrokeKind::Inside);
+                    painter.rect_stroke(
+                        stub,
+                        egui::CornerRadius { ne: body_r as u8, se: body_r as u8, nw: 0, sw: 0 },
+                        Stroke::new(0.8, with_alpha(paper, 0.9)),
+                        egui::StrokeKind::Inside,
+                    );
                 }
             }
             Phase::Flying => {
@@ -426,7 +511,12 @@ impl Widget for TearTicket {
                     alpha,
                     ink_bias: 400.0,
                 };
-                super::common::contact_shadow(&painter, pos2(cam.center.x + 30.0, rect.max.y - 30.0), vec2(50.0, 8.0), 0.12 * alpha);
+                super::common::contact_shadow(
+                    &painter,
+                    pos2(cam.center.x + 30.0, rect.max.y - 30.0),
+                    vec2(50.0, 8.0),
+                    0.12 * alpha,
+                );
                 sheet.emit(&mut soup, &cam, Some(&ink_mesh));
                 soup.paint(&painter);
             }

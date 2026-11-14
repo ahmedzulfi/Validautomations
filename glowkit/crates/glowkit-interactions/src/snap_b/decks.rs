@@ -1,10 +1,13 @@
 //! Testimonial decks: a fanned quote deck and a story deck of throwable portrait cards.
 
 use super::common::{
-    cover_uv, display_font, drive_snap, galley_mapped, idle_time, lerp_c, poly_shadow, semibold_font, surface_grid,
-    v3, wall_dt, Cam,
+    cover_uv, display_font, drive_snap, galley_mapped, idle_time, lerp_c, poly_shadow, semibold_font, surface_grid, v3,
+    wall_dt, Cam,
 };
-use egui::{pos2, vec2, Align, Align2, Color32, CornerRadius, CursorIcon, FontId, Pos2, Rect, Response, Sense, Stroke, TextureId, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align, Align2, Color32, CornerRadius, CursorIcon, FontId, Pos2, Rect, Response, Sense, Stroke,
+    TextureId, Ui, Vec2, Widget,
+};
 use glowkit_core::color::{hex, with_alpha};
 use glowkit_core::{paint, Spring, Theme};
 use glowkit_effects::PaintedScene;
@@ -21,7 +24,10 @@ fn round_btn(painter: &egui::Painter, c: Pos2, r: f32, dark: bool, dir: f32, t: 
         painter.circle_stroke(c, r, Stroke::new(1.0, t.border));
     }
     let s = r * 0.32;
-    painter.line(vec![c + vec2(-s * 0.45 * dir, -s), c + vec2(s * 0.45 * dir, 0.0), c + vec2(-s * 0.45 * dir, s)], Stroke::new(1.8, fg));
+    painter.line(
+        vec![c + vec2(-s * 0.45 * dir, -s), c + vec2(s * 0.45 * dir, 0.0), c + vec2(-s * 0.45 * dir, s)],
+        Stroke::new(1.8, fg),
+    );
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -45,7 +51,12 @@ pub struct Quote {
 
 impl Quote {
     /// A five-star quote.
-    pub fn new(text: impl Into<String>, name: impl Into<String>, role: impl Into<String>, company: impl Into<String>) -> Self {
+    pub fn new(
+        text: impl Into<String>,
+        name: impl Into<String>,
+        role: impl Into<String>,
+        company: impl Into<String>,
+    ) -> Self {
         Self { text: text.into(), name: name.into(), role: role.into(), company: company.into(), stars: 5, tint: None }
     }
     /// Star rating out of five.
@@ -160,8 +171,15 @@ impl Widget for QuoteDeck<'_> {
         let painter = ui.painter_at(rect);
         // header
         let hx = rect.min.x + 28.0;
-        painter.text(pos2(hx, rect.min.y + 20.0), Align2::LEFT_TOP, &self.eyebrow, FontId::monospace(11.0), t.muted_foreground);
-        let title_g = painter.layout(self.title.clone(), display_font(ui, 30.0), t.foreground, (rect.width() * 0.5).max(240.0));
+        painter.text(
+            pos2(hx, rect.min.y + 20.0),
+            Align2::LEFT_TOP,
+            &self.eyebrow,
+            FontId::monospace(11.0),
+            t.muted_foreground,
+        );
+        let title_g =
+            painter.layout(self.title.clone(), display_font(ui, 30.0), t.foreground, (rect.width() * 0.5).max(240.0));
         painter.galley(pos2(hx, rect.min.y + 40.0), title_g.clone(), t.foreground);
         round_btn(&painter, prev_b, 18.0, true, -1.0, &t, over(prev_b));
         round_btn(&painter, next_b, 18.0, true, 1.0, &t, over(next_b));
@@ -191,20 +209,34 @@ impl Widget for QuoteDeck<'_> {
             let z = ad.min(2.5) * 110.0;
             let yaw = -d.clamp(-1.6, 1.6) * 0.42 * self.lean;
             let roll = d.clamp(-2.0, 2.0) * 0.035 * self.lean;
-            let map3 = |l: Vec2| v3(l.x - size.x / 2.0, l.y - size.y / 2.0, 0.0).rot_z(roll).rot_y(yaw).add(v3(x, ad.min(2.0) * 8.0, z));
+            let map3 = |l: Vec2| {
+                v3(l.x - size.x / 2.0, l.y - size.y / 2.0, 0.0).rot_z(roll).rot_y(yaw).add(v3(x, ad.min(2.0) * 8.0, z))
+            };
             let map = |l: Vec2| cam.pt(map3(l));
-            let tint = q.tint.unwrap_or_else(|| glowkit_core::hex(PASTELS[i.rem_euclid(PASTELS.len() as i32) as usize]));
+            let tint =
+                q.tint.unwrap_or_else(|| glowkit_core::hex(PASTELS[i.rem_euclid(PASTELS.len() as i32) as usize]));
             let base = if t.dark { lerp_c(hex("#1C1C21"), tint, 0.18) } else { tint };
             let dim = (1.0 - ad * 0.16).clamp(0.45, 1.0);
             let fade = (1.0 - (ad - 2.2).max(0.0) / 1.0).clamp(0.0, 1.0);
-            let outline: Vec<Pos2> =
-                [vec2(0.0, 0.0), vec2(size.x, 0.0), vec2(size.x, size.y), vec2(0.0, size.y)].iter().map(|l| map(*l)).collect();
-            let sc = if t.dark { Color32::from_black_alpha(130) } else { Color32::from_rgba_unmultiplied(40, 40, 30, 36) };
+            let outline: Vec<Pos2> = [vec2(0.0, 0.0), vec2(size.x, 0.0), vec2(size.x, size.y), vec2(0.0, size.y)]
+                .iter()
+                .map(|l| map(*l))
+                .collect();
+            let sc =
+                if t.dark { Color32::from_black_alpha(130) } else { Color32::from_rgba_unmultiplied(40, 40, 30, 36) };
             poly_shadow(&painter, &outline, vec2(0.0, 14.0), 18.0, sc.gamma_multiply(fade));
             let bg = t.background;
-            surface_grid(&painter, None, Rect::ZERO, 4, 4, size, 18.0, |u, v| map(vec2(u * size.x, v * size.y)), |_, _| {
-                lerp_c(bg, base, dim * fade)
-            });
+            surface_grid(
+                &painter,
+                None,
+                Rect::ZERO,
+                4,
+                4,
+                size,
+                18.0,
+                |u, v| map(vec2(u * size.x, v * size.y)),
+                |_, _| lerp_c(bg, base, dim * fade),
+            );
             let ink = if t.dark { hex("#F2F1EC") } else { hex("#1D1D1F") };
             let ink = lerp_c(bg, ink, dim * fade);
             let muted = lerp_c(bg, with_alpha(ink, 0.6), 0.9);
@@ -225,7 +257,13 @@ impl Widget for QuoteDeck<'_> {
             let ac = map(vec2(36.0, size.y - 32.0));
             let s = (map(vec2(1.0, 0.0)) - map(vec2(0.0, 0.0))).length();
             painter.circle_filled(ac, 15.0 * s, lerp_c(base, ink, 0.25));
-            painter.text(ac, Align2::CENTER_CENTER, initials(&q.name), FontId::proportional(10.5 * s), with_alpha(ink, 0.85));
+            painter.text(
+                ac,
+                Align2::CENTER_CENTER,
+                initials(&q.name),
+                FontId::proportional(10.5 * s),
+                with_alpha(ink, 0.85),
+            );
             let gn = painter.layout_no_wrap(q.name.clone(), name_f.clone(), ink);
             galley_mapped(&painter, &gn, ink, |l| map(vec2(60.0, size.y - 46.0) + l));
             let gr = painter.layout_no_wrap(q.role.clone(), small.clone(), ink);
@@ -234,7 +272,13 @@ impl Widget for QuoteDeck<'_> {
         // counter + dots
         let idx = pos.round().rem_euclid(n as f32) as usize;
         let by = rect.max.y - 26.0;
-        painter.text(pos2(hx, by), Align2::LEFT_CENTER, format!("{:02} / {:02}", idx + 1, n), FontId::monospace(11.0), t.muted_foreground);
+        painter.text(
+            pos2(hx, by),
+            Align2::LEFT_CENTER,
+            format!("{:02} / {:02}", idx + 1, n),
+            FontId::monospace(11.0),
+            t.muted_foreground,
+        );
         for k in 0..n {
             let on = glowkit_core::anim::spring(ui, id.with(("dot", k)), if k == idx { 1.0 } else { 0.0 }, 300.0, 24.0);
             let w = 5.0 + 11.0 * on;
@@ -472,12 +516,31 @@ impl Widget for StoryDeck<'_> {
             }
             let x = tx + dx;
             painter.text(pos2(x, ty), Align2::LEFT_TOP, &s.metric, display_font(ui, 34.0), with_alpha(accent, a));
-            painter.text(pos2(x, ty + 42.0), Align2::LEFT_TOP, &s.metric_label, FontId::proportional(12.5), with_alpha(t.muted_foreground, a));
-            let g = painter.layout(format!("“{}”", s.quote), display_font(ui, 21.0), with_alpha(t.foreground, a), text_w);
+            painter.text(
+                pos2(x, ty + 42.0),
+                Align2::LEFT_TOP,
+                &s.metric_label,
+                FontId::proportional(12.5),
+                with_alpha(t.muted_foreground, a),
+            );
+            let g =
+                painter.layout(format!("“{}”", s.quote), display_font(ui, 21.0), with_alpha(t.foreground, a), text_w);
             let gh = g.size().y;
             painter.galley(pos2(x, ty + 76.0), g, with_alpha(t.foreground, a));
-            painter.text(pos2(x, ty + 92.0 + gh), Align2::LEFT_TOP, &s.name, semibold_font(ui, 14.0), with_alpha(t.foreground, a));
-            painter.text(pos2(x, ty + 112.0 + gh), Align2::LEFT_TOP, &s.role, FontId::proportional(12.5), with_alpha(t.muted_foreground, a));
+            painter.text(
+                pos2(x, ty + 92.0 + gh),
+                Align2::LEFT_TOP,
+                &s.name,
+                semibold_font(ui, 14.0),
+                with_alpha(t.foreground, a),
+            );
+            painter.text(
+                pos2(x, ty + 112.0 + gh),
+                Align2::LEFT_TOP,
+                &s.role,
+                FontId::proportional(12.5),
+                with_alpha(t.muted_foreground, a),
+            );
         };
         if wide {
             if e < 1.0 {
@@ -489,7 +552,10 @@ impl Widget for StoryDeck<'_> {
         let tex_of = |k: usize| -> (TextureId, Rect) {
             match self.stories[k % n].texture {
                 Some(tex) => (tex, Rect::from_min_max(Pos2::ZERO, pos2(1.0, 1.0))),
-                None => (PaintedScene::texture(ui.ctx(), [5, 0, 4, 1, 7, 3, 6, 2][k % 8]), cover_uv(PaintedScene::ASPECT, card.x / card.y)),
+                None => (
+                    PaintedScene::texture(ui.ctx(), [5, 0, 4, 1, 7, 3, 6, 2][k % 8]),
+                    cover_uv(PaintedScene::ASPECT, card.x / card.y),
+                ),
             }
         };
         let frame = if t.dark { hex("#EDEBE6") } else { Color32::WHITE };
@@ -502,9 +568,22 @@ impl Widget for StoryDeck<'_> {
                 let d = (l - card / 2.0) * scale;
                 ctr + vec2(d.x * c - d.y * s, d.x * s + d.y * c)
             };
-            let outline: Vec<Pos2> = [vec2(0.0, 0.0), vec2(card.x, 0.0), vec2(card.x, card.y), vec2(0.0, card.y)].iter().map(|l| map(*l)).collect();
+            let outline: Vec<Pos2> = [vec2(0.0, 0.0), vec2(card.x, 0.0), vec2(card.x, card.y), vec2(0.0, card.y)]
+                .iter()
+                .map(|l| map(*l))
+                .collect();
             poly_shadow(&painter, &outline, vec2(0.0, 16.0), 20.0, sh.gamma_multiply(alpha));
-            surface_grid(&painter, None, Rect::ZERO, 2, 2, card, 18.0, |u, v| map(vec2(u * card.x, v * card.y)), |_, _| frame.gamma_multiply(alpha));
+            surface_grid(
+                &painter,
+                None,
+                Rect::ZERO,
+                2,
+                2,
+                card,
+                18.0,
+                |u, v| map(vec2(u * card.x, v * card.y)),
+                |_, _| frame.gamma_multiply(alpha),
+            );
             let inner = Rect::from_min_max(pos2(7.0, 7.0), (card - vec2(7.0, 7.0)).to_pos2());
             surface_grid(
                 &painter,

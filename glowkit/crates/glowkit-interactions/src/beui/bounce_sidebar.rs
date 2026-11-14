@@ -35,7 +35,15 @@ pub struct BounceSidebar<'a> {
 impl<'a> BounceSidebar<'a> {
     /// A sidebar over `items`, editing the active index.
     pub fn new(active: &'a mut usize, items: impl IntoIterator<Item = impl Into<String>>) -> Self {
-        Self { active, items: items.into_iter().map(Into::into).collect(), row_h: 42.0, hop: 1.0, color: None, width: 200.0, autoplay: true }
+        Self {
+            active,
+            items: items.into_iter().map(Into::into).collect(),
+            row_h: 42.0,
+            hop: 1.0,
+            color: None,
+            width: 200.0,
+            autoplay: true,
+        }
     }
     /// Height of one link.
     pub fn row_height(mut self, h: f32) -> Self {
@@ -73,7 +81,9 @@ impl egui::Widget for BounceSidebar<'_> {
         if n == 0 {
             return resp;
         }
-        let row = |i: usize| Rect::from_min_size(pos2(rect.min.x, rect.min.y + i as f32 * self.row_h), vec2(self.width, self.row_h));
+        let row = |i: usize| {
+            Rect::from_min_size(pos2(rect.min.x, rect.min.y + i as f32 * self.row_h), vec2(self.width, self.row_h))
+        };
         let mut picked = None;
         let mut hovered = None;
         for i in 0..n {
@@ -148,17 +158,31 @@ impl egui::Widget for BounceSidebar<'_> {
                 let back = vel.signum() * k as f32 * 4.0;
                 let tp = (y - back - from) / (target - from + 1e-3);
                 let ta = (tp.clamp(0.0, 1.0) * PI).sin() * (6.0 + span.sqrt() * 2.2) * self.hop;
-                painter.circle_filled(pos2(base_x - ta, y - back), 3.0 - k as f32 * 0.5, with_alpha(color, 0.25 - k as f32 * 0.05));
+                painter.circle_filled(
+                    pos2(base_x - ta, y - back),
+                    3.0 - k as f32 * 0.5,
+                    with_alpha(color, 0.25 - k as f32 * 0.05),
+                );
             }
         }
         painter.add(Shape::ellipse_filled(pos2(x, y), vec2(rx, ry), color));
-        painter.add(Shape::ellipse_stroke(pos2(x, y), vec2(rx + 3.0, ry + 3.0), Stroke::new(1.0, with_alpha(color, 0.18))));
+        painter.add(Shape::ellipse_stroke(
+            pos2(x, y),
+            vec2(rx + 3.0, ry + 3.0),
+            Stroke::new(1.0, with_alpha(color, 0.18)),
+        ));
         for (i, label) in self.items.iter().enumerate() {
             let on = spring(ui, id.with(("on", i)), if i == active { 1.0 } else { 0.0 }, 300.0, 20.0);
             let hv = spring(ui, id.with(("hv", i)), if hovered == Some(i) { 1.0 } else { 0.0 }, 300.0, 24.0);
             let col = mix(t.muted_foreground, t.foreground, (on + hv * 0.5).clamp(0.0, 1.0));
             let size = lerp(15.5, 16.0, on);
-            painter.text(pos2(rect.min.x + 26.0 + on * 3.0 + hv * 2.0, cy(i)), Align2::LEFT_CENTER, label, FontId::proportional(size), col);
+            painter.text(
+                pos2(rect.min.x + 26.0 + on * 3.0 + hv * 2.0, cy(i)),
+                Align2::LEFT_CENTER,
+                label,
+                FontId::proportional(size),
+                col,
+            );
         }
         resp
     }

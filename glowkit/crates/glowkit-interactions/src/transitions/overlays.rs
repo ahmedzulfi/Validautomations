@@ -2,8 +2,8 @@
 //! a shared tooltip, a toast and a stack of banners.
 
 use super::common::{
-    avatar, bar, chip, chip_button, cr, layer, material, phase, skeleton, span, surface, two_lines, xf_around, MotionCurve,
-    Tween, AVATAR_TONES,
+    avatar, bar, chip, chip_button, cr, layer, material, phase, skeleton, span, surface, two_lines, xf_around,
+    MotionCurve, Tween, AVATAR_TONES,
 };
 use egui::emath::TSTransform;
 use egui::{pos2, vec2, Align2, Color32, FontId, Rect, Response, Sense, Stroke, Ui, Vec2, Widget};
@@ -21,7 +21,14 @@ fn wash(t: &Theme) -> Color32 {
 
 /// Paint menu rows (icon + label) or, when there are none, three skeleton bars. Returns the
 /// rects of the rows.
-fn menu_rows(painter: &egui::Painter, t: &Theme, inner: Rect, items: &[(Option<MicroIcon>, String)], hovered: Option<usize>, row_h: f32) -> Vec<Rect> {
+fn menu_rows(
+    painter: &egui::Painter,
+    t: &Theme,
+    inner: Rect,
+    items: &[(Option<MicroIcon>, String)],
+    hovered: Option<usize>,
+    row_h: f32,
+) -> Vec<Rect> {
     let mut rects = Vec::new();
     if items.is_empty() {
         let widths = [0.78, 0.55, 0.92];
@@ -147,8 +154,12 @@ impl<'a> DropdownSurface<'a> {
         let inner_r = rect.shrink2(vec2(6.0, 6.0));
         if !self.items.is_empty() && ph.on {
             for i in 0..self.items.len() {
-                let r = Rect::from_min_size(pos2(inner_r.min.x, inner_r.min.y + i as f32 * row_h), vec2(inner_r.width(), row_h));
-                let resp = ui.interact(r, id.with(("row", i)), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+                let r = Rect::from_min_size(
+                    pos2(inner_r.min.x, inner_r.min.y + i as f32 * row_h),
+                    vec2(inner_r.width(), row_h),
+                );
+                let resp =
+                    ui.interact(r, id.with(("row", i)), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
                 if resp.hovered() {
                     hovered = Some(i);
                 }
@@ -204,7 +215,15 @@ pub struct MorphMenu<'a> {
 impl<'a> MorphMenu<'a> {
     /// A morphing menu whose open state lives in `open`.
     pub fn new(open: &'a mut bool) -> Self {
-        Self { open, items: Vec::new(), size: vec2(196.0, 172.0), button: 40.0, open_dur: 0.35, close_dur: 0.25, shift: 40.0 }
+        Self {
+            open,
+            items: Vec::new(),
+            size: vec2(196.0, 172.0),
+            button: 40.0,
+            open_dur: 0.35,
+            close_dur: 0.25,
+            shift: 40.0,
+        }
     }
     /// Add a row.
     pub fn item(mut self, icon: MicroIcon, label: impl Into<String>) -> Self {
@@ -243,7 +262,8 @@ impl<'a> MorphMenu<'a> {
         let corner = rect.max;
         let closed = Rect::from_min_max(corner - Vec2::splat(self.button), corner);
         let btn = ui.interact(closed, id.with("btn"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
-        let ph0 = phase(ui, id, *self.open, self.open_dur, self.close_dur, MotionCurve::SOFT_BOUNCE, MotionCurve::SMOOTH_OUT);
+        let ph0 =
+            phase(ui, id, *self.open, self.open_dur, self.close_dur, MotionCurve::SOFT_BOUNCE, MotionCurve::SMOOTH_OUT);
         let mut picked = None;
         if !*self.open && btn.clicked() {
             *self.open = true;
@@ -255,7 +275,8 @@ impl<'a> MorphMenu<'a> {
                 *self.open = false;
             }
         }
-        let ph = phase(ui, id, *self.open, self.open_dur, self.close_dur, MotionCurve::SOFT_BOUNCE, MotionCurve::SMOOTH_OUT);
+        let ph =
+            phase(ui, id, *self.open, self.open_dur, self.close_dur, MotionCurve::SOFT_BOUNCE, MotionCurve::SMOOTH_OUT);
         if !ui.is_rect_visible(rect) {
             return (response, None);
         }
@@ -288,16 +309,30 @@ impl<'a> MorphMenu<'a> {
             }
         });
         // rows
-        let fade = if ph.on { MotionCurve::SMOOTH_OUT.timed(ph.age, 0.06, 0.2) } else { 1.0 - MotionCurve::SMOOTH_OUT.at(ph.age / 0.2) };
-        let slide = if ph.on { 1.0 - MotionCurve::SMOOTH_OUT.timed(ph.age, 0.0, 0.35) } else { MotionCurve::SMOOTH_OUT.at(ph.age / 0.35) };
+        let fade = if ph.on {
+            MotionCurve::SMOOTH_OUT.timed(ph.age, 0.06, 0.2)
+        } else {
+            1.0 - MotionCurve::SMOOTH_OUT.at(ph.age / 0.2)
+        };
+        let slide = if ph.on {
+            1.0 - MotionCurve::SMOOTH_OUT.timed(ph.age, 0.0, 0.35)
+        } else {
+            MotionCurve::SMOOTH_OUT.at(ph.age / 0.35)
+        };
         let alpha = fade.clamp(0.0, 1.0) * span(p, 0.25, 0.7);
         if alpha > 0.0 {
-            let inner = Rect::from_min_size(corner - size + vec2(8.0, 8.0), size - vec2(16.0, 16.0)).translate(Vec2::splat(nudge));
+            let inner = Rect::from_min_size(corner - size + vec2(8.0, 8.0), size - vec2(16.0, 16.0))
+                .translate(Vec2::splat(nudge));
             let mut hovered = None;
             if ph.on && ph.t >= 1.0 {
                 for i in 0..self.items.len() {
-                    let rr = Rect::from_min_size(pos2(inner.min.x, inner.min.y + i as f32 * row_h), vec2(inner.width(), row_h));
-                    let resp = ui.interact(rr, id.with(("row", i)), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+                    let rr = Rect::from_min_size(
+                        pos2(inner.min.x, inner.min.y + i as f32 * row_h),
+                        vec2(inner.width(), row_h),
+                    );
+                    let resp = ui
+                        .interact(rr, id.with(("row", i)), Sense::click())
+                        .on_hover_cursor(egui::CursorIcon::PointingHand);
                     if resp.hovered() {
                         hovered = Some(i);
                     }
@@ -307,7 +342,8 @@ impl<'a> MorphMenu<'a> {
                 }
             }
             let clip = body.shrink(1.0).intersect(ui.clip_rect());
-            let items: Vec<(Option<MicroIcon>, String)> = self.items.iter().map(|(i, l)| (Some(*i), l.clone())).collect();
+            let items: Vec<(Option<MicroIcon>, String)> =
+                self.items.iter().map(|(i, l)| (Some(*i), l.clone())).collect();
             let slid = inner.translate(vec2(self.shift * slide, 0.0));
             layer(ui, TSTransform::IDENTITY, alpha, 2.0 * (1.0 - fade.clamp(0.0, 1.0)), |pt| {
                 let pt = pt.with_clip_rect(clip);
@@ -418,7 +454,15 @@ impl Widget for PopModal {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
         let (rect, response) = ui.allocate_exact_size(self.size + vec2(24.0, 24.0), Sense::hover());
-        let ph = phase(ui, response.id, self.open, self.open_dur, self.close_dur, MotionCurve::SMOOTH_OUT, MotionCurve::SMOOTH_OUT);
+        let ph = phase(
+            ui,
+            response.id,
+            self.open,
+            self.open_dur,
+            self.close_dur,
+            MotionCurve::SMOOTH_OUT,
+            MotionCurve::SMOOTH_OUT,
+        );
         let p = ph.p.clamp(0.0, 1.0);
         if p <= 0.002 || !ui.is_rect_visible(rect) {
             return response;
@@ -438,7 +482,14 @@ impl Widget for PopModal {
             if self.title.is_none() {
                 bar(pt, &t, Rect::from_min_size(inner.min + vec2(0.0, 6.0), vec2(inner.width() * 0.62, 11.0)));
                 for (i, w) in [1.0, 1.0, 0.62].iter().enumerate() {
-                    bar(pt, &t, Rect::from_min_size(inner.min + vec2(0.0, 30.0 + i as f32 * 14.0), vec2(inner.width() * w, 7.0)));
+                    bar(
+                        pt,
+                        &t,
+                        Rect::from_min_size(
+                            inner.min + vec2(0.0, 30.0 + i as f32 * 14.0),
+                            vec2(inner.width() * w, 7.0),
+                        ),
+                    );
                 }
             } else {
                 let mut y = inner.min.y;
@@ -470,7 +521,13 @@ impl Widget for PopModal {
                     pt.text(b1.center(), Align2::CENTER_CENTER, a, FontId::proportional(13.0), t.foreground);
                     let acc = self.accent.unwrap_or(t.primary);
                     pt.rect_filled(b2, cr(bh / 2.0), acc);
-                    pt.text(b2.center(), Align2::CENTER_CENTER, b, FontId::proportional(13.0), glowkit_core::color::contrast_text(acc));
+                    pt.text(
+                        b2.center(),
+                        Align2::CENTER_CENTER,
+                        b,
+                        FontId::proportional(13.0),
+                        glowkit_core::color::contrast_text(acc),
+                    );
                 }
                 None => {
                     pt.rect_filled(b1, cr(bh / 2.0), skeleton(&t));
@@ -565,7 +622,8 @@ impl Widget for RevealPanel<'_> {
         if trig.clicked() {
             *self.open = !*self.open;
         }
-        let ph = phase(ui, id, *self.open, self.open_dur, self.close_dur, MotionCurve::SMOOTH_OUT, MotionCurve::SMOOTH_OUT);
+        let ph =
+            phase(ui, id, *self.open, self.open_dur, self.close_dur, MotionCurve::SMOOTH_OUT, MotionCurve::SMOOTH_OUT);
         let p = ph.p.clamp(0.0, 1.0);
         if p <= 0.002 || !ui.is_rect_visible(rect) {
             return trig;
@@ -584,7 +642,13 @@ impl Widget for RevealPanel<'_> {
             // a sheet: rounded top, flat bottom cut by the clip
             let sheet = panel.with_max_y(panel.max.y + r);
             if t.dark {
-                pt.rect(sheet, cr(r), fill, Stroke::new(1.0, with_alpha(Color32::WHITE, 0.07)), egui::StrokeKind::Inside);
+                pt.rect(
+                    sheet,
+                    cr(r),
+                    fill,
+                    Stroke::new(1.0, with_alpha(Color32::WHITE, 0.07)),
+                    egui::StrokeKind::Inside,
+                );
             } else {
                 glowkit_core::paint::soft_shadow(&pt, sheet, r, 40.0, vec2(0.0, -2.0), Color32::from_black_alpha(16));
                 pt.rect(sheet, cr(r), fill, Stroke::new(1.0, Color32::from_black_alpha(14)), egui::StrokeKind::Outside);
@@ -604,8 +668,22 @@ impl Widget for RevealPanel<'_> {
                     y += 44.0;
                 }
                 None => {
-                    bar(&pt, &t, Rect::from_min_size(pos2(inner.min.x + inner.width() * 0.1, y + 2.0), vec2(inner.width() * 0.8, 7.0)));
-                    bar(&pt, &t, Rect::from_min_size(pos2(inner.min.x + inner.width() * 0.1, y + 14.0), vec2(inner.width() * 0.6, 7.0)));
+                    bar(
+                        &pt,
+                        &t,
+                        Rect::from_min_size(
+                            pos2(inner.min.x + inner.width() * 0.1, y + 2.0),
+                            vec2(inner.width() * 0.8, 7.0),
+                        ),
+                    );
+                    bar(
+                        &pt,
+                        &t,
+                        Rect::from_min_size(
+                            pos2(inner.min.x + inner.width() * 0.1, y + 14.0),
+                            vec2(inner.width() * 0.6, 7.0),
+                        ),
+                    );
                     y += 34.0;
                 }
             }
@@ -621,7 +699,13 @@ impl Widget for RevealPanel<'_> {
                 pt.rect_filled(r, cr(10.0), well);
                 if let Some((ic, label)) = tiles.get(i) {
                     ic.paint(&pt, pos2(r.min.x + 18.0, r.center().y), 14.0, t.muted_foreground);
-                    pt.text(pos2(r.min.x + 32.0, r.center().y), Align2::LEFT_CENTER, label, FontId::proportional(12.5), t.foreground);
+                    pt.text(
+                        pos2(r.min.x + 32.0, r.center().y),
+                        Align2::LEFT_CENTER,
+                        label,
+                        FontId::proportional(12.5),
+                        t.foreground,
+                    );
                 }
             }
         });
@@ -700,7 +784,8 @@ impl Widget for TooltipBar {
         let t = Theme::of(ui);
         let font = FontId::proportional(13.0);
         let tip_font = FontId::proportional(12.5);
-        let widths: Vec<f32> = self.items.iter().map(|(l, _)| super::common::text_width(ui.painter(), l, &font) + 26.0).collect();
+        let widths: Vec<f32> =
+            self.items.iter().map(|(l, _)| super::common::text_width(ui.painter(), l, &font) + 26.0).collect();
         let gap = 6.0;
         let total = widths.iter().sum::<f32>() + gap * (widths.len().saturating_sub(1)) as f32;
         let (rect, response) = ui.allocate_exact_size(vec2(total + 20.0, 32.0 + 46.0), Sense::hover());
@@ -719,12 +804,21 @@ impl Widget for TooltipBar {
         }
         let active = if real_hover.is_some() { real_hover } else { self.force.unwrap_or(None) };
         let now = ui.input(|i| i.time);
-        let tip_w: Vec<f32> = self.items.iter().map(|(_, tip)| super::common::text_width(ui.painter(), tip, &tip_font) + 20.0).collect();
+        let tip_w: Vec<f32> =
+            self.items.iter().map(|(_, tip)| super::common::text_width(ui.painter(), tip, &tip_font) + 20.0).collect();
         let (md, delay, ind, outd) = (self.move_dur, self.delay, self.in_dur, self.out_dur);
         let st = glowkit_core::with_state(
             ui,
             response.id.with("tipstate"),
-            || TipState { x: Tween::new(0.0), w: Tween::new(0.0), shown: false, since: -1e6, vis_from: 0.0, last_vis: 0.0, active: None },
+            || TipState {
+                x: Tween::new(0.0),
+                w: Tween::new(0.0),
+                shown: false,
+                since: -1e6,
+                vis_from: 0.0,
+                last_vis: 0.0,
+                active: None,
+            },
             |s| {
                 if let Some(i) = active {
                     let cx = btns[i].center().x;
@@ -869,7 +963,15 @@ impl Widget for SlideToast {
         let t = Theme::of(ui);
         let size = vec2(self.width, 60.0);
         let (rect, response) = ui.allocate_exact_size(size + vec2(0.0, self.distance.abs() + 8.0), Sense::hover());
-        let ph = phase(ui, response.id, self.open, self.open_dur, self.close_dur, MotionCurve::SMOOTH_OUT, MotionCurve::SMOOTH_OUT);
+        let ph = phase(
+            ui,
+            response.id,
+            self.open,
+            self.open_dur,
+            self.close_dur,
+            MotionCurve::SMOOTH_OUT,
+            MotionCurve::SMOOTH_OUT,
+        );
         let p = ph.p.clamp(0.0, 1.0);
         if p <= 0.002 || !ui.is_rect_visible(rect) {
             return response;
@@ -892,7 +994,13 @@ fn paint_banner(pt: &egui::Painter, t: &Theme, card: Rect, title: &str, msg: &st
     let ac = pos2(card.min.x + 30.0, card.center().y);
     avatar(&p2, ac, 16.0, AVATAR_TONES[tone % AVATAR_TONES.len()], None);
     two_lines(&p2, t, card.min.x + 56.0, card.center().y, title, msg, card.width() - 90.0);
-    p2.text(pos2(card.max.x - 18.0, card.min.y + 17.0), Align2::RIGHT_CENTER, "now", FontId::proportional(11.0), t.muted_foreground);
+    p2.text(
+        pos2(card.max.x - 18.0, card.min.y + 17.0),
+        Align2::RIGHT_CENTER,
+        "now",
+        FontId::proportional(11.0),
+        t.muted_foreground,
+    );
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -954,7 +1062,16 @@ pub struct BannerStack<'a> {
 impl<'a> BannerStack<'a> {
     /// Stack `banners` (last = newest, shown in front).
     pub fn new(banners: &'a [StackBanner]) -> Self {
-        Self { banners, width: 300.0, visible: 3, open_dur: 0.35, close_dur: 0.25, distance: 60.0, peek: 12.0, spread: None }
+        Self {
+            banners,
+            width: 300.0,
+            visible: 3,
+            open_dur: 0.35,
+            close_dur: 0.25,
+            distance: 60.0,
+            peek: 12.0,
+            spread: None,
+        }
     }
     /// Banner width (default 300).
     pub fn width(mut self, w: f32) -> Self {
@@ -998,7 +1115,8 @@ impl Widget for BannerStack<'_> {
         let size = vec2(self.width + 24.0, bh * vis as f32 + gap * (vis - 1) as f32 + 24.0);
         let (rect, response) = ui.allocate_exact_size(size, Sense::hover());
         let now = ui.input(|i| i.time);
-        let front = Rect::from_min_size(pos2(rect.center().x - self.width / 2.0, rect.max.y - 12.0 - bh), vec2(self.width, bh));
+        let front =
+            Rect::from_min_size(pos2(rect.center().x - self.width / 2.0, rect.max.y - 12.0 - bh), vec2(self.width, bh));
         let stack_rect = Rect::from_min_max(pos2(front.min.x, front.min.y - self.peek * 2.0), front.max);
         let hovering = ui.input(|i| i.pointer.hover_pos()).is_some_and(|p| stack_rect.contains(p));
         let spread_on = self.spread.unwrap_or(hovering);
@@ -1049,7 +1167,10 @@ impl Widget for BannerStack<'_> {
         // paint back to front
         let mut order: Vec<&BannerAnim> = st.anims.iter().collect();
         order.sort_by(|a, b| {
-            b.depth.value(now, od, MotionCurve::SMOOTH_OUT).partial_cmp(&a.depth.value(now, od, MotionCurve::SMOOTH_OUT)).unwrap_or(std::cmp::Ordering::Equal)
+            b.depth
+                .value(now, od, MotionCurve::SMOOTH_OUT)
+                .partial_cmp(&a.depth.value(now, od, MotionCurve::SMOOTH_OUT))
+                .unwrap_or(std::cmp::Ordering::Equal)
         });
         for a in order {
             let Some(b) = st.cache.iter().find(|c| c.id == a.id) else { continue };

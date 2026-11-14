@@ -90,7 +90,14 @@ impl SharedLayoutBg {
             let row_h = 60.0;
             size = vec2(self.width, row_h * n as f32);
             let (outer, _) = ui.allocate_exact_size(size, Sense::hover());
-            rects = (0..n).map(|i| Rect::from_min_size(pos2(outer.min.x, outer.min.y + i as f32 * row_h), vec2(self.width, row_h - 4.0))).collect();
+            rects = (0..n)
+                .map(|i| {
+                    Rect::from_min_size(
+                        pos2(outer.min.x, outer.min.y + i as f32 * row_h),
+                        vec2(self.width, row_h - 4.0),
+                    )
+                })
+                .collect();
         }
         if n == 0 {
             return None;
@@ -143,14 +150,26 @@ impl SharedLayoutBg {
         }
         // the shared background: one rect that springs between items
         let target = hov.map(|i| rects[i]);
-        let last: Option<Rect> = glowkit_core::with_state(ui, id.with("last"), || None, |l| {
-            if target.is_some() {
-                *l = target;
-            }
-            *l
-        });
+        let last: Option<Rect> = glowkit_core::with_state(
+            ui,
+            id.with("last"),
+            || None,
+            |l| {
+                if target.is_some() {
+                    *l = target;
+                }
+                *l
+            },
+        );
         let to = target.or(last).unwrap_or(rects[0]);
-        let (bg, r) = morph(ui, id.with("bg"), to, if self.horizontal { 18.0 } else { 14.0 }, self.stiffness, 2.0 * self.stiffness.sqrt() * 0.85);
+        let (bg, r) = morph(
+            ui,
+            id.with("bg"),
+            to,
+            if self.horizontal { 18.0 } else { 14.0 },
+            self.stiffness,
+            2.0 * self.stiffness.sqrt() * 0.85,
+        );
         let a = spring(ui, id.with("bga"), if hov.is_some() { 1.0 } else { 0.0 }, 260.0, 26.0);
         if !ui.is_rect_visible(outer) {
             return clicked;
@@ -160,8 +179,21 @@ impl SharedLayoutBg {
             if t.dark {
                 painter.rect_filled(bgr, cr(r), with_alpha(hover_fill(&t), a));
             } else {
-                glowkit_core::paint::soft_shadow(&painter, bgr, r, 10.0, vec2(0.0, 2.0), super::common::shadow_color(&t, 0.35 * a));
-                painter.rect(bgr, cr(r), with_alpha(super::common::surface(&t), a), egui::Stroke::new(1.0, with_alpha(t.border, 0.8 * a)), egui::StrokeKind::Inside);
+                glowkit_core::paint::soft_shadow(
+                    &painter,
+                    bgr,
+                    r,
+                    10.0,
+                    vec2(0.0, 2.0),
+                    super::common::shadow_color(&t, 0.35 * a),
+                );
+                painter.rect(
+                    bgr,
+                    cr(r),
+                    with_alpha(super::common::surface(&t), a),
+                    egui::Stroke::new(1.0, with_alpha(t.border, 0.8 * a)),
+                    egui::StrokeKind::Inside,
+                );
             }
         }
         for (i, (title, sub)) in self.items.iter().enumerate() {
@@ -172,8 +204,20 @@ impl SharedLayoutBg {
                 painter.text(rr.center(), Align2::CENTER_CENTER, title, FontId::proportional(14.0), col);
             } else {
                 let x = rr.min.x + 16.0;
-                painter.text(pos2(x, rr.center().y - 9.0), Align2::LEFT_CENTER, title, FontId::proportional(14.5), t.foreground);
-                painter.text(pos2(x, rr.center().y + 10.0), Align2::LEFT_CENTER, sub, FontId::proportional(12.5), t.muted_foreground);
+                painter.text(
+                    pos2(x, rr.center().y - 9.0),
+                    Align2::LEFT_CENTER,
+                    title,
+                    FontId::proportional(14.5),
+                    t.foreground,
+                );
+                painter.text(
+                    pos2(x, rr.center().y + 10.0),
+                    Align2::LEFT_CENTER,
+                    sub,
+                    FontId::proportional(12.5),
+                    t.muted_foreground,
+                );
                 let nudge = vec2(1.0, -1.0) * 3.0 * h;
                 let col = mix(t.muted_foreground, t.foreground, h.clamp(0.0, 1.0));
                 icon(&painter, BeIcon::ArrowUpRight, pos2(rr.max.x - 20.0, rr.center().y - 9.0) + nudge, 9.0, col, 1.4);

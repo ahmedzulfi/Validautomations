@@ -75,7 +75,8 @@ impl OverflowActions {
         let h = 48.0;
         let pad = 5.0;
         let btn_h = h - pad * 2.0;
-        let widths: Vec<f32> = self.primary.iter().chain(self.more.iter()).map(|(_, l)| text_width(&painter, l, 13.5) + 46.0).collect();
+        let widths: Vec<f32> =
+            self.primary.iter().chain(self.more.iter()).map(|(_, l)| text_width(&painter, l, 13.5) + 46.0).collect();
         let np = self.primary.len();
         let total_open = widths.iter().sum::<f32>() + btn_h + pad * 2.0 + 4.0 * widths.len() as f32;
         let (outer, resp) = ui.allocate_exact_size(vec2(total_open, h), Sense::hover());
@@ -98,7 +99,8 @@ impl OverflowActions {
                 }
             })
             .collect();
-        let bar_w = slot_w.iter().sum::<f32>() + btn_h + pad * 2.0 + 4.0 * slot_w.iter().filter(|w| **w > 1.0).count() as f32;
+        let bar_w =
+            slot_w.iter().sum::<f32>() + btn_h + pad * 2.0 + 4.0 * slot_w.iter().filter(|w| **w > 1.0).count() as f32;
         let bar = Rect::from_center_size(outer.center(), vec2(bar_w, h));
         let mut x = bar.min.x + pad;
         let mut rects = Vec::new();
@@ -129,13 +131,21 @@ impl OverflowActions {
         }
         let idle = idle_for(ui, id, ui.rect_contains_pointer(outer));
         let auto = self.autoplay && idle > 2.0;
-        let st = glowkit_core::with_state(ui, id, || st0, |s| {
-            if mr.clicked() || (clicked.is_some_and(|c| c >= np)) || (auto && now - s.since > if s.open { 2.6 } else { 1.6 }) {
-                s.open = !s.open;
-                s.since = now;
-            }
-            *s
-        });
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0,
+            |s| {
+                if mr.clicked()
+                    || (clicked.is_some_and(|c| c >= np))
+                    || (auto && now - s.since > if s.open { 2.6 } else { 1.6 })
+                {
+                    s.open = !s.open;
+                    s.since = now;
+                }
+                *s
+            },
+        );
         if auto || (now - st.since) < 1.0 {
             glowkit_core::animate(ui);
         }
@@ -160,12 +170,22 @@ impl OverflowActions {
             let danger = *ic == BeIcon::Trash;
             let col = if danger { t.destructive } else { t.foreground };
             icon(&rc, *ic, pos2(r.min.x + 20.0 + off, r.center().y), 14.0, with_alpha(col, a), 1.3);
-            rc.text(pos2(r.min.x + 35.0 + off, r.center().y), Align2::LEFT_CENTER, label, FontId::proportional(13.5), with_alpha(col, a));
+            rc.text(
+                pos2(r.min.x + 35.0 + off, r.center().y),
+                Align2::LEFT_CENTER,
+                label,
+                FontId::proportional(13.5),
+                with_alpha(col, a),
+            );
         }
         // more button: three dots fold into a cross
         let k = spring(ui, id.with("x"), if st.open { 1.0 } else { 0.0 }, 300.0, 18.0);
         let hov = mr.hovered();
-        painter.circle_filled(more_c, btn_h / 2.0 - if mr.is_pointer_button_down_on() { 1.5 } else { 0.0 }, if hov { mix(t.info, egui::Color32::WHITE, 0.1) } else { t.info });
+        painter.circle_filled(
+            more_c,
+            btn_h / 2.0 - if mr.is_pointer_button_down_on() { 1.5 } else { 0.0 },
+            if hov { mix(t.info, egui::Color32::WHITE, 0.1) } else { t.info },
+        );
         let fg = egui::Color32::WHITE;
         let kk = k.clamp(0.0, 1.0);
         // the outer dots travel to the cross' ends, the middle one shrinks away

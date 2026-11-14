@@ -5,7 +5,9 @@ use super::common::{
     cover_uv, display_font, drive_loop, drive_snap, edge_alpha, galley_mapped, idle_time, lerp_c, lighten, poly_shadow,
     semibold_font, surface_grid, v3, wall_dt, Cam, V3,
 };
-use egui::{pos2, vec2, Align2, Color32, CursorIcon, FontId, Pos2, Rect, Response, Sense, Stroke, TextureId, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CursorIcon, FontId, Pos2, Rect, Response, Sense, Stroke, TextureId, Ui, Vec2, Widget,
+};
 use glowkit_core::color::{hex, with_alpha};
 use glowkit_core::{paint, Theme};
 use glowkit_effects::PaintedScene;
@@ -36,7 +38,17 @@ fn card3d(
     map3: impl Fn(Vec2) -> V3,
     tint: impl Fn(f32, f32) -> Color32,
 ) {
-    surface_grid(painter, Some(tex), uv, n.0, n.1, size, radius, |u, v| cam.pt(map3(vec2(u * size.x, v * size.y))), tint);
+    surface_grid(
+        painter,
+        Some(tex),
+        uv,
+        n.0,
+        n.1,
+        size,
+        radius,
+        |u, v| cam.pt(map3(vec2(u * size.x, v * size.y))),
+        tint,
+    );
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -142,7 +154,8 @@ impl Widget for DnaCarousel {
             let depth = ((z + radius) / (2.0 * radius)).clamp(0.0, 1.0); // 0 near, 1 far
             let lean = th.sin() * 0.16;
             let yaw = -th.sin() * 0.35;
-            let map3 = |l: Vec2| v3(l.x - size.x / 2.0, l.y - size.y / 2.0, 0.0).rot_z(lean).rot_y(yaw).add(v3(x, y, z));
+            let map3 =
+                |l: Vec2| v3(l.x - size.x / 2.0, l.y - size.y / 2.0, 0.0).rot_z(lean).rot_y(yaw).add(v3(x, y, z));
             let fog = depth * 0.55;
             let blur = depth * depth * 5.0;
             if (cam.pt(v3(x, y, z)).x - rect.center().x).abs() > rect.width() / 2.0 + size.x {
@@ -153,26 +166,45 @@ impl Widget for DnaCarousel {
                 .iter()
                 .map(|l| cam.pt(map3(*l)))
                 .collect();
-            let sc = if t.dark { Color32::from_black_alpha(120) } else { Color32::from_rgba_unmultiplied(20, 20, 40, 40) };
+            let sc =
+                if t.dark { Color32::from_black_alpha(120) } else { Color32::from_rgba_unmultiplied(20, 20, 40, 40) };
             let ea = edge_alpha(rect, cam.pt(v3(x, y, z)).x, 110.0);
             poly_shadow(&painter, &outline, vec2(0.0, 14.0), 16.0, sc.gamma_multiply((1.0 - depth * 0.7) * ea));
             let edge = |u: f32, v: f32| edge_alpha(rect, cam.pt(map3(vec2(u * size.x, v * size.y))).x, 90.0);
             if blur > 0.8 {
                 let f = self.fringe * depth * 7.0;
                 for (dx, c) in [(-f, hex("#FF3B30")), (f, hex("#2F7BFF"))] {
-                    card3d(&painter, &cam, tex, uv, size, 12.0, (3, 3), |l| map3(l).add(v3(dx, 0.0, 0.0)), |u, v| {
-                        with_alpha(c, 0.28 * depth * edge(u, v))
-                    });
+                    card3d(
+                        &painter,
+                        &cam,
+                        tex,
+                        uv,
+                        size,
+                        12.0,
+                        (3, 3),
+                        |l| map3(l).add(v3(dx, 0.0, 0.0)),
+                        |u, v| with_alpha(c, 0.28 * depth * edge(u, v)),
+                    );
                 }
                 for tap in 0..4 {
                     let a = tap as f32 / 4.0 * TAU + 0.4;
                     let o = v3(a.cos() * blur, a.sin() * blur, 0.0);
-                    card3d(&painter, &cam, tex, uv, size, 12.0, (3, 3), |l| map3(l).add(o), |u, v| {
-                        lerp_c(Color32::WHITE, bg, fog).gamma_multiply(0.33 * edge(u, v))
-                    });
+                    card3d(
+                        &painter,
+                        &cam,
+                        tex,
+                        uv,
+                        size,
+                        12.0,
+                        (3, 3),
+                        |l| map3(l).add(o),
+                        |u, v| lerp_c(Color32::WHITE, bg, fog).gamma_multiply(0.33 * edge(u, v)),
+                    );
                 }
             } else {
-                card3d(&painter, &cam, tex, uv, size, 12.0, (6, 6), map3, |u, v| lerp_c(Color32::WHITE, bg, fog).gamma_multiply(edge(u, v)));
+                card3d(&painter, &cam, tex, uv, size, 12.0, (6, 6), map3, |u, v| {
+                    lerp_c(Color32::WHITE, bg, fog).gamma_multiply(edge(u, v))
+                });
             }
         }
         response
@@ -252,7 +284,10 @@ impl<'a> ArcCarousel<'a> {
 }
 
 fn chevron(painter: &egui::Painter, c: Pos2, s: f32, dir: f32, color: Color32) {
-    painter.line(vec![c + vec2(-s * 0.4 * dir, -s), c + vec2(s * 0.4 * dir, 0.0), c + vec2(-s * 0.4 * dir, s)], Stroke::new(1.8, color));
+    painter.line(
+        vec![c + vec2(-s * 0.4 * dir, -s), c + vec2(s * 0.4 * dir, 0.0), c + vec2(-s * 0.4 * dir, s)],
+        Stroke::new(1.8, color),
+    );
 }
 
 impl Widget for ArcCarousel<'_> {
@@ -308,15 +343,28 @@ impl Widget for ArcCarousel<'_> {
             };
             let tex = item.texture.unwrap_or_else(|| PaintedScene::texture(ui.ctx(), i.rem_euclid(n as i32) as usize));
             let uv = if item.texture.is_some() { full_uv() } else { cover_uv(PaintedScene::ASPECT, size.x / size.y) };
-            let outline: Vec<Pos2> =
-                [vec2(0.0, 0.0), vec2(size.x, 0.0), vec2(size.x, size.y), vec2(0.0, size.y)].iter().map(|l| map(*l)).collect();
-            let sc = if t.dark { Color32::from_black_alpha(110) } else { Color32::from_rgba_unmultiplied(30, 25, 20, 40) };
+            let outline: Vec<Pos2> = [vec2(0.0, 0.0), vec2(size.x, 0.0), vec2(size.x, size.y), vec2(0.0, size.y)]
+                .iter()
+                .map(|l| map(*l))
+                .collect();
+            let sc =
+                if t.dark { Color32::from_black_alpha(110) } else { Color32::from_rgba_unmultiplied(30, 25, 20, 40) };
             poly_shadow(&painter, &outline, vec2(0.0, 10.0), 14.0, sc);
             let dim = 0.72 + 0.28 * focus;
-            surface_grid(&painter, Some(tex), uv, 3, 3, size, 14.0, |u, v| map(vec2(u * size.x, v * size.y)), |_, v| {
-                let k = dim * (1.0 - 0.18 * v * (1.0 - focus));
-                Color32::from_gray((255.0 * k) as u8)
-            });
+            surface_grid(
+                &painter,
+                Some(tex),
+                uv,
+                3,
+                3,
+                size,
+                14.0,
+                |u, v| map(vec2(u * size.x, v * size.y)),
+                |_, v| {
+                    let k = dim * (1.0 - 0.18 * v * (1.0 - focus));
+                    Color32::from_gray((255.0 * k) as u8)
+                },
+            );
         }
         // caption
         let idx = pos.round().rem_euclid(n as f32) as usize;
@@ -324,7 +372,13 @@ impl Widget for ArcCarousel<'_> {
         let a = (1.0 - frac).clamp(0.0, 1.0);
         let dy = 8.0 * (1.0 - a);
         let item = &self.items[idx];
-        painter.text(pos2(rect.center().x, title_y + dy), Align2::CENTER_CENTER, &item.title, display_font(ui, 28.0), with_alpha(t.foreground, a));
+        painter.text(
+            pos2(rect.center().x, title_y + dy),
+            Align2::CENTER_CENTER,
+            &item.title,
+            display_font(ui, 28.0),
+            with_alpha(t.foreground, a),
+        );
         painter.text(
             pos2(rect.center().x, title_y + 34.0 + dy),
             Align2::CENTER_CENTER,
@@ -609,7 +663,13 @@ impl Widget for ImageTunnel {
             if clicked {
                 s.paused = !s.paused;
             }
-            let target = if s.hold > 0.18 { cruise * 7.0 } else if s.paused { 0.0 } else { cruise };
+            let target = if s.hold > 0.18 {
+                cruise * 7.0
+            } else if s.paused {
+                0.0
+            } else {
+                cruise
+            };
             s.speed = glowkit_core::anim::approach(s.speed, target, if s.hold > 0.18 { 3.0 } else { 2.2 }, dt);
             s.z += s.speed * dt;
             *s
@@ -632,7 +692,11 @@ impl Widget for ImageTunnel {
             return response;
         }
         let painter = ui.painter_at(rect);
-        let (bg, line_c) = if t.dark { (hex("#060608"), with_alpha(Color32::WHITE, 0.10)) } else { (hex("#F4F3EF"), with_alpha(Color32::BLACK, 0.12)) };
+        let (bg, line_c) = if t.dark {
+            (hex("#060608"), with_alpha(Color32::WHITE, 0.10))
+        } else {
+            (hex("#F4F3EF"), with_alpha(Color32::BLACK, 0.12))
+        };
         painter.rect_filled(rect, egui::CornerRadius::same((t.radius * 1.6) as u8), bg);
         let f = rect.height() * 0.9;
         let cam = Cam { center: rect.center(), focal: f };
@@ -655,7 +719,8 @@ impl Widget for ImageTunnel {
         let mut z = ring_gap - z0;
         while z < far {
             let a = fog(z);
-            let pts: Vec<Option<Pos2>> = [v3(-hw, -hh, z), v3(hw, -hh, z), v3(hw, hh, z), v3(-hw, hh, z)].iter().map(|p| proj(*p)).collect();
+            let pts: Vec<Option<Pos2>> =
+                [v3(-hw, -hh, z), v3(hw, -hh, z), v3(hw, hh, z), v3(-hw, hh, z)].iter().map(|p| proj(*p)).collect();
             if pts.iter().all(|p| p.is_some()) {
                 let p: Vec<Pos2> = pts.into_iter().flatten().collect();
                 painter.add(egui::Shape::closed_line(p, Stroke::new(1.0, line_c.gamma_multiply(a))));
@@ -717,15 +782,25 @@ impl Widget for ImageTunnel {
                 continue;
             }
             let near_fade = ((zc - near) / 140.0).clamp(0.0, 1.0);
-            surface_grid(&painter, Some(tex), uv, 8, 2, vec2(len, 100.0), 0.0, |u, v| map(u, v).unwrap_or(rect.center()), |u, _| {
-                let zz = zc + (u - 0.5) * len;
-                let k = fog(zz.max(near)) * near_fade.max(0.0);
-                if t.dark {
-                    Color32::from_gray((255.0 * k) as u8)
-                } else {
-                    lerp_c(bg, Color32::WHITE, k)
-                }
-            });
+            surface_grid(
+                &painter,
+                Some(tex),
+                uv,
+                8,
+                2,
+                vec2(len, 100.0),
+                0.0,
+                |u, v| map(u, v).unwrap_or(rect.center()),
+                |u, _| {
+                    let zz = zc + (u - 0.5) * len;
+                    let k = fog(zz.max(near)) * near_fade.max(0.0);
+                    if t.dark {
+                        Color32::from_gray((255.0 * k) as u8)
+                    } else {
+                        lerp_c(bg, Color32::WHITE, k)
+                    }
+                },
+            );
         }
         // vanishing-point glow and title
         let vp = proj(v3(0.0, 0.0, far)).unwrap_or(rect.center());
@@ -733,7 +808,13 @@ impl Widget for ImageTunnel {
         if !self.title.is_empty() {
             let c = rect.center();
             painter.text(c + vec2(0.0, -8.0), Align2::CENTER_CENTER, &self.title, display_font(ui, 30.0), t.foreground);
-            painter.text(c + vec2(0.0, 22.0), Align2::CENTER_CENTER, &self.subtitle, FontId::proportional(12.5), t.muted_foreground);
+            painter.text(
+                c + vec2(0.0, 22.0),
+                Align2::CENTER_CENTER,
+                &self.subtitle,
+                FontId::proportional(12.5),
+                t.muted_foreground,
+            );
         }
         response
     }
@@ -857,14 +938,23 @@ impl Widget for SpiralSlider {
                 continue;
             }
             let back = |v: f32| ((th0 + (v - 0.5) * arc).cos()).max(0.0);
-            surface_grid(&painter, Some(tex), uv, 6, 8, vec2(panel_w, r * arc), 8.0, |u, v| cam.pt(pt3(u, v)), |u, v| {
-                let b = back(v);
-                let k = b * self.frost;
-                let c = lerp_c(Color32::WHITE, lerp_c(frost_c, bg, 0.3), k * 0.7);
-                c.gamma_multiply((1.0 - 0.3 * k) * edge_alpha(rect, cam.pt(pt3(u, v)).x, 80.0))
-            });
+            surface_grid(
+                &painter,
+                Some(tex),
+                uv,
+                6,
+                8,
+                vec2(panel_w, r * arc),
+                8.0,
+                |u, v| cam.pt(pt3(u, v)),
+                |u, v| {
+                    let b = back(v);
+                    let k = b * self.frost;
+                    let c = lerp_c(Color32::WHITE, lerp_c(frost_c, bg, 0.3), k * 0.7);
+                    c.gamma_multiply((1.0 - 0.3 * k) * edge_alpha(rect, cam.pt(pt3(u, v)).x, 80.0))
+                },
+            );
         }
         response
     }
 }
-

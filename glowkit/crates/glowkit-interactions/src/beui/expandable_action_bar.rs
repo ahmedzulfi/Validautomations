@@ -190,7 +190,13 @@ impl ExpandableActionBar {
             icon(&clip, it.icon, ic, 15.0, fg, 1.4);
             let ir = clip.with_clip_rect(r.intersect(bar.shrink(2.0)));
             let lx = r.min.x + slot - 4.0 + (1.0 - k) * -8.0;
-            let lr = ir.text(pos2(lx, r.center().y), Align2::LEFT_CENTER, &it.label, FontId::proportional(13.0), with_alpha(fg, k));
+            let lr = ir.text(
+                pos2(lx, r.center().y),
+                Align2::LEFT_CENTER,
+                &it.label,
+                FontId::proportional(13.0),
+                with_alpha(fg, k),
+            );
             let mut ex = lr.max.x + 6.0;
             if !it.shortcut.is_empty() {
                 ir.text(
@@ -215,7 +221,13 @@ impl ExpandableActionBar {
         }
         if self.toggle {
             let hovb = ptr.is_some_and(|p| btn.contains(p));
-            painter.rect(btn, cr(16.0), if hovb { hover_fill(&t) } else { well(&t) }, hairline(&t), egui::StrokeKind::Inside);
+            painter.rect(
+                btn,
+                cr(16.0),
+                if hovb { hover_fill(&t) } else { well(&t) },
+                hairline(&t),
+                egui::StrokeKind::Inside,
+            );
             // arrows that point out (expand) or in (collapse)
             let ic = pos2(btn.min.x + 18.0, btn.center().y);
             let k = spring(ui, id.with("arrow"), if st.open { 1.0 } else { 0.0 }, 300.0, 22.0);
@@ -232,7 +244,13 @@ impl ExpandableActionBar {
                 painter.line_segment([tip, tip + n1], st_);
                 painter.line_segment([tip, tip + n2], st_);
             }
-            painter.text(pos2(btn.min.x + 30.0, btn.center().y), Align2::LEFT_CENTER, label, FontId::proportional(12.5), t.foreground);
+            painter.text(
+                pos2(btn.min.x + 30.0, btn.center().y),
+                Align2::LEFT_CENTER,
+                label,
+                FontId::proportional(12.5),
+                t.foreground,
+            );
         }
         clicked
     }

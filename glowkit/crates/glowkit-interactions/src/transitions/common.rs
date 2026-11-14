@@ -210,7 +210,12 @@ pub(crate) struct Change<T> {
 
 /// Track changes of `value`, remembering the previous one and when it changed. Requests repaints
 /// for `horizon` seconds after a change.
-pub(crate) fn change<T: Clone + PartialEq + Send + Sync + 'static>(ui: &Ui, id: Id, value: &T, horizon: f32) -> Change<T> {
+pub(crate) fn change<T: Clone + PartialEq + Send + Sync + 'static>(
+    ui: &Ui,
+    id: Id,
+    value: &T,
+    horizon: f32,
+) -> Change<T> {
     let now = ui.input(|i| i.time);
     let c = glowkit_core::with_state(
         ui,
@@ -419,13 +424,7 @@ pub(crate) fn avatar(painter: &Painter, center: Pos2, r: f32, tone: [Color32; 2]
 pub(crate) fn more_chip(painter: &Painter, t: &Theme, center: Pos2, r: f32, n: usize, ring: Color32) {
     painter.circle_filled(center, r + (r * 0.09).max(1.5), ring);
     painter.circle_filled(center, r, if t.dark { shade(t.muted, 0.14) } else { mix(t.muted, t.border, 0.8) });
-    painter.text(
-        center,
-        egui::Align2::CENTER_CENTER,
-        format!("+{n}"),
-        FontId::proportional(r * 0.78),
-        t.foreground,
-    );
+    painter.text(center, egui::Align2::CENTER_CENTER, format!("+{n}"), FontId::proportional(r * 0.78), t.foreground);
 }
 
 /// Points of a cubic bezier.

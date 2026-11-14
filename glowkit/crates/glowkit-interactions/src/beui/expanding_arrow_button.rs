@@ -104,7 +104,13 @@ impl egui::Widget for ExpandingArrowButton {
         let la = (1.0 - k * 1.8).clamp(0.0, 1.0);
         if la > 0.0 {
             let clip = painter.with_clip_rect(Rect::from_min_max(pos2(block.max.x, rect.min.y), rect.max));
-            clip.text(pos2(label_x, rect.center().y), Align2::LEFT_CENTER, &self.label, FontId::proportional(fs), with_alpha(Color32::WHITE, la));
+            clip.text(
+                pos2(label_x, rect.center().y),
+                Align2::LEFT_CENTER,
+                &self.label,
+                FontId::proportional(fs),
+                with_alpha(Color32::WHITE, la),
+            );
         }
         // the dotted chevrons: one at rest, a marching train when expanded
         let ink = contrast_text(self.accent);

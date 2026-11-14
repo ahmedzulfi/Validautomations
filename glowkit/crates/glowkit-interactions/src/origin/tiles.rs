@@ -1,6 +1,6 @@
 //! Material showpieces: a furry app-icon tile and a turning ring of iridescent glass slabs.
 
-use super::common::{h01, idle_secs, lerp_rgb, ramp, strip, Cam, V3, v3};
+use super::common::{h01, idle_secs, lerp_rgb, ramp, strip, v3, Cam, V3};
 use egui::epaint::Mesh;
 use egui::{pos2, vec2, Color32, CursorIcon, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Vec2, Widget};
 use glowkit_core::color::{hex, with_alpha};
@@ -62,8 +62,15 @@ impl PlushMark {
             }
             PlushMark::Bolt => {
                 let (x, y) = (p.x, p.y);
-                let upper = y < 0.05 && y > -0.7 && x > -0.35 + (y + 0.7) * 0.25 - 0.05 && x < 0.25 + (y + 0.7) * 0.05 && x - y * 0.55 < 0.35;
-                let lower = (-0.05..0.72).contains(&y) && x > -0.2 + (y * 0.1) && x < 0.42 - (y + 0.05) * 0.75 && x + 0.1 > (y - 0.05) * 0.2 - 0.25;
+                let upper = y < 0.05
+                    && y > -0.7
+                    && x > -0.35 + (y + 0.7) * 0.25 - 0.05
+                    && x < 0.25 + (y + 0.7) * 0.05
+                    && x - y * 0.55 < 0.35;
+                let lower = (-0.05..0.72).contains(&y)
+                    && x > -0.2 + (y * 0.1)
+                    && x < 0.42 - (y + 0.05) * 0.75
+                    && x + 0.1 > (y - 0.05) * 0.2 - 0.25;
                 if upper || lower {
                     Some(0)
                 } else {
@@ -159,13 +166,23 @@ impl Widget for PlushTile {
         } else {
             None
         });
-        let presence = glowkit_core::anim::follow(ui, id.with("presence"), if pointer.is_some() { 1.0 } else { 0.0 }, 6.0);
-        let pf = glowkit_core::anim::spring2(ui, id.with("ptr"), pointer.unwrap_or(rect.center()).to_vec2(), 120.0, 18.0).to_pos2();
+        let presence =
+            glowkit_core::anim::follow(ui, id.with("presence"), if pointer.is_some() { 1.0 } else { 0.0 }, 6.0);
+        let pf =
+            glowkit_core::anim::spring2(ui, id.with("ptr"), pointer.unwrap_or(rect.center()).to_vec2(), 120.0, 18.0)
+                .to_pos2();
         let painter = ui.painter_at(outer);
         let base = self.base.unwrap_or(hex("#F2EBDD"));
         let cols = self.colors.unwrap_or([hex("#F0508C"), hex("#7C5CFF"), hex("#14B8A6"), hex("#F59E0B")]);
         let radius = self.size * 0.24;
-        paint::soft_shadow(&painter, rect.translate(vec2(0.0, 10.0)), radius, 22.0, Vec2::ZERO, with_alpha(Color32::BLACK, if t.dark { 0.6 } else { 0.25 }));
+        paint::soft_shadow(
+            &painter,
+            rect.translate(vec2(0.0, 10.0)),
+            radius,
+            22.0,
+            Vec2::ZERO,
+            with_alpha(Color32::BLACK, if t.dark { 0.6 } else { 0.25 }),
+        );
         // skin under the fur
         let skin_of = |uv: Vec2| -> Color32 {
             match self.mark.sample(uv) {
@@ -241,7 +258,12 @@ impl Widget for PlushTile {
         }
         painter.add(Shape::mesh(mesh));
         // soft top light
-        paint::glow(&painter, rect.min + rect.size() * vec2(0.32, 0.25), self.size * 0.55, with_alpha(Color32::WHITE, 0.08));
+        paint::glow(
+            &painter,
+            rect.min + rect.size() * vec2(0.32, 0.25),
+            self.size * 0.55,
+            with_alpha(Color32::WHITE, 0.08),
+        );
         response.on_hover_cursor(CursorIcon::Grab)
     }
 }
@@ -325,7 +347,9 @@ impl Widget for CorollaGleam {
         let painter = ui.painter_at(rect);
         let bg = self.background.unwrap_or(t.background);
         painter.rect_filled(rect, 0.0, bg);
-        let film = self.film.clone().unwrap_or_else(|| vec![hex("#FF8AD8"), hex("#8B5CF6"), hex("#4F46E5"), hex("#14B8A6"), hex("#F59E0B"), hex("#F472B6")]);
+        let film = self.film.clone().unwrap_or_else(|| {
+            vec![hex("#FF8AD8"), hex("#8B5CF6"), hex("#4F46E5"), hex("#14B8A6"), hex("#F59E0B"), hex("#F472B6")]
+        });
         let unit = rect.height().min(rect.width() * 0.55);
         let cam = Cam { center: pos2(rect.center().x, rect.max.y + unit * 0.04), focal: unit * 3.5, dist: 7.0 };
         let yaw = time * 0.18 * self.speed + lean.x * 0.4;
@@ -357,7 +381,8 @@ impl Widget for CorollaGleam {
             let normal = v3(-th.sin(), 0.0, th.cos());
             let along = radial * so + v3(0.0, co, 0.0);
             let across = radial * co - v3(0.0, so, 0.0);
-            let place = |l: f32, w: f32, off: f32| -> V3 { (radial * r0 + along * l + across * w + normal * off).rot_x(pitch) };
+            let place =
+                |l: f32, w: f32, off: f32| -> V3 { (radial * r0 + along * l + across * w + normal * off).rot_x(pitch) };
             let proj = |p: V3| cam.project(p).map(|x| x.0).unwrap_or(cam.center);
             let front: Vec<Pos2> = outline.iter().map(|(l, w)| proj(place(*l, *w, thick))).collect();
             let back: Vec<Pos2> = outline.iter().map(|(l, w)| proj(place(*l, *w, -thick))).collect();
@@ -382,7 +407,8 @@ impl Widget for CorollaGleam {
                 lerp_rgb(c, Color32::WHITE, sheen + (y - 0.8).max(0.0) * 0.25)
             };
             // edge band (thickness) between the two faces
-            let edge_c = with_alpha(lerp_rgb(glowkit_core::color::gradient_cyclic(&film, hue + 0.3), Color32::WHITE, 0.3), 0.85);
+            let edge_c =
+                with_alpha(lerp_rgb(glowkit_core::color::gradient_cyclic(&film, hue + 0.3), Color32::WHITE, 0.3), 0.85);
             let mut band = Mesh::default();
             let m = s.front.len();
             for i in 0..m {
@@ -403,7 +429,9 @@ impl Widget for CorollaGleam {
         }
         // fade into the floor
         let fade_h = unit * 0.12;
-        paint::shader_grid(&painter, Rect::from_min_max(pos2(rect.min.x, rect.max.y - fade_h), rect.max), 1, 4, |uv| with_alpha(bg, uv.y));
+        paint::shader_grid(&painter, Rect::from_min_max(pos2(rect.min.x, rect.max.y - fade_h), rect.max), 1, 4, |uv| {
+            with_alpha(bg, uv.y)
+        });
         let _ = ramp;
         response
     }

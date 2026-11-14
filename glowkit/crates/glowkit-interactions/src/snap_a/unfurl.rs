@@ -126,13 +126,22 @@ fn roller(p: &egui::Painter, c: Pos2, len: f32, r: f32, spin: f32, alpha: f32) {
         let a = (spin + g as f32 * 2.1).rem_euclid(PI * 2.0);
         if a < PI {
             let y = c.y - a.cos() * r;
-            p.line_segment([pos2(rect.min.x + 2.0, y), pos2(rect.max.x - 2.0, y)], Stroke::new(0.7, with_alpha(hex("#3B200B"), 0.35 * alpha * a.sin())));
+            p.line_segment(
+                [pos2(rect.min.x + 2.0, y), pos2(rect.max.x - 2.0, y)],
+                Stroke::new(0.7, with_alpha(hex("#3B200B"), 0.35 * alpha * a.sin())),
+            );
         }
     }
     // knobs
     for side in [-1.0f32, 1.0] {
         let k = pos2(c.x + side * (len * 0.5 + r * 0.9), c.y);
-        clay(p, pos2(c.x + side * (len * 0.5 + r * 0.2), c.y), vec2(r * 0.5, r * 0.9), 0.0, with_alpha(hex("#B88A35"), alpha));
+        clay(
+            p,
+            pos2(c.x + side * (len * 0.5 + r * 0.2), c.y),
+            vec2(r * 0.5, r * 0.9),
+            0.0,
+            with_alpha(hex("#B88A35"), alpha),
+        );
         clay(p, k, vec2(r * 0.95, r * 1.15), 0.0, with_alpha(hex("#C9A04A"), alpha));
         p.add(Shape::convex_polygon(
             vec![k + vec2(side * r * 0.8, -r * 0.5), k + vec2(side * r * 2.0, 0.0), k + vec2(side * r * 0.8, r * 0.5)],
@@ -152,7 +161,14 @@ fn parchment(p: &egui::Painter, rect: Rect, seed: f32, alpha: f32) {
         for i in 0..=cols {
             let (u, v) = (i as f32 / cols as f32, j as f32 / rows as f32);
             let y = rect.min.y + v * rect.height();
-            let wave = ((y * 0.05 + seed).sin() * 1.2 + (y * 0.13).sin() * 0.6) * if i == 0 { 1.0 } else if i == cols { -1.0 } else { 0.0 };
+            let wave = ((y * 0.05 + seed).sin() * 1.2 + (y * 0.13).sin() * 0.6)
+                * if i == 0 {
+                    1.0
+                } else if i == cols {
+                    -1.0
+                } else {
+                    0.0
+                };
             let x = rect.min.x + u * rect.width() + wave;
             let n = fbm3(u * 3.0 + seed, y * 0.012, 0.5, 3) * 0.5 + 0.5;
             let side = (1.0 - (u - 0.5).abs() * 2.0).clamp(0.0, 1.0);
@@ -277,8 +293,17 @@ impl Widget for UnfurlScroll {
             for side in [-1.0f32, 1.0] {
                 clay(&painter, pos2(c.x + side * (w * 0.5 + 4.0), c.y), vec2(6.0, r * 0.9), 0.0, hex("#C9A04A"));
             }
-            painter.line_segment([body.left_bottom() + vec2(6.0, -r * 0.55), body.right_bottom() + vec2(-6.0, -r * 0.55)], Stroke::new(0.8, with_alpha(hex("#7B5527"), 0.35 * a)));
-            painter.text(c, Align2::CENTER_CENTER, spaced(&self.label), FontId::proportional(11.0), with_alpha(hex("#5A3A16"), a));
+            painter.line_segment(
+                [body.left_bottom() + vec2(6.0, -r * 0.55), body.right_bottom() + vec2(-6.0, -r * 0.55)],
+                Stroke::new(0.8, with_alpha(hex("#7B5527"), 0.35 * a)),
+            );
+            painter.text(
+                c,
+                Align2::CENTER_CENTER,
+                spaced(&self.label),
+                FontId::proportional(11.0),
+                with_alpha(hex("#5A3A16"), a),
+            );
         }
         if tip > 0.001 {
             let a = tip;
@@ -288,7 +313,9 @@ impl Widget for UnfurlScroll {
                 parchment(&painter, pr, 3.7, a);
                 // curl shading just above the bottom roller
                 let curl = Rect::from_min_max(pos2(pr.min.x, pr.max.y - 14.0), pr.max);
-                glowkit_core::paint::shader_grid(&painter, curl, 1, 4, |uv| Color32::from_black_alpha((uv.y * uv.y * 60.0) as u8));
+                glowkit_core::paint::shader_grid(&painter, curl, 1, 4, |uv| {
+                    Color32::from_black_alpha((uv.y * uv.y * 60.0) as u8)
+                });
                 // ink
                 let ink = hex("#4A2E14");
                 let red = hex("#9B1C1F");
@@ -298,19 +325,46 @@ impl Widget for UnfurlScroll {
                 let x0 = pr.min.x + 18.0;
                 let mut y = pr.min.y + 26.0;
                 let k0 = reveal(0.0);
-                clip.text(pos2(center.x, y), Align2::CENTER_TOP, "~ BY ORDER OF THE GUILD ~", FontId::proportional(6.5), with_alpha(ink, 0.6 * k0));
+                clip.text(
+                    pos2(center.x, y),
+                    Align2::CENTER_TOP,
+                    "~ BY ORDER OF THE GUILD ~",
+                    FontId::proportional(6.5),
+                    with_alpha(ink, 0.6 * k0),
+                );
                 y += 14.0;
                 let k1 = reveal(1.0);
-                clip.text(pos2(center.x, y), Align2::CENTER_TOP, self.title.0.to_uppercase(), FontId::proportional(12.0), with_alpha(ink, k1));
+                clip.text(
+                    pos2(center.x, y),
+                    Align2::CENTER_TOP,
+                    self.title.0.to_uppercase(),
+                    FontId::proportional(12.0),
+                    with_alpha(ink, k1),
+                );
                 y += 16.0;
-                clip.text(pos2(center.x, y), Align2::CENTER_TOP, self.title.1.to_uppercase(), FontId::proportional(12.0), with_alpha(ink, k1));
+                clip.text(
+                    pos2(center.x, y),
+                    Align2::CENTER_TOP,
+                    self.title.1.to_uppercase(),
+                    FontId::proportional(12.0),
+                    with_alpha(ink, k1),
+                );
                 y += 20.0;
                 let k2 = reveal(2.0);
-                clip.line_segment([pos2(center.x - 30.0 * k2, y), pos2(center.x + 30.0 * k2, y)], Stroke::new(0.8, with_alpha(ink, 0.6)));
+                clip.line_segment(
+                    [pos2(center.x - 30.0 * k2, y), pos2(center.x + 30.0 * k2, y)],
+                    Stroke::new(0.8, with_alpha(ink, 0.6)),
+                );
                 clip.circle_filled(pos2(center.x, y), 2.0 * k2, with_alpha(red, k2));
                 y += 12.0;
                 let k3 = reveal(3.0);
-                let cap = clip.text(pos2(x0, y - 2.0), Align2::LEFT_TOP, "B", FontId::proportional(26.0), with_alpha(red, k3));
+                let cap = clip.text(
+                    pos2(x0, y - 2.0),
+                    Align2::LEFT_TOP,
+                    "B",
+                    FontId::proportional(26.0),
+                    with_alpha(red, k3),
+                );
                 for (i, line) in self.lines.iter().enumerate() {
                     let k = reveal(3.0 + i as f32);
                     if k <= 0.0 {
@@ -320,13 +374,22 @@ impl Widget for UnfurlScroll {
                     let g = clip.layout_no_wrap(line.clone(), FontId::proportional(8.6), ink);
                     let lr = Rect::from_min_size(pos2(lx, y), g.size());
                     // the quill writes left to right
-                    let lc = clip.with_clip_rect(clip.clip_rect().intersect(Rect::from_min_max(lr.min - vec2(2.0, 2.0), pos2(lr.min.x + lr.width() * k + 2.0, lr.max.y + 2.0))));
+                    let lc = clip.with_clip_rect(clip.clip_rect().intersect(Rect::from_min_max(
+                        lr.min - vec2(2.0, 2.0),
+                        pos2(lr.min.x + lr.width() * k + 2.0, lr.max.y + 2.0),
+                    )));
                     lc.galley(lr.min, g, ink);
                     y += 12.5;
                 }
                 y += 8.0;
                 let ks = reveal(lines_total - 1.0);
-                clip.text(pos2(x0, y), Align2::LEFT_TOP, &self.signature, FontId::proportional(7.5), with_alpha(ink, 0.75 * ks));
+                clip.text(
+                    pos2(x0, y),
+                    Align2::LEFT_TOP,
+                    &self.signature,
+                    FontId::proportional(7.5),
+                    with_alpha(ink, 0.75 * ks),
+                );
                 if seal > 0.0 {
                     let sc = pos2(center.x, (y + 44.0).min(pr.max.y - 40.0));
                     let k = ease(Easing::OutBack, seal);
@@ -338,11 +401,25 @@ impl Widget for UnfurlScroll {
                 }
             }
             roller(&painter, pos2(center.x, top_y), rod_len, roll_r, 0.0, a);
-            roller(&painter, pos2(center.x, top_y + paper_len + roll_r * (0.2 + tip * 0.8)), rod_len, roll_r, paper_len / roll_r, a);
+            roller(
+                &painter,
+                pos2(center.x, top_y + paper_len + roll_r * (0.2 + tip * 0.8)),
+                rod_len,
+                roll_r,
+                paper_len / roll_r,
+                a,
+            );
         }
         // caption
-        let hint = if st.open { "Click the scroll to roll it back up" } else { "Press the button to unfurl the charter" };
-        painter.text(pos2(center.x, rect.max.y - 10.0), Align2::CENTER_BOTTOM, hint, FontId::proportional(11.5), t.muted_foreground);
+        let hint =
+            if st.open { "Click the scroll to roll it back up" } else { "Press the button to unfurl the charter" };
+        painter.text(
+            pos2(center.x, rect.max.y - 10.0),
+            Align2::CENTER_BOTTOM,
+            hint,
+            FontId::proportional(11.5),
+            t.muted_foreground,
+        );
         response
     }
 }

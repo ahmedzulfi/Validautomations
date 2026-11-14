@@ -84,7 +84,10 @@ impl<'a> FeedbackWidget<'a> {
         let close_c = pos2(panel.max.x - 22.0, panel.min.y + 22.0);
         let cancel = Rect::from_min_size(pos2(panel.min.x + 12.0, panel.max.y - 48.0), vec2(134.0, 36.0));
         let submit = Rect::from_min_size(pos2(panel.max.x - 146.0, panel.max.y - 48.0), vec2(134.0, 36.0));
-        let text_r = Rect::from_min_max(pos2(panel.min.x + 12.0, panel.min.y + 44.0), pos2(panel.max.x - 12.0, panel.max.y - 58.0));
+        let text_r = Rect::from_min_max(
+            pos2(panel.min.x + 12.0, panel.min.y + 44.0),
+            pos2(panel.max.x - 12.0, panel.max.y - 58.0),
+        );
         let click = if resp.clicked() { resp.interact_pointer_pos() } else { None };
         let mut sent = None;
         let mut next = st0;
@@ -150,7 +153,11 @@ impl<'a> FeedbackWidget<'a> {
             painter.line_segment([pos2(pg.min.x, pg.min.y + 46.0), pos2(pg.max.x, pg.min.y + 46.0)], hairline(&t));
             bar(20.0, 66.0, 300.0, 10.0);
             bar(20.0, 88.0, 200.0, 10.0);
-            painter.rect_filled(Rect::from_min_size(pg.min + vec2(20.0, 112.0), vec2(pg.width() - 40.0, 92.0)), cr(14.0), well(&t));
+            painter.rect_filled(
+                Rect::from_min_size(pg.min + vec2(20.0, 112.0), vec2(pg.width() - 40.0, 92.0)),
+                cr(14.0),
+                well(&t),
+            );
             bar(20.0, 222.0, 270.0, 10.0);
         }
         let k_open = ((rect.width() - btn.width()) / (panel.width() - btn.width())).clamp(0.0, 1.0);
@@ -169,7 +176,13 @@ impl<'a> FeedbackWidget<'a> {
             Phase::Open => {
                 let a = ((k_open - 0.5) / 0.5).clamp(0.0, 1.0);
                 let o = rect.min - panel.min;
-                clip.text(pos2(panel.min.x + 16.0, panel.min.y + 22.0) + o, Align2::LEFT_CENTER, &self.title, FontId::proportional(14.0), with_alpha(t.foreground, a));
+                clip.text(
+                    pos2(panel.min.x + 16.0, panel.min.y + 22.0) + o,
+                    Align2::LEFT_CENTER,
+                    &self.title,
+                    FontId::proportional(14.0),
+                    with_alpha(t.foreground, a),
+                );
                 let cc = close_c + o;
                 clip.circle_filled(cc, 11.0, with_alpha(hover_fill(&t), a));
                 icon(&clip, BeIcon::Close, cc, 8.0, with_alpha(t.muted_foreground, a), 1.3);
@@ -179,7 +192,12 @@ impl<'a> FeedbackWidget<'a> {
                     has_text = !g.is_empty();
                     let shown = if g.is_empty() { "Share an idea or report a bug" } else { g };
                     let col = if g.is_empty() { t.muted_foreground } else { t.foreground };
-                    let gal = clip.layout(shown.to_string(), FontId::proportional(13.0), with_alpha(col, a), text_r.width() - 20.0);
+                    let gal = clip.layout(
+                        shown.to_string(),
+                        FontId::proportional(13.0),
+                        with_alpha(col, a),
+                        text_r.width() - 20.0,
+                    );
                     clip.galley(text_r.min + o + vec2(10.0, 10.0), gal, col);
                 } else if a > 0.9 {
                     let te = egui::TextEdit::multiline(self.draft)
@@ -194,13 +212,37 @@ impl<'a> FeedbackWidget<'a> {
                     has_text = !self.draft.trim().is_empty();
                 }
                 let hov_c = ptr.is_some_and(|p| cancel.contains(p));
-                clip.rect(cancel.translate(o), cr(18.0), with_alpha(if hov_c { hover_fill(&t) } else { well(&t) }, a), Stroke::NONE, egui::StrokeKind::Inside);
-                clip.text(cancel.center() + o, Align2::CENTER_CENTER, "Cancel", FontId::proportional(13.0), with_alpha(t.foreground, a));
+                clip.rect(
+                    cancel.translate(o),
+                    cr(18.0),
+                    with_alpha(if hov_c { hover_fill(&t) } else { well(&t) }, a),
+                    Stroke::NONE,
+                    egui::StrokeKind::Inside,
+                );
+                clip.text(
+                    cancel.center() + o,
+                    Align2::CENTER_CENTER,
+                    "Cancel",
+                    FontId::proportional(13.0),
+                    with_alpha(t.foreground, a),
+                );
                 let ready = if has_text { 1.0 } else { 0.45 };
                 let hov_s = ptr.is_some_and(|p| submit.contains(p)) && has_text;
-                clip.rect_filled(submit.translate(o), cr(18.0), with_alpha(if hov_s { mix(t.primary, t.primary_foreground, 0.12) } else { t.primary }, a * ready));
-                clip.text(submit.center() + o, Align2::CENTER_CENTER, "Submit", FontId::proportional(13.0), with_alpha(t.primary_foreground, a));
-                if ptr.is_some_and(|p| cancel.contains(p) || (submit.contains(p) && has_text) || close_c.distance(p) < 12.0) {
+                clip.rect_filled(
+                    submit.translate(o),
+                    cr(18.0),
+                    with_alpha(if hov_s { mix(t.primary, t.primary_foreground, 0.12) } else { t.primary }, a * ready),
+                );
+                clip.text(
+                    submit.center() + o,
+                    Align2::CENTER_CENTER,
+                    "Submit",
+                    FontId::proportional(13.0),
+                    with_alpha(t.primary_foreground, a),
+                );
+                if ptr.is_some_and(|p| {
+                    cancel.contains(p) || (submit.contains(p) && has_text) || close_c.distance(p) < 12.0
+                }) {
                     ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                 }
             }
@@ -221,7 +263,13 @@ impl<'a> FeedbackWidget<'a> {
                 if l2 > 0.0 {
                     clip.line_segment([pts[1], pts[1] + (pts[2] - pts[1]) * l2], stc);
                 }
-                clip.text(pos2(rect.min.x + 44.0, rect.center().y), Align2::LEFT_CENTER, "Thanks for the feedback!", FontId::proportional(13.0), with_alpha(t.foreground, a));
+                clip.text(
+                    pos2(rect.min.x + 44.0, rect.center().y),
+                    Align2::LEFT_CENTER,
+                    "Thanks for the feedback!",
+                    FontId::proportional(13.0),
+                    with_alpha(t.foreground, a),
+                );
             }
         }
         sent

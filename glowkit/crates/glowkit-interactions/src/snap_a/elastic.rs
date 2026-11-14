@@ -128,9 +128,11 @@ impl ElasticFrame {
             })
             .collect();
         // outward: make sure normals point away from the centre
-        let normals: Vec<Vec2> = normals.iter().zip(&rest).map(|(n, p)| if n.dot(*p - sq.center()) < 0.0 { -*n } else { *n }).collect();
+        let normals: Vec<Vec2> =
+            normals.iter().zip(&rest).map(|(n, p)| if n.dot(*p - sq.center()) < 0.0 { -*n } else { *n }).collect();
         let mut pointer = ui.input(|i| i.pointer.hover_pos()).filter(|p| rect.contains(*p));
-        let st0: StringState = glowkit_core::state(ui, id, || StringState { d: vec![0.0; N], v: vec![0.0; N], ghost_t: 0.0 });
+        let st0: StringState =
+            glowkit_core::state(ui, id, || StringState { d: vec![0.0; N], v: vec![0.0; N], ghost_t: 0.0 });
         let mut ghost: Option<Pos2> = None;
         if self.autoplay && idle > 2.0 {
             // circle the frame, dipping in to pluck each side and pulling out again
@@ -139,63 +141,75 @@ impl ElasticFrame {
             let k = (g / 2.4).fract();
             let ang = side * PI * 0.5 + 0.35 + k * 0.6;
             let dir = vec2(ang.cos(), ang.sin());
-            let reach = self.size * 0.5 + 10.0 + (k * PI).sin().powf(0.5) * 70.0 * (1.0 - sstep(0.75, 1.0, k)) + sstep(0.75, 1.0, k) * 140.0;
+            let reach = self.size * 0.5
+                + 10.0
+                + (k * PI).sin().powf(0.5) * 70.0 * (1.0 - sstep(0.75, 1.0, k))
+                + sstep(0.75, 1.0, k) * 140.0;
             let p = sq.center() + dir * reach * 1.05;
             ghost = Some(p);
             pointer = Some(p);
         }
         let reach = self.reach;
         let tension = self.tension;
-        let st = glowkit_core::with_state(ui, id, || st0.clone(), |s| {
-            s.ghost_t += wdt;
-            // grab: points near the pointer (along the loop) are pulled toward it
-            let mut target: Vec<Option<f32>> = vec![None; N];
-            if let Some(p) = pointer {
-                let (best, bd) = rest
-                    .iter()
-                    .enumerate()
-                    .map(|(i, q)| (i, q.distance(p)))
-                    .min_by(|a, b| a.1.total_cmp(&b.1))
-                    .unwrap_or((0, f32::MAX));
-                let out = (p - rest[best]).dot(normals[best]);
-                if out > -4.0 && bd < reach {
-                    let pull = out.max(0.0);
-                    let span = 22.0 + pull * 0.55;
-                    for j in 0..N {
-                        let mut di = (j as i32 - best as i32).abs() as f32;
-                        di = di.min(N as f32 - di);
-                        let w = (-(di / span * 4.0).powi(2) * 0.5).exp();
-                        if w > 0.02 {
-                            target[j] = Some(pull * w);
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0.clone(),
+            |s| {
+                s.ghost_t += wdt;
+                // grab: points near the pointer (along the loop) are pulled toward it
+                let mut target: Vec<Option<f32>> = vec![None; N];
+                if let Some(p) = pointer {
+                    let (best, bd) = rest
+                        .iter()
+                        .enumerate()
+                        .map(|(i, q)| (i, q.distance(p)))
+                        .min_by(|a, b| a.1.total_cmp(&b.1))
+                        .unwrap_or((0, f32::MAX));
+                    let out = (p - rest[best]).dot(normals[best]);
+                    if out > -4.0 && bd < reach {
+                        let pull = out.max(0.0);
+                        let span = 22.0 + pull * 0.55;
+                        for j in 0..N {
+                            let mut di = (j as i32 - best as i32).abs() as f32;
+                            di = di.min(N as f32 - di);
+                            let w = (-(di / span * 4.0).powi(2) * 0.5).exp();
+                            if w > 0.02 {
+                                target[j] = Some(pull * w);
+                            }
                         }
                     }
                 }
-            }
-            let steps = 4;
-            let h = dt / steps as f32;
-            for _ in 0..steps {
-                let d = s.d.clone();
-                for i in 0..N {
-                    let lap = d[(i + N - 1) % N] + d[(i + 1) % N] - 2.0 * d[i];
-                    let vlap = s.v[(i + N - 1) % N] + s.v[(i + 1) % N] - 2.0 * s.v[i];
-                    // stiffness + a little viscosity along the string so kinks smooth out
-                    let mut acc = 2400.0 * tension * lap + 14.0 * vlap - 60.0 * tension * d[i] - 3.2 * s.v[i];
-                    if let Some(tg) = target[i] {
-                        acc += 900.0 * (tg - d[i]) - 30.0 * s.v[i];
+                let steps = 4;
+                let h = dt / steps as f32;
+                for _ in 0..steps {
+                    let d = s.d.clone();
+                    for i in 0..N {
+                        let lap = d[(i + N - 1) % N] + d[(i + 1) % N] - 2.0 * d[i];
+                        let vlap = s.v[(i + N - 1) % N] + s.v[(i + 1) % N] - 2.0 * s.v[i];
+                        // stiffness + a little viscosity along the string so kinks smooth out
+                        let mut acc = 2400.0 * tension * lap + 14.0 * vlap - 60.0 * tension * d[i] - 3.2 * s.v[i];
+                        if let Some(tg) = target[i] {
+                            acc += 900.0 * (tg - d[i]) - 30.0 * s.v[i];
+                        }
+                        s.v[i] += acc * h;
                     }
-                    s.v[i] += acc * h;
+                    for i in 0..N {
+                        s.d[i] += s.v[i] * h;
+                        s.d[i] = s.d[i].clamp(-30.0, reach + 40.0);
+                    }
                 }
-                for i in 0..N {
-                    s.d[i] += s.v[i] * h;
-                    s.d[i] = s.d[i].clamp(-30.0, reach + 40.0);
-                }
-            }
-            s.clone()
-        });
+                s.clone()
+            },
+        );
         glowkit_core::animate(ui);
         // contents
         let inner = sq.shrink(self.corner * 0.35 + 12.0);
-        let mut child = ui.new_child(egui::UiBuilder::new().max_rect(inner).layout(egui::Layout::centered_and_justified(egui::Direction::TopDown)));
+        let mut child = ui.new_child(
+            egui::UiBuilder::new()
+                .max_rect(inner)
+                .layout(egui::Layout::centered_and_justified(egui::Direction::TopDown)),
+        );
         add_contents(&mut child);
         if !ui.is_rect_visible(rect) {
             return response;

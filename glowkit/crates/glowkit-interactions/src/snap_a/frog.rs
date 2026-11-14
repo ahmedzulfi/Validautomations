@@ -107,7 +107,17 @@ fn mouth_of(base: Pos2, s: f32) -> Pos2 {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn paint_frog(p: &egui::Painter, base: Pos2, s: f32, look: Vec2, happy: f32, sad: f32, gulp: f32, time: f32, crown: f32) {
+fn paint_frog(
+    p: &egui::Painter,
+    base: Pos2,
+    s: f32,
+    look: Vec2,
+    happy: f32,
+    sad: f32,
+    gulp: f32,
+    time: f32,
+    crown: f32,
+) {
     let green = hex("#6CBF4A");
     let dark = hex("#4E9A34");
     let breathe = (time * 2.2).sin() * 0.8 * s;
@@ -143,9 +153,18 @@ fn paint_frog(p: &egui::Painter, base: Pos2, s: f32, look: Vec2, happy: f32, sad
         let lid = 0.18 + sad * 0.42;
         let top = ec + vec2(0.0, -1.0) * s;
         let lid_y = top.y - 11.0 * s + lid * 22.0 * s;
-        let lp = p.with_clip_rect(p.clip_rect().intersect(Rect::from_min_max(pos2(top.x - 13.0 * s, top.y - 13.0 * s), pos2(top.x + 13.0 * s, lid_y))));
+        let lp = p.with_clip_rect(
+            p.clip_rect()
+                .intersect(Rect::from_min_max(pos2(top.x - 13.0 * s, top.y - 13.0 * s), pos2(top.x + 13.0 * s, lid_y))),
+        );
         lp.circle_filled(top, 11.2 * s, shade(green, 0.03));
-        p.line_segment([pos2(top.x - (11.0 * s).min(((11.0 * s).powi(2) - (lid_y - top.y).powi(2)).max(0.0).sqrt()), lid_y), pos2(top.x + ((11.0 * s).powi(2) - (lid_y - top.y).powi(2)).max(0.0).sqrt(), lid_y)], Stroke::new(1.0 * s, dark));
+        p.line_segment(
+            [
+                pos2(top.x - (11.0 * s).min(((11.0 * s).powi(2) - (lid_y - top.y).powi(2)).max(0.0).sqrt()), lid_y),
+                pos2(top.x + ((11.0 * s).powi(2) - (lid_y - top.y).powi(2)).max(0.0).sqrt(), lid_y),
+            ],
+            Stroke::new(1.0 * s, dark),
+        );
     }
     // mouth
     let m = mouth_of(base, s) - vec2(0.0, breathe);
@@ -213,7 +232,9 @@ impl Widget for CookieFrog<'_> {
         let frog_base = pos2(panel.center().x, panel.max.y - 26.0);
         let mouth = mouth_of(frog_base, s);
         let rows_top = panel.max.y + 64.0;
-        let toggle_rect = |i: usize| Rect::from_min_size(pos2(x0 + inner_w - 40.0, rows_top + i as f32 * 48.0 + 8.0), vec2(40.0, 22.0));
+        let toggle_rect = |i: usize| {
+            Rect::from_min_size(pos2(x0 + inner_w - 40.0, rows_top + i as f32 * 48.0 + 8.0), vec2(40.0, 22.0))
+        };
         let btn_y = rows_top + n as f32 * 48.0 + 10.0;
         let allow = Rect::from_min_size(pos2(x0, btn_y), vec2(inner_w * 0.5 - 5.0, 40.0));
         let reject = Rect::from_min_size(pos2(x0 + inner_w * 0.5 + 5.0, btn_y), vec2(inner_w * 0.5 - 5.0, 40.0));
@@ -292,42 +313,54 @@ impl Widget for CookieFrog<'_> {
         let prefs = self.prefs.clone();
         let all_on = prefs.iter().all(|p| *p);
         let any_on = prefs.iter().any(|p| *p);
-        let st = glowkit_core::with_state(ui, id, || st0.clone(), |st| {
-            st.auto_step = auto_step;
-            st.auto_t = auto_t;
-            st.knobs.resize(n, Spring::new(0.0).with(320.0, 20.0));
-            for (k, i) in launched.iter().enumerate() {
-                let r = toggle_rect(*i);
-                st.cookies.push(Cookie { from: pos2(r.max.x - 11.0, r.center().y), age: -(k as f32) * 0.35 });
-            }
-            for i in 0..n {
-                st.knobs[i].target = if prefs[i] { 1.0 } else { 0.0 };
-                st.knobs[i].step(dt);
-            }
-            for c in &mut st.cookies {
-                let before = c.age;
-                c.age += dt;
-                if before < FLY + SNAP + BACK && c.age >= FLY + SNAP + BACK {
-                    st.gulp = 1.0;
+        let st = glowkit_core::with_state(
+            ui,
+            id,
+            || st0.clone(),
+            |st| {
+                st.auto_step = auto_step;
+                st.auto_t = auto_t;
+                st.knobs.resize(n, Spring::new(0.0).with(320.0, 20.0));
+                for (k, i) in launched.iter().enumerate() {
+                    let r = toggle_rect(*i);
+                    st.cookies.push(Cookie { from: pos2(r.max.x - 11.0, r.center().y), age: -(k as f32) * 0.35 });
                 }
-            }
-            st.cookies.retain(|c| c.age < FLY + SNAP + BACK);
-            st.gulp = (st.gulp - dt * 2.2).max(0.0);
-            st.crown.target = if all_on { 1.0 } else { 0.0 };
-            st.crown.step(dt);
-            if reject_all {
-                st.sad = 1.0;
-            }
-            st.sad = if any_on { (st.sad - dt * 3.0).max(0.0) } else { (st.sad - dt * 0.25).max(0.0) };
-            st.clone()
-        });
+                for i in 0..n {
+                    st.knobs[i].target = if prefs[i] { 1.0 } else { 0.0 };
+                    st.knobs[i].step(dt);
+                }
+                for c in &mut st.cookies {
+                    let before = c.age;
+                    c.age += dt;
+                    if before < FLY + SNAP + BACK && c.age >= FLY + SNAP + BACK {
+                        st.gulp = 1.0;
+                    }
+                }
+                st.cookies.retain(|c| c.age < FLY + SNAP + BACK);
+                st.gulp = (st.gulp - dt * 2.2).max(0.0);
+                st.crown.target = if all_on { 1.0 } else { 0.0 };
+                st.crown.step(dt);
+                if reject_all {
+                    st.sad = 1.0;
+                }
+                st.sad = if any_on { (st.sad - dt * 3.0).max(0.0) } else { (st.sad - dt * 0.25).max(0.0) };
+                st.clone()
+            },
+        );
         glowkit_core::animate(ui);
         if !ui.is_rect_visible(outer) {
             return response;
         }
         let painter = ui.painter_at(outer);
         // card
-        paint::soft_shadow(&painter, card, 16.0, 24.0, vec2(0.0, 10.0), Color32::from_black_alpha(if t.dark { 110 } else { 26 }));
+        paint::soft_shadow(
+            &painter,
+            card,
+            16.0,
+            24.0,
+            vec2(0.0, 10.0),
+            Color32::from_black_alpha(if t.dark { 110 } else { 26 }),
+        );
         let card_fill = if t.dark { shade(t.card, 0.03) } else { Color32::WHITE };
         painter.rect_filled(card, 16.0, card_fill);
         painter.rect_stroke(card, 16, Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
@@ -338,10 +371,17 @@ impl Widget for CookieFrog<'_> {
         for k in 0..3 {
             let ph = (time * 0.35 + k as f32 / 3.0).fract();
             let r = vec2(70.0, 16.0) * s * (1.0 + ph * 1.2);
-            pp.add(Shape::closed_line(ellipse_pts(pad_c, r, 0.0, 48), Stroke::new(1.0, with_alpha(Color32::WHITE, 0.45 * (1.0 - ph)))));
+            pp.add(Shape::closed_line(
+                ellipse_pts(pad_c, r, 0.0, 48),
+                Stroke::new(1.0, with_alpha(Color32::WHITE, 0.45 * (1.0 - ph))),
+            ));
         }
         clay(&pp, pad_c, vec2(66.0, 15.0) * s, 0.0, hex("#55A83A"));
-        pp.add(Shape::convex_polygon(vec![pad_c + vec2(10.0, 15.0) * s, pad_c + vec2(26.0, 16.0) * s, pad_c + vec2(4.0, 2.0) * s], hex("#9BD7C3"), Stroke::NONE));
+        pp.add(Shape::convex_polygon(
+            vec![pad_c + vec2(10.0, 15.0) * s, pad_c + vec2(26.0, 16.0) * s, pad_c + vec2(4.0, 2.0) * s],
+            hex("#9BD7C3"),
+            Stroke::NONE,
+        ));
         // where to look: the nearest cookie in flight
         let cookie_pos = |c: &Cookie| -> Option<(Pos2, f32)> {
             if c.age < 0.0 {
@@ -382,13 +422,38 @@ impl Widget for CookieFrog<'_> {
         }
         painter.rect_stroke(panel, 12, Stroke::new(6.0, card_fill), egui::StrokeKind::Outside);
         // copy + rows
-        painter.text(pos2(x0, panel.max.y + 16.0), Align2::LEFT_TOP, "Cookie preferences", FontId::proportional(17.0), t.foreground);
-        painter.text(pos2(x0, panel.max.y + 39.0), Align2::LEFT_TOP, format!("Every cookie you allow goes to {}.", self.name), FontId::proportional(12.0), t.muted_foreground);
-        painter.line_segment([pos2(x0, rows_top - 4.0), pos2(x0 + inner_w, rows_top - 4.0)], Stroke::new(1.0, t.border));
+        painter.text(
+            pos2(x0, panel.max.y + 16.0),
+            Align2::LEFT_TOP,
+            "Cookie preferences",
+            FontId::proportional(17.0),
+            t.foreground,
+        );
+        painter.text(
+            pos2(x0, panel.max.y + 39.0),
+            Align2::LEFT_TOP,
+            format!("Every cookie you allow goes to {}.", self.name),
+            FontId::proportional(12.0),
+            t.muted_foreground,
+        );
+        painter
+            .line_segment([pos2(x0, rows_top - 4.0), pos2(x0 + inner_w, rows_top - 4.0)], Stroke::new(1.0, t.border));
         for i in 0..n {
             let y = rows_top + i as f32 * 48.0;
-            painter.text(pos2(x0, y + 8.0), Align2::LEFT_TOP, &self.categories[i].0, FontId::proportional(13.0), t.foreground);
-            painter.text(pos2(x0, y + 26.0), Align2::LEFT_TOP, &self.categories[i].1, FontId::proportional(11.0), t.muted_foreground);
+            painter.text(
+                pos2(x0, y + 8.0),
+                Align2::LEFT_TOP,
+                &self.categories[i].0,
+                FontId::proportional(13.0),
+                t.foreground,
+            );
+            painter.text(
+                pos2(x0, y + 26.0),
+                Align2::LEFT_TOP,
+                &self.categories[i].1,
+                FontId::proportional(11.0),
+                t.muted_foreground,
+            );
             paint_toggle(&painter, toggle_rect(i), st.knobs[i].value, &t);
         }
         painter.rect_filled(allow, 20.0, t.foreground);

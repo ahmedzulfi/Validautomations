@@ -98,21 +98,35 @@ impl Widget for InkReveal {
         // words (keeping their trailing spaces) and which ones are accented
         let mut words: Vec<(String, bool)> = Vec::new();
         for raw in self.text.split_inclusive(' ') {
-            let acc = raw.trim().starts_with('*') && raw.trim().trim_end_matches(['.', ',', '!', '?', ';', ':']).ends_with('*');
+            let acc = raw.trim().starts_with('*')
+                && raw.trim().trim_end_matches(['.', ',', '!', '?', ';', ':']).ends_with('*');
             words.push((raw.replace('*', ""), acc));
         }
         let n = words.len().max(1);
         let ink = self.ink.unwrap_or(t.foreground);
         let faint = self.faint.unwrap_or(with_alpha(t.foreground, if t.dark { 0.16 } else { 0.14 }));
         let accent = self.accent.unwrap_or(if t.dark { hex("#FBBF24") } else { t.accent });
-        let hl = self.highlight.unwrap_or(if t.dark { with_alpha(hex("#F59E0B"), 0.35) } else { with_alpha(hex("#FDE047"), 0.75) });
+        let hl = self.highlight.unwrap_or(if t.dark {
+            with_alpha(hex("#F59E0B"), 0.35)
+        } else {
+            with_alpha(hex("#FDE047"), 0.75)
+        });
         // layout once with placeholder colors to measure
         let layout_painter = ui.painter().clone();
         let build = |colors: &dyn Fn(usize) -> Color32| {
             let mut job = LayoutJob::default();
             job.wrap.max_width = width;
             for (i, (w, _)) in words.iter().enumerate() {
-                job.append(w, 0.0, TextFormat { font_id: self.font.clone(), color: colors(i), line_height: Some(self.font.size * 1.25), ..Default::default() });
+                job.append(
+                    w,
+                    0.0,
+                    TextFormat {
+                        font_id: self.font.clone(),
+                        color: colors(i),
+                        line_height: Some(self.font.size * 1.25),
+                        ..Default::default()
+                    },
+                );
             }
             layout_painter.layout_job(job)
         };
@@ -141,10 +155,14 @@ impl Widget for InkReveal {
                 if k > 0.0 {
                     let word_len = w.trim_end().chars().count();
                     let a = measure.pos_from_cursor(CCursor { prefer_next_row: true, ..CCursor::new(char_idx) });
-                    let b = measure.pos_from_cursor(CCursor { prefer_next_row: false, ..CCursor::new(char_idx + word_len) });
+                    let b = measure
+                        .pos_from_cursor(CCursor { prefer_next_row: false, ..CCursor::new(char_idx + word_len) });
                     if (a.min.y - b.min.y).abs() < 1.0 {
                         let h = a.height();
-                        let r = Rect::from_min_max(pos2(a.min.x - 2.0, a.min.y + h * 0.52), pos2(a.min.x + (b.min.x - a.min.x + 4.0) * k, a.max.y - h * 0.08));
+                        let r = Rect::from_min_max(
+                            pos2(a.min.x - 2.0, a.min.y + h * 0.52),
+                            pos2(a.min.x + (b.min.x - a.min.x + 4.0) * k, a.max.y - h * 0.08),
+                        );
                         painter.rect_filled(r.translate(rect.min.to_vec2()), 3.0, hl);
                     }
                 }
@@ -312,7 +330,10 @@ impl InkTrail {
             let prev = line.clone();
             for i in 1..n - 1 {
                 if prev[i - 1].distance(prev[i + 1]) < 60.0 {
-                    line[i] = pos2((prev[i - 1].x + 2.0 * prev[i].x + prev[i + 1].x) * 0.25, (prev[i - 1].y + 2.0 * prev[i].y + prev[i + 1].y) * 0.25);
+                    line[i] = pos2(
+                        (prev[i - 1].x + 2.0 * prev[i].x + prev[i + 1].x) * 0.25,
+                        (prev[i - 1].y + 2.0 * prev[i].y + prev[i + 1].y) * 0.25,
+                    );
                 }
             }
         }
@@ -346,7 +367,12 @@ impl InkTrail {
         }
         painter.add(Shape::mesh(m));
         if let Some(h) = st.pts.last() {
-            glowkit_core::paint::glow(&painter, h.pos, self.width * 1.3, with_alpha(colors[1], if t.dark { 0.45 } else { 0.25 }));
+            glowkit_core::paint::glow(
+                &painter,
+                h.pos,
+                self.width * 1.3,
+                with_alpha(colors[1], if t.dark { 0.45 } else { 0.25 }),
+            );
             painter.circle_filled(h.pos, self.width * 0.42, colors[0]);
         }
     }
@@ -362,7 +388,13 @@ impl Widget for InkTrail {
             ui.painter().rect_filled(rect, t.radius * 1.4, bg);
             self.paint(ui, rect, response.id);
             if let Some(text) = &self.text {
-                ui.painter().text(rect.center(), Align2::CENTER_CENTER, text, FontId::proportional(42.0), with_alpha(t.foreground, 0.92));
+                ui.painter().text(
+                    rect.center(),
+                    Align2::CENTER_CENTER,
+                    text,
+                    FontId::proportional(42.0),
+                    with_alpha(t.foreground, 0.92),
+                );
             }
         }
         response

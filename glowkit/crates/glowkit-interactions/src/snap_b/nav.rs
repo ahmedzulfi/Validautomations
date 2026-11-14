@@ -4,8 +4,8 @@
 use super::common::{cover_uv, display_font, idle_time, image_rounded, lerp_c, semibold_font, vgrad_rect, wall_dt};
 use egui::epaint::{Mesh, Vertex};
 use egui::{
-    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Painter, Pos2, Rect, Response, Sense,
-    Shape, Stroke, StrokeKind, TextureId, Ui, Vec2, Widget,
+    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Painter, Pos2, Rect, Response, Sense, Shape, Stroke,
+    StrokeKind, TextureId, Ui, Vec2, Widget,
 };
 use glowkit_core::color::{hex, hsv, with_alpha};
 use glowkit_core::{paint, Spring, Theme};
@@ -35,7 +35,13 @@ fn glass_body(painter: &Painter, rect: Rect, tint: Color32, light: Vec2, strengt
     painter.rect_filled(rect, cr(r), tint);
     // top sheen
     let sheen = Rect::from_min_max(rect.min + vec2(r * 0.45, 2.5), pos2(rect.max.x - r * 0.45, rect.center().y));
-    vgrad_rect(painter, sheen, sheen.height() / 2.0, with_alpha(Color32::WHITE, 0.20 * strength.min(1.0)), Color32::TRANSPARENT);
+    vgrad_rect(
+        painter,
+        sheen,
+        sheen.height() / 2.0,
+        with_alpha(Color32::WHITE, 0.20 * strength.min(1.0)),
+        Color32::TRANSPARENT,
+    );
     // bevel rims: draw rings with angle-dependent brightness
     let ring = paint::rounded_rect_points(rect.shrink(1.0), r - 1.0, 10);
     let c = rect.center();
@@ -150,9 +156,8 @@ impl Widget for GlassTabs<'_> {
             }
         }
         if response.hovered() {
-            let k = ui.input(|i| {
-                i.key_pressed(egui::Key::ArrowRight) as i32 - i.key_pressed(egui::Key::ArrowLeft) as i32
-            });
+            let k =
+                ui.input(|i| i.key_pressed(egui::Key::ArrowRight) as i32 - i.key_pressed(egui::Key::ArrowLeft) as i32);
             sel = (sel as i32 + k).clamp(0, n as i32 - 1) as usize;
         }
         let dragging = response.dragged();
@@ -237,7 +242,11 @@ impl Widget for GlassTabs<'_> {
         paint::soft_shadow(&painter, lens.translate(vec2(0.0, 6.0)), lh / 2.0, 14.0, Vec2::ZERO, sh);
         // magnified track under the lens
         let inner = painter.with_clip_rect(lens.shrink(3.0));
-        inner.rect_filled(lens, cr(lh / 2.0), lerp_c(track_c, if t.dark { hex("#2A2A31") } else { hex("#ECECEE") }, 0.7));
+        inner.rect_filled(
+            lens,
+            cr(lh / 2.0),
+            lerp_c(track_c, if t.dark { hex("#2A2A31") } else { hex("#ECECEE") }, 0.7),
+        );
         let mag = 1.1;
         let big = FontId::new(font.size * mag, font.family.clone());
         for (i, label) in self.tabs.iter().enumerate() {
@@ -443,7 +452,14 @@ impl Widget for LiquidGlassButton {
         let alpha = if self.disabled { 0.6 } else { 1.0 };
         // shadow
         let sh = if t.dark { Color32::from_black_alpha(170) } else { Color32::from_rgba_unmultiplied(30, 30, 50, 60) };
-        paint::soft_shadow(&painter, body.translate(vec2(0.0, 5.0 - 2.0 * press)), r, 14.0, Vec2::ZERO, sh.gamma_multiply(alpha));
+        paint::soft_shadow(
+            &painter,
+            body.translate(vec2(0.0, 5.0 - 2.0 * press)),
+            r,
+            14.0,
+            Vec2::ZERO,
+            sh.gamma_multiply(alpha),
+        );
         // refracted backdrop
         let bevel = r * 0.85;
         let strength = self.refraction;
@@ -456,11 +472,23 @@ impl Widget for LiquidGlassButton {
         };
         match self.image {
             Some((tex, screen, uv)) => {
-                let blur_taps: &[(f32, f32)] =
-                    if frosted { &[(0.0, 0.0), (3.0, 0.0), (-3.0, 0.0), (0.0, 3.0), (0.0, -3.0)] } else { &[(0.0, 0.0), (1.5, 1.5), (-1.5, -1.5)] };
+                let blur_taps: &[(f32, f32)] = if frosted {
+                    &[(0.0, 0.0), (3.0, 0.0), (-3.0, 0.0), (0.0, 3.0), (0.0, -3.0)]
+                } else {
+                    &[(0.0, 0.0), (1.5, 1.5), (-1.5, -1.5)]
+                };
                 for (k, (ox, oy)) in blur_taps.iter().enumerate() {
                     let a = if k == 0 { 1.0 } else { 0.5 };
-                    lens_image(&painter, body, tex, screen, uv, vec2(*ox, *oy), &refract, with_alpha(Color32::WHITE, a * alpha));
+                    lens_image(
+                        &painter,
+                        body,
+                        tex,
+                        screen,
+                        uv,
+                        vec2(*ox, *oy),
+                        &refract,
+                        with_alpha(Color32::WHITE, a * alpha),
+                    );
                 }
             }
             None => {
@@ -516,7 +544,11 @@ impl Widget for LiquidGlassButton {
         }
         let gp = pos2(x, body.center().y - galley.size().y / 2.0);
         if !light_text {
-            painter.galley_with_override_text_color(gp + vec2(0.0, 1.0), galley.clone(), with_alpha(Color32::BLACK, 0.35 * alpha));
+            painter.galley_with_override_text_color(
+                gp + vec2(0.0, 1.0),
+                galley.clone(),
+                with_alpha(Color32::BLACK, 0.35 * alpha),
+            );
         }
         painter.galley_with_override_text_color(gp, galley.clone(), text_c);
         let ix = gp.x + galley.size().x + icon_w * 0.62 + 2.0 * hov;
@@ -524,7 +556,10 @@ impl Widget for LiquidGlassButton {
             GlassGlyph::Chevron => {
                 let c = pos2(ix, body.center().y);
                 let s = h * 0.1;
-                painter.line(vec![c + vec2(-s * 0.5, -s), c + vec2(s * 0.5, 0.0), c + vec2(-s * 0.5, s)], Stroke::new(2.0, text_c));
+                painter.line(
+                    vec![c + vec2(-s * 0.5, -s), c + vec2(s * 0.5, 0.0), c + vec2(-s * 0.5, s)],
+                    Stroke::new(2.0, text_c),
+                );
             }
             GlassGlyph::Arrow => MicroIcon::ArrowRight.paint(&painter, pos2(ix, body.center().y), h * 0.34, text_c),
             _ => {}
@@ -644,7 +679,8 @@ impl MorphNavbar {
     }
 }
 
-const REEL: [(&str, &str); 3] = [("Method", "How we read the ground"), ("Nursery", "Grown on our own land"), ("Stone", "Quarried close to home")];
+const REEL: [(&str, &str); 3] =
+    [("Method", "How we read the ground"), ("Nursery", "Grown on our own land"), ("Stone", "Quarried close to home")];
 const ACCORDION: [(&str, &str); 4] = [
     ("Hillside house", "Terraced garden, 2024"),
     ("Courtyard", "A cloister of grasses"),
@@ -669,7 +705,11 @@ impl Widget for MorphNavbar {
         let time = glowkit_core::time(ui);
         let bar_h = 52.0;
         let closed_w = 560.0f32.min(w_avail - 8.0);
-        let panel_sizes = [vec2(660.0f32.min(w_avail - 8.0), 282.0), vec2(600.0f32.min(w_avail - 8.0), 320.0), vec2(580.0f32.min(w_avail - 8.0), 268.0)];
+        let panel_sizes = [
+            vec2(660.0f32.min(w_avail - 8.0), 282.0),
+            vec2(600.0f32.min(w_avail - 8.0), 320.0),
+            vec2(580.0f32.min(w_avail - 8.0), 268.0),
+        ];
         let top = rect.min.y + 10.0;
         let pointer = ui.input(|i| i.pointer.hover_pos()).filter(|p| rect.contains(*p));
         let idle = idle_time(ui, id, pointer.is_some());
@@ -683,7 +723,9 @@ impl Widget for MorphNavbar {
         let brand_font = display_font(ui, 17.0);
         let item_w = 84.0;
         let items_x0 = bar.center().x - item_w * 1.5 + 24.0;
-        let item_rect = |i: usize| Rect::from_min_size(pos2(items_x0 + i as f32 * item_w, bar.min.y + 8.0), vec2(item_w, bar_h - 16.0));
+        let item_rect = |i: usize| {
+            Rect::from_min_size(pos2(items_x0 + i as f32 * item_w, bar.min.y + 8.0), vec2(item_w, bar_h - 16.0))
+        };
         // ghost tour: open 0 -> 1 -> 2 -> closed, each for a few seconds
         let ghost_on = self.autoplay && pointer.is_none() && idle > 1.0;
         let mut hover_item = None;
@@ -770,7 +812,8 @@ impl Widget for MorphNavbar {
         let st = open;
         let painter = ui.painter_at(rect.expand(8.0));
         // shell
-        let shell = Rect::from_min_size(pos2(rect.center().x - st.w.value / 2.0, top), vec2(st.w.value, st.h.value.max(bar_h)));
+        let shell =
+            Rect::from_min_size(pos2(rect.center().x - st.w.value / 2.0, top), vec2(st.w.value, st.h.value.max(bar_h)));
         let shell_r = (bar_h / 2.0).min(10.0 + (shell.height() - bar_h).max(0.0)).max(18.0).min(bar_h / 2.0);
         let sh = if t.dark { Color32::from_black_alpha(160) } else { Color32::from_rgba_unmultiplied(20, 20, 30, 70) };
         paint::soft_shadow(&painter, shell.translate(vec2(0.0, 10.0)), shell_r, 24.0, Vec2::ZERO, sh);
@@ -785,26 +828,45 @@ impl Widget for MorphNavbar {
         painter.circle_filled(mark_c + vec2(3.0, -3.0), 4.0, ink);
         painter.text(mark_c + vec2(16.0, 0.0), Align2::LEFT_CENTER, &self.brand, brand_font, hex("#F2EFE8"));
         let items_x0 = bar.center().x - item_w * 1.5 + 24.0;
-        let item_rect = |i: usize| Rect::from_min_size(pos2(items_x0 + i as f32 * item_w, bar.min.y + 8.0), vec2(item_w, bar_h - 16.0));
+        let item_rect = |i: usize| {
+            Rect::from_min_size(pos2(items_x0 + i as f32 * item_w, bar.min.y + 8.0), vec2(item_w, bar_h - 16.0))
+        };
         for (i, label) in self.items.iter().enumerate() {
             let r = item_rect(i);
             let active = st.open == Some(i);
             let a = glowkit_core::anim::spring(ui, id.with(("item", i)), if active { 1.0 } else { 0.0 }, 300.0, 26.0);
             if a > 0.01 {
-                painter.rect_filled(r.shrink2(vec2(4.0, 0.0)), cr(r.height() / 2.0), with_alpha(Color32::WHITE, 0.10 * a));
+                painter.rect_filled(
+                    r.shrink2(vec2(4.0, 0.0)),
+                    cr(r.height() / 2.0),
+                    with_alpha(Color32::WHITE, 0.10 * a),
+                );
             }
-            painter.text(r.center() - vec2(6.0, 0.0), Align2::CENTER_CENTER, label, item_font.clone(), lerp_c(hex("#A9A6A0"), hex("#FFFFFF"), a));
+            painter.text(
+                r.center() - vec2(6.0, 0.0),
+                Align2::CENTER_CENTER,
+                label,
+                item_font.clone(),
+                lerp_c(hex("#A9A6A0"), hex("#FFFFFF"), a),
+            );
             let cc = pos2(r.center().x + r.width() * 0.3, r.center().y);
             let s = 3.0;
             let flip = 1.0 - 2.0 * a;
-            painter.line(vec![cc + vec2(-s, -s * 0.5 * flip), cc + vec2(0.0, s * 0.5 * flip), cc + vec2(s, -s * 0.5 * flip)], Stroke::new(1.3, lerp_c(hex("#7D7A75"), hex("#FFFFFF"), a)));
+            painter.line(
+                vec![cc + vec2(-s, -s * 0.5 * flip), cc + vec2(0.0, s * 0.5 * flip), cc + vec2(s, -s * 0.5 * flip)],
+                Stroke::new(1.3, lerp_c(hex("#7D7A75"), hex("#FFFFFF"), a)),
+            );
         }
         let cta_g = painter.layout_no_wrap(self.cta.clone(), item_font.clone(), ink);
-        let cta = Rect::from_min_size(pos2(bar.max.x - cta_g.size().x - 40.0, bar.min.y + 8.0), vec2(cta_g.size().x + 30.0, bar_h - 16.0));
+        let cta = Rect::from_min_size(
+            pos2(bar.max.x - cta_g.size().x - 40.0, bar.min.y + 8.0),
+            vec2(cta_g.size().x + 30.0, bar_h - 16.0),
+        );
         painter.rect_filled(cta, cr(cta.height() / 2.0), hex("#F2EFE8"));
         painter.galley(cta.center() - cta_g.size() / 2.0, cta_g, ink);
         // panel content
-        let body = Rect::from_min_max(pos2(shell.min.x + 12.0, bar.max.y + 4.0), pos2(shell.max.x - 12.0, shell.max.y - 12.0));
+        let body =
+            Rect::from_min_max(pos2(shell.min.x + 12.0, bar.max.y + 4.0), pos2(shell.max.x - 12.0, shell.max.y - 12.0));
         if body.height() > 6.0 {
             let clip = painter.with_clip_rect(body.expand2(vec2(2.0, 0.0)));
             let k = ((st.h.value - bar_h) / (panel_sizes[st.shown].y)).clamp(0.0, 1.0);
@@ -840,7 +902,14 @@ fn nav_panel(ui: &Ui, painter: &Painter, which: usize, body: Rect, alpha: f32, d
         if blur > 0.5 {
             for k in 0..4 {
                 let a = k as f32 / 4.0 * TAU;
-                image_rounded(painter, r.translate(vec2(a.cos(), a.sin()) * blur), 14.0, tex, uv, tint.gamma_multiply(0.3));
+                image_rounded(
+                    painter,
+                    r.translate(vec2(a.cos(), a.sin()) * blur),
+                    14.0,
+                    tex,
+                    uv,
+                    tint.gamma_multiply(0.3),
+                );
             }
         } else {
             image_rounded(painter, r, 14.0, tex, uv, tint);
@@ -852,7 +921,10 @@ fn nav_panel(ui: &Ui, painter: &Painter, which: usize, body: Rect, alpha: f32, d
             let gap = 10.0;
             let cw = (body.width() - gap * 2.0) / 3.0;
             for (i, (title, sub)) in REEL.iter().enumerate() {
-                let r = Rect::from_min_size(pos2(body.min.x + i as f32 * (cw + gap), body.min.y + 4.0), vec2(cw, body.height() - 4.0));
+                let r = Rect::from_min_size(
+                    pos2(body.min.x + i as f32 * (cw + gap), body.min.y + 4.0),
+                    vec2(cw, body.height() - 4.0),
+                );
                 let on = (1.0 - (hl - i as f32).abs()).clamp(0.0, 1.0);
                 let drift = (time * 0.3 + i as f32).sin() * 2.0;
                 let rr = r.shrink(2.0 * (1.0 - on)).translate(vec2(0.0, drift * 0.3));
@@ -865,7 +937,13 @@ fn nav_panel(ui: &Ui, painter: &Painter, which: usize, body: Rect, alpha: f32, d
                     &[with_alpha(Color32::BLACK, 0.0), with_alpha(Color32::BLACK, 0.55 * alpha)],
                 );
                 text(pos2(rr.min.x + 16.0, rr.max.y - 38.0), title, &title_f, fg, Align2::LEFT_BOTTOM);
-                text(pos2(rr.min.x + 16.0, rr.max.y - 16.0), sub, &small, with_alpha(Color32::WHITE, 0.75 * alpha), Align2::LEFT_BOTTOM);
+                text(
+                    pos2(rr.min.x + 16.0, rr.max.y - 16.0),
+                    sub,
+                    &small,
+                    with_alpha(Color32::WHITE, 0.75 * alpha),
+                    Align2::LEFT_BOTTOM,
+                );
             }
         }
         1 => {
@@ -881,14 +959,27 @@ fn nav_panel(ui: &Ui, painter: &Painter, which: usize, body: Rect, alpha: f32, d
                 let r = Rect::from_min_size(pos2(body.min.x, y), vec2(body.width(), hgt - 2.0));
                 painter.rect_filled(r, cr(14.0), with_alpha(Color32::WHITE, 0.06 * alpha));
                 if on > 0.05 {
-                    let img = Rect::from_min_max(pos2(r.max.x - r.width() * 0.46, r.min.y + 6.0), r.max - vec2(6.0, 6.0));
+                    let img =
+                        Rect::from_min_max(pos2(r.max.x - r.width() * 0.46, r.min.y + 6.0), r.max - vec2(6.0, 6.0));
                     if img.height() > 8.0 {
                         blur_img(img, [1, 7, 2, 0][i], with_alpha(Color32::WHITE, alpha * on));
                     }
                 }
                 text(pos2(r.min.x + 16.0, r.min.y + 23.0), title, &title_f, fg, Align2::LEFT_CENTER);
-                text(pos2(r.min.x + 16.0, r.min.y + 23.0 + 22.0 * on), sub, &small, with_alpha(hex("#A39F97"), alpha * on), Align2::LEFT_CENTER);
-                text(pos2(r.min.x + body.width() * 0.46, r.min.y + 23.0), &format!("0{}", i + 1), &small, with_alpha(hex("#A39F97"), alpha * (1.0 - on)), Align2::RIGHT_CENTER);
+                text(
+                    pos2(r.min.x + 16.0, r.min.y + 23.0 + 22.0 * on),
+                    sub,
+                    &small,
+                    with_alpha(hex("#A39F97"), alpha * on),
+                    Align2::LEFT_CENTER,
+                );
+                text(
+                    pos2(r.min.x + body.width() * 0.46, r.min.y + 23.0),
+                    &format!("0{}", i + 1),
+                    &small,
+                    with_alpha(hex("#A39F97"), alpha * (1.0 - on)),
+                    Align2::RIGHT_CENTER,
+                );
                 y += hgt + gap - 2.0;
             }
         }
@@ -905,9 +996,13 @@ fn nav_panel(ui: &Ui, painter: &Painter, which: usize, body: Rect, alpha: f32, d
                 blur_img(thumb, i + 2, with_alpha(Color32::WHITE, alpha));
                 text(pos2(body.min.x + 70.0 + 4.0 * on, cy - 9.0), title, &title_f, fg, Align2::LEFT_CENTER);
                 text(pos2(body.min.x + 70.0 + 4.0 * on, cy + 11.0), meta, &small, mute, Align2::LEFT_CENTER);
-                MicroIcon::ArrowUpRight.paint(painter, pos2(body.max.x - 24.0 + 3.0 * on, cy), 14.0, with_alpha(hex("#F2EFE8"), alpha * (0.3 + 0.7 * on)));
+                MicroIcon::ArrowUpRight.paint(
+                    painter,
+                    pos2(body.max.x - 24.0 + 3.0 * on, cy),
+                    14.0,
+                    with_alpha(hex("#F2EFE8"), alpha * (0.3 + 0.7 * on)),
+                );
             }
         }
     }
 }
-

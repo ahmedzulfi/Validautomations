@@ -57,7 +57,7 @@ pub fn all() -> Vec<Demo> {
             name: "Shiny Text",
             category: C,
             description: "A band of light sweeps across the text, like light catching metal.",
-            covers: &["React Bits: Shiny Text", "Magic UI: Animated Shiny Text", "Motion Primitives: Text Shimmer"],
+            covers: &["React Bits: Shiny Text", "Magic UI: Animated Shiny Text", "Motion Primitives: Text Shimmer", "Transitions.dev: Shimmer Text"],
             code: r##"ui.add(ShinyText::new("Just some shiny text!").size(40.0).speed(2.5));"##,
             show: |ui| centered(ui, |ui| {
                 ui.add(ShinyText::new("Just some shiny text!").size(40.0).speed(2.5));

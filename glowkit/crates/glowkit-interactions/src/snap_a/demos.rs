@@ -12,7 +12,12 @@ fn set_mem<T: Clone + Send + Sync + 'static>(ui: &Ui, key: &str, v: T) {
 }
 
 /// A row of live parameter sliders under a preview.
-fn controls<const N: usize>(ui: &mut Ui, key: &str, init: [f32; N], add: impl FnOnce(&mut Ui, &mut [f32; N])) -> [f32; N] {
+fn controls<const N: usize>(
+    ui: &mut Ui,
+    key: &str,
+    init: [f32; N],
+    add: impl FnOnce(&mut Ui, &mut [f32; N]),
+) -> [f32; N] {
     let mut v: [f32; N] = mem(ui, key, || init);
     ui.add_space(10.0);
     ui.horizontal(|ui| {
@@ -37,7 +42,8 @@ struct AutoScroll {
 fn auto_scroll(ui: &mut Ui, key: &str, height: f32, speed: f32, add: impl FnOnce(&mut Ui)) {
     let id = ui.scope_id().with(("snap_auto_scroll", key));
     let dt = ui.input(|i| i.unstable_dt).clamp(0.0, 0.1);
-    let mut st: AutoScroll = glowkit_core::state(ui, id, || AutoScroll { idle: 1.0, dir: 1.0, wait: 0.6, ..Default::default() });
+    let mut st: AutoScroll =
+        glowkit_core::state(ui, id, || AutoScroll { idle: 1.0, dir: 1.0, wait: 0.6, ..Default::default() });
     let mut sa = egui::ScrollArea::vertical()
         .id_salt(("snap_auto_scroll_area", key))
         .max_height(height)

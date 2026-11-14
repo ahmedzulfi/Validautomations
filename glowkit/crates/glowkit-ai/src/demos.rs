@@ -403,7 +403,7 @@ ui.add(ShimmerText::new("Thinking…"));"##,
             name: "Voice Orb",
             category: C,
             description: "An organic glowing orb for voice agents that breathes when idle and swells with the audio level when listening or speaking.",
-            covers: &["ElevenLabs UI: Orb", "Vercel AI Elements: Persona", "Magic UI: Orb-like audio visualizers"],
+            covers: &["ElevenLabs UI: Orb", "Vercel AI Elements: Persona", "Magic UI: Orb-like audio visualizers", "beUI: Voice Orb"],
             code: r##"ui.add(VoiceOrb::new()
     .state(VoiceState::Speaking)
     .amplitude(audio_level)

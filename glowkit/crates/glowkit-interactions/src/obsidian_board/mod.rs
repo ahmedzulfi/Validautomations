@@ -5,9 +5,9 @@
 //! composer loader, a web-search trail, a questionnaire), a meter, a notification center and an
 //! AI profile page. Every card takes caller data and animates its entry and data changes.
 
-pub(crate) mod common;
 mod agent;
 mod bars;
+pub(crate) mod common;
 mod forms;
 mod heat;
 mod meter;
@@ -16,15 +16,20 @@ mod rings;
 mod sankey;
 
 pub use agent::{
-    BoardAgentLimits, BoardAgentProgress, BoardAgentThinking, BoardBucket, BoardComposerLoader, BoardLimit, BoardSearchStep,
-    BoardThinkingStyle, BoardWebSearch,
+    BoardAgentLimits, BoardAgentProgress, BoardAgentThinking, BoardBucket, BoardComposerLoader, BoardLimit,
+    BoardSearchStep, BoardThinkingStyle, BoardWebSearch,
 };
 pub use bars::{BoardEarnings, BoardOrders, BoardSeries, BoardStage, BoardStageBars, BoardSteps};
-pub use forms::{BoardNotice, BoardNoticeIcon, BoardNotifications, BoardQuestion, BoardQuestionnaire, BoardQuestionnaireState};
+pub use forms::{
+    BoardNotice, BoardNoticeIcon, BoardNotifications, BoardQuestion, BoardQuestionnaire, BoardQuestionnaireState,
+};
 pub use heat::{BoardContributions, BoardStat};
 pub use meter::BoardMeter;
 pub use profile::BoardAiProfile;
-pub use rings::{BoardActiveDays, BoardActivityRings, BoardDay, BoardMonth, BoardRing, BoardSleepMetric, BoardSleepScore, BoardSleepWeek};
+pub use rings::{
+    BoardActiveDays, BoardActivityRings, BoardDay, BoardMonth, BoardRing, BoardSleepMetric, BoardSleepScore,
+    BoardSleepWeek,
+};
 pub use sankey::{BoardFlow, BoardSankey};
 
 #[cfg(feature = "demos")]

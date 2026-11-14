@@ -1,9 +1,12 @@
 //! Tactile 3D-ish buttons and characters: a goo button, a web-slinging button, a velvet cushion,
 //! a glass keycap and a glass capsule sprite.
 
-use super::common::{h01, idle_secs, lerp_rgb, lum, strip, Cam, V3, v3};
+use super::common::{h01, idle_secs, lerp_rgb, lum, strip, v3, Cam, V3};
 use egui::epaint::{Mesh, PathShape, PathStroke};
-use egui::{pos2, vec2, Align2, Color32, CursorIcon, FontId, Painter, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CursorIcon, FontId, Painter, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Vec2,
+    Widget,
+};
 use glowkit_core::anim::Spring;
 use glowkit_core::color::{hex, with_alpha};
 use glowkit_core::noise::{noise2, noise3};
@@ -134,7 +137,13 @@ impl Widget for VenomButton {
         if hover.is_some() {
             ui.ctx().set_cursor_icon(CursorIcon::None);
         }
-        let press = glowkit_core::anim::spring(ui, id.with("press"), if response.is_pointer_button_down_on() { 1.0 } else { 0.0 }, 500.0, 25.0);
+        let press = glowkit_core::anim::spring(
+            ui,
+            id.with("press"),
+            if response.is_pointer_button_down_on() { 1.0 } else { 0.0 },
+            500.0,
+            25.0,
+        );
         let (near, dist) = match pointer {
             Some(p) => {
                 let (c, _) = pill_closest(pill, p);
@@ -175,7 +184,14 @@ impl Widget for VenomButton {
         let hi = lerp_rgb(goo, Color32::WHITE, 0.55);
         let k = st.reach.value.clamp(-0.2, 1.3);
         // shadow
-        paint::soft_shadow(&painter, pill.translate(vec2(0.0, 8.0)), pill.height() * 0.5, 18.0, Vec2::ZERO, with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.22 }));
+        paint::soft_shadow(
+            &painter,
+            pill.translate(vec2(0.0, 8.0)),
+            pill.height() * 0.5,
+            18.0,
+            Vec2::ZERO,
+            with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.22 }),
+        );
         // strands
         let target = st.anchor;
         let (base, nrm) = pill_closest(pill, target);
@@ -206,7 +222,13 @@ impl Widget for VenomButton {
                 }
                 strip(&mut mesh, &pts, w, |_| goo, |_| Color32::TRANSPARENT);
                 let gl: Vec<Pos2> = pts.iter().map(|p| *p - nrm.rot90() * 1.2 - vec2(0.0, 1.2)).collect();
-                strip(&mut gloss, &gl[2..len - 3], |_| 1.1, |j| lum(hi, 0.5 * (1.0 - j as f32 / len as f32), false), |_| Color32::TRANSPARENT);
+                strip(
+                    &mut gloss,
+                    &gl[2..len - 3],
+                    |_| 1.1,
+                    |j| lum(hi, 0.5 * (1.0 - j as f32 / len as f32), false),
+                    |_| Color32::TRANSPARENT,
+                );
                 // goo blob where the strand grips
                 if k > 0.6 {
                     painter.circle_filled(end, 3.2 * k.min(1.0), goo);
@@ -223,7 +245,13 @@ impl Widget for VenomButton {
         let r = pr.height() * 0.5;
         painter.rect_filled(pr, r, goo);
         // gloss: top sheen, rim light
-        paint::gradient_rect(&painter, Rect::from_min_max(pr.min + vec2(r * 0.5, 4.0), pos2(pr.max.x - r * 0.5, pr.center().y)), r * 0.6, 90.0, &[with_alpha(Color32::WHITE, 0.32), with_alpha(Color32::WHITE, 0.0)]);
+        paint::gradient_rect(
+            &painter,
+            Rect::from_min_max(pr.min + vec2(r * 0.5, 4.0), pos2(pr.max.x - r * 0.5, pr.center().y)),
+            r * 0.6,
+            90.0,
+            &[with_alpha(Color32::WHITE, 0.32), with_alpha(Color32::WHITE, 0.0)],
+        );
         painter.rect_stroke(pr, r, Stroke::new(1.0, with_alpha(Color32::WHITE, 0.22)), egui::StrokeKind::Inside);
         painter.circle_filled(pos2(pr.min.x + r * 0.75, pr.min.y + r * 0.45), 3.0, with_alpha(Color32::WHITE, 0.85));
         painter.add(Shape::mesh(gloss));
@@ -359,8 +387,16 @@ impl Widget for SpiderButton {
         let pointer = hover.or(if ghost { Some(ghost_path(pill, rect, time * 0.9 + 1.0)) } else { None });
         let ghost_click = ghost && (time * 0.45).fract() < dt * 0.45;
         let clicked = response.clicked() || ghost_click;
-        let press = glowkit_core::anim::spring(ui, id.with("press"), if response.is_pointer_button_down_on() { 1.0 } else { 0.0 }, 500.0, 25.0);
-        let dist = pointer.map(|p| if pill.contains(p) { 0.0 } else { pill_closest(pill, p).0.distance(p) }).unwrap_or(f32::MAX);
+        let press = glowkit_core::anim::spring(
+            ui,
+            id.with("press"),
+            if response.is_pointer_button_down_on() { 1.0 } else { 0.0 },
+            500.0,
+            25.0,
+        );
+        let dist = pointer
+            .map(|p| if pill.contains(p) { 0.0 } else { pill_closest(pill, p).0.distance(p) })
+            .unwrap_or(f32::MAX);
         let reach = self.reach;
         let st = glowkit_core::with_state(ui, id.with("spider"), WebState::default, |s| {
             s.shot.stiffness = 260.0;
@@ -394,7 +430,14 @@ impl Widget for SpiderButton {
         let painter = ui.painter_at(rect.expand(4.0));
         let red = self.color.unwrap_or(hex("#E3132B"));
         let web = if t.dark { with_alpha(Color32::WHITE, 0.85) } else { with_alpha(hex("#3F3F46"), 0.85) };
-        paint::soft_shadow(&painter, pill.translate(vec2(0.0, 8.0)), pill.height() * 0.5, 18.0, Vec2::ZERO, with_alpha(red, if t.dark { 0.35 } else { 0.25 }));
+        paint::soft_shadow(
+            &painter,
+            pill.translate(vec2(0.0, 8.0)),
+            pill.height() * 0.5,
+            18.0,
+            Vec2::ZERO,
+            with_alpha(red, if t.dark { 0.35 } else { 0.25 }),
+        );
         // splats behind the glove
         for (p, age, seed) in &st.splats {
             let grow = (age / 0.18).min(1.0);
@@ -404,10 +447,28 @@ impl Widget for SpiderButton {
         // the pill
         let pr = pill.translate(vec2(0.0, press * 2.0)).shrink(press * 1.5);
         let r = pr.height() * 0.5;
-        paint::gradient_rect(&painter, pr, r, 90.0, &[lerp_rgb(red, Color32::WHITE, 0.12), red, lerp_rgb(red, Color32::BLACK, 0.35)]);
-        paint::gradient_rect(&painter, Rect::from_min_max(pr.min + vec2(r * 0.6, 4.0), pos2(pr.max.x - r * 0.6, pr.center().y - 2.0)), r * 0.5, 90.0, &[with_alpha(Color32::WHITE, 0.55), with_alpha(Color32::WHITE, 0.0)]);
+        paint::gradient_rect(
+            &painter,
+            pr,
+            r,
+            90.0,
+            &[lerp_rgb(red, Color32::WHITE, 0.12), red, lerp_rgb(red, Color32::BLACK, 0.35)],
+        );
+        paint::gradient_rect(
+            &painter,
+            Rect::from_min_max(pr.min + vec2(r * 0.6, 4.0), pos2(pr.max.x - r * 0.6, pr.center().y - 2.0)),
+            r * 0.5,
+            90.0,
+            &[with_alpha(Color32::WHITE, 0.55), with_alpha(Color32::WHITE, 0.0)],
+        );
         painter.rect_stroke(pr, r, Stroke::new(1.0, lerp_rgb(red, Color32::BLACK, 0.35)), egui::StrokeKind::Inside);
-        painter.text(pr.center() + vec2(0.0, 2.0), Align2::CENTER_CENTER, &self.label, font.clone(), with_alpha(Color32::BLACK, 0.3));
+        painter.text(
+            pr.center() + vec2(0.0, 2.0),
+            Align2::CENTER_CENTER,
+            &self.label,
+            font.clone(),
+            with_alpha(Color32::BLACK, 0.3),
+        );
         painter.text(pr.center(), Align2::CENTER_CENTER, &self.label, font, Color32::WHITE);
         // corner cobwebs
         let cw = with_alpha(web, 0.55);
@@ -556,9 +617,17 @@ impl Widget for VelourBolster {
         let dent = st.dent.value;
         let jig = vec2(st.jx.value, st.jy.value) * 0.02;
         let grow = vec2(10.0, 8.0) * inf - vec2(4.0, 3.0) * dent;
-        let r = Rect::from_center_size(rect.center() + jig * 0.5, self.size + grow + vec2(jig.x.abs(), -jig.x.abs() * 0.5));
+        let r =
+            Rect::from_center_size(rect.center() + jig * 0.5, self.size + grow + vec2(jig.x.abs(), -jig.x.abs() * 0.5));
         let pr = r.height() * 0.5;
-        paint::soft_shadow(painter, r.translate(vec2(0.0, 6.0 + inf * 6.0)), pr, 14.0 + inf * 10.0, Vec2::ZERO, with_alpha(Color32::BLACK, if t.dark { 0.55 } else { 0.25 }));
+        paint::soft_shadow(
+            painter,
+            r.translate(vec2(0.0, 6.0 + inf * 6.0)),
+            pr,
+            14.0 + inf * 10.0,
+            Vec2::ZERO,
+            with_alpha(Color32::BLACK, if t.dark { 0.55 } else { 0.25 }),
+        );
         let ptr_local = pointer.unwrap_or(r.center());
         let light = v3(-0.45, -0.6, 0.66).norm();
         let height = |p: Pos2| -> f32 {
@@ -578,7 +647,8 @@ impl Widget for VelourBolster {
             let n = v3(-hx / (2.0 * e), -hy / (2.0 * e), 1.0).norm();
             let diff = n.dot(light).max(0.0);
             let sheen = (1.0 - n.z).powf(1.6); // velvet glows at grazing angles
-            let pile = noise2(p.x * 0.25 + time * 0.2, p.y * 0.9) * 0.5 + noise3(p.x * 0.06, p.y * 0.06, time * 0.3) * 0.5;
+            let pile =
+                noise2(p.x * 0.25 + time * 0.2, p.y * 0.9) * 0.5 + noise3(p.x * 0.06, p.y * 0.06, time * 0.3) * 0.5;
             let dark = lerp_rgb(base, Color32::BLACK, 0.55);
             let mut c = lerp_rgb(dark, base, (0.35 + diff * 0.75).min(1.0));
             c = lerp_rgb(c, lerp_rgb(base, hex("#E8FFD0"), 0.55), (sheen * 1.3 + pile * 0.08).clamp(0.0, 1.0));
@@ -590,7 +660,13 @@ impl Widget for VelourBolster {
         let font = FontId::proportional((r.height() * 0.3).clamp(12.0, 26.0));
         let lc = r.center() + vec2(0.0, dent * 1.5);
         let ink = lerp_rgb(base, hex("#F0FFE0"), 0.8);
-        painter.text(lc + vec2(0.0, 1.5), Align2::CENTER_CENTER, &self.label, font.clone(), with_alpha(Color32::BLACK, 0.35));
+        painter.text(
+            lc + vec2(0.0, 1.5),
+            Align2::CENTER_CENTER,
+            &self.label,
+            font.clone(),
+            with_alpha(Color32::BLACK, 0.35),
+        );
         painter.text(lc, Align2::CENTER_CENTER, &self.label, font, ink);
         response
     }
@@ -655,7 +731,13 @@ impl Widget for GlassKeycap {
         };
         let lean = glowkit_core::anim::spring2(ui, id.with("lean"), target, 70.0, 11.0);
         let auto_press = response.hover_pos().is_none() && (time % 3.6) > 3.25;
-        let press = glowkit_core::anim::spring(ui, id.with("press"), if response.is_pointer_button_down_on() || auto_press { 1.0 } else { 0.0 }, 600.0, 18.0);
+        let press = glowkit_core::anim::spring(
+            ui,
+            id.with("press"),
+            if response.is_pointer_button_down_on() || auto_press { 1.0 } else { 0.0 },
+            600.0,
+            18.0,
+        );
         let painter = ui.painter_at(rect);
         let [c1, c2, c3] = self.colors.unwrap_or([hex("#FF7A1A"), hex("#FF2E93"), hex("#2E6BFF")]);
         let bob = (time * 1.4).sin() * 6.0 * self.float;
@@ -666,12 +748,24 @@ impl Widget for GlassKeycap {
         let tf = |p: V3| p.rot_y(yaw).rot_x(pitch);
         // keycap: bottom square ±1, top ±0.7 dished slightly back
         let bot = [v3(-1.0, -0.35, -1.0), v3(1.0, -0.35, -1.0), v3(1.0, -0.35, 1.0), v3(-1.0, -0.35, 1.0)];
-        let top = [v3(-0.64, hgt - 0.35, -0.7), v3(0.64, hgt - 0.35, -0.7), v3(0.64, hgt - 0.35, 0.56), v3(-0.64, hgt - 0.35, 0.56)];
-        let pb: Vec<(Pos2, V3)> = bot.iter().map(|p| (cam.project(tf(*p)).map(|x| x.0).unwrap_or(rect.center()), tf(*p))).collect();
-        let pt: Vec<(Pos2, V3)> = top.iter().map(|p| (cam.project(tf(*p)).map(|x| x.0).unwrap_or(rect.center()), tf(*p))).collect();
+        let top = [
+            v3(-0.64, hgt - 0.35, -0.7),
+            v3(0.64, hgt - 0.35, -0.7),
+            v3(0.64, hgt - 0.35, 0.56),
+            v3(-0.64, hgt - 0.35, 0.56),
+        ];
+        let pb: Vec<(Pos2, V3)> =
+            bot.iter().map(|p| (cam.project(tf(*p)).map(|x| x.0).unwrap_or(rect.center()), tf(*p))).collect();
+        let pt: Vec<(Pos2, V3)> =
+            top.iter().map(|p| (cam.project(tf(*p)).map(|x| x.0).unwrap_or(rect.center()), tf(*p))).collect();
         // shadow + under-glow
         let floor = rect.center() + vec2(0.0, self.size * 0.62);
-        paint::glow_ellipse(&painter, floor, vec2(self.size * 0.9 * (1.0 - bob / 60.0), self.size * 0.16), with_alpha(Color32::BLACK, if t.dark { 0.6 } else { 0.18 }));
+        paint::glow_ellipse(
+            &painter,
+            floor,
+            vec2(self.size * 0.9 * (1.0 - bob / 60.0), self.size * 0.16),
+            with_alpha(Color32::BLACK, if t.dark { 0.6 } else { 0.18 }),
+        );
         if t.dark {
             paint::glow(&painter, cam.center, self.size * 1.1, lum(c2, 0.08, true));
         }
@@ -734,7 +828,10 @@ impl Widget for GlassKeycap {
         }
         // the dished centre of the cap
         let dish: Vec<Pos2> = tq.iter().map(|p| tc + (*p - tc) * 0.78).collect();
-        painter.add(Shape::closed_line(dish, Stroke::new(1.0, if t.dark { with_alpha(Color32::WHITE, 0.25) } else { with_alpha(hex("#27272A"), 0.2) })));
+        painter.add(Shape::closed_line(
+            dish,
+            Stroke::new(1.0, if t.dark { with_alpha(Color32::WHITE, 0.25) } else { with_alpha(hex("#27272A"), 0.2) }),
+        ));
         // legend on the top face (affine-mapped center)
         let font = FontId::proportional(self.size * 0.2);
         let ink = if t.dark { Color32::WHITE } else { hex("#18181B") };
@@ -855,7 +952,11 @@ impl Widget for CobaltSprite {
         let rim_rx = r * 0.98;
         let rim_ry = r * 0.2;
         // the frosted region: circle below the rim ellipse
-        let fcol = if t.dark { with_alpha(hex("#C7D2FE"), 0.22 * frost + 0.05) } else { with_alpha(Color32::WHITE, 0.55 * frost + 0.1) };
+        let fcol = if t.dark {
+            with_alpha(hex("#C7D2FE"), 0.22 * frost + 0.05)
+        } else {
+            with_alpha(Color32::WHITE, 0.55 * frost + 0.1)
+        };
         let mut region = Vec::new();
         for i in 0..=48 {
             let a = PI - i as f32 / 48.0 * PI;
@@ -885,7 +986,11 @@ impl Widget for CobaltSprite {
         let edge = if t.dark { with_alpha(Color32::WHITE, 0.85) } else { with_alpha(hex("#475569"), 0.7) };
         for k in 0..5 {
             let f = k as f32 / 5.0;
-            painter.circle_stroke(c, r - 1.0 - f * r * 0.07, Stroke::new(2.0, with_alpha(if t.dark { Color32::WHITE } else { hex("#94A3B8") }, 0.12 * (1.0 - f))));
+            painter.circle_stroke(
+                c,
+                r - 1.0 - f * r * 0.07,
+                Stroke::new(2.0, with_alpha(if t.dark { Color32::WHITE } else { hex("#94A3B8") }, 0.12 * (1.0 - f))),
+            );
         }
         painter.circle_stroke(c, r, Stroke::new(1.6, edge));
         // specular dashes top-right
@@ -893,10 +998,12 @@ impl Widget for CobaltSprite {
         for (i, (a, l)) in [(-1.05f32, 0.16f32), (-0.78, 0.1), (-0.58, 0.06)].iter().enumerate() {
             let rr = r * 0.86;
             let a1 = *a + l;
-            let pts: Vec<Pos2> = (0..=8).map(|k| {
-                let aa = a + (a1 - a) * k as f32 / 8.0;
-                c + vec2(aa.cos(), aa.sin()) * rr
-            }).collect();
+            let pts: Vec<Pos2> = (0..=8)
+                .map(|k| {
+                    let aa = a + (a1 - a) * k as f32 / 8.0;
+                    c + vec2(aa.cos(), aa.sin()) * rr
+                })
+                .collect();
             painter.add(Shape::line(pts, Stroke::new(4.0 - i as f32 * 0.6, sp)));
         }
         response

@@ -17,12 +17,17 @@ fn alloc(ui: &mut Ui, size: Option<Vec2>, h: f32, sense: Sense) -> (Rect, Respon
 /// Smoothly followed pointer (or ghost) position stored per widget.
 fn follow_pos(ui: &Ui, id: egui::Id, target: Pos2, speed: f32) -> (Pos2, Vec2) {
     let dt = glowkit_core::dt(ui);
-    glowkit_core::with_state(ui, id.with("origin_follow"), || (target, Vec2::ZERO), |(p, v)| {
-        let np = *p + (target - *p) * (1.0 - (-dt * speed).exp());
-        *v = (np - *p) / dt.max(1e-3);
-        *p = np;
-        (*p, *v)
-    })
+    glowkit_core::with_state(
+        ui,
+        id.with("origin_follow"),
+        || (target, Vec2::ZERO),
+        |(p, v)| {
+            let np = *p + (target - *p) * (1.0 - (-dt * speed).exp());
+            *v = (np - *p) / dt.max(1e-3);
+            *p = np;
+            (*p, *v)
+        },
+    )
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -421,7 +426,9 @@ impl WireTerrain {
             let bot = if add { hex("#FF3D2E") } else { hex("#F472B6") };
             paint::glow(&painter, c, r * 1.9, with_alpha(bot, if add { 0.25 } else { 0.2 }));
             let pts = paint::circle_points(c, r, 96);
-            paint::fill_convex_fn(&painter, &pts, 4, |p| lerp_rgb(top, bot, ((p.y - (c.y - r)) / (2.0 * r)).clamp(0.0, 1.0)));
+            paint::fill_convex_fn(&painter, &pts, 4, |p| {
+                lerp_rgb(top, bot, ((p.y - (c.y - r)) / (2.0 * r)).clamp(0.0, 1.0))
+            });
             // stripes cut through the lower half, thicker toward the bottom, scrolling down
             for k in 0..7 {
                 let f = ((k as f32 + (time * 0.4) % 1.0) / 7.0).clamp(0.0, 1.0);
@@ -552,7 +559,16 @@ impl Default for RibbonGlow {
 impl RibbonGlow {
     /// Ribbons with default settings.
     pub fn new() -> Self {
-        Self { size: None, ribbons: 6, speed: 1.0, width: 1.0, angle: -0.45, colors: None, background: None, ghost: true }
+        Self {
+            size: None,
+            ribbons: 6,
+            speed: 1.0,
+            width: 1.0,
+            angle: -0.45,
+            colors: None,
+            background: None,
+            ghost: true,
+        }
     }
     /// Widget size (default: available width x 380).
     pub fn size(mut self, s: Vec2) -> Self {
@@ -633,7 +649,8 @@ impl RibbonGlow {
             for k in 0..=seg {
                 let s = k as f32 / seg as f32 * 2.0 - 1.0;
                 let along = s * diag * 0.6;
-                let wave = (s * 2.4 + time * 0.35 + fi * 0.9).sin() * 40.0 + (s * 5.1 - time * 0.22 + fi * 2.1).sin() * 18.0;
+                let wave =
+                    (s * 2.4 + time * 0.35 + fi * 0.9).sin() * 40.0 + (s * 5.1 - time * 0.22 + fi * 2.1).sin() * 18.0;
                 let mut p = c + dir * along + nrm * (off + wave);
                 if let Some(m) = pointer {
                     let d = m - p;
@@ -661,8 +678,20 @@ impl RibbonGlow {
                 for (pi, q) in prof.iter().enumerate() {
                     let a = match pi {
                         0 | 4 => 0.0,
-                        2 => if add { 0.38 + 0.4 * thin } else { 0.26 + 0.3 * thin },
-                        _ => if add { 0.16 } else { 0.12 },
+                        2 => {
+                            if add {
+                                0.38 + 0.4 * thin
+                            } else {
+                                0.26 + 0.3 * thin
+                            }
+                        }
+                        _ => {
+                            if add {
+                                0.16
+                            } else {
+                                0.12
+                            }
+                        }
                     };
                     let cc = if pi == 2 { lerp_rgb(col, Color32::WHITE, thin * 0.7) } else { col };
                     mesh.vertices.push(Vertex {
@@ -796,9 +825,21 @@ impl MatrixJunction {
             let pts: Vec<Pos2> = (0..=n).map(|k| far.lerp(node, k as f32 / n as f32)).collect();
             let fade = |k: usize| (k as f32 / n as f32).powf(1.5);
             let wmul = 0.6 + h01(seed + 3) * 0.8;
-            strip(&mut glow, &pts, |k| (3.0 + 10.0 * fade(k)) * wmul, |k| lum(col, 0.12 * pulse * fade(k), add), |_| Color32::TRANSPARENT);
+            strip(
+                &mut glow,
+                &pts,
+                |k| (3.0 + 10.0 * fade(k)) * wmul,
+                |k| lum(col, 0.12 * pulse * fade(k), add),
+                |_| Color32::TRANSPARENT,
+            );
             let cc = lerp_rgb(col, Color32::WHITE, 0.45);
-            strip(&mut cores, &pts, |k| 0.8 + 1.4 * fade(k) * wmul, |k| lum(cc, (0.25 + 0.6 * fade(k)) * pulse, add), |_| Color32::TRANSPARENT);
+            strip(
+                &mut cores,
+                &pts,
+                |k| 0.8 + 1.4 * fade(k) * wmul,
+                |k| lum(cc, (0.25 + 0.6 * fade(k)) * pulse, add),
+                |_| Color32::TRANSPARENT,
+            );
         }
         painter.add(Shape::mesh(glow));
         painter.add(Shape::mesh(cores));
@@ -824,7 +865,13 @@ impl MatrixJunction {
                     let hot = lerp_rgb(col, Color32::WHITE, 0.7);
                     strip(&mut bolt, &pts, |_| 9.0, |_| lum(col, 0.16, add), |_| Color32::TRANSPARENT);
                     strip(&mut bolt, &pts, |_| 3.5, |_| lum(col, 0.35, add), |_| Color32::TRANSPARENT);
-                    strip(&mut bolt, &pts, |k| 2.0 - k as f32 / n as f32 * 0.9, |_| lum(hot, 1.0, add), |_| Color32::TRANSPARENT);
+                    strip(
+                        &mut bolt,
+                        &pts,
+                        |k| 2.0 - k as f32 / n as f32 * 0.9,
+                        |_| lum(hot, 1.0, add),
+                        |_| Color32::TRANSPARENT,
+                    );
                 }
             }
             painter.add(Shape::mesh(bolt));
@@ -1115,32 +1162,44 @@ impl Widget for FluidTrail {
         let scale = vec2((gw - 1) as f32 / rect.width(), (gh - 1) as f32 / rect.height());
         let fade = self.fade;
         let rad = self.radius * gw as f32 / 36.0;
-        let grid: Vec<[f32; 3]> = glowkit_core::with_state(ui, response.id.with("fluid"), || Fluid::new(gw, gh), |f| {
-            if f.w != gw || f.h != gh {
-                *f = Fluid::new(gw, gh);
-            }
-            if let Some(p) = p {
-                let g = vec2((p.x - rect.min.x) * scale.x, (p.y - rect.min.y) * scale.y);
-                if let Some(last) = f.last {
-                    let lg = vec2((last.x - rect.min.x) * scale.x, (last.y - rect.min.y) * scale.y);
-                    let vel = (g - lg) / dt;
-                    let steps = ((g - lg).length() / 1.0).ceil().clamp(1.0, 12.0) as usize;
-                    let sp = vel.length();
-                    if sp > 0.5 {
-                        for k in 0..steps {
-                            let q = lg + (g - lg) * ((k + 1) as f32 / steps as f32);
-                            let amt = (sp / 60.0).min(1.0) / steps as f32 * 1.1;
-                            f.splat(q.x, q.y, vel.x * 0.12 / steps as f32, vel.y * 0.12 / steps as f32, [dye[0] * amt, dye[1] * amt, dye[2] * amt], rad);
+        let grid: Vec<[f32; 3]> = glowkit_core::with_state(
+            ui,
+            response.id.with("fluid"),
+            || Fluid::new(gw, gh),
+            |f| {
+                if f.w != gw || f.h != gh {
+                    *f = Fluid::new(gw, gh);
+                }
+                if let Some(p) = p {
+                    let g = vec2((p.x - rect.min.x) * scale.x, (p.y - rect.min.y) * scale.y);
+                    if let Some(last) = f.last {
+                        let lg = vec2((last.x - rect.min.x) * scale.x, (last.y - rect.min.y) * scale.y);
+                        let vel = (g - lg) / dt;
+                        let steps = ((g - lg).length() / 1.0).ceil().clamp(1.0, 12.0) as usize;
+                        let sp = vel.length();
+                        if sp > 0.5 {
+                            for k in 0..steps {
+                                let q = lg + (g - lg) * ((k + 1) as f32 / steps as f32);
+                                let amt = (sp / 60.0).min(1.0) / steps as f32 * 1.1;
+                                f.splat(
+                                    q.x,
+                                    q.y,
+                                    vel.x * 0.12 / steps as f32,
+                                    vel.y * 0.12 / steps as f32,
+                                    [dye[0] * amt, dye[1] * amt, dye[2] * amt],
+                                    rad,
+                                );
+                            }
                         }
                     }
+                    f.last = Some(p);
+                } else {
+                    f.last = None;
                 }
-                f.last = Some(p);
-            } else {
-                f.last = None;
-            }
-            f.step(dt * 30.0, fade / 30.0);
-            f.d.clone()
-        });
+                f.step(dt * 30.0, fade / 30.0);
+                f.d.clone()
+            },
+        );
         let painter = ui.painter_at(rect);
         let bg = self.background.unwrap_or(t.background);
         painter.rect_filled(rect, 0.0, bg);

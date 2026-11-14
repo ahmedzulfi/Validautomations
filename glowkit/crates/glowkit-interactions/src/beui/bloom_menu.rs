@@ -116,7 +116,8 @@ impl BloomMenu {
             let i = r as usize * cols + c as usize;
             (i < n).then_some(i)
         };
-        let close_btn = Rect::from_center_size(pos2(open_rect.max.x - 22.0, open_rect.min.y + head / 2.0), vec2(26.0, 26.0));
+        let close_btn =
+            Rect::from_center_size(pos2(open_rect.max.x - 22.0, open_rect.min.y + head / 2.0), vec2(26.0, 26.0));
         let mut picked = None;
         let mut toggle = false;
         if let Some(p) = click_pos {
@@ -131,7 +132,8 @@ impl BloomMenu {
                 }
             }
         }
-        let outside = st0.open && ui.input(|i| i.pointer.any_click()) && !ui.rect_contains_pointer(open_rect) && !resp.clicked();
+        let outside =
+            st0.open && ui.input(|i| i.pointer.any_click()) && !ui.rect_contains_pointer(open_rect) && !resp.clicked();
         let auto = self.autoplay && idle > 2.2;
         let st = glowkit_core::with_state(
             ui,
@@ -177,7 +179,13 @@ impl BloomMenu {
         let label_to = pos2(rect.min.x + 16.0, rect.min.y + head / 2.0);
         let lp = label_from.lerp(label_to, kk);
         let size = lerp(14.0, 13.0, kk);
-        clip.text(lp, Align2::LEFT_CENTER, &self.label, FontId::proportional(size), mix(t.foreground, t.muted_foreground, kk));
+        clip.text(
+            lp,
+            Align2::LEFT_CENTER,
+            &self.label,
+            FontId::proportional(size),
+            mix(t.foreground, t.muted_foreground, kk),
+        );
         // plus turns into the close cross and slides to the corner
         let plus_from = pos2(label_from.x + lw + 22.0 + 1.0, pill_rect.center().y);
         let plus_to = close_btn.center();
@@ -198,18 +206,18 @@ impl BloomMenu {
         let ga = ((k - 0.35) / 0.65).clamp(0.0, 1.0);
         if ga > 0.0 {
             let y = rect.min.y + head;
-            clip.line_segment([pos2(rect.min.x, y), pos2(rect.max.x, y)], Stroke::new(1.0, with_alpha(hairline(&t).color, ga)));
+            clip.line_segment(
+                [pos2(rect.min.x, y), pos2(rect.max.x, y)],
+                Stroke::new(1.0, with_alpha(hairline(&t).color, ga)),
+            );
             let since = (now - st.since) as f32;
             let hov_tile = ptr.and_then(tile_at).filter(|_| open);
             let hx = spring(ui, id.with("hx"), hov_tile.map(|i| (i % cols) as f32).unwrap_or(0.0), 420.0, 32.0);
             let hy = spring(ui, id.with("hy"), hov_tile.map(|i| (i / cols) as f32).unwrap_or(0.0), 420.0, 32.0);
             let ha = spring(ui, id.with("ha"), if hov_tile.is_some() { 1.0 } else { 0.0 }, 300.0, 26.0);
             if ha > 0.01 {
-                let hr = Rect::from_min_size(
-                    pos2(rect.min.x + hx * self.tile.x, y + hy * self.tile.y),
-                    self.tile,
-                )
-                .shrink(4.0);
+                let hr = Rect::from_min_size(pos2(rect.min.x + hx * self.tile.x, y + hy * self.tile.y), self.tile)
+                    .shrink(4.0);
                 clip.rect_filled(hr, cr(12.0), with_alpha(hover_fill(&t), ha * ga));
             }
             for (i, (ic, label)) in self.items.iter().enumerate() {
@@ -223,10 +231,16 @@ impl BloomMenu {
                 }
                 let cell = Rect::from_min_size(pos2(rect.min.x + c * self.tile.x, y + r * self.tile.y), self.tile);
                 if c > 0.0 {
-                    clip.line_segment([cell.left_top(), cell.left_bottom()], Stroke::new(1.0, with_alpha(hairline(&t).color, ga)));
+                    clip.line_segment(
+                        [cell.left_top(), cell.left_bottom()],
+                        Stroke::new(1.0, with_alpha(hairline(&t).color, ga)),
+                    );
                 }
                 if r > 0.0 {
-                    clip.line_segment([cell.left_top(), cell.right_top()], Stroke::new(1.0, with_alpha(hairline(&t).color, ga)));
+                    clip.line_segment(
+                        [cell.left_top(), cell.right_top()],
+                        Stroke::new(1.0, with_alpha(hairline(&t).color, ga)),
+                    );
                 }
                 let sc = 0.7 + 0.3 * e;
                 let mid = cell.center() + vec2(0.0, (1.0 - e) * 8.0);

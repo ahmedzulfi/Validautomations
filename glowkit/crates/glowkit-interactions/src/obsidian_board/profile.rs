@@ -37,9 +37,15 @@ impl BoardAiProfile {
     pub fn new(name: impl Into<String>, handle: impl Into<String>) -> Self {
         let mut rng = glowkit_core::Rng::new(5);
         let mut month = |len: usize, idle: f32| -> Vec<u32> {
-            (0..len).map(|_| if rng.bool(idle) { 0 } else { (rng.range(1.0, 9.0) + rng.range(0.0, 4.0)).round() as u32 }).collect()
+            (0..len)
+                .map(|_| if rng.bool(idle) { 0 } else { (rng.range(1.0, 9.0) + rng.range(0.0, 4.0)).round() as u32 })
+                .collect()
         };
-        let months = vec![("October".to_string(), month(31, 0.25)), ("November".to_string(), month(30, 0.2)), ("December".to_string(), month(31, 0.3))];
+        let months = vec![
+            ("October".to_string(), month(31, 0.25)),
+            ("November".to_string(), month(30, 0.2)),
+            ("December".to_string(), month(31, 0.3)),
+        ];
         let mut rng = glowkit_core::Rng::new(9);
         let mut v = 40.0_f32;
         let tokens = (0..24)
@@ -119,7 +125,10 @@ fn button(painter: &egui::Painter, t: &Theme, r: Rect, label: &str, share: bool,
     if share {
         painter.line_segment([ic + vec2(0.0, 3.0), ic + vec2(0.0, -5.0)], st);
         painter.add(egui::Shape::line(vec![ic + vec2(-3.0, -2.0), ic + vec2(0.0, -5.0), ic + vec2(3.0, -2.0)], st));
-        painter.add(egui::Shape::line(vec![ic + vec2(-5.0, 0.0), ic + vec2(-5.0, 5.0), ic + vec2(5.0, 5.0), ic + vec2(5.0, 0.0)], st));
+        painter.add(egui::Shape::line(
+            vec![ic + vec2(-5.0, 0.0), ic + vec2(-5.0, 5.0), ic + vec2(5.0, 5.0), ic + vec2(5.0, 0.0)],
+            st,
+        ));
     } else {
         painter.rect_stroke(Rect::from_center_size(ic, vec2(10.0, 10.0)), cr(2.0), st, egui::StrokeKind::Middle);
         painter.line_segment([ic + vec2(-1.0, 1.0), ic + vec2(5.0, -5.0)], st);
@@ -166,7 +175,12 @@ impl egui::Widget for BoardAiProfile {
         }
         let av = pos2(left.min.x + 52.0, cover.max.y);
         painter.circle_filled(av, 36.0, tile_bg(&t));
-        paint::gradient_circle(&painter, av, 32.0, &[mix(frame_bg(&t), t.foreground, 0.04), mix(frame_bg(&t), t.foreground, 0.1)]);
+        paint::gradient_circle(
+            &painter,
+            av,
+            32.0,
+            &[mix(frame_bg(&t), t.foreground, 0.04), mix(frame_bg(&t), t.foreground, 0.1)],
+        );
         let initial: String = self.name.chars().next().map(|c| c.to_string()).unwrap_or_default();
         text(&painter, av, Align2::CENTER_CENTER, initial, f(24.0), dim(&t));
         let by = cover.max.y + 24.0;
@@ -183,7 +197,14 @@ impl egui::Widget for BoardAiProfile {
         }
         let ny = cover.max.y + 54.0;
         text(&painter, pos2(left.min.x + 18.0, ny), Align2::LEFT_CENTER, &self.name, f(18.0), t.foreground);
-        let hr = text(&painter, pos2(left.min.x + 18.0, ny + 24.0), Align2::LEFT_CENTER, format!("@{}", self.handle), f(13.0), dim(&t));
+        let hr = text(
+            &painter,
+            pos2(left.min.x + 18.0, ny + 24.0),
+            Align2::LEFT_CENTER,
+            format!("@{}", self.handle),
+            f(13.0),
+            dim(&t),
+        );
         let pro = Rect::from_min_size(pos2(hr.max.x + 6.0, hr.center().y - 8.0), vec2(28.0, 16.0));
         painter.rect_filled(pro, cr(4.0), track(&t));
         text(&painter, pro.center(), Align2::CENTER_CENTER, "PRO", f(9.5), dim(&t));
@@ -228,7 +249,8 @@ impl egui::Widget for BoardAiProfile {
         glowkit_core::set_state(ui, id.with("month"), mi);
         let hovered_right = response.hovered() && ui.rect_contains_pointer(right);
         let idle = idle_for(ui, id.with("right"), hovered_right || l.hovered() || r.hovered());
-        let shown_m = if self.autoplay && idle > 3.0 { (mi + ((idle - 3.0) / 4.0) as usize) % self.months.len() } else { mi };
+        let shown_m =
+            if self.autoplay && idle > 3.0 { (mi + ((idle - 3.0) / 4.0) as usize) % self.months.len() } else { mi };
         let (mname, days) = &self.months[shown_m];
         let hl = [flag(ui, id.with("lh"), l.hovered(), 14.0), flag(ui, id.with("rh"), r.hovered(), 14.0)];
         range_pill(&painter, &t, pr, mname, hl);
@@ -236,9 +258,26 @@ impl egui::Widget for BoardAiProfile {
         let distinct: u32 = days.iter().sum::<u32>() / 3;
         text(&painter, pos2(agents.min.x + pad, agents.min.y + 26.0), Align2::LEFT_CENTER, "Agents", f(13.0), dim(&t));
         let av_n = tween(ui, id.with("agents_n"), distinct as f32, 0.0, 0.9);
-        let hr = text(&painter, pos2(agents.min.x + pad, agents.min.y + 52.0), Align2::LEFT_CENTER, format!("{} agents", av_n.round()), f(20.0), t.foreground);
-        text(&painter, pos2(hr.max.x + 8.0, hr.center().y + 2.0), Align2::LEFT_CENTER, format!("{active_days} active days"), f(12.0), faint(&t));
-        let plot = Rect::from_min_max(pos2(agents.min.x + pad, agents.min.y + 80.0), pos2(agents.max.x - pad, agents.max.y - 30.0));
+        let hr = text(
+            &painter,
+            pos2(agents.min.x + pad, agents.min.y + 52.0),
+            Align2::LEFT_CENTER,
+            format!("{} agents", av_n.round()),
+            f(20.0),
+            t.foreground,
+        );
+        text(
+            &painter,
+            pos2(hr.max.x + 8.0, hr.center().y + 2.0),
+            Align2::LEFT_CENTER,
+            format!("{active_days} active days"),
+            f(12.0),
+            faint(&t),
+        );
+        let plot = Rect::from_min_max(
+            pos2(agents.min.x + pad, agents.min.y + 80.0),
+            pos2(agents.max.x - pad, agents.max.y - 30.0),
+        );
         let n = days.len().max(1);
         let slot = plot.width() / n as f32;
         let bw = (slot * 0.62).max(2.0);
@@ -255,7 +294,13 @@ impl egui::Widget for BoardAiProfile {
             let hh = glowkit_core::anim::spring(ui, id.with(("ab", i)), target, 170.0, 19.0).max(2.0) * g;
             let br = Rect::from_min_max(pos2(cx - bw / 2.0, plot.max.y - hh), pos2(cx + bw / 2.0, plot.max.y));
             let is_h = hov == Some(i);
-            let c = if *d == 0 { neutral(&t) } else if is_h { glowkit_core::color::shade(accent, -0.08) } else { accent };
+            let c = if *d == 0 {
+                neutral(&t)
+            } else if is_h {
+                glowkit_core::color::shade(accent, -0.08)
+            } else {
+                accent
+            };
             let a = if hov.is_some() && !is_h { 0.55 } else { 1.0 };
             painter.rect_filled(br, cr((bw * 0.35).min(3.0)), fade(c, a));
             if i % 5 == 0 {
@@ -265,7 +310,11 @@ impl egui::Widget for BoardAiProfile {
         if let Some(i) = hov.filter(|i| *i < days.len()) {
             let cx = plot.min.x + slot * (i as f32 + 0.5);
             let short: String = mname.chars().take(3).collect();
-            let s = if days[i] == 0 { format!("{short} {} · idle", i + 1) } else { format!("{short} {} · {} runs", i + 1, days[i]) };
+            let s = if days[i] == 0 {
+                format!("{short} {} · idle", i + 1)
+            } else {
+                format!("{short} {} · {} runs", i + 1, days[i])
+            };
             tooltip(&painter, &t, pos2(cx, plot.min.y + 28.0), &s, agents);
         }
 
@@ -275,7 +324,14 @@ impl egui::Widget for BoardAiProfile {
         text(&painter, pos2(tk.min.x + pad, tk.min.y + 26.0), Align2::LEFT_CENTER, "Tokens", f(13.0), dim(&t));
         let total_t: f32 = self.tokens.iter().sum();
         let tt = tween(ui, id.with("tok"), total_t, 0.0, 1.1);
-        let hr = text(&painter, pos2(tk.min.x + pad, tk.min.y + 52.0), Align2::LEFT_CENTER, format!("{:.1}M", tt), f(20.0), t.foreground);
+        let hr = text(
+            &painter,
+            pos2(tk.min.x + pad, tk.min.y + 52.0),
+            Align2::LEFT_CENTER,
+            format!("{:.1}M", tt),
+            f(20.0),
+            t.foreground,
+        );
         chip(&painter, &t, pos2(hr.max.x + 8.0, hr.center().y + 1.0), "+9.2%", true);
         let plot = Rect::from_min_max(pos2(tk.min.x + pad, tk.min.y + 78.0), pos2(tk.max.x - pad, tk.max.y - 16.0));
         let n = self.tokens.len();
@@ -294,7 +350,10 @@ impl egui::Widget for BoardAiProfile {
             painter.line_segment([pos2(plot.min.x, y), pos2(plot.max.x, y)], Stroke::new(1.0, fade(hairline(&t), 0.6)));
         }
         let draw = ease_out(entry_k(ui, el, 0.4, 1.2));
-        let clip = Rect::from_min_max(pos2(plot.min.x - 4.0, plot.min.y - 10.0), pos2(plot.min.x + (plot.width() + 8.0) * draw, plot.max.y + 2.0));
+        let clip = Rect::from_min_max(
+            pos2(plot.min.x - 4.0, plot.min.y - 10.0),
+            pos2(plot.min.x + (plot.width() + 8.0) * draw, plot.max.y + 2.0),
+        );
         let lp = painter.with_clip_rect(clip.intersect(painter.clip_rect()));
         paint::area_fill(&lp, &pts, plot.max.y, fade(accent, 0.22), fade(accent, 0.0));
         lp.add(egui::Shape::line(pts.clone(), Stroke::new(2.0, accent)));
@@ -305,7 +364,10 @@ impl egui::Widget for BoardAiProfile {
         }
         if let Some(i) = hi {
             let q = pts[i];
-            painter.line_segment([pos2(q.x, plot.min.y), pos2(q.x, plot.max.y)], Stroke::new(1.0, fade(t.muted_foreground, 0.4)));
+            painter.line_segment(
+                [pos2(q.x, plot.min.y), pos2(q.x, plot.max.y)],
+                Stroke::new(1.0, fade(t.muted_foreground, 0.4)),
+            );
             painter.circle_filled(q, 5.0, tile_bg(&t));
             painter.circle_stroke(q, 4.0, Stroke::new(2.0, accent));
             tooltip(&painter, &t, pos2(q.x, q.y - 8.0), &format!("Week {} · {:.1}M", i + 1, self.tokens[i]), tk);
