@@ -1294,6 +1294,7 @@ version = "0.1.0"
 dependencies = [
  "egui",
  "glowkit-3d",
+ "glowkit-agents",
  "glowkit-ai",
  "glowkit-backgrounds",
  "glowkit-blocks",
@@ -1314,6 +1315,17 @@ version = "0.1.0"
 dependencies = [
  "egui",
  "glowkit-core",
+]
+
+[[package]]
+name = "glowkit-agents"
+version = "0.1.0"
+dependencies = [
+ "egui",
+ "glowkit-ai",
+ "glowkit-charts",
+ "glowkit-core",
+ "glowkit-effects",
 ]
 
 [[package]]
