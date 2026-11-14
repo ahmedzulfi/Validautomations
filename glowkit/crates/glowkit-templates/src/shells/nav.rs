@@ -37,7 +37,15 @@ pub struct NavItem {
 impl NavItem {
     /// An item with a route and label.
     pub fn new(route: impl Into<String>, label: impl Into<String>) -> Self {
-        Self { route: route.into(), label: label.into(), icon: None, badge: None, children: Vec::new(), expanded: false, shortcut: None }
+        Self {
+            route: route.into(),
+            label: label.into(),
+            icon: None,
+            badge: None,
+            children: Vec::new(),
+            expanded: false,
+            shortcut: None,
+        }
     }
     /// Leading icon (accepts [`AppIcon`], `LineIcon` or `UiIcon`).
     pub fn icon(mut self, icon: impl Into<AppIcon>) -> Self {
@@ -203,7 +211,12 @@ pub struct ShellNotification {
 
 impl ShellNotification {
     /// An unread notification.
-    pub fn new(icon: impl Into<AppIcon>, title: impl Into<String>, body: impl Into<String>, time: impl Into<String>) -> Self {
+    pub fn new(
+        icon: impl Into<AppIcon>,
+        title: impl Into<String>,
+        body: impl Into<String>,
+        time: impl Into<String>,
+    ) -> Self {
         Self { title: title.into(), body: body.into(), time: time.into(), icon: icon.into(), unread: true }
     }
     /// Mark as already read.

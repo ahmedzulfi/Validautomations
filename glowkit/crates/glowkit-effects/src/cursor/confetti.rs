@@ -469,9 +469,7 @@ mod tests {
         let ctx = egui::Context::default();
         let mut shapes = 0;
         for f in 0..240 {
-            let mut input = egui::RawInput::default();
-            input.time = Some(f as f64 / 60.0);
-            input.predicted_dt = 1.0 / 60.0;
+            let input = egui::RawInput { time: Some(f as f64 / 60.0), predicted_dt: 1.0 / 60.0, ..Default::default() };
             let mut out = ctx.run_ui(input, |ui| {
                 let rect = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(800.0, 360.0));
                 super::Fireworks::new().interval(0.7).show(ui, rect);

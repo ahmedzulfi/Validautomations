@@ -189,7 +189,9 @@ impl HeroSection {
     /// Show the hero.
     pub fn show(self, ui: &mut Ui) -> SectionResponse {
         let id = section_id(ui, "hero", &self.salt);
-        let frame = Frame::new(id, self.background).pad(if self.layout == HeroLayout::Centered { 104.0 } else { 88.0 }).min_h(self.min_height);
+        let frame = Frame::new(id, self.background)
+            .pad(if self.layout == HeroLayout::Centered { 104.0 } else { 88.0 })
+            .min_h(self.min_height);
         section(ui, frame, |ui, sec| {
             let split = self.layout != HeroLayout::Centered;
             let stack = sec.narrow;
@@ -233,9 +235,18 @@ impl HeroSection {
         let t = sec.t.clone();
         let id = sec.id;
         let mut i = first;
-        let hs = if sec.narrow { (self.headline_size * 0.62).round().max(34.0) } else if self.layout != HeroLayout::Centered { (self.headline_size * 0.86).round() } else { self.headline_size };
+        let hs = if sec.narrow {
+            (self.headline_size * 0.62).round().max(34.0)
+        } else if self.layout != HeroLayout::Centered {
+            (self.headline_size * 0.86).round()
+        } else {
+            self.headline_size
+        };
         if let Some((badge, text)) = &self.announcement {
-            if sec.fade(ui, i, |ui| row(ui, id.with("ann"), align, 0.0, |ui| announcement_pill(ui, badge, text))).clicked() {
+            if sec
+                .fade(ui, i, |ui| row(ui, id.with("ann"), align, 0.0, |ui| announcement_pill(ui, badge, text)))
+                .clicked()
+            {
                 out_click = Some(text.clone());
             }
             ui.add_space(24.0);
@@ -243,9 +254,23 @@ impl HeroSection {
         }
         let max_w = if self.layout == HeroLayout::Centered { 860.0 } else { f32::INFINITY };
         sec.fade(ui, i, |ui| {
-            Tx::new(&self.headline).size(hs).bold().line(1.08).align(align).max_width(max_w).color(t.foreground).show(ui);
+            Tx::new(&self.headline)
+                .size(hs)
+                .bold()
+                .line(1.08)
+                .align(align)
+                .max_width(max_w)
+                .color(t.foreground)
+                .show(ui);
             if let Some(a) = &self.accent {
-                Tx::new(a).size(hs).bold().line(1.12).align(align).max_width(max_w).gradient(&[t.gradient[0], t.gradient[1], t.gradient[2]]).show(ui);
+                Tx::new(a)
+                    .size(hs)
+                    .bold()
+                    .line(1.12)
+                    .align(align)
+                    .max_width(max_w)
+                    .gradient(&[t.gradient[0], t.gradient[1], t.gradient[2]])
+                    .show(ui);
             }
             if !self.rotating.is_empty() {
                 ui.add_space(6.0);
@@ -253,7 +278,13 @@ impl HeroSection {
                     if !self.rotating_prefix.is_empty() {
                         Tx::new(&self.rotating_prefix).size(hs).bold().color(t.foreground).show_inline(ui);
                     }
-                    ui.add(glowkit_text::RotatingText::new(self.rotating.iter().cloned()).size(hs * 0.9).pill(true).pill_color(t.accent).interval(2.4));
+                    ui.add(
+                        glowkit_text::RotatingText::new(self.rotating.iter().cloned())
+                            .size(hs * 0.9)
+                            .pill(true)
+                            .pill_color(t.accent)
+                            .interval(2.4),
+                    );
                 });
             }
         });
@@ -261,7 +292,13 @@ impl HeroSection {
         if let Some(s) = &self.subheadline {
             ui.add_space(24.0);
             sec.fade(ui, i, |ui| {
-                Tx::new(s).size(if sec.narrow { 16.0 } else { 19.0 }).line(1.55).align(align).max_width(620.0).color(t.muted_foreground).show(ui);
+                Tx::new(s)
+                    .size(if sec.narrow { 16.0 } else { 19.0 })
+                    .line(1.55)
+                    .align(align)
+                    .max_width(620.0)
+                    .color(t.muted_foreground)
+                    .show(ui);
             });
             i += 1;
         }
@@ -291,7 +328,11 @@ impl HeroSection {
             ui.add_space(32.0);
             sec.fade(ui, i, |ui| {
                 row(ui, id.with("proof"), align, 12.0, |ui| {
-                    ui.add(AvatarGroup::new(&["Ava Chen", "Liam Ortiz", "Mia Park", "Noah Smith", "Zoe King"]).size(30.0).ring(t.background));
+                    ui.add(
+                        AvatarGroup::new(&["Ava Chen", "Liam Ortiz", "Mia Park", "Noah Smith", "Zoe King"])
+                            .size(30.0)
+                            .ring(t.background),
+                    );
                     ui.vertical(|ui| {
                         ui.spacing_mut().item_spacing.y = 4.0;
                         stars(ui, 5, 12.0);
@@ -320,7 +361,13 @@ impl HeroSection {
         } else {
             // a floating secondary card for depth
             let back = rect.translate(vec2(24.0, -20.0)).shrink(12.0);
-            ui.painter().rect(back, CornerRadius::same((t.radius * 1.4) as u8), with_alpha(t.card, 0.6), Stroke::new(1.0, with_alpha(t.border, 0.6)), StrokeKind::Inside);
+            ui.painter().rect(
+                back,
+                CornerRadius::same((t.radius * 1.4) as u8),
+                with_alpha(t.card, 0.6),
+                Stroke::new(1.0, with_alpha(t.border, 0.6)),
+                StrokeKind::Inside,
+            );
             paint_mockup(ui, rect, kind, &t);
             floating_stat(ui, rect, &t);
         }
@@ -333,13 +380,38 @@ fn floating_stat(ui: &Ui, rect: Rect, t: &Theme) {
     let bob = (time * 1.4).sin() * 4.0;
     let chip = Rect::from_min_size(pos2(rect.min.x - 18.0, rect.max.y - 54.0 + bob), vec2(170.0, 58.0));
     let painter = ui.painter();
-    paint::soft_shadow(painter, chip, 12.0, 20.0, vec2(0.0, 8.0), with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.14 }));
+    paint::soft_shadow(
+        painter,
+        chip,
+        12.0,
+        20.0,
+        vec2(0.0, 8.0),
+        with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.14 }),
+    );
     painter.rect(chip, CornerRadius::same(12), t.popover, Stroke::new(1.0, t.border), StrokeKind::Inside);
     let tile = Rect::from_min_size(chip.min + vec2(12.0, 13.0), Vec2::splat(32.0));
     icon_tile(painter, tile, UiIcon::Activity, t.success, t);
-    painter.text(pos2(tile.max.x + 10.0, chip.min.y + 13.0), egui::Align2::LEFT_TOP, "Conversion", FontId::proportional(11.5), t.muted_foreground);
-    painter.text(pos2(tile.max.x + 10.0, chip.min.y + 29.0), egui::Align2::LEFT_TOP, "+38.2%", FontId::proportional(15.0), t.foreground);
-    painter.text(pos2(tile.max.x + 10.6, chip.min.y + 29.0), egui::Align2::LEFT_TOP, "+38.2%", FontId::proportional(15.0), t.foreground.gamma_multiply(0.6));
+    painter.text(
+        pos2(tile.max.x + 10.0, chip.min.y + 13.0),
+        egui::Align2::LEFT_TOP,
+        "Conversion",
+        FontId::proportional(11.5),
+        t.muted_foreground,
+    );
+    painter.text(
+        pos2(tile.max.x + 10.0, chip.min.y + 29.0),
+        egui::Align2::LEFT_TOP,
+        "+38.2%",
+        FontId::proportional(15.0),
+        t.foreground,
+    );
+    painter.text(
+        pos2(tile.max.x + 10.6, chip.min.y + 29.0),
+        egui::Align2::LEFT_TOP,
+        "+38.2%",
+        FontId::proportional(15.0),
+        t.foreground.gamma_multiply(0.6),
+    );
 }
 
 /// The clickable "[New] v2 is here →" pill.
@@ -357,7 +429,13 @@ pub(crate) fn announcement_pill(ui: &mut Ui, badge: &str, text: &str) -> egui::R
     let hv = ui.ctx().animate_bool_with_time(resp.id.with("h"), resp.hovered(), 0.15);
     let painter = ui.painter();
     let fill = if t.dark { mix(t.card, t.secondary, 0.4 + 0.3 * hv) } else { mix(t.card, t.muted, 0.5 + 0.5 * hv) };
-    painter.rect(rect, CornerRadius::same(99), fill, Stroke::new(1.0, mix(t.border, t.accent, 0.35 + 0.4 * hv)), StrokeKind::Inside);
+    painter.rect(
+        rect,
+        CornerRadius::same(99),
+        fill,
+        Stroke::new(1.0, mix(t.border, t.accent, 0.35 + 0.4 * hv)),
+        StrokeKind::Inside,
+    );
     let mut x = rect.min.x + 4.0;
     if !badge.is_empty() {
         let br = Rect::from_min_size(pos2(x, rect.min.y + 4.0), vec2(badge_w, h - 8.0));
@@ -368,7 +446,11 @@ pub(crate) fn announcement_pill(ui: &mut Ui, badge: &str, text: &str) -> egui::R
     x += 10.0;
     tt.paint(ui, &tg, pos2(x, rect.center().y - tg.size().y / 2.0), tg.size().x, t.foreground);
     x += tg.size().x + 6.0 + 3.0 * hv;
-    UiIcon::ArrowRight.paint(painter, Rect::from_center_size(pos2(x + 7.0, rect.center().y), Vec2::splat(13.0)), t.muted_foreground.lerp_to_gamma(t.foreground, hv));
+    UiIcon::ArrowRight.paint(
+        painter,
+        Rect::from_center_size(pos2(x + 7.0, rect.center().y), Vec2::splat(13.0)),
+        t.muted_foreground.lerp_to_gamma(t.foreground, hv),
+    );
     resp
 }
 

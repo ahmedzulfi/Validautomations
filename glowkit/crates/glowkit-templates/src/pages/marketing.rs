@@ -142,7 +142,12 @@ impl LandingPage {
         page(ui, id, self.opts, |ui, p| {
             let has = |b: LandingBlock| self.blocks.contains(&b);
             if has(LandingBlock::Announcement) {
-                p.take(AnnouncementBar::new(format!("{} 1.0 is out: templates, shells and 300+ components", self.brand)).link("Read more").id_salt("lp").show(ui));
+                p.take(
+                    AnnouncementBar::new(format!("{} 1.0 is out: templates, shells and 300+ components", self.brand))
+                        .link("Read more")
+                        .id_salt("lp")
+                        .show(ui),
+                );
             }
             p.take(HeaderSection::new(&self.brand).cta(&self.primary).link_badge(1, "New").id_salt("lp").show(ui));
             let mut hero = HeroSection::new(&self.headline)
@@ -162,31 +167,81 @@ impl LandingPage {
             }
             p.take(hero.show(ui));
             if has(LandingBlock::Logos) {
-                p.take(LogoCloudSection::new().title("Trusted by teams at").layout(LogoCloudLayout::Marquee).id_salt("lp").show(ui));
+                p.take(
+                    LogoCloudSection::new()
+                        .title("Trusted by teams at")
+                        .layout(LogoCloudLayout::Marquee)
+                        .id_salt("lp")
+                        .show(ui),
+                );
             }
             if has(LandingBlock::Features) {
-                p.take(FeaturesSection::new("Everything you need to ship").eyebrow("Features").subtitle("A complete toolkit tuned for performance and delight.").layout(FeaturesLayout::Bento).id_salt("lp").show(ui));
+                p.take(
+                    FeaturesSection::new("Everything you need to ship")
+                        .eyebrow("Features")
+                        .subtitle("A complete toolkit tuned for performance and delight.")
+                        .layout(FeaturesLayout::Bento)
+                        .id_salt("lp")
+                        .show(ui),
+                );
             }
             if has(LandingBlock::Steps) {
-                p.take(StepsSection::new("Up and running in minutes").background(SectionBackground::Muted).id_salt("lp").show(ui));
+                p.take(
+                    StepsSection::new("Up and running in minutes")
+                        .background(SectionBackground::Muted)
+                        .id_salt("lp")
+                        .show(ui),
+                );
             }
             if has(LandingBlock::Stats) {
                 p.take(StatsSection::new().id_salt("lp").show(ui));
             }
             if has(LandingBlock::Showcase) {
-                p.take(FeaturesSection::new("Designed for the details").eyebrow("Why us").items(FeatureItem::defaults().into_iter().take(2).collect()).layout(FeaturesLayout::Alternating).id_salt("lp-alt").show(ui));
+                p.take(
+                    FeaturesSection::new("Designed for the details")
+                        .eyebrow("Why us")
+                        .items(FeatureItem::defaults().into_iter().take(2).collect())
+                        .layout(FeaturesLayout::Alternating)
+                        .id_salt("lp-alt")
+                        .show(ui),
+                );
             }
             if has(LandingBlock::Testimonials) {
-                p.take(TestimonialsSection::new("Loved by builders").eyebrow("Testimonials").layout(TestimonialsLayout::Marquee).background(SectionBackground::Muted).id_salt("lp").show(ui));
+                p.take(
+                    TestimonialsSection::new("Loved by builders")
+                        .eyebrow("Testimonials")
+                        .layout(TestimonialsLayout::Marquee)
+                        .background(SectionBackground::Muted)
+                        .id_salt("lp")
+                        .show(ui),
+                );
             }
             if has(LandingBlock::Pricing) {
-                p.take(PricingSection::new("Simple, transparent pricing").eyebrow("Pricing").subtitle("Start free, upgrade when you grow.").id_salt("lp").show(ui));
+                p.take(
+                    PricingSection::new("Simple, transparent pricing")
+                        .eyebrow("Pricing")
+                        .subtitle("Start free, upgrade when you grow.")
+                        .id_salt("lp")
+                        .show(ui),
+                );
             }
             if has(LandingBlock::Faq) {
-                p.take(FaqSection::new("Frequently asked questions").layout(FaqLayout::TwoColumn).eyebrow("FAQ").id_salt("lp").show(ui));
+                p.take(
+                    FaqSection::new("Frequently asked questions")
+                        .layout(FaqLayout::TwoColumn)
+                        .eyebrow("FAQ")
+                        .id_salt("lp")
+                        .show(ui),
+                );
             }
             if has(LandingBlock::Cta) {
-                p.take(CtaSection::new("Ready to build something beautiful?").primary_cta(&self.primary).note("No credit card required").id_salt("lp").show(ui));
+                p.take(
+                    CtaSection::new("Ready to build something beautiful?")
+                        .primary_cta(&self.primary)
+                        .note("No credit card required")
+                        .id_salt("lp")
+                        .show(ui),
+                );
             }
             p.take(FooterSection::new(&self.brand).layout(FooterLayout::Newsletter).id_salt("lp").show(ui));
         })
@@ -248,11 +303,46 @@ impl PricingPage {
         let id = section_id(ui, "pricing_page", &self.salt);
         page(ui, id, self.opts, |ui, p| {
             p.take(HeaderSection::new(&self.brand).id_salt("pp").show(ui));
-            p.take(PricingSection::new(&self.title).eyebrow("Pricing").subtitle(&self.subtitle).tiers(self.tiers.clone()).background(SectionBackground::Glow).id_salt("pp").show(ui));
+            p.take(
+                PricingSection::new(&self.title)
+                    .eyebrow("Pricing")
+                    .subtitle(&self.subtitle)
+                    .tiers(self.tiers.clone())
+                    .background(SectionBackground::Glow)
+                    .id_salt("pp")
+                    .show(ui),
+            );
             p.take(LogoCloudSection::new().title("Trusted by 2,000+ teams").id_salt("pp").show(ui));
             p.take(ComparisonSection::new("Compare plans and alternatives").id_salt("pp").show(ui));
-            p.take(FaqSection::new("Billing questions").item("Can I change plans later?", "Yes. Upgrade or downgrade anytime; we prorate the difference automatically.").item("Do you offer discounts?", "Yearly plans save 20%. Students, open-source maintainers and non-profits get Pro for free.").item("What payment methods do you accept?", "All major cards, and invoices with bank transfer for yearly Enterprise plans.").item("Is there a free trial?", "Pro comes with a 14-day free trial, no credit card required.").layout(FaqLayout::Centered).background(SectionBackground::Muted).id_salt("pp").show(ui));
-            p.take(CtaSection::new("Still deciding?").subtitle("Talk to our team and get a tailored demo.").primary_cta("Book a demo").secondary_cta("Start free").layout(CtaLayout::Split).id_salt("pp").show(ui));
+            p.take(
+                FaqSection::new("Billing questions")
+                    .item(
+                        "Can I change plans later?",
+                        "Yes. Upgrade or downgrade anytime; we prorate the difference automatically.",
+                    )
+                    .item(
+                        "Do you offer discounts?",
+                        "Yearly plans save 20%. Students, open-source maintainers and non-profits get Pro for free.",
+                    )
+                    .item(
+                        "What payment methods do you accept?",
+                        "All major cards, and invoices with bank transfer for yearly Enterprise plans.",
+                    )
+                    .item("Is there a free trial?", "Pro comes with a 14-day free trial, no credit card required.")
+                    .layout(FaqLayout::Centered)
+                    .background(SectionBackground::Muted)
+                    .id_salt("pp")
+                    .show(ui),
+            );
+            p.take(
+                CtaSection::new("Still deciding?")
+                    .subtitle("Talk to our team and get a tailored demo.")
+                    .primary_cta("Book a demo")
+                    .secondary_cta("Start free")
+                    .layout(CtaLayout::Split)
+                    .id_salt("pp")
+                    .show(ui),
+            );
             p.take(FooterSection::new(&self.brand).id_salt("pp").show(ui));
         })
     }
@@ -312,7 +402,16 @@ impl WaitlistPage {
     pub fn show(self, ui: &mut egui::Ui) -> SectionResponse {
         let id = section_id(ui, "waitlist_page", &self.salt);
         page(ui, id, self.opts, |ui, p| {
-            p.take(HeaderSection::new(&self.brand).links(&["Features", "Roadmap", "Blog"]).sign_in("").cta("Join waitlist").layout(HeaderLayout::Floating).background(SectionBackground::Transparent).id_salt("wl").show(ui));
+            p.take(
+                HeaderSection::new(&self.brand)
+                    .links(&["Features", "Roadmap", "Blog"])
+                    .sign_in("")
+                    .cta("Join waitlist")
+                    .layout(HeaderLayout::Floating)
+                    .background(SectionBackground::Transparent)
+                    .id_salt("wl")
+                    .show(ui),
+            );
             p.take(
                 NewsletterSection::new(&self.title)
                     .subtitle(&self.subtitle)
@@ -326,9 +425,21 @@ impl WaitlistPage {
             p.take(
                 FeaturesSection::new("What you'll get first")
                     .items(vec![
-                        FeatureItem::new(UiIcon::Sparkles, "Prompt to screen", "Describe a layout in plain words and watch it render live."),
-                        FeatureItem::new(UiIcon::Code, "Clean Rust output", "Idiomatic builder code you'd be happy to commit."),
-                        FeatureItem::new(UiIcon::Users, "Founding member perks", "Lifetime discount and a direct line to the team."),
+                        FeatureItem::new(
+                            UiIcon::Sparkles,
+                            "Prompt to screen",
+                            "Describe a layout in plain words and watch it render live.",
+                        ),
+                        FeatureItem::new(
+                            UiIcon::Code,
+                            "Clean Rust output",
+                            "Idiomatic builder code you'd be happy to commit.",
+                        ),
+                        FeatureItem::new(
+                            UiIcon::Users,
+                            "Founding member perks",
+                            "Lifetime discount and a direct line to the team.",
+                        ),
                     ])
                     .layout(FeaturesLayout::IconList)
                     .id_salt("wl")
@@ -362,7 +473,14 @@ pub struct ContactPage {
 impl ContactPage {
     /// A contact page with placeholder details.
     pub fn new(brand: impl Into<String>) -> Self {
-        Self { brand: brand.into(), email: "hello@glowkit.dev".into(), phone: "+1 (555) 010-2024".into(), address: "100 Market St, San Francisco".into(), opts: PageOpts::default(), salt: None }
+        Self {
+            brand: brand.into(),
+            email: "hello@glowkit.dev".into(),
+            phone: "+1 (555) 010-2024".into(),
+            address: "100 Market St, San Francisco".into(),
+            opts: PageOpts::default(),
+            salt: None,
+        }
     }
     /// Contact email.
     pub fn email(mut self, e: impl Into<String>) -> Self {
@@ -386,8 +504,22 @@ impl ContactPage {
         let id = section_id(ui, "contact_page", &self.salt);
         page(ui, id, self.opts, |ui, p| {
             p.take(HeaderSection::new(&self.brand).id_salt("cp").show(ui));
-            p.take(ContactSection::new("Talk to our team").email(&self.email).phone(&self.phone).address(&self.address).background(SectionBackground::Glow).id_salt("cp").show(ui));
-            p.take(FaqSection::new("Before you write").layout(FaqLayout::TwoColumn).background(SectionBackground::Muted).id_salt("cp").show(ui));
+            p.take(
+                ContactSection::new("Talk to our team")
+                    .email(&self.email)
+                    .phone(&self.phone)
+                    .address(&self.address)
+                    .background(SectionBackground::Glow)
+                    .id_salt("cp")
+                    .show(ui),
+            );
+            p.take(
+                FaqSection::new("Before you write")
+                    .layout(FaqLayout::TwoColumn)
+                    .background(SectionBackground::Muted)
+                    .id_salt("cp")
+                    .show(ui),
+            );
             p.take(FooterSection::new(&self.brand).id_salt("cp").show(ui));
         })
     }

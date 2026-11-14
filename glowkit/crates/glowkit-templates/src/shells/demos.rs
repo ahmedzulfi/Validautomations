@@ -32,7 +32,12 @@ pub(crate) fn demo_nav() -> Vec<NavSection> {
                     .child(NavItem::new("projects/review", "In review"))
                     .child(NavItem::new("projects/archived", "Archived")),
             )
-            .item(NavItem::new("team", "Team").icon(LineIcon::Users).child(NavItem::new("team/members", "Members")).child(NavItem::new("team/roles", "Roles & access"))),
+            .item(
+                NavItem::new("team", "Team")
+                    .icon(LineIcon::Users)
+                    .child(NavItem::new("team/members", "Members"))
+                    .child(NavItem::new("team/roles", "Roles & access")),
+            ),
         NavSection::new("Workspace")
             .icon(LineIcon::Layers)
             .item(NavItem::new("calendar", "Calendar").icon(LineIcon::Calendar))
@@ -49,10 +54,31 @@ pub(crate) fn demo_nav() -> Vec<NavSection> {
 
 pub(crate) fn demo_notes() -> Vec<ShellNotification> {
     vec![
-        ShellNotification::new(LineIcon::Users, "Mia Chen joined Design", "Say hi and share the onboarding checklist.", "2m ago"),
-        ShellNotification::new(AppIcon::Cart, "New order #3210", "Olivia Martin purchased the Pro plan (annual).", "18m ago"),
-        ShellNotification::new(LineIcon::Warning, "Usage at 82%", "Your workspace is close to its monthly API quota.", "1h ago"),
-        ShellNotification::new(LineIcon::CircleCheck, "Deploy succeeded", "web-app v2.14.0 is live in production.", "Yesterday").read(),
+        ShellNotification::new(
+            LineIcon::Users,
+            "Mia Chen joined Design",
+            "Say hi and share the onboarding checklist.",
+            "2m ago",
+        ),
+        ShellNotification::new(
+            AppIcon::Cart,
+            "New order #3210",
+            "Olivia Martin purchased the Pro plan (annual).",
+            "18m ago",
+        ),
+        ShellNotification::new(
+            LineIcon::Warning,
+            "Usage at 82%",
+            "Your workspace is close to its monthly API quota.",
+            "1h ago",
+        ),
+        ShellNotification::new(
+            LineIcon::CircleCheck,
+            "Deploy succeeded",
+            "web-app v2.14.0 is live in production.",
+            "Yesterday",
+        )
+        .read(),
     ]
 }
 
@@ -77,7 +103,13 @@ pub(crate) fn sample_page(ui: &mut Ui, sc: &mut ShellContext<'_>, nav: &[NavSect
     let loading = kit::loading(ui, id, 0.55);
     let y = kit::heading(&p, rect, &label, "Here's what's happening across your workspace this week.", &t);
     let body = Rect::from_min_max(pos2(rect.min.x, y + 18.0), rect.max);
-    let n = if rect.width() > 900.0 { 4 } else if rect.width() > 560.0 { 2 } else { 1 };
+    let n = if rect.width() > 900.0 {
+        4
+    } else if rect.width() > 560.0 {
+        2
+    } else {
+        1
+    };
     let tiles_h = 104.0;
     let tiles = kit::cols(Rect::from_min_size(body.min, vec2(body.width(), tiles_h)), n, 14.0);
     let data: [(&str, f64, &str, f64, &[f64]); 4] = [
@@ -115,7 +147,16 @@ pub(crate) fn sample_page(ui: &mut Ui, sc: &mut ShellContext<'_>, nav: &[NavSect
         return;
     }
     kit::titled_card(ui, parts[0], "Revenue", "Monthly recurring revenue, last 12 months", |ui, b| {
-        let s = [Series::new("This year", [18.0, 21.0, 19.5, 24.0, 26.0, 25.0, 29.0, 31.0, 30.0, 34.0, 37.0, 41.0].map(|v| v * 1000.0)), Series::new("Last year", [14.0, 15.0, 17.0, 16.0, 19.0, 21.0, 20.0, 22.0, 24.0, 23.0, 26.0, 28.0].map(|v| v * 1000.0))];
+        let s = [
+            Series::new(
+                "This year",
+                [18.0, 21.0, 19.5, 24.0, 26.0, 25.0, 29.0, 31.0, 30.0, 34.0, 37.0, 41.0].map(|v| v * 1000.0),
+            ),
+            Series::new(
+                "Last year",
+                [14.0, 15.0, 17.0, 16.0, 19.0, 21.0, 20.0, 22.0, 24.0, 23.0, 26.0, 28.0].map(|v| v * 1000.0),
+            ),
+        ];
         ui.add(AreaChart::new(&s).labels(&MONTHS).height(b.height()).id_salt("shell_rev"));
     });
     if parts.len() > 1 {
@@ -137,9 +178,33 @@ pub(crate) fn sample_page(ui: &mut Ui, sc: &mut ShellContext<'_>, nav: &[NavSect
                 }
                 let (resp, _) = kit::row(ui, r.expand2(vec2(6.0, 0.0)), ui.scope_id().with(("act", i)), t.radius * 0.6);
                 kit::avatar(ui, Rect::from_center_size(pos2(r.min.x + 16.0, r.center().y), vec2(30.0, 30.0)), who);
-                kit::text_at(&p, pos2(r.min.x + 40.0, r.center().y - 8.0), Align2::LEFT_CENTER, who, 13.0, t.foreground, b.width() - 90.0);
-                kit::text_at(&p, pos2(r.min.x + 40.0, r.center().y + 9.0), Align2::LEFT_CENTER, what, 12.0, t.muted_foreground, b.width() - 90.0);
-                kit::text_at(&p, pos2(r.max.x, r.center().y - 8.0), Align2::RIGHT_CENTER, when, 11.5, t.muted_foreground, 40.0);
+                kit::text_at(
+                    &p,
+                    pos2(r.min.x + 40.0, r.center().y - 8.0),
+                    Align2::LEFT_CENTER,
+                    who,
+                    13.0,
+                    t.foreground,
+                    b.width() - 90.0,
+                );
+                kit::text_at(
+                    &p,
+                    pos2(r.min.x + 40.0, r.center().y + 9.0),
+                    Align2::LEFT_CENTER,
+                    what,
+                    12.0,
+                    t.muted_foreground,
+                    b.width() - 90.0,
+                );
+                kit::text_at(
+                    &p,
+                    pos2(r.max.x, r.center().y - 8.0),
+                    Align2::RIGHT_CENTER,
+                    when,
+                    11.5,
+                    t.muted_foreground,
+                    40.0,
+                );
                 if resp.clicked() {
                     toast(ui.ctx(), Toast::new(format!("{who} {what}")).description("Opened activity details."));
                 }
@@ -155,7 +220,11 @@ fn run(ui: &mut Ui, init_route: &str, layout: ShellLayout, upgrade: bool, collap
     let h = 720.0f32.min(ui.available_height().max(560.0));
     let nav_copy = st.nav.clone();
     let shell = AppShell::new(&mut st.route, &mut st.nav)
-        .workspaces(vec![Workspace::new("Acme Inc", "Enterprise"), Workspace::new("Acme Corp.", "Startup"), Workspace::new("Evil Corp.", "Free")])
+        .workspaces(vec![
+            Workspace::new("Acme Inc", "Enterprise"),
+            Workspace::new("Acme Corp.", "Startup"),
+            Workspace::new("Evil Corp.", "Free"),
+        ])
         .user(ShellUser::new("Ada Lovelace", "ada@acme.dev"))
         .notifications(&mut st.notes)
         .command(CommandItem::new("Create project").icon(LineIcon::Plus).shortcut("Ctrl+N"))
@@ -166,7 +235,11 @@ fn run(ui: &mut Ui, init_route: &str, layout: ShellLayout, upgrade: bool, collap
         .upgrade_card(upgrade)
         .start_collapsed(collapsed);
     let (email, push) = (&mut st.notify_email, &mut st.notify_push);
-    let shell = if layout == ShellLayout::Inspector { shell.inspector("Details", |ui, route| inspector_panel(ui, route, email, push)) } else { shell };
+    let shell = if layout == ShellLayout::Inspector {
+        shell.inspector("Details", |ui, route| inspector_panel(ui, route, email, push))
+    } else {
+        shell
+    };
     let r = shell.show(ui, |ui, sc| sample_page(ui, sc, &nav_copy));
     feedback(ui, &r);
     glowkit_core::set_state(ui, id, st);
@@ -193,9 +266,35 @@ fn inspector_panel(ui: &mut Ui, route: &mut String, email: &mut bool, push: &mut
     let r = kit::alloc_row(ui, 52.0);
     let p = ui.painter().clone();
     kit::logo(&p, Rect::from_min_size(r.min, vec2(44.0, 44.0)), &t, "W");
-    kit::text_at(&p, pos2(r.min.x + 56.0, r.min.y + 13.0), Align2::LEFT_CENTER, "Website redesign", 14.5, t.foreground, r.width() - 60.0);
-    kit::text_at(&p, pos2(r.min.x + 56.0, r.min.y + 32.0), Align2::LEFT_CENTER, &format!("Route · {route}"), 12.0, t.muted_foreground, r.width() - 60.0);
-    ui.add(DescriptionList::new(&[("Status", "In progress"), ("Owner", "Ada Lovelace"), ("Due", "Nov 28, 2026"), ("Budget", "$24,000"), ("Priority", "High")]).key_width(80.0).width(ui.available_width()));
+    kit::text_at(
+        &p,
+        pos2(r.min.x + 56.0, r.min.y + 13.0),
+        Align2::LEFT_CENTER,
+        "Website redesign",
+        14.5,
+        t.foreground,
+        r.width() - 60.0,
+    );
+    kit::text_at(
+        &p,
+        pos2(r.min.x + 56.0, r.min.y + 32.0),
+        Align2::LEFT_CENTER,
+        &format!("Route · {route}"),
+        12.0,
+        t.muted_foreground,
+        r.width() - 60.0,
+    );
+    ui.add(
+        DescriptionList::new(&[
+            ("Status", "In progress"),
+            ("Owner", "Ada Lovelace"),
+            ("Due", "Nov 28, 2026"),
+            ("Budget", "$24,000"),
+            ("Priority", "High"),
+        ])
+        .key_width(80.0)
+        .width(ui.available_width()),
+    );
     ui.add_space(4.0);
     let r = kit::alloc_row(ui, 18.0);
     kit::text_at(ui.painter(), r.left_center(), Align2::LEFT_CENTER, "Progress", 12.5, t.muted_foreground, 100.0);
@@ -205,9 +304,16 @@ fn inspector_panel(ui: &mut Ui, route: &mut String, email: &mut bool, push: &mut
     ui.add(Switch::new(email).label("Email updates").description("Daily digest of changes"));
     ui.add(Switch::new(push).label("Push notifications"));
     ui.add_space(6.0);
-    ui.add(glowkit_components::AvatarGroup::new(&["Ada Lovelace", "Grace Hopper", "Alan Turing", "Mia Chen"]).max(4).size(30.0));
+    ui.add(
+        glowkit_components::AvatarGroup::new(&["Ada Lovelace", "Grace Hopper", "Alan Turing", "Mia Chen"])
+            .max(4)
+            .size(30.0),
+    );
     ui.add_space(6.0);
-    if ui.add(glowkit_components::Button::new("Open project").icon(UiIcon::ArrowRight).width(ui.available_width())).clicked() {
+    if ui
+        .add(glowkit_components::Button::new("Open project").icon(UiIcon::ArrowRight).width(ui.available_width()))
+        .clicked()
+    {
         *route = "projects/active".into();
     }
 }
@@ -364,7 +470,14 @@ fn mobile_page(ui: &mut Ui, sc: &mut ShellContext<'_>, nav: &[NavSection]) {
     if loading {
         kit::skel_r(ui, card, t.radius);
     } else {
-        ui.put(card, StatTile::new(format!("{label} · this week"), 12_480.0).prefix("$").delta(9.2).spark(&SPARK_A).size(card.size()));
+        ui.put(
+            card,
+            StatTile::new(format!("{label} · this week"), 12_480.0)
+                .prefix("$")
+                .delta(9.2)
+                .spark(&SPARK_A)
+                .size(card.size()),
+        );
     }
     let mut y = card.max.y + 18.0;
     kit::text_at(&p, pos2(rect.min.x, y), Align2::LEFT_TOP, "Recent", 15.0, t.foreground, 200.0);
@@ -390,10 +503,34 @@ fn mobile_page(ui: &mut Ui, sc: &mut ShellContext<'_>, nav: &[NavSection]) {
         } else {
             let (resp, _) = kit::row(ui, r.expand2(vec2(6.0, 0.0)), id.with(i), t.radius * 0.6);
             kit::avatar(ui, Rect::from_center_size(pos2(r.min.x + 18.0, r.center().y), vec2(36.0, 36.0)), who);
-            kit::text_at(&p, pos2(r.min.x + 48.0, r.center().y - 8.0), Align2::LEFT_CENTER, who, 13.5, t.foreground, r.width() - 140.0);
-            kit::text_at(&p, pos2(r.min.x + 48.0, r.center().y + 9.0), Align2::LEFT_CENTER, what, 12.0, t.muted_foreground, r.width() - 140.0);
+            kit::text_at(
+                &p,
+                pos2(r.min.x + 48.0, r.center().y - 8.0),
+                Align2::LEFT_CENTER,
+                who,
+                13.5,
+                t.foreground,
+                r.width() - 140.0,
+            );
+            kit::text_at(
+                &p,
+                pos2(r.min.x + 48.0, r.center().y + 9.0),
+                Align2::LEFT_CENTER,
+                what,
+                12.0,
+                t.muted_foreground,
+                r.width() - 140.0,
+            );
             let neg = amt.starts_with('-');
-            kit::text_at(&p, pos2(r.max.x, r.center().y), Align2::RIGHT_CENTER, amt, 13.5, if neg { t.destructive } else { t.foreground }, 90.0);
+            kit::text_at(
+                &p,
+                pos2(r.max.x, r.center().y),
+                Align2::RIGHT_CENTER,
+                amt,
+                13.5,
+                if neg { t.destructive } else { t.foreground },
+                90.0,
+            );
             if resp.clicked() {
                 toast(ui.ctx(), Toast::new(format!("{who}: {amt}")).description(*what));
             }

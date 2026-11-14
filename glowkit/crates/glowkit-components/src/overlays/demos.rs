@@ -36,7 +36,7 @@ pub fn all() -> Vec<Demo> {
             name: "Dialog",
             category: C,
             description: "A modal card that springs in from 95% scale over a fading backdrop. Closes on Escape, the X or a backdrop click.",
-            covers: &["shadcn/ui: Dialog", "Animate UI: Dialog", "Origin UI: Dialog", "Radix: Dialog"],
+            covers: &["shadcn/ui: Dialog", "Animate UI: Dialog", "Origin UI: Dialog", "Radix: Dialog", "Motion Primitives: Dialog", "Aceternity UI: Animated Modal"],
             code: r##"let r = Dialog::new(&mut open, "Edit profile")
     .description("Make changes to your profile here. Click save when you're done.")
     .primary("Save changes")
@@ -268,7 +268,7 @@ Tooltip::new("Opens on the right").placement(Placement::Right).show(&r);"##,
             name: "Popover",
             category: C,
             description: "A card anchored to its trigger that scales in from the trigger side with an arrow; closes on outside click or Escape.",
-            covers: &["shadcn/ui: Popover", "Animate UI: Popover", "Origin UI: Popover", "Radix: Popover"],
+            covers: &["shadcn/ui: Popover", "Animate UI: Popover", "Origin UI: Popover", "Radix: Popover", "Motion Primitives: Morphing Popover"],
             code: r##"let trigger = ui.button("Open popover");
 Popover::new().width(300.0).show(&trigger, |ui| {
     ui.label("Dimensions");
@@ -560,7 +560,7 @@ if let Some(item) = ContextMenu::new(vec![
             name: "Dynamic Island",
             category: C,
             description: "A black pill that morphs between idle, compact status, call, media player and notification layouts with springy resizing and cross-faded content.",
-            covers: &["Cult UI: Dynamic Island", "Aceternity: Dynamic Island", "Apple: Dynamic Island (pattern)"],
+            covers: &["Cult UI: Dynamic Island", "Aceternity: Dynamic Island", "Apple: Dynamic Island (pattern)", "Motion Primitives: Toolbar Dynamic", "Motion Primitives: Toolbar Expandable"],
             code: r##"ui.add(MorphingIsland::new(IslandView::Music {
     title: "Midnight City".into(),
     artist: "M83".into(),

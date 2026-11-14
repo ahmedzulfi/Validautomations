@@ -21,10 +21,31 @@ pub(crate) fn demo_notes() -> Vec<ShellNotification> {
     use crate::shells::AppIcon;
     use glowkit_components::LineIcon;
     vec![
-        ShellNotification::new(LineIcon::Users, "Mia Chen joined Design", "Say hi and share the onboarding checklist.", "2m ago"),
-        ShellNotification::new(AppIcon::Cart, "New order #3210", "Olivia Martin purchased the Pro plan (annual).", "18m ago"),
-        ShellNotification::new(LineIcon::Warning, "Usage at 82%", "Your workspace is close to its monthly API quota.", "1h ago"),
-        ShellNotification::new(LineIcon::CircleCheck, "Deploy succeeded", "web-app v2.14.0 is live in production.", "Yesterday").read(),
+        ShellNotification::new(
+            LineIcon::Users,
+            "Mia Chen joined Design",
+            "Say hi and share the onboarding checklist.",
+            "2m ago",
+        ),
+        ShellNotification::new(
+            AppIcon::Cart,
+            "New order #3210",
+            "Olivia Martin purchased the Pro plan (annual).",
+            "18m ago",
+        ),
+        ShellNotification::new(
+            LineIcon::Warning,
+            "Usage at 82%",
+            "Your workspace is close to its monthly API quota.",
+            "1h ago",
+        ),
+        ShellNotification::new(
+            LineIcon::CircleCheck,
+            "Deploy succeeded",
+            "web-app v2.14.0 is live in production.",
+            "Yesterday",
+        )
+        .read(),
     ]
 }
 

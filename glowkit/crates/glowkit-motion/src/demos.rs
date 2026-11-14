@@ -110,7 +110,7 @@ let x = Keyframes::evenly([0.0_f32, 0.8, 1.0]).repeat(Repeat::Infinite).mirror()
             show: keyframes_demo,
         },
         Demo {
-            id: "timeline",
+            id: "motion-timeline",
             name: "Timeline",
             category: C,
             description: "A GSAP-style timeline: tweens sequenced with relative positions, labels and overlaps; play, pause, reverse, change speed or scrub.",
@@ -147,7 +147,7 @@ ui.add(Scrubber::new(&tl, &mut pb2));"##,
             name: "Variants & Stagger",
             category: C,
             description: "Switch one variant name and every child follows, staggered one after another (from the first, or from the center outward).",
-            covers: &["Framer Motion: variants", "Framer Motion: staggerChildren / delayChildren", "Motion One: stagger()", "GSAP: stagger"],
+            covers: &["Framer Motion: variants", "Framer Motion: staggerChildren / delayChildren", "Motion One: stagger()", "GSAP: stagger", "Motion Primitives: Animated Group"],
             code: r##"MotionGroup::new(id, Variants::fade(vec2(-24.0, 0.0)))
     .initial("hidden")
     .animate(if open { "visible" } else { "hidden" })
@@ -196,7 +196,7 @@ PresenceList::new(id)
             name: "Shared Element",
             category: C,
             description: "A thumbnail expands into a detail view and back: the same key used in two places animates between them (layoutId).",
-            covers: &["Framer Motion: layoutId", "Framer Motion: shared layout animations", "View Transitions API", "Aceternity: Expandable Card"],
+            covers: &["Framer Motion: layoutId", "Framer Motion: shared layout animations", "View Transitions API", "Aceternity: Expandable Card", "Motion Primitives: Morphing Dialog"],
             code: r##"LayoutAnim::new(id).show(ui, |layout, ui| {
     for (i, album) in albums.iter().enumerate() {
         // the same key in the grid or in the detail view: it flies between them
@@ -213,7 +213,7 @@ PresenceList::new(id)
             name: "Drag & Snap",
             category: C,
             description: "Throw a puck around with momentum and elastic edges, snap a knob to stops along an axis, and pull a card that springs home.",
-            covers: &["Framer Motion: drag", "Framer Motion: dragConstraints / dragElastic / dragMomentum", "GSAP: Draggable + Inertia", "React Use Gesture"],
+            covers: &["Framer Motion: drag", "Framer Motion: dragConstraints / dragElastic / dragMomentum", "GSAP: Draggable + Inertia", "React Use Gesture", "Aceternity UI: Draggable Card"],
             code: r##"Draggable::new(id)
     .constraints(area)          // stay inside
     .elastic(0.35)              // rubber-band past the edges
@@ -240,7 +240,7 @@ Draggable::new(id2).axis(Axis::X).snap_points([vec2(-120.0, 0.0), Vec2::ZERO, ve
             name: "Scroll-Linked Motion",
             category: C,
             description: "A progress bar tied to scroll position, parallax layers at different speeds, values mapped with transform(), and cards that animate in when scrolled into view.",
-            covers: &["Framer Motion: useScroll / useTransform", "Framer Motion: whileInView", "GSAP: ScrollTrigger", "Aceternity: Parallax Scroll"],
+            covers: &["Framer Motion: useScroll / useTransform", "Framer Motion: whileInView", "GSAP: ScrollTrigger", "Aceternity: Parallax Scroll", "Motion Primitives: Scroll Progress", "Magic UI: Scroll Progress"],
             code: r##"let out = ScrollArea::vertical().show(ui, |ui| {
     let scroll = scroll_offset(ui).y;
     let y = parallax(scroll, 0.5);                       // half speed

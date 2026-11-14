@@ -104,7 +104,7 @@ SOURCES = OrderedDict([
         "Message", "Response", "Shimmering Text", "Audio Player", "Matrix", "Mic Selector", "Speech Input",
         "Scrub Bar", "Transcript Viewer",
     ]}),
-    ("Evil Charts", {"url": "https://evilcharts.com", "items": [
+    ("Evil Charts", {"url": "https://evilcharts.com", "match": "keyword", "note": "chart families; each is covered by any glowkit style of that family", "items": [
         "Area Chart", "Bar Chart", "Line Chart", "Pie Chart", "Radar Chart", "Radial Chart",
     ]}),
     ("MVP Blocks", {"url": "https://blocks.mvp-subha.me", "note": "section types (their catalog is organized by section)", "items": [
@@ -166,6 +166,10 @@ def main():
         have = 0
         for item in info["items"]:
             ids = covered.get((lib, norm(item)))
+            if not ids and info.get("match") == "keyword":
+                # "Line Chart" is covered by e.g. "Glowing Line" or "Dotted Line"
+                kw = norm(item.replace("Chart", ""))
+                ids = sorted({i for (l, k), v in covered.items() if l == lib and kw in k for i in v}) or None
             if ids:
                 have += 1
             rows.append((item, ids))

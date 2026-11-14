@@ -253,7 +253,8 @@ impl Tx {
                 let b = galley.mesh_bounds.translate(pos.to_vec2());
                 let stops = g.clone();
                 paint::galley_with(painter, p, galley, move |q| {
-                    let u = ((q.x - b.min.x) / b.width().max(1.0)) * 0.85 + ((q.y - b.min.y) / b.height().max(1.0)) * 0.15;
+                    let u =
+                        ((q.x - b.min.x) / b.width().max(1.0)) * 0.85 + ((q.y - b.min.y) / b.height().max(1.0)) * 0.15;
                     gradient(&stops, u)
                 });
             } else {
@@ -284,7 +285,11 @@ impl Tx {
             };
             Rect::from_min_size(pos2(gx, row.min.y), vec2(gw, h))
         };
-        let resp = ui.interact(text_rect, ui.scope_id().with(("tx", row.min.y as i32, row.min.x as i32)), if self.sense { Sense::click() } else { Sense::hover() });
+        let resp = ui.interact(
+            text_rect,
+            ui.scope_id().with(("tx", row.min.y as i32, row.min.x as i32)),
+            if self.sense { Sense::click() } else { Sense::hover() },
+        );
         if ui.is_rect_visible(row) {
             let t = Theme::of(ui);
             self.paint(ui, &galley, pos2(x0, row.min.y), w, t.foreground);
@@ -297,7 +302,8 @@ impl Tx {
         let wrap = self.max_w.unwrap_or(f32::INFINITY);
         let me = Self { align: Align::Min, ..self };
         let galley = me.galley(ui, wrap);
-        let (rect, resp) = ui.allocate_exact_size(galley.size(), if me.sense { Sense::click() } else { Sense::hover() });
+        let (rect, resp) =
+            ui.allocate_exact_size(galley.size(), if me.sense { Sense::click() } else { Sense::hover() });
         if ui.is_rect_visible(rect) {
             let t = Theme::of(ui);
             me.paint(ui, &galley, rect.min, rect.width(), t.foreground);
@@ -353,7 +359,9 @@ impl Sec {
 pub(crate) fn cta_button(ui: &mut Ui, label: &str, style: SectionCtaStyle, large: bool) -> Response {
     let size = if large { ControlSize::Lg } else { ControlSize::Md };
     match style {
-        SectionCtaStyle::Shimmer => ui.add(glowkit_effects::ShimmerButton::new(label).size(if large { 14.5 } else { 13.5 })),
+        SectionCtaStyle::Shimmer => {
+            ui.add(glowkit_effects::ShimmerButton::new(label).size(if large { 14.5 } else { 13.5 }))
+        }
         _ => {
             let v = match style {
                 SectionCtaStyle::Primary => ButtonVariant::Default,
@@ -444,8 +452,19 @@ pub(crate) fn section(ui: &mut Ui, f: Frame, add: impl FnOnce(&mut Ui, &mut Sec)
     let cw = (full_w - gutter * 2.0).min(f.max_w).max(10.0);
     let cx = origin.x + full_w / 2.0;
     let content_rect = Rect::from_min_size(pos2(cx - cw / 2.0, origin.y + pad_y), vec2(cw, f32::INFINITY));
-    let mut sec = Sec { t: t.clone(), id: f.id, w: cw, narrow: cw < SECTION_STACK_BELOW, clicked: None, submitted: None, elapsed, seen, full_x: bg_rect.x_range() };
-    let mut child = ui.new_child(UiBuilder::new().max_rect(content_rect).layout(Layout::top_down(Align::Min)).id_salt(f.id));
+    let mut sec = Sec {
+        t: t.clone(),
+        id: f.id,
+        w: cw,
+        narrow: cw < SECTION_STACK_BELOW,
+        clicked: None,
+        submitted: None,
+        elapsed,
+        seen,
+        full_x: bg_rect.x_range(),
+    };
+    let mut child =
+        ui.new_child(UiBuilder::new().max_rect(content_rect).layout(Layout::top_down(Align::Min)).id_salt(f.id));
     // pages stack sections with zero spacing; content always gets the 8pt scale back
     child.spacing_mut().item_spacing = vec2(8.0, 8.0);
     add(&mut child, &mut sec);
@@ -470,7 +489,9 @@ pub(crate) fn paint_background(ui: &Ui, bg: SectionBackground, rect: Rect, id: I
     }
     let painter = ui.painter_at(rect);
     let base = t.background;
-    let fade = |ui: &Ui| paint::fade_edges_vertical(&ui.painter_at(rect), rect, (rect.height() * 0.18).clamp(24.0, 120.0), base);
+    let fade = |ui: &Ui| {
+        paint::fade_edges_vertical(&ui.painter_at(rect), rect, (rect.height() * 0.18).clamp(24.0, 120.0), base)
+    };
     match bg {
         SectionBackground::Transparent => {}
         SectionBackground::Plain => {
@@ -490,14 +511,32 @@ pub(crate) fn paint_background(ui: &Ui, bg: SectionBackground, rect: Rect, id: I
         SectionBackground::Aurora => {
             glowkit_backgrounds::Aurora::new().id_salt(id).background(base).blend(0.6).paint(ui, rect);
             // a soft scrim keeps copy readable over the brightest curtains
-            paint::glow_ellipse(&painter, rect.center(), vec2(rect.width() * 0.42, rect.height() * 0.42), with_alpha(base, if t.dark { 0.7 } else { 0.75 }));
+            paint::glow_ellipse(
+                &painter,
+                rect.center(),
+                vec2(rect.width() * 0.42, rect.height() * 0.42),
+                with_alpha(base, if t.dark { 0.7 } else { 0.75 }),
+            );
             fade(ui);
         }
         SectionBackground::Grid => {
-            glowkit_backgrounds::GridPattern::new().id_salt(id).background(base).line_color(with_alpha(t.foreground, if t.dark { 0.07 } else { 0.06 })).cell_size(44.0).squares(14).mask(true).paint(ui, rect);
+            glowkit_backgrounds::GridPattern::new()
+                .id_salt(id)
+                .background(base)
+                .line_color(with_alpha(t.foreground, if t.dark { 0.07 } else { 0.06 }))
+                .cell_size(44.0)
+                .squares(14)
+                .mask(true)
+                .paint(ui, rect);
         }
         SectionBackground::Dots => {
-            glowkit_backgrounds::DotGrid::new().id_salt(id).background(base).gap(22.0).dot_size(1.6).auto_hover(false).paint(ui, rect);
+            glowkit_backgrounds::DotGrid::new()
+                .id_salt(id)
+                .background(base)
+                .gap(22.0)
+                .dot_size(1.6)
+                .auto_hover(false)
+                .paint(ui, rect);
             fade(ui);
         }
         SectionBackground::Particles => {
@@ -510,7 +549,12 @@ pub(crate) fn paint_background(ui: &Ui, bg: SectionBackground, rect: Rect, id: I
         }
         SectionBackground::Meteors => {
             painter.rect_filled(rect, 0.0, base);
-            paint::glow_ellipse(&painter, rect.center_top(), vec2(rect.width() * 0.4, rect.height() * 0.5), with_alpha(t.gradient[0], if t.dark { 0.14 } else { 0.07 }));
+            paint::glow_ellipse(
+                &painter,
+                rect.center_top(),
+                vec2(rect.width() * 0.4, rect.height() * 0.5),
+                with_alpha(t.gradient[0], if t.dark { 0.14 } else { 0.07 }),
+            );
             glowkit_backgrounds::Meteors::new().id_salt(id).transparent().count(14).paint(ui, rect);
         }
         SectionBackground::Beams => {
@@ -520,7 +564,8 @@ pub(crate) fn paint_background(ui: &Ui, bg: SectionBackground, rect: Rect, id: I
         SectionBackground::Gradient => {
             painter.rect_filled(rect, 0.0, base);
             let a = if t.dark { 0.28 } else { 0.16 };
-            let stops = [with_alpha(t.gradient[0], a), with_alpha(t.gradient[1], a * 0.7), with_alpha(t.gradient[2], a * 0.5)];
+            let stops =
+                [with_alpha(t.gradient[0], a), with_alpha(t.gradient[1], a * 0.7), with_alpha(t.gradient[2], a * 0.5)];
             paint::gradient_rect(&painter, rect, 0.0, 20.0, &stops);
             fade(ui);
         }
@@ -552,7 +597,9 @@ pub(crate) fn fade_up<R>(ui: &mut Ui, p: f32, dist: f32, add: impl FnOnce(&mut U
     if p < 1.0 {
         let end = ui.ctx().graphics_mut(|g| g.entry(layer).next_idx());
         let dy = (1.0 - p) * dist;
-        ui.ctx().graphics_mut(|g| g.entry(layer).transform_range(start, end, egui::emath::TSTransform::from_translation(vec2(0.0, dy))));
+        ui.ctx().graphics_mut(|g| {
+            g.entry(layer).transform_range(start, end, egui::emath::TSTransform::from_translation(vec2(0.0, dy)))
+        });
     }
     r
 }
@@ -590,7 +637,15 @@ pub(crate) fn row<R>(ui: &mut Ui, id: Id, align: Align, gap: f32, add: impl FnOn
 
 /// Lay out items of known widths in lines that wrap, each line aligned on its own (so a
 /// centered row of logos stays centered when it wraps). `add(ui, i)` must use `widths[i]`.
-pub(crate) fn wrap_rows(ui: &mut Ui, widths: &[f32], h: f32, gap: f32, line_gap: f32, align: Align, mut add: impl FnMut(&mut Ui, usize)) {
+pub(crate) fn wrap_rows(
+    ui: &mut Ui,
+    widths: &[f32],
+    h: f32,
+    gap: f32,
+    line_gap: f32,
+    align: Align,
+    mut add: impl FnMut(&mut Ui, usize),
+) {
     let avail = ui.available_width();
     let x0 = ui.cursor().min.x;
     let mut y = ui.cursor().min.y;
@@ -608,7 +663,12 @@ pub(crate) fn wrap_rows(ui: &mut Ui, widths: &[f32], h: f32, gap: f32, line_gap:
             Align::Center => x0 + ((avail - w) / 2.0).max(0.0),
             Align::Max => x0 + (avail - w).max(0.0),
         };
-        let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_size(pos2(x, y), vec2(w + 1.0, h))).layout(Layout::left_to_right(Align::Center)).id_salt(("wrap", i)));
+        let mut child = ui.new_child(
+            UiBuilder::new()
+                .max_rect(Rect::from_min_size(pos2(x, y), vec2(w + 1.0, h)))
+                .layout(Layout::left_to_right(Align::Center))
+                .id_salt(("wrap", i)),
+        );
         child.spacing_mut().item_spacing.x = gap;
         for k in i..j {
             add(&mut child, k);
@@ -639,7 +699,8 @@ pub(crate) fn grid(ui: &mut Ui, id: Id, n: usize, cols: usize, gap: f32, mut add
                 break;
             }
             let rect = Rect::from_min_size(pos2(x0 + c as f32 * (cw + gap), y), vec2(cw, f32::INFINITY));
-            let mut child = ui.new_child(UiBuilder::new().max_rect(rect).layout(Layout::top_down(Align::Min)).id_salt(("cell", i)));
+            let mut child =
+                ui.new_child(UiBuilder::new().max_rect(rect).layout(Layout::top_down(Align::Min)).id_salt(("cell", i)));
             add(&mut child, i, prev);
             max_h = max_h.max(child.min_rect().height());
         }
@@ -680,9 +741,19 @@ pub(crate) fn two_col(
     let (hl, hr): (f32, f32) = glowkit_core::state(ui, id.with("2col"), || (0.0, 0.0));
     let tall = hl.max(hr);
     let off = |h: f32| if vcenter && h > 0.0 { ((tall - h) / 2.0).max(0.0) } else { 0.0 };
-    let mut l = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_size(top + vec2(0.0, off(hl)), vec2(lw, f32::INFINITY))).layout(Layout::top_down(Align::Min)).id_salt("l"));
+    let mut l = ui.new_child(
+        UiBuilder::new()
+            .max_rect(Rect::from_min_size(top + vec2(0.0, off(hl)), vec2(lw, f32::INFINITY)))
+            .layout(Layout::top_down(Align::Min))
+            .id_salt("l"),
+    );
     left(&mut l);
-    let mut r = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_size(top + vec2(lw + gap, off(hr)), vec2(rw, f32::INFINITY))).layout(Layout::top_down(Align::Min)).id_salt("r"));
+    let mut r = ui.new_child(
+        UiBuilder::new()
+            .max_rect(Rect::from_min_size(top + vec2(lw + gap, off(hr)), vec2(rw, f32::INFINITY)))
+            .layout(Layout::top_down(Align::Min))
+            .id_salt("r"),
+    );
     right(&mut r);
     let nh = (l.min_rect().height(), r.min_rect().height());
     if (nh.0 - hl).abs() > 0.5 || (nh.1 - hr).abs() > 0.5 {
@@ -772,7 +843,8 @@ pub(crate) fn card<R>(ui: &mut Ui, id: Id, look: CardLook, add: impl FnOnce(&mut
     let i_shadow = painter.add(Shape::Noop);
     let i_bg = painter.add(Shape::Noop);
     let inner_rect = Rect::from_min_size(origin + Vec2::splat(look.pad), vec2(w - look.pad * 2.0, f32::INFINITY));
-    let mut child = ui.new_child(UiBuilder::new().max_rect(inner_rect).layout(Layout::top_down(Align::Min)).id_salt(id));
+    let mut child =
+        ui.new_child(UiBuilder::new().max_rect(inner_rect).layout(Layout::top_down(Align::Min)).id_salt(id));
     let inner = add(&mut child);
     let natural = child.min_rect().height() + look.pad * 2.0;
     let rect = Rect::from_min_size(origin, vec2(w, natural.max(look.min_h)));
@@ -783,11 +855,17 @@ pub(crate) fn card<R>(ui: &mut Ui, id: Id, look: CardLook, add: impl FnOnce(&mut
     if look.clickable {
         response = response.on_hover_cursor(CursorIcon::PointingHand);
     }
-    let hover = if look.hover { ui.ctx().animate_bool_with_time(id.with("hov"), response.hovered(), 0.18) } else { 0.0 };
+    let hover =
+        if look.hover { ui.ctx().animate_bool_with_time(id.with("hov"), response.hovered(), 0.18) } else { 0.0 };
     let cr = CornerRadius::same(look.radius.round().clamp(0.0, 255.0) as u8);
     if look.shadow {
         let a = if t.dark { 0.35 + 0.25 * hover } else { 0.06 + 0.08 * hover };
-        let s = Shadow { offset: [0, (2.0 + 6.0 * hover) as i8], blur: (10.0 + 14.0 * hover) as u8, spread: 0, color: with_alpha(Color32::BLACK, a) };
+        let s = Shadow {
+            offset: [0, (2.0 + 6.0 * hover) as i8],
+            blur: (10.0 + 14.0 * hover) as u8,
+            spread: 0,
+            color: with_alpha(Color32::BLACK, a),
+        };
         painter.set(i_shadow, s.as_shape(rect, cr));
     }
     let stroke = mix(look.stroke, t.accent, 0.45 * hover);
@@ -795,7 +873,13 @@ pub(crate) fn card<R>(ui: &mut Ui, id: Id, look: CardLook, add: impl FnOnce(&mut
     painter.set(i_bg, RectShape::new(rect, cr, fill, Stroke::new(1.0, stroke), StrokeKind::Inside));
     if hover > 0.0 {
         let end = ui.ctx().graphics_mut(|g| g.entry(layer).next_idx());
-        ui.ctx().graphics_mut(|g| g.entry(layer).transform_range(start, end, egui::emath::TSTransform::from_translation(vec2(0.0, -2.0 * hover))));
+        ui.ctx().graphics_mut(|g| {
+            g.entry(layer).transform_range(
+                start,
+                end,
+                egui::emath::TSTransform::from_translation(vec2(0.0, -2.0 * hover)),
+            )
+        });
     }
     CardOut { inner, rect, response, hover }
 }
@@ -844,13 +928,26 @@ impl<'a> Heading<'a> {
             i += 1;
         }
         sec.fade(ui, i, |ui| {
-            Tx::new(self.title).size(size).bold().line(1.15).align(self.align).max_width(self.max_w + 120.0).color(t.foreground).show(ui);
+            Tx::new(self.title)
+                .size(size)
+                .bold()
+                .line(1.15)
+                .align(self.align)
+                .max_width(self.max_w + 120.0)
+                .color(t.foreground)
+                .show(ui);
         });
         i += 1;
         if let Some(s) = self.subtitle {
             ui.add_space(14.0);
             sec.fade(ui, i, |ui| {
-                Tx::new(s).size(if sec.narrow { 15.0 } else { 17.0 }).line(1.55).align(self.align).max_width(self.max_w).color(t.muted_foreground).show(ui);
+                Tx::new(s)
+                    .size(if sec.narrow { 15.0 } else { 17.0 })
+                    .line(1.55)
+                    .align(self.align)
+                    .max_width(self.max_w)
+                    .color(t.muted_foreground)
+                    .show(ui);
             });
             i += 1;
         }
@@ -872,7 +969,13 @@ pub(crate) fn eyebrow(ui: &mut Ui, text: &str, align: Align, t: &Theme) {
         Align::Max => row.max.x - size.x,
     };
     let r = Rect::from_min_size(pos2(x, row.min.y), size);
-    ui.painter().rect(r, CornerRadius::same(99), with_alpha(t.accent, if t.dark { 0.12 } else { 0.08 }), Stroke::new(1.0, with_alpha(t.accent, 0.3)), StrokeKind::Inside);
+    ui.painter().rect(
+        r,
+        CornerRadius::same(99),
+        with_alpha(t.accent, if t.dark { 0.12 } else { 0.08 }),
+        Stroke::new(1.0, with_alpha(t.accent, 0.3)),
+        StrokeKind::Inside,
+    );
     tx.paint(ui, &galley, r.min + pad, galley.size().x, t.accent);
 }
 
@@ -882,7 +985,13 @@ pub(crate) fn eyebrow(ui: &mut Ui, text: &str, align: Align, t: &Theme) {
 /// A rounded tile with a tinted fill and an icon (feature cards, steps, contact info).
 pub(crate) fn icon_tile(painter: &egui::Painter, rect: Rect, icon: UiIcon, color: Color32, t: &Theme) {
     let r = CornerRadius::same((rect.width() * 0.26) as u8);
-    painter.rect(rect, r, with_alpha(color, if t.dark { 0.14 } else { 0.1 }), Stroke::new(1.0, with_alpha(color, 0.28)), StrokeKind::Inside);
+    painter.rect(
+        rect,
+        r,
+        with_alpha(color, if t.dark { 0.14 } else { 0.1 }),
+        Stroke::new(1.0, with_alpha(color, 0.28)),
+        StrokeKind::Inside,
+    );
     icon.paint(painter, rect.shrink(rect.width() * 0.27), color);
 }
 
@@ -901,7 +1010,13 @@ pub(crate) fn check_row(ui: &mut Ui, text: &str, color: Color32, muted: bool) ->
     let h = galley.size().y.max(20.0);
     let (rect, resp) = ui.allocate_exact_size(vec2(w, h), Sense::hover());
     check_dot(ui.painter(), pos2(rect.min.x + 9.0, rect.min.y + 10.0), 9.0, color, &t);
-    tx.paint(ui, &galley, pos2(rect.min.x + 28.0, rect.min.y + (20.0 - galley.rows.first().map_or(16.0, |r| r.height())) / 2.0), w - 28.0, t.foreground);
+    tx.paint(
+        ui,
+        &galley,
+        pos2(rect.min.x + 28.0, rect.min.y + (20.0 - galley.rows.first().map_or(16.0, |r| r.height())) / 2.0),
+        w - 28.0,
+        t.foreground,
+    );
     resp
 }
 
@@ -916,14 +1031,24 @@ pub(crate) fn link(ui: &mut Ui, text: &str, size: f32, color: Color32, hover_col
     tx.paint(ui, &galley, rect.min, rect.width(), c);
     if h > 0.0 {
         let y = rect.max.y + 1.0;
-        ui.painter().line_segment([pos2(rect.min.x, y), pos2(rect.min.x + rect.width() * h, y)], Stroke::new(1.0, with_alpha(hover_color, 0.6)));
+        ui.painter().line_segment(
+            [pos2(rect.min.x, y), pos2(rect.min.x + rect.width() * h, y)],
+            Stroke::new(1.0, with_alpha(hover_color, 0.6)),
+        );
     }
     resp
 }
 
 /// A brand mark for a fictional company: a little geometric glyph plus a wordmark.
 /// Returns the painted width.
-pub(crate) fn paint_logo(painter: &egui::Painter, left_center: Pos2, name: &str, kind: usize, color: Color32, h: f32) -> f32 {
+pub(crate) fn paint_logo(
+    painter: &egui::Painter,
+    left_center: Pos2,
+    name: &str,
+    kind: usize,
+    color: Color32,
+    h: f32,
+) -> f32 {
     let s = h;
     let c = left_center + vec2(s / 2.0, 0.0);
     let st = Stroke::new((s * 0.11).max(1.2), color);
@@ -939,11 +1064,23 @@ pub(crate) fn paint_logo(painter: &egui::Painter, left_center: Pos2, name: &str,
         2 => {
             for k in 0..3 {
                 let x = c.x - s * 0.4 + k as f32 * s * 0.3;
-                painter.rect_filled(Rect::from_min_size(pos2(x, c.y - s * 0.4 + k as f32 * s * 0.12), vec2(s * 0.2, s * 0.8 - k as f32 * s * 0.12)), 1.5, color);
+                painter.rect_filled(
+                    Rect::from_min_size(
+                        pos2(x, c.y - s * 0.4 + k as f32 * s * 0.12),
+                        vec2(s * 0.2, s * 0.8 - k as f32 * s * 0.12),
+                    ),
+                    1.5,
+                    color,
+                );
             }
         }
         3 => {
-            painter.rect_stroke(Rect::from_center_size(c, Vec2::splat(s * 0.78)), CornerRadius::same((s * 0.2) as u8), st, StrokeKind::Middle);
+            painter.rect_stroke(
+                Rect::from_center_size(c, Vec2::splat(s * 0.78)),
+                CornerRadius::same((s * 0.2) as u8),
+                st,
+                StrokeKind::Middle,
+            );
             painter.circle_filled(c, s * 0.14, color);
         }
         4 => {
@@ -1031,7 +1168,12 @@ impl SectionSocial {
                 painter.circle_filled(p(14.7, 12.0), 1.2 * k, color);
             }
             Self::LinkedIn => {
-                painter.rect_stroke(Rect::from_min_max(p(3.5, 3.5), p(20.5, 20.5)), CornerRadius::same((4.0 * k) as u8), st, StrokeKind::Middle);
+                painter.rect_stroke(
+                    Rect::from_min_max(p(3.5, 3.5), p(20.5, 20.5)),
+                    CornerRadius::same((4.0 * k) as u8),
+                    st,
+                    StrokeKind::Middle,
+                );
                 painter.line_segment([p(8.0, 10.5), p(8.0, 16.5)], st);
                 painter.circle_filled(p(8.0, 7.5), 1.2 * k, color);
                 painter.line_segment([p(11.5, 10.5), p(11.5, 16.5)], st);
@@ -1045,17 +1187,36 @@ impl SectionSocial {
                 painter.line_segment([p(16.5, 13.0), p(16.5, 16.5)], st);
             }
             Self::YouTube => {
-                painter.rect_stroke(Rect::from_min_max(p(2.5, 5.5), p(21.5, 18.5)), CornerRadius::same((5.0 * k) as u8), st, StrokeKind::Middle);
-                painter.add(Shape::convex_polygon(vec![p(10.0, 9.0), p(15.5, 12.0), p(10.0, 15.0)], color, Stroke::NONE));
+                painter.rect_stroke(
+                    Rect::from_min_max(p(2.5, 5.5), p(21.5, 18.5)),
+                    CornerRadius::same((5.0 * k) as u8),
+                    st,
+                    StrokeKind::Middle,
+                );
+                painter.add(Shape::convex_polygon(
+                    vec![p(10.0, 9.0), p(15.5, 12.0), p(10.0, 15.0)],
+                    color,
+                    Stroke::NONE,
+                ));
             }
             Self::Discord => {
-                painter.rect_stroke(Rect::from_min_max(p(3.0, 5.0), p(21.0, 17.5)), CornerRadius::same((6.0 * k) as u8), st, StrokeKind::Middle);
+                painter.rect_stroke(
+                    Rect::from_min_max(p(3.0, 5.0), p(21.0, 17.5)),
+                    CornerRadius::same((6.0 * k) as u8),
+                    st,
+                    StrokeKind::Middle,
+                );
                 painter.add(Shape::line(vec![p(8.0, 17.5), p(7.0, 21.0), p(11.0, 17.5)], st));
                 painter.circle_filled(p(9.0, 11.2), 1.4 * k, color);
                 painter.circle_filled(p(15.0, 11.2), 1.4 * k, color);
             }
             Self::Instagram => {
-                painter.rect_stroke(Rect::from_min_max(p(3.5, 3.5), p(20.5, 20.5)), CornerRadius::same((5.5 * k) as u8), st, StrokeKind::Middle);
+                painter.rect_stroke(
+                    Rect::from_min_max(p(3.5, 3.5), p(20.5, 20.5)),
+                    CornerRadius::same((5.5 * k) as u8),
+                    st,
+                    StrokeKind::Middle,
+                );
                 painter.circle_stroke(p(12.0, 12.0), 4.0 * k, st);
                 painter.circle_filled(p(16.8, 7.2), 1.1 * k, color);
             }
@@ -1070,7 +1231,13 @@ pub(crate) fn social_button(ui: &mut Ui, s: SectionSocial, size: f32) -> Respons
     let resp = resp.on_hover_cursor(CursorIcon::PointingHand).on_hover_text(s.label());
     let h = ui.ctx().animate_bool_with_time(resp.id.with("soc"), resp.hovered(), 0.15);
     let painter = ui.painter();
-    painter.rect(rect, CornerRadius::same((size * 0.3) as u8), mix(t.card, t.secondary, 0.5 + 0.5 * h), Stroke::new(1.0, mix(t.border, t.accent, 0.5 * h)), StrokeKind::Inside);
+    painter.rect(
+        rect,
+        CornerRadius::same((size * 0.3) as u8),
+        mix(t.card, t.secondary, 0.5 + 0.5 * h),
+        Stroke::new(1.0, mix(t.border, t.accent, 0.5 * h)),
+        StrokeKind::Inside,
+    );
     s.paint(painter, rect.shrink(size * 0.27), mix(t.muted_foreground, t.foreground, h));
     resp
 }
@@ -1092,7 +1259,8 @@ pub(crate) fn paint_art(painter: &egui::Painter, rect: Rect, seed: usize, t: &Th
         let u = rng.f32();
         let v = rng.f32();
         let drift = vec2((time * 0.3 + k as f32 * 2.0).sin(), (time * 0.23 + k as f32).cos()) * 6.0;
-        let center = pos2(rect.min.x + rect.width() * (0.15 + 0.7 * u), rect.min.y + rect.height() * (0.2 + 0.6 * v)) + drift;
+        let center =
+            pos2(rect.min.x + rect.width() * (0.15 + 0.7 * u), rect.min.y + rect.height() * (0.2 + 0.6 * v)) + drift;
         let r = rect.width().max(rect.height()) * (0.35 + 0.2 * rng.f32());
         paint::glow(&clip, center, r, with_alpha(*col, alpha));
     }
@@ -1138,15 +1306,30 @@ pub(crate) fn paint_mockup(ui: &Ui, rect: Rect, kind: usize, t: &Theme) {
     let painter = ui.painter();
     let time = glowkit_core::time(ui);
     let r = (t.radius * 1.4).round();
-    paint::soft_shadow(painter, rect, r, 40.0, vec2(0.0, 18.0), with_alpha(Color32::BLACK, if t.dark { 0.55 } else { 0.14 }));
-    paint::glow_ellipse(painter, rect.center_top() + vec2(0.0, rect.height() * 0.1), vec2(rect.width() * 0.6, rect.height() * 0.4), with_alpha(t.gradient[0], if t.dark { 0.16 } else { 0.06 }));
+    paint::soft_shadow(
+        painter,
+        rect,
+        r,
+        40.0,
+        vec2(0.0, 18.0),
+        with_alpha(Color32::BLACK, if t.dark { 0.55 } else { 0.14 }),
+    );
+    paint::glow_ellipse(
+        painter,
+        rect.center_top() + vec2(0.0, rect.height() * 0.1),
+        vec2(rect.width() * 0.6, rect.height() * 0.4),
+        with_alpha(t.gradient[0], if t.dark { 0.16 } else { 0.06 }),
+    );
     painter.rect(rect, CornerRadius::same(r as u8), t.card, Stroke::new(1.0, t.border), StrokeKind::Inside);
     let p = painter.with_clip_rect(rect.shrink(1.0).intersect(painter.clip_rect()));
     // title bar
     let bar = Rect::from_min_size(rect.min, vec2(rect.width(), 34.0));
     p.rect_filled(bar, CornerRadius { nw: r as u8, ne: r as u8, sw: 0, se: 0 }, mix(t.card, t.muted, 0.6));
     p.hline(bar.x_range(), bar.max.y, Stroke::new(1.0, t.border));
-    for (k, c) in [Color32::from_rgb(255, 95, 87), Color32::from_rgb(254, 188, 46), Color32::from_rgb(40, 200, 64)].iter().enumerate() {
+    for (k, c) in [Color32::from_rgb(255, 95, 87), Color32::from_rgb(254, 188, 46), Color32::from_rgb(40, 200, 64)]
+        .iter()
+        .enumerate()
+    {
         p.circle_filled(pos2(bar.min.x + 16.0 + k as f32 * 14.0, bar.center().y), 4.0, with_alpha(*c, 0.85));
     }
     let url = Rect::from_center_size(bar.center(), vec2((rect.width() * 0.36).min(220.0), 18.0));
@@ -1163,10 +1346,18 @@ pub(crate) fn paint_mockup(ui: &Ui, rect: Rect, kind: usize, t: &Theme) {
                 let y = side.min.y + 20.0 + i as f32 * 26.0;
                 let active = i == 1;
                 if active {
-                    p.rect_filled(Rect::from_min_size(pos2(side.min.x + 8.0, y - 8.0), vec2(side.width() - 16.0, 22.0)), CornerRadius::same(6), with_alpha(t.accent, 0.14));
+                    p.rect_filled(
+                        Rect::from_min_size(pos2(side.min.x + 8.0, y - 8.0), vec2(side.width() - 16.0, 22.0)),
+                        CornerRadius::same(6),
+                        with_alpha(t.accent, 0.14),
+                    );
                 }
                 p.circle_filled(pos2(side.min.x + 20.0, y + 3.0), 4.0, if active { t.accent } else { faint2 });
-                p.rect_filled(Rect::from_min_size(pos2(side.min.x + 32.0, y), vec2(side.width() * 0.45, 6.0)), CornerRadius::same(3), if active { with_alpha(t.accent, 0.6) } else { faint2 });
+                p.rect_filled(
+                    Rect::from_min_size(pos2(side.min.x + 32.0, y), vec2(side.width() * 0.45, 6.0)),
+                    CornerRadius::same(3),
+                    if active { with_alpha(t.accent, 0.6) } else { faint2 },
+                );
             }
             let main = Rect::from_min_max(pos2(side.max.x + 16.0, body.min.y + 16.0), body.max - vec2(16.0, 16.0));
             // KPI tiles
@@ -1175,23 +1366,49 @@ pub(crate) fn paint_mockup(ui: &Ui, rect: Rect, kind: usize, t: &Theme) {
             let tw = (main.width() - gap * (n as f32 - 1.0)) / n as f32;
             for i in 0..n {
                 let tr = Rect::from_min_size(pos2(main.min.x + i as f32 * (tw + gap), main.min.y), vec2(tw, 58.0));
-                p.rect(tr, CornerRadius::same(8), with_alpha(t.foreground, 0.025), Stroke::new(1.0, t.border), StrokeKind::Inside);
-                p.rect_filled(Rect::from_min_size(tr.min + vec2(10.0, 12.0), vec2(tw * 0.35, 5.0)), CornerRadius::same(3), faint2);
+                p.rect(
+                    tr,
+                    CornerRadius::same(8),
+                    with_alpha(t.foreground, 0.025),
+                    Stroke::new(1.0, t.border),
+                    StrokeKind::Inside,
+                );
+                p.rect_filled(
+                    Rect::from_min_size(tr.min + vec2(10.0, 12.0), vec2(tw * 0.35, 5.0)),
+                    CornerRadius::same(3),
+                    faint2,
+                );
                 let vals = ["$48.2k", "2,431", "98.4%"];
-                p.text(tr.min + vec2(10.0, 24.0), egui::Align2::LEFT_TOP, vals[i], FontId::proportional(15.0), t.foreground);
+                p.text(
+                    tr.min + vec2(10.0, 24.0),
+                    egui::Align2::LEFT_TOP,
+                    vals[i],
+                    FontId::proportional(15.0),
+                    t.foreground,
+                );
                 let col = t.chart[i];
                 let spark: Vec<Pos2> = (0..12)
                     .map(|k| {
                         let x = tr.max.x - 54.0 + k as f32 * 4.0;
-                        let y = tr.center().y + 4.0 - ((k as f32 * 0.9 + i as f32 + time * 0.8).sin() * 0.5 + k as f32 * 0.06) * 10.0;
+                        let y = tr.center().y + 4.0
+                            - ((k as f32 * 0.9 + i as f32 + time * 0.8).sin() * 0.5 + k as f32 * 0.06) * 10.0;
                         pos2(x, y)
                     })
                     .collect();
                 p.add(Shape::line(spark, Stroke::new(1.5, col)));
             }
             // chart
-            let cr = Rect::from_min_max(pos2(main.min.x, main.min.y + 72.0), pos2(main.max.x, main.min.y + 72.0 + (main.height() - 72.0) * 0.62));
-            p.rect(cr, CornerRadius::same(8), with_alpha(t.foreground, 0.02), Stroke::new(1.0, t.border), StrokeKind::Inside);
+            let cr = Rect::from_min_max(
+                pos2(main.min.x, main.min.y + 72.0),
+                pos2(main.max.x, main.min.y + 72.0 + (main.height() - 72.0) * 0.62),
+            );
+            p.rect(
+                cr,
+                CornerRadius::same(8),
+                with_alpha(t.foreground, 0.02),
+                Stroke::new(1.0, t.border),
+                StrokeKind::Inside,
+            );
             let plot = cr.shrink2(vec2(14.0, 18.0));
             for k in 0..4 {
                 let y = plot.min.y + k as f32 * plot.height() / 3.0;
@@ -1216,8 +1433,16 @@ pub(crate) fn paint_mockup(ui: &Ui, rect: Rect, kind: usize, t: &Theme) {
                     break;
                 }
                 p.circle_filled(pos2(lr.min.x + 8.0, y + 4.0), 6.0, with_alpha(t.chart[(i + 1) % 6], 0.7));
-                p.rect_filled(Rect::from_min_size(pos2(lr.min.x + 22.0, y), vec2(lr.width() * 0.3, 6.0)), CornerRadius::same(3), faint2);
-                p.rect_filled(Rect::from_min_size(pos2(lr.max.x - 60.0, y), vec2(60.0, 6.0)), CornerRadius::same(3), faint);
+                p.rect_filled(
+                    Rect::from_min_size(pos2(lr.min.x + 22.0, y), vec2(lr.width() * 0.3, 6.0)),
+                    CornerRadius::same(3),
+                    faint2,
+                );
+                p.rect_filled(
+                    Rect::from_min_size(pos2(lr.max.x - 60.0, y), vec2(60.0, 6.0)),
+                    CornerRadius::same(3),
+                    faint,
+                );
             }
         }
         1 => {
@@ -1242,7 +1467,13 @@ pub(crate) fn paint_mockup(ui: &Ui, rect: Rect, kind: usize, t: &Theme) {
                 if y + 10.0 > body.max.y {
                     break;
                 }
-                p.text(pos2(body.min.x + gutter - 10.0, y - 2.0), egui::Align2::RIGHT_TOP, format!("{}", i + 1), FontId::monospace(10.5), with_alpha(t.muted_foreground, 0.6));
+                p.text(
+                    pos2(body.min.x + gutter - 10.0, y - 2.0),
+                    egui::Align2::RIGHT_TOP,
+                    format!("{}", i + 1),
+                    FontId::monospace(10.5),
+                    with_alpha(t.muted_foreground, 0.6),
+                );
                 if *len <= 0.0 {
                     continue;
                 }
@@ -1251,8 +1482,16 @@ pub(crate) fn paint_mockup(ui: &Ui, rect: Rect, kind: usize, t: &Theme) {
                 let w = (body.width() - gutter - 30.0) * len;
                 let shown = if i < typed { w } else { 0.0 };
                 if shown > 0.0 {
-                    p.rect_filled(Rect::from_min_size(pos2(x, y), vec2(w * 0.35, 8.0)), CornerRadius::same(3), t.accent.gamma_multiply(0.7));
-                    p.rect_filled(Rect::from_min_size(pos2(x + w * 0.38, y), vec2(w * 0.62, 8.0)), CornerRadius::same(3), c);
+                    p.rect_filled(
+                        Rect::from_min_size(pos2(x, y), vec2(w * 0.35, 8.0)),
+                        CornerRadius::same(3),
+                        t.accent.gamma_multiply(0.7),
+                    );
+                    p.rect_filled(
+                        Rect::from_min_size(pos2(x + w * 0.38, y), vec2(w * 0.62, 8.0)),
+                        CornerRadius::same(3),
+                        c,
+                    );
                 }
                 if i == typed.min(lines.len() - 1) && (time * 2.0).fract() < 0.5 {
                     p.vline(x, (y - 3.0)..=(y + 11.0), Stroke::new(1.5, t.foreground));
@@ -1277,19 +1516,40 @@ pub(crate) fn paint_mockup(ui: &Ui, rect: Rect, kind: usize, t: &Theme) {
                 let lc = if mine { with_alpha(glowkit_core::color::contrast_text(t.accent), 0.55) } else { faint2 };
                 let mut ly = y + 11.0;
                 while ly + 6.0 < y + h - 6.0 {
-                    p.rect_filled(Rect::from_min_size(pos2(x + 12.0, ly), vec2(w - 24.0 - (ly - y) * 1.5, 6.0)), CornerRadius::same(3), lc);
+                    p.rect_filled(
+                        Rect::from_min_size(pos2(x + 12.0, ly), vec2(w - 24.0 - (ly - y) * 1.5, 6.0)),
+                        CornerRadius::same(3),
+                        lc,
+                    );
                     ly += 14.0;
                 }
                 y += h + 12.0;
             }
-            let input = Rect::from_min_max(pos2(body.min.x + 14.0, body.max.y - 46.0), pos2(body.max.x - 14.0, body.max.y - 12.0));
-            p.rect(input, CornerRadius::same(10), with_alpha(t.foreground, 0.03), Stroke::new(1.0, t.border), StrokeKind::Inside);
+            let input = Rect::from_min_max(
+                pos2(body.min.x + 14.0, body.max.y - 46.0),
+                pos2(body.max.x - 14.0, body.max.y - 12.0),
+            );
+            p.rect(
+                input,
+                CornerRadius::same(10),
+                with_alpha(t.foreground, 0.03),
+                Stroke::new(1.0, t.border),
+                StrokeKind::Inside,
+            );
             let dots = (time * 3.0) as usize % 4;
             for k in 0..3 {
-                p.circle_filled(pos2(input.min.x + 18.0 + k as f32 * 9.0, input.center().y), 2.5, if k < dots { t.muted_foreground } else { faint2 });
+                p.circle_filled(
+                    pos2(input.min.x + 18.0 + k as f32 * 9.0, input.center().y),
+                    2.5,
+                    if k < dots { t.muted_foreground } else { faint2 },
+                );
             }
             p.circle_filled(pos2(input.max.x - 18.0, input.center().y), 11.0, t.accent);
-            UiIcon::ArrowUp.paint(&p, Rect::from_center_size(pos2(input.max.x - 18.0, input.center().y), Vec2::splat(12.0)), glowkit_core::color::contrast_text(t.accent));
+            UiIcon::ArrowUp.paint(
+                &p,
+                Rect::from_center_size(pos2(input.max.x - 18.0, input.center().y), Vec2::splat(12.0)),
+                glowkit_core::color::contrast_text(t.accent),
+            );
         }
     }
     glowkit_core::animate(ui);
@@ -1309,7 +1569,8 @@ pub(crate) fn brand(ui: &mut Ui, name: &str, size: f32) -> Response {
     let tile = size * 1.45;
     let tx = Tx::new(name).size(size).bold();
     let g = tx.galley(ui, f32::INFINITY);
-    let (rect, resp) = ui.allocate_exact_size(vec2(tile + 9.0 + g.size().x + 2.0, tile.max(g.size().y)), Sense::click());
+    let (rect, resp) =
+        ui.allocate_exact_size(vec2(tile + 9.0 + g.size().x + 2.0, tile.max(g.size().y)), Sense::click());
     let resp = resp.on_hover_cursor(CursorIcon::PointingHand);
     let painter = ui.painter();
     let tr = Rect::from_min_size(pos2(rect.min.x, rect.center().y - tile / 2.0), Vec2::splat(tile));
@@ -1350,6 +1611,14 @@ pub(crate) fn stars(ui: &mut Ui, n: usize, size: f32) {
     let gold = if t.dark { glowkit_core::hex("#FBBF24") } else { glowkit_core::hex("#F59E0B") };
     for i in 0..5 {
         let c = pos2(rect.min.x + size / 2.0 + i as f32 * (size + 4.0), rect.center().y);
-        paint::star(ui.painter(), c, size * 0.5, size * 0.22, 5, -std::f32::consts::FRAC_PI_2, if i < n { gold } else { with_alpha(t.muted_foreground, 0.3) });
+        paint::star(
+            ui.painter(),
+            c,
+            size * 0.5,
+            size * 0.22,
+            5,
+            -std::f32::consts::FRAC_PI_2,
+            if i < n { gold } else { with_alpha(t.muted_foreground, 0.3) },
+        );
     }
 }

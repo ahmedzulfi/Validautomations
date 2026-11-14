@@ -32,7 +32,7 @@ pub fn all() -> Vec<Demo> {
             name: "Border Beam",
             category: C,
             description: "A comet of light travels around the border, fading from one color to another along its tail.",
-            covers: &["Magic UI: Border Beam", "Aceternity: Glowing Stars border"],
+            covers: &["Magic UI: Border Beam", "Aceternity: Glowing Stars border", "Motion Primitives: Border Trail"],
             code: r##"BorderBeam::new().width(320.0).show(ui, |ui| {
     ui.heading("Login");
 });
@@ -135,7 +135,7 @@ BorderBeam::new().duration(4.0).paint(ui, rect);"##,
             category: C,
             description:
                 "A dark card lit by a soft spotlight that follows the pointer, optionally revealing a dot grid.",
-            covers: &["React Bits: Spotlight Card", "Aceternity: Card Spotlight"],
+            covers: &["React Bits: Spotlight Card", "Aceternity: Card Spotlight", "Motion Primitives: Spotlight"],
             code: r##"SpotlightCard::new().width(300.0).show(ui, |ui| { ui.heading("Spotlight"); });
 SpotlightCard::new().dots(true).show(ui, |ui| { /* ... */ });"##,
             show: |ui| {
@@ -164,7 +164,7 @@ SpotlightCard::new().dots(true).show(ui, |ui| { /* ... */ });"##,
             category: C,
             description:
                 "The card tilts in 3D toward the pointer with real perspective, a moving glare and parallax content.",
-            covers: &["React Bits: Tilted Card", "Aceternity: 3D Card Effect", "Vanilla Tilt"],
+            covers: &["React Bits: Tilted Card", "Aceternity: 3D Card Effect", "Vanilla Tilt", "Motion Primitives: Tilt", "Aceternity UI: 3D Card"],
             code: r##"TiltCard::new().size(vec2(260.0, 300.0)).show(ui, |ui| {
     ui.heading("Tilt");
 });"##,
@@ -527,7 +527,7 @@ CardHoverEffect::new(items.len()).columns(3).show(ui, |ui, i| {
             name: "Animated Gradient Border",
             category: C,
             description: "A conic gradient keeps rotating around the border, optionally with a matching glow.",
-            covers: &["Uiverse: Animated border card", "Magic UI: Animated gradient border", "CSS: conic border"],
+            covers: &["Uiverse: Animated border card", "Magic UI: Animated gradient border", "CSS: conic border", "Aceternity UI: Background Gradient"],
             code: r##"AnimatedGradientBorder::new().glow(true).show(ui, |ui| { ui.heading("Gradient"); });"##,
             show: |ui| {
                 stage(ui, 200.0, |ui| {

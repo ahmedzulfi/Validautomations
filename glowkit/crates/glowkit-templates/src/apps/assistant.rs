@@ -1,7 +1,10 @@
 //! AI assistant app template: chat history sidebar, conversation and composer.
 
 use egui::{pos2, vec2, Align2, Rect, Ui};
-use glowkit_ai::{Attachment, AttachmentKind, ChatMessage, Conversation, Icon, Loader, LoaderKind, MessageAction, ModelInfo, ModelSelector, PromptInput, Reasoning, Role, Suggestions};
+use glowkit_ai::{
+    Attachment, AttachmentKind, ChatMessage, Conversation, Icon, Loader, LoaderKind, MessageAction, ModelInfo,
+    ModelSelector, PromptInput, Reasoning, Role, Suggestions,
+};
 use glowkit_components::{toast, Button, ButtonVariant, ControlSize, LineIcon, Toast, UiIcon};
 use glowkit_core::Theme;
 
@@ -64,7 +67,11 @@ const MODELS: [ModelInfo<'static>; 3] = [
 ];
 
 fn chat(id: usize, title: &str, msgs: &[(bool, &str)]) -> AssistantChat {
-    AssistantChat { id: format!("chat/{id}"), title: title.into(), messages: msgs.iter().map(|(u, s)| (*u, s.to_string())).collect() }
+    AssistantChat {
+        id: format!("chat/{id}"),
+        title: title.into(),
+        messages: msgs.iter().map(|(u, s)| (*u, s.to_string())).collect(),
+    }
 }
 
 impl Default for AssistantApp {
@@ -177,7 +184,9 @@ impl AssistantApp {
             .scoped_theme(self.scoped_theme)
             .id_salt("assistant_app")
             .actions(|ui| {
-                let b = ui.add(Button::new("New chat").icon(UiIcon::Plus).variant(ButtonVariant::Outline).size(ControlSize::Sm));
+                let b = ui.add(
+                    Button::new("New chat").icon(UiIcon::Plus).variant(ButtonVariant::Outline).size(ControlSize::Sm),
+                );
                 kit::tip(&b, "Start a new conversation", Some("Ctrl+Shift+O"));
                 new_chat = b.clicked();
             })
@@ -195,67 +204,90 @@ impl AssistantApp {
         let t = Theme::of(ui);
         let now = ui.input(|i| i.time);
         let Some(ci) = self.chats.iter().position(|c| c.id == route) else {
-            ui.painter().text(rect.center(), Align2::CENTER_CENTER, "Pick a conversation", egui::FontId::proportional(14.0), t.muted_foreground);
+            ui.painter().text(
+                rect.center(),
+                Align2::CENTER_CENTER,
+                "Pick a conversation",
+                egui::FontId::proportional(14.0),
+                t.muted_foreground,
+            );
             return;
         };
         let col_w = (rect.width() - 48.0).min(760.0);
         let col = Rect::from_center_size(pos2(rect.center().x, rect.center().y), vec2(col_w, rect.height()));
         let generating = self.generation.as_ref().is_some_and(|g| g.chat == route);
         let empty = self.chats[ci].messages.is_empty() && !generating;
-        let prompt_h = 128.0 + if self.attachments.is_empty() { 0.0 } else { 58.0 } + if empty && self.input.is_empty() { 44.0 } else { 0.0 };
+        let prompt_h = 128.0
+            + if self.attachments.is_empty() { 0.0 } else { 58.0 }
+            + if empty && self.input.is_empty() { 44.0 } else { 0.0 };
         let conv_rect = Rect::from_min_max(pos2(col.min.x, col.min.y + 8.0), pos2(col.max.x, col.max.y - prompt_h));
         let mut regenerate = false;
         kit::child(ui, conv_rect, |ui| {
-            Conversation::new().height(conv_rect.height()).fade_edges(t.background).id_salt(("assistant_conv", route)).show(ui, |ui| {
-                ui.spacing_mut().item_spacing.y = 22.0;
-                ui.add_space(12.0);
-                if empty {
-                    ui.add_space((conv_rect.height() * 0.28).max(20.0));
-                    ui.vertical_centered(|ui| {
-                        ui.add(glowkit_ai::Avatar::assistant(22.0));
-                        ui.add_space(4.0);
-                        ui.label(egui::RichText::new("How can I help you today?").size(22.0).color(t.foreground));
-                        ui.label(egui::RichText::new("Ask anything, attach files, or pick a suggestion below.").size(13.0).color(t.muted_foreground));
-                    });
-                }
-                let n = self.chats[ci].messages.len();
-                for (i, (user, text)) in self.chats[ci].messages.iter().enumerate() {
-                    if *user {
-                        ui.add(ChatMessage::new(Role::User, text).id_salt((route, "u", i)));
-                    } else {
-                        let last = i + 1 == n && !generating;
-                        let out = ChatMessage::new(Role::Assistant, text).actions(true).actions_always_visible(last).id_salt((route, "a", i)).show(ui, |_| {});
-                        if out.action == Some(MessageAction::Regenerate) && last {
-                            regenerate = true;
-                        }
-                        if out.action == Some(MessageAction::Copy) {
-                            toast(ui.ctx(), Toast::success("Copied to clipboard"));
-                        }
-                    }
-                }
-                if let Some(g) = self.generation.clone().filter(|g| g.chat == route) {
-                    let e = (now - g.started) as f32;
-                    let reason_t = g.reasoning.chars().count() as f32 / REASON_CPS;
-                    let t_answer = THINK + reason_t;
-                    let chars = ((e - t_answer).max(0.0) * ANSWER_CPS) as usize;
-                    let answer = if e > t_answer { prefix_words(&g.answer, chars) } else { String::new() };
-                    if chars > g.answer.chars().count() {
-                        self.chats[ci].messages.push((false, g.answer.clone()));
-                        self.generation = None;
-                    } else {
-                        ChatMessage::new(Role::Assistant, &answer).streaming(e > t_answer).id_salt((route, "gen")).show(ui, |ui| {
-                            if e < THINK {
-                                ui.add(Loader::new(LoaderKind::TextShimmer).text("Thinking").size(20.0));
-                            } else {
-                                let r = prefix_words(&g.reasoning, ((e - THINK) * REASON_CPS) as usize);
-                                ui.add(Reasoning::new(&r).streaming(e < t_answer).id_salt((route, "reason")));
-                            }
+            Conversation::new()
+                .height(conv_rect.height())
+                .fade_edges(t.background)
+                .id_salt(("assistant_conv", route))
+                .show(ui, |ui| {
+                    ui.spacing_mut().item_spacing.y = 22.0;
+                    ui.add_space(12.0);
+                    if empty {
+                        ui.add_space((conv_rect.height() * 0.28).max(20.0));
+                        ui.vertical_centered(|ui| {
+                            ui.add(glowkit_ai::Avatar::assistant(22.0));
+                            ui.add_space(4.0);
+                            ui.label(egui::RichText::new("How can I help you today?").size(22.0).color(t.foreground));
+                            ui.label(
+                                egui::RichText::new("Ask anything, attach files, or pick a suggestion below.")
+                                    .size(13.0)
+                                    .color(t.muted_foreground),
+                            );
                         });
-                        ui.ctx().request_repaint();
                     }
-                }
-                ui.add_space(8.0);
-            });
+                    let n = self.chats[ci].messages.len();
+                    for (i, (user, text)) in self.chats[ci].messages.iter().enumerate() {
+                        if *user {
+                            ui.add(ChatMessage::new(Role::User, text).id_salt((route, "u", i)));
+                        } else {
+                            let last = i + 1 == n && !generating;
+                            let out = ChatMessage::new(Role::Assistant, text)
+                                .actions(true)
+                                .actions_always_visible(last)
+                                .id_salt((route, "a", i))
+                                .show(ui, |_| {});
+                            if out.action == Some(MessageAction::Regenerate) && last {
+                                regenerate = true;
+                            }
+                            if out.action == Some(MessageAction::Copy) {
+                                toast(ui.ctx(), Toast::success("Copied to clipboard"));
+                            }
+                        }
+                    }
+                    if let Some(g) = self.generation.clone().filter(|g| g.chat == route) {
+                        let e = (now - g.started) as f32;
+                        let reason_t = g.reasoning.chars().count() as f32 / REASON_CPS;
+                        let t_answer = THINK + reason_t;
+                        let chars = ((e - t_answer).max(0.0) * ANSWER_CPS) as usize;
+                        let answer = if e > t_answer { prefix_words(&g.answer, chars) } else { String::new() };
+                        if chars > g.answer.chars().count() {
+                            self.chats[ci].messages.push((false, g.answer.clone()));
+                            self.generation = None;
+                        } else {
+                            ChatMessage::new(Role::Assistant, &answer)
+                                .streaming(e > t_answer)
+                                .id_salt((route, "gen"))
+                                .show(ui, |ui| {
+                                    if e < THINK {
+                                        ui.add(Loader::new(LoaderKind::TextShimmer).text("Thinking").size(20.0));
+                                    } else {
+                                        let r = prefix_words(&g.reasoning, ((e - THINK) * REASON_CPS) as usize);
+                                        ui.add(Reasoning::new(&r).streaming(e < t_answer).id_salt((route, "reason")));
+                                    }
+                                });
+                            ui.ctx().request_repaint();
+                        }
+                    }
+                    ui.add_space(8.0);
+                });
         });
         if regenerate {
             if let Some(last_user) = self.chats[ci].messages.iter().rev().find(|m| m.0).map(|m| m.1.clone()) {
@@ -270,7 +302,11 @@ impl AssistantApp {
         kit::child(ui, pr, |ui| {
             ui.spacing_mut().item_spacing.y = 6.0;
             if empty && self.input.is_empty() {
-                let items = ["Compare the shell layouts in a table", "Write a Rust function to format money", "Plan a product launch"];
+                let items = [
+                    "Compare the shell layouts in a table",
+                    "Write a Rust function to format money",
+                    "Plan a product launch",
+                ];
                 if let Some(i) = Suggestions::new(&items).icon(Icon::Sparkle).size(12.5).show(ui) {
                     submitted = Some(items[i].to_string());
                 }
@@ -298,7 +334,9 @@ impl AssistantApp {
                     let e = (now - g.started) as f32;
                     let t_answer = THINK + g.reasoning.chars().count() as f32 / REASON_CPS;
                     let partial = prefix_words(&g.answer, ((e - t_answer).max(0.0) * ANSWER_CPS) as usize);
-                    self.chats[ci].messages.push((false, if partial.is_empty() { "*Generation stopped.*".into() } else { partial }));
+                    self.chats[ci]
+                        .messages
+                        .push((false, if partial.is_empty() { "*Generation stopped.*".into() } else { partial }));
                 }
             }
             if let Some(s) = out.submitted {

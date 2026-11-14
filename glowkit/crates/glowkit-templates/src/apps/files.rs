@@ -1,7 +1,9 @@
 //! File manager template: folder tree, grid / list views, breadcrumbs and a details panel.
 
 use egui::{pos2, vec2, Align2, Color32, CursorIcon, Rect, Sense, Stroke, StrokeKind, Ui};
-use glowkit_components::{toast, AvatarGroup, Breadcrumb, Button, ButtonVariant, ControlSize, Input, LineIcon, Toast, ToggleGroup, UiIcon};
+use glowkit_components::{
+    toast, AvatarGroup, Breadcrumb, Button, ButtonVariant, ControlSize, Input, LineIcon, Toast, ToggleGroup, UiIcon,
+};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
 
@@ -210,40 +212,89 @@ impl FileManagerApp {
         crumbs.extend(path.iter().map(|&i| self.entries[i].name.clone()));
         let items: Vec<&str> = crumbs.iter().map(|s| s.as_str()).collect();
         let right_w = 330.0f32.min(main.width() * 0.55);
-        let clicked = kit::child(ui, Rect::from_min_max(pos2(tb.min.x + 18.0, tb.center().y - 13.0), pos2(tb.max.x - right_w - 10.0, tb.center().y + 13.0)), |ui| Breadcrumb::new(&items).size(14.0).max_items(3).show(ui));
+        let clicked = kit::child(
+            ui,
+            Rect::from_min_max(
+                pos2(tb.min.x + 18.0, tb.center().y - 13.0),
+                pos2(tb.max.x - right_w - 10.0, tb.center().y + 13.0),
+            ),
+            |ui| Breadcrumb::new(&items).size(14.0).max_items(3).show(ui),
+        );
         if let Some(i) = clicked {
             self.open(if i == 0 { None } else { Some(path[i - 1]) });
         }
         let cy = tb.center().y;
         let mut x = tb.max.x - 16.0;
-        let up = kit::put(ui, Rect::from_min_size(pos2(x - 96.0, cy - 16.0), vec2(96.0, 32.0)), Button::new("Upload").icon(UiIcon::Upload).size(ControlSize::Sm).width(96.0));
+        let up = kit::put(
+            ui,
+            Rect::from_min_size(pos2(x - 96.0, cy - 16.0), vec2(96.0, 32.0)),
+            Button::new("Upload").icon(UiIcon::Upload).size(ControlSize::Sm).width(96.0),
+        );
         if up.clicked() {
             let i = self.entries.len();
-            self.entries.push(FsEntry { name: format!("Upload {}.png", i), parent: self.current, folder: false, size: 1_800_000, modified: "Just now".into(), starred: false });
+            self.entries.push(FsEntry {
+                name: format!("Upload {}.png", i),
+                parent: self.current,
+                folder: false,
+                size: 1_800_000,
+                modified: "Just now".into(),
+                starred: false,
+            });
             self.expanded.push(true);
             self.selected = Some(i);
             toast(ui.ctx(), Toast::success("Upload complete").description(format!("Upload {i}.png · 1.8 MB")));
         }
         x -= 104.0;
-        let nf = kit::icon_button(ui, Rect::from_center_size(pos2(x - 16.0, cy), vec2(32.0, 32.0)), id.with("newf"), AppIcon::Ui(UiIcon::FolderOpen), false);
+        let nf = kit::icon_button(
+            ui,
+            Rect::from_center_size(pos2(x - 16.0, cy), vec2(32.0, 32.0)),
+            id.with("newf"),
+            AppIcon::Ui(UiIcon::FolderOpen),
+            false,
+        );
         kit::tip(&nf, "New folder", None);
         if nf.clicked() {
             let i = self.entries.len();
-            self.entries.push(FsEntry { name: "Untitled folder".into(), parent: self.current, folder: true, size: 0, modified: "Just now".into(), starred: false });
+            self.entries.push(FsEntry {
+                name: "Untitled folder".into(),
+                parent: self.current,
+                folder: true,
+                size: 0,
+                modified: "Just now".into(),
+                starred: false,
+            });
             self.expanded.push(true);
             self.selected = Some(i);
             toast(ui.ctx(), Toast::success("Folder created"));
         }
         x -= 40.0;
-        kit::put(ui, Rect::from_min_size(pos2(x - 72.0, cy - 16.0), vec2(72.0, 32.0)), ToggleGroup::single(&mut self.view, [UiIcon::Grid, UiIcon::List]).size(ControlSize::Sm));
+        kit::put(
+            ui,
+            Rect::from_min_size(pos2(x - 72.0, cy - 16.0), vec2(72.0, 32.0)),
+            ToggleGroup::single(&mut self.view, [UiIcon::Grid, UiIcon::List]).size(ControlSize::Sm),
+        );
         x -= 80.0;
         let sw = (x - (tb.max.x - right_w)).max(0.0);
         if sw > 80.0 {
-            kit::put(ui, Rect::from_min_size(pos2(x - sw, cy - 16.0), vec2(sw, 32.0)), Input::new(&mut self.query).placeholder("Search").icon(UiIcon::Search).clearable(true).size(ControlSize::Sm).width(sw).id_salt("fm_q"));
+            kit::put(
+                ui,
+                Rect::from_min_size(pos2(x - sw, cy - 16.0), vec2(sw, 32.0)),
+                Input::new(&mut self.query)
+                    .placeholder("Search")
+                    .icon(UiIcon::Search)
+                    .clearable(true)
+                    .size(ControlSize::Sm)
+                    .width(sw)
+                    .id_salt("fm_q"),
+            );
         }
         // contents
         let q = self.query.to_lowercase();
-        let list: Vec<usize> = if q.is_empty() { self.children(self.current) } else { (0..self.entries.len()).filter(|&i| self.entries[i].name.to_lowercase().contains(&q)).collect() };
+        let list: Vec<usize> = if q.is_empty() {
+            self.children(self.current)
+        } else {
+            (0..self.entries.len()).filter(|&i| self.entries[i].name.to_lowercase().contains(&q)).collect()
+        };
         let area = Rect::from_min_max(pos2(main.min.x, tb.max.y), main.max).shrink(18.0);
         let mut open_folder = None;
         let mut select = None;
@@ -255,8 +306,20 @@ impl FileManagerApp {
                 let w = ui.available_width();
                 if list.is_empty() {
                     let r = kit::alloc_row(ui, 220.0);
-                    ui.painter().text(r.center() - vec2(0.0, 10.0), Align2::CENTER_CENTER, if q.is_empty() { "This folder is empty" } else { "No files match" }, egui::FontId::proportional(14.0), t.foreground);
-                    ui.painter().text(r.center() + vec2(0.0, 12.0), Align2::CENTER_CENTER, "Drop files here or use Upload.", egui::FontId::proportional(12.5), t.muted_foreground);
+                    ui.painter().text(
+                        r.center() - vec2(0.0, 10.0),
+                        Align2::CENTER_CENTER,
+                        if q.is_empty() { "This folder is empty" } else { "No files match" },
+                        egui::FontId::proportional(14.0),
+                        t.foreground,
+                    );
+                    ui.painter().text(
+                        r.center() + vec2(0.0, 12.0),
+                        Align2::CENTER_CENTER,
+                        "Drop files here or use Upload.",
+                        egui::FontId::proportional(12.5),
+                        t.muted_foreground,
+                    );
                     return;
                 }
                 if self.view == 0 {
@@ -276,19 +339,63 @@ impl FileManagerApp {
                             let hv = kit::hover(ui, rid, resp.hovered());
                             let sel = self.selected == Some(ei);
                             let pp = ui.painter().clone();
-                            pp.rect_filled(*r, t.radius, if sel { with_alpha(t.accent, 0.12) } else { kit::hover_fill(&t, hv) });
-                            pp.rect_stroke(*r, t.radius, Stroke::new(1.0, if sel { with_alpha(t.accent, 0.6) } else { t.border.lerp_to_gamma(t.muted_foreground, hv * 0.3) }), StrokeKind::Inside);
+                            pp.rect_filled(
+                                *r,
+                                t.radius,
+                                if sel { with_alpha(t.accent, 0.12) } else { kit::hover_fill(&t, hv) },
+                            );
+                            pp.rect_stroke(
+                                *r,
+                                t.radius,
+                                Stroke::new(
+                                    1.0,
+                                    if sel {
+                                        with_alpha(t.accent, 0.6)
+                                    } else {
+                                        t.border.lerp_to_gamma(t.muted_foreground, hv * 0.3)
+                                    },
+                                ),
+                                StrokeKind::Inside,
+                            );
                             let (_, icon, ci) = kind(&e.name, e.folder);
                             let ic = Rect::from_center_size(pos2(r.center().x, r.min.y + 46.0), vec2(56.0, 56.0));
                             let c = t.chart[ci];
                             pp.rect_filled(ic, 12.0, with_alpha(c, if t.dark { 0.16 } else { 0.12 }));
                             icon.paint(&pp, Rect::from_center_size(ic.center(), vec2(26.0, 26.0)), c);
                             if e.starred {
-                                glowkit_core::paint::star(&pp, r.right_top() + vec2(-14.0, 14.0), 5.5, 2.4, 5, -std::f32::consts::FRAC_PI_2, t.warning);
+                                glowkit_core::paint::star(
+                                    &pp,
+                                    r.right_top() + vec2(-14.0, 14.0),
+                                    5.5,
+                                    2.4,
+                                    5,
+                                    -std::f32::consts::FRAC_PI_2,
+                                    t.warning,
+                                );
                             }
-                            kit::text_at(&pp, pos2(r.center().x, r.max.y - 34.0), Align2::CENTER_CENTER, &e.name, 13.0, t.foreground, r.width() - 16.0);
-                            let sub = if e.folder { format!("{} items", self.children(Some(ei)).len()) } else { human(e.size) };
-                            kit::text_at(&pp, pos2(r.center().x, r.max.y - 16.0), Align2::CENTER_CENTER, &sub, 11.5, t.muted_foreground, r.width() - 16.0);
+                            kit::text_at(
+                                &pp,
+                                pos2(r.center().x, r.max.y - 34.0),
+                                Align2::CENTER_CENTER,
+                                &e.name,
+                                13.0,
+                                t.foreground,
+                                r.width() - 16.0,
+                            );
+                            let sub = if e.folder {
+                                format!("{} items", self.children(Some(ei)).len())
+                            } else {
+                                human(e.size)
+                            };
+                            kit::text_at(
+                                &pp,
+                                pos2(r.center().x, r.max.y - 16.0),
+                                Align2::CENTER_CENTER,
+                                &sub,
+                                11.5,
+                                t.muted_foreground,
+                                r.width() - 16.0,
+                            );
                             if resp.double_clicked() && e.folder {
                                 open_folder = Some(ei);
                             } else if resp.clicked() {
@@ -301,7 +408,10 @@ impl FileManagerApp {
                     let head = kit::alloc_row(ui, 30.0);
                     let cols = [0.0, 140.0, 100.0, 110.0];
                     let pp = ui.painter().clone();
-                    for (c, h) in kit::split_x(head.shrink2(vec2(12.0, 0.0)), &cols, 10.0).iter().zip(["Name", "Kind", "Size", "Modified"]) {
+                    for (c, h) in kit::split_x(head.shrink2(vec2(12.0, 0.0)), &cols, 10.0)
+                        .iter()
+                        .zip(["Name", "Kind", "Size", "Modified"])
+                    {
                         kit::text_at(&pp, c.left_center(), Align2::LEFT_CENTER, h, 12.0, t.muted_foreground, c.width());
                     }
                     kit::hline(&pp, head.min.x, head.max.x, head.max.y, &t);
@@ -321,11 +431,47 @@ impl FileManagerApp {
                         }
                         let cells = kit::split_x(r.shrink2(vec2(12.0, 0.0)), &cols, 10.0);
                         let (k, icon, ci) = kind(&e.name, e.folder);
-                        icon.paint(&pp, Rect::from_center_size(pos2(cells[0].min.x + 9.0, r.center().y), vec2(17.0, 17.0)), t.chart[ci]);
-                        kit::text_at(&pp, pos2(cells[0].min.x + 28.0, r.center().y), Align2::LEFT_CENTER, &e.name, 13.5, t.foreground, cells[0].width() - 30.0);
-                        kit::text_at(&pp, cells[1].left_center(), Align2::LEFT_CENTER, k, 12.5, t.muted_foreground, cells[1].width());
-                        kit::text_at(&pp, cells[2].left_center(), Align2::LEFT_CENTER, &if e.folder { "—".into() } else { human(e.size) }, 12.5, t.muted_foreground, cells[2].width());
-                        kit::text_at(&pp, cells[3].left_center(), Align2::LEFT_CENTER, &e.modified, 12.5, t.muted_foreground, cells[3].width());
+                        icon.paint(
+                            &pp,
+                            Rect::from_center_size(pos2(cells[0].min.x + 9.0, r.center().y), vec2(17.0, 17.0)),
+                            t.chart[ci],
+                        );
+                        kit::text_at(
+                            &pp,
+                            pos2(cells[0].min.x + 28.0, r.center().y),
+                            Align2::LEFT_CENTER,
+                            &e.name,
+                            13.5,
+                            t.foreground,
+                            cells[0].width() - 30.0,
+                        );
+                        kit::text_at(
+                            &pp,
+                            cells[1].left_center(),
+                            Align2::LEFT_CENTER,
+                            k,
+                            12.5,
+                            t.muted_foreground,
+                            cells[1].width(),
+                        );
+                        kit::text_at(
+                            &pp,
+                            cells[2].left_center(),
+                            Align2::LEFT_CENTER,
+                            &if e.folder { "—".into() } else { human(e.size) },
+                            12.5,
+                            t.muted_foreground,
+                            cells[2].width(),
+                        );
+                        kit::text_at(
+                            &pp,
+                            cells[3].left_center(),
+                            Align2::LEFT_CENTER,
+                            &e.modified,
+                            12.5,
+                            t.muted_foreground,
+                            cells[3].width(),
+                        );
                         if resp.double_clicked() && e.folder {
                             open_folder = Some(ei);
                         } else if resp.clicked() {
@@ -376,17 +522,44 @@ impl FileManagerApp {
             let active = self.current == fi;
             let resp = ui.interact(rr, rid, Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
             let hv = kit::hover(ui, rid, resp.hovered());
-            p.rect_filled(rr, t.radius * 0.6, if active { kit::active_fill(&t, t.background) } else { kit::hover_fill(&t, hv) });
+            p.rect_filled(
+                rr,
+                t.radius * 0.6,
+                if active { kit::active_fill(&t, t.background) } else { kit::hover_fill(&t, hv) },
+            );
             let x = rr.min.x + 8.0 + depth as f32 * 14.0;
             let has_sub = fi.is_some_and(|f| self.children(Some(f)).iter().any(|&c| self.entries[c].folder));
             if has_sub {
-                let e = kit::follow(ui.ctx(), rid.with("e"), if fi.is_some_and(|f| self.expanded[f]) { 1.0 } else { 0.0 }, 16.0);
-                sidebar_chevron(&p, pos2(x - 8.0, rr.center().y), 8.0, e * std::f32::consts::FRAC_PI_2, t.muted_foreground);
+                let e = kit::follow(
+                    ui.ctx(),
+                    rid.with("e"),
+                    if fi.is_some_and(|f| self.expanded[f]) { 1.0 } else { 0.0 },
+                    16.0,
+                );
+                sidebar_chevron(
+                    &p,
+                    pos2(x - 8.0, rr.center().y),
+                    8.0,
+                    e * std::f32::consts::FRAC_PI_2,
+                    t.muted_foreground,
+                );
             }
-            let (icon, col) = if fi.is_none() { (AppIcon::Ui(UiIcon::Home), t.muted_foreground) } else { (AppIcon::Line(LineIcon::Folder), if active { t.accent } else { t.muted_foreground }) };
+            let (icon, col) = if fi.is_none() {
+                (AppIcon::Ui(UiIcon::Home), t.muted_foreground)
+            } else {
+                (AppIcon::Line(LineIcon::Folder), if active { t.accent } else { t.muted_foreground })
+            };
             icon.paint(&p, Rect::from_center_size(pos2(x + 8.0, rr.center().y), vec2(15.0, 15.0)), col);
             let name = fi.map(|f| self.entries[f].name.clone()).unwrap_or_else(|| "My files".into());
-            kit::text_at(&p, pos2(x + 22.0, rr.center().y), Align2::LEFT_CENTER, &name, 13.0, if active { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, hv) }, rr.max.x - x - 26.0);
+            kit::text_at(
+                &p,
+                pos2(x + 22.0, rr.center().y),
+                Align2::LEFT_CENTER,
+                &name,
+                13.0,
+                if active { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, hv) },
+                rr.max.x - x - 26.0,
+            );
             if resp.clicked() {
                 let chevron_hit = has_sub && ui.input(|i| i.pointer.interact_pos()).is_some_and(|pp| pp.x < x + 2.0);
                 action = Some((fi, chevron_hit));
@@ -405,19 +578,43 @@ impl FileManagerApp {
         let sr = Rect::from_min_max(pos2(r.min.x + 4.0, r.max.y - 60.0), r.max - vec2(4.0, 0.0));
         let used: u64 = self.entries.iter().map(|e| e.size).sum();
         kit::text_at(&p, sr.min + vec2(4.0, 10.0), Align2::LEFT_CENTER, "Storage", 12.5, t.foreground, 100.0);
-        kit::text_at(&p, pos2(sr.max.x - 4.0, sr.min.y + 10.0), Align2::RIGHT_CENTER, &format!("{} of 2 TB", human(used)), 11.5, t.muted_foreground, 120.0);
+        kit::text_at(
+            &p,
+            pos2(sr.max.x - 4.0, sr.min.y + 10.0),
+            Align2::RIGHT_CENTER,
+            &format!("{} of 2 TB", human(used)),
+            11.5,
+            t.muted_foreground,
+            120.0,
+        );
         let track = Rect::from_min_size(sr.min + vec2(4.0, 24.0), vec2(sr.width() - 8.0, 6.0));
         p.rect_filled(track, 3.0, with_alpha(t.foreground, 0.08));
         let frac = (used as f32 / 2e12).max(0.04);
-        glowkit_core::paint::gradient_rect(&p, Rect::from_min_size(track.min, vec2(track.width() * frac, 6.0)), 3.0, 0.0, &[t.gradient[0], t.gradient[1]]);
+        glowkit_core::paint::gradient_rect(
+            &p,
+            Rect::from_min_size(track.min, vec2(track.width() * frac, 6.0)),
+            3.0,
+            0.0,
+            &[t.gradient[0], t.gradient[1]],
+        );
     }
 
     fn details(&mut self, ui: &mut Ui, r: Rect) {
         let t = Theme::of(ui);
         let p = ui.painter().clone();
         let Some(si) = self.selected.filter(|s| *s < self.entries.len()) else {
-            AppIcon::Line(LineIcon::Info).paint(&p, Rect::from_center_size(r.center() - vec2(0.0, 20.0), vec2(24.0, 24.0)), t.muted_foreground);
-            p.text(r.center() + vec2(0.0, 12.0), Align2::CENTER_CENTER, "Select a file to see details", egui::FontId::proportional(13.0), t.muted_foreground);
+            AppIcon::Line(LineIcon::Info).paint(
+                &p,
+                Rect::from_center_size(r.center() - vec2(0.0, 20.0), vec2(24.0, 24.0)),
+                t.muted_foreground,
+            );
+            p.text(
+                r.center() + vec2(0.0, 12.0),
+                Align2::CENTER_CENTER,
+                "Select a file to see details",
+                egui::FontId::proportional(13.0),
+                t.muted_foreground,
+            );
             return;
         };
         let e = self.entries[si].clone();
@@ -432,7 +629,13 @@ impl FileManagerApp {
         let rows = [
             ("Size", if e.folder { format!("{} items", self.children(Some(si)).len()) } else { human(e.size) }),
             ("Modified", e.modified.clone()),
-            ("Location", self.path(e.parent).iter().map(|&i| self.entries[i].name.clone()).fold("My files".to_string(), |a, b| format!("{a} / {b}"))),
+            (
+                "Location",
+                self.path(e.parent)
+                    .iter()
+                    .map(|&i| self.entries[i].name.clone())
+                    .fold("My files".to_string(), |a, b| format!("{a} / {b}")),
+            ),
             ("Owner", "Ada Lovelace".into()),
         ];
         let mut y = prev.max.y + 70.0;
@@ -444,15 +647,31 @@ impl FileManagerApp {
         kit::hline(&p, r.min.x, r.max.x, y, &t);
         y += 18.0;
         kit::text_at(&p, pos2(r.min.x, y), Align2::LEFT_CENTER, "Shared with", 12.5, t.muted_foreground, 120.0);
-        kit::put(ui, Rect::from_min_size(pos2(r.max.x - 100.0, y - 13.0), vec2(100.0, 26.0)), AvatarGroup::new(&["Mia Chen", "Liam Johnson", "Sofia Davis"]).size(26.0));
+        kit::put(
+            ui,
+            Rect::from_min_size(pos2(r.max.x - 100.0, y - 13.0), vec2(100.0, 26.0)),
+            AvatarGroup::new(&["Mia Chen", "Liam Johnson", "Sofia Davis"]).size(26.0),
+        );
         y += 30.0;
         let bw = (r.width() - 8.0) / 2.0;
-        if kit::put(ui, Rect::from_min_size(pos2(r.min.x, y), vec2(bw, 32.0)), Button::new("Share").icon(UiIcon::Users).size(ControlSize::Sm).width(bw)).clicked() {
+        if kit::put(
+            ui,
+            Rect::from_min_size(pos2(r.min.x, y), vec2(bw, 32.0)),
+            Button::new("Share").icon(UiIcon::Users).size(ControlSize::Sm).width(bw),
+        )
+        .clicked()
+        {
             ui.ctx().copy_text(format!("https://drive.acme.dev/f/{si}"));
             toast(ui.ctx(), Toast::success("Link copied").description("Anyone in Acme with the link can view."));
         }
         let star_label = if e.starred { "Unstar" } else { "Star" };
-        if kit::put(ui, Rect::from_min_size(pos2(r.min.x + bw + 8.0, y), vec2(bw, 32.0)), Button::new(star_label).icon(UiIcon::Star).variant(ButtonVariant::Outline).size(ControlSize::Sm).width(bw)).clicked() {
+        if kit::put(
+            ui,
+            Rect::from_min_size(pos2(r.min.x + bw + 8.0, y), vec2(bw, 32.0)),
+            Button::new(star_label).icon(UiIcon::Star).variant(ButtonVariant::Outline).size(ControlSize::Sm).width(bw),
+        )
+        .clicked()
+        {
             self.entries[si].starred = !e.starred;
         }
     }

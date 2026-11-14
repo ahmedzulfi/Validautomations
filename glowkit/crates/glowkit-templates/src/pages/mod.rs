@@ -10,8 +10,8 @@ mod status;
 
 pub use app::{ArticleBlock, BlogPostPage, OnboardingPage, ProfilePage};
 pub use auth::{AuthLayout, ForgotPasswordPage, LoginPage, OtpPage, SignupPage};
-pub use status::{ComingSoonPage, NotFoundPage, ServerErrorPage, ThankYouPage};
 pub use marketing::{ContactPage, LandingBlock, LandingPage, PricingPage, WaitlistPage};
+pub use status::{ComingSoonPage, NotFoundPage, ServerErrorPage, ThankYouPage};
 
 /// Gallery demos for this module.
 #[cfg(feature = "demos")]

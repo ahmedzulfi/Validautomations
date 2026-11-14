@@ -2,8 +2,8 @@
 
 use egui::{pos2, vec2, Align2, Color32, CursorIcon, Id, Key, Modifiers, Order, Rect, Sense, Stroke, StrokeKind, Ui};
 use glowkit_components::{
-    toast, Breadcrumb, CommandItem, CommandPalette, DropdownMenu, LineIcon, MenuEntry, Placement, Popover, Toast, ToastPosition,
-    Toaster, Tooltip,
+    toast, Breadcrumb, CommandItem, CommandPalette, DropdownMenu, LineIcon, MenuEntry, Placement, Popover, Toast,
+    ToastPosition, Toaster, Tooltip,
 };
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{paint, Theme};
@@ -289,7 +289,8 @@ impl<'a> AppShell<'a> {
         let ctx = ui.ctx().clone();
         let id = ui.scope_id().with_salt(self.id_salt);
         let start_collapsed = self.start_collapsed;
-        let mut st: ShellState = glowkit_core::state(ui, id, || ShellState { collapsed: start_collapsed, ..Default::default() });
+        let mut st: ShellState =
+            glowkit_core::state(ui, id, || ShellState { collapsed: start_collapsed, ..Default::default() });
         // ---- theme ------------------------------------------------------------------------
         let outer_theme = Theme::current(&ctx);
         let mut restore = false;
@@ -340,11 +341,19 @@ impl<'a> AppShell<'a> {
         let mut notification = None;
         let start_route = self.route.clone();
         let layout = self.layout;
-        let has_sidebar = matches!(layout, ShellLayout::Sidebar | ShellLayout::Inset | ShellLayout::Floating | ShellLayout::Dual | ShellLayout::Inspector);
+        let has_sidebar = matches!(
+            layout,
+            ShellLayout::Sidebar
+                | ShellLayout::Inset
+                | ShellLayout::Floating
+                | ShellLayout::Dual
+                | ShellLayout::Inspector
+        );
         let phone = has_sidebar && rect.width() < 720.0;
         let auto_rail = has_sidebar && rect.width() < 1040.0;
         // ---- shortcuts --------------------------------------------------------------------
-        let (ctrl_b, ctrl_i) = ctx.input_mut(|i| (i.consume_key(Modifiers::COMMAND, Key::B), i.consume_key(Modifiers::COMMAND, Key::I)));
+        let (ctrl_b, ctrl_i) =
+            ctx.input_mut(|i| (i.consume_key(Modifiers::COMMAND, Key::B), i.consume_key(Modifiers::COMMAND, Key::I)));
         if ctrl_b && has_sidebar {
             if phone {
                 st.drawer = !st.drawer;
@@ -391,27 +400,51 @@ impl<'a> AppShell<'a> {
                 if !phone {
                     side_rect = Some(s);
                 }
-                let m = Rect::from_min_max(pos2(if phone { rect.min.x + 8.0 } else { s.max.x }, rect.min.y + 8.0), rect.max - vec2(8.0, 8.0));
-                paint::soft_shadow(&p, m, t.radius * 1.2, 10.0, vec2(0.0, 2.0), with_alpha(Color32::BLACK, if t.dark { 0.35 } else { 0.06 }));
+                let m = Rect::from_min_max(
+                    pos2(if phone { rect.min.x + 8.0 } else { s.max.x }, rect.min.y + 8.0),
+                    rect.max - vec2(8.0, 8.0),
+                );
+                paint::soft_shadow(
+                    &p,
+                    m,
+                    t.radius * 1.2,
+                    10.0,
+                    vec2(0.0, 2.0),
+                    with_alpha(Color32::BLACK, if t.dark { 0.35 } else { 0.06 }),
+                );
                 p.rect_filled(m, t.radius * 1.2, t.background);
-                p.rect_stroke(m, t.radius * 1.2, Stroke::new(1.0, if t.dark { t.border } else { mix(t.border, t.background, 0.3) }), StrokeKind::Inside);
+                p.rect_stroke(
+                    m,
+                    t.radius * 1.2,
+                    Stroke::new(1.0, if t.dark { t.border } else { mix(t.border, t.background, 0.3) }),
+                    StrokeKind::Inside,
+                );
                 main_rect = m;
             }
             ShellLayout::Floating => {
                 let s = Rect::from_min_size(rect.min + vec2(8.0, 8.0), vec2(side_w, rect.height() - 16.0));
                 if !phone {
                     paint::soft_shadow(&p, s, t.radius * 1.2, 16.0, vec2(0.0, 4.0), kit::shadow(&t));
-                    p.rect_filled(s, t.radius * 1.2, if t.dark { mix(t.card, t.foreground, 0.02) } else { t.background });
+                    p.rect_filled(
+                        s,
+                        t.radius * 1.2,
+                        if t.dark { mix(t.card, t.foreground, 0.02) } else { t.background },
+                    );
                     p.rect_stroke(s, t.radius * 1.2, Stroke::new(1.0, t.border), StrokeKind::Inside);
                     side_rect = Some(s);
                 }
-                main_rect = Rect::from_min_max(pos2(if phone { rect.min.x } else { s.max.x + 8.0 }, rect.min.y), rect.max);
+                main_rect =
+                    Rect::from_min_max(pos2(if phone { rect.min.x } else { s.max.x + 8.0 }, rect.min.y), rect.max);
             }
             ShellLayout::Dual => {
                 let rr = Rect::from_min_size(rect.min, vec2(if phone { 0.0 } else { 60.0 }, rect.height()));
                 let panel_w = if phone { 0.0 } else { 232.0 * (1.0 - c) };
                 if !phone {
-                    p.rect_filled(rr, egui::CornerRadius { nw: outer_r as u8, sw: outer_r as u8, ne: 0, se: 0 }, mix(chrome, t.foreground, if t.dark { 0.015 } else { 0.02 }));
+                    p.rect_filled(
+                        rr,
+                        egui::CornerRadius { nw: outer_r as u8, sw: outer_r as u8, ne: 0, se: 0 },
+                        mix(chrome, t.foreground, if t.dark { 0.015 } else { 0.02 }),
+                    );
                     p.line_segment([rr.right_top(), rr.right_bottom()], Stroke::new(1.0, t.border));
                     rail_rect = Some(rr);
                     if panel_w > 1.0 {
@@ -436,7 +469,10 @@ impl<'a> AppShell<'a> {
         };
         let insp_w = 300.0 * insp_e;
         let (main_rect, insp_rect) = if insp_w > 1.0 {
-            (Rect::from_min_max(main_rect.min, pos2(main_rect.max.x - insp_w, main_rect.max.y)), Some(Rect::from_min_max(pos2(main_rect.max.x - insp_w, main_rect.min.y), main_rect.max)))
+            (
+                Rect::from_min_max(main_rect.min, pos2(main_rect.max.x - insp_w, main_rect.max.y)),
+                Some(Rect::from_min_max(pos2(main_rect.max.x - insp_w, main_rect.min.y), main_rect.max)),
+            )
         } else {
             (main_rect, None)
         };
@@ -453,9 +489,25 @@ impl<'a> AppShell<'a> {
                 let sec = &self.nav[only.unwrap_or(0)];
                 let hr = Rect::from_min_size(s.min, vec2(232.0, 56.0));
                 let hp = p.with_clip_rect(s);
-                kit::text_at(&hp, pos2(hr.min.x + 16.0, hr.center().y - 7.0), Align2::LEFT_CENTER, &sec.title, 15.0, t.foreground, 200.0);
+                kit::text_at(
+                    &hp,
+                    pos2(hr.min.x + 16.0, hr.center().y - 7.0),
+                    Align2::LEFT_CENTER,
+                    &sec.title,
+                    15.0,
+                    t.foreground,
+                    200.0,
+                );
                 let n = sec.items.len();
-                kit::text_at(&hp, pos2(hr.min.x + 16.0, hr.center().y + 11.0), Align2::LEFT_CENTER, &format!("{n} items"), 12.0, t.muted_foreground, 200.0);
+                kit::text_at(
+                    &hp,
+                    pos2(hr.min.x + 16.0, hr.center().y + 11.0),
+                    Align2::LEFT_CENTER,
+                    &format!("{n} items"),
+                    12.0,
+                    t.muted_foreground,
+                    200.0,
+                );
                 hp.line_segment([pos2(s.min.x, hr.max.y), pos2(s.max.x, hr.max.y)], Stroke::new(1.0, t.border));
                 cfg_c = 0.0;
                 let list = Rect::from_min_max(pos2(s.min.x, hr.max.y), pos2(s.min.x + 232.0, s.max.y));
@@ -500,7 +552,15 @@ impl<'a> AppShell<'a> {
                         user: self.user.as_ref(),
                         upgrade: self.upgrade,
                         upgrade_dismissed: &mut upgrade_dismissed,
-                        bg: if layout == ShellLayout::Floating { if t.dark { mix(t.card, t.foreground, 0.02) } else { t.background } } else { chrome },
+                        bg: if layout == ShellLayout::Floating {
+                            if t.dark {
+                                mix(t.card, t.foreground, 0.02)
+                            } else {
+                                t.background
+                            }
+                        } else {
+                            chrome
+                        },
                         bounds: rect,
                         only_section: None,
                         header: true,
@@ -510,7 +570,11 @@ impl<'a> AppShell<'a> {
                 );
                 navigated |= out.navigated;
                 if out.workspace_changed {
-                    toast(&ctx, Toast::success(format!("Switched to {}", self.workspaces[ws_idx].name)).description("Your dashboards and members were reloaded."));
+                    toast(
+                        &ctx,
+                        Toast::success(format!("Switched to {}", self.workspaces[ws_idx].name))
+                            .description("Your dashboards and members were reloaded."),
+                    );
                 }
                 if out.menu.is_some() {
                     menu = out.menu;
@@ -534,7 +598,17 @@ impl<'a> AppShell<'a> {
         if layout == ShellLayout::BottomNav {
             self.app_bar(ui, top_rect, id, st, &mut notification, &mut menu, rect);
         } else {
-            let top_out = self.topbar(ui, top_rect, id, st, phone, insp_rect.is_some() || self.inspector.is_some(), rect, &mut notification, &mut menu);
+            let top_out = self.topbar(
+                ui,
+                top_rect,
+                id,
+                st,
+                phone,
+                insp_rect.is_some() || self.inspector.is_some(),
+                rect,
+                &mut notification,
+                &mut menu,
+            );
             navigated |= top_out;
         }
         let bottom_h = if layout == ShellLayout::BottomNav { 68.0 } else { 0.0 };
@@ -554,7 +628,10 @@ impl<'a> AppShell<'a> {
         if a < 1.0 {
             ctx.request_repaint();
         }
-        let body = Rect::from_min_max(pos2(main_rect.min.x, top_rect.max.y), pos2(main_rect.max.x, main_rect.max.y - bottom_h));
+        let body = Rect::from_min_max(
+            pos2(main_rect.min.x, top_rect.max.y),
+            pos2(main_rect.max.x, main_rect.max.y - bottom_h),
+        );
         let mut cr = body.shrink(self.padding);
         if layout == ShellLayout::TopNav && cr.width() > 1240.0 {
             let x = cr.center().x;
@@ -567,7 +644,13 @@ impl<'a> AppShell<'a> {
             let mut cu = ui.new_child(egui::UiBuilder::new().max_rect(shifted).id_salt(id.with("content")));
             cu.set_clip_rect(clip);
             cu.multiply_opacity(0.25 + 0.75 * a);
-            let mut sc = ShellContext { route: self.route, rect: cr, bounds: rect, compact: rect.width() < 720.0, theme: &mut theme_req };
+            let mut sc = ShellContext {
+                route: self.route,
+                rect: cr,
+                bounds: rect,
+                compact: rect.width() < 720.0,
+                theme: &mut theme_req,
+            };
             content(&mut cu, &mut sc)
         };
 
@@ -577,7 +660,15 @@ impl<'a> AppShell<'a> {
             ip.rect_filled(ir, egui::CornerRadius { ne: outer_r as u8, se: outer_r as u8, nw: 0, sw: 0 }, chrome);
             ip.line_segment([ir.left_top(), ir.left_bottom()], Stroke::new(1.0, t.border));
             let full = Rect::from_min_size(ir.min, vec2(300.0, ir.height()));
-            kit::text_at(&ip, pos2(full.min.x + 18.0, full.min.y + 28.0), Align2::LEFT_CENTER, &title, 14.5, t.foreground, 220.0);
+            kit::text_at(
+                &ip,
+                pos2(full.min.x + 18.0, full.min.y + 28.0),
+                Align2::LEFT_CENTER,
+                &title,
+                14.5,
+                t.foreground,
+                220.0,
+            );
             let xr = Rect::from_center_size(pos2(full.max.x - 26.0, full.min.y + 28.0), vec2(28.0, 28.0));
             if xr.max.x <= ir.max.x + 0.5 {
                 let x = kit::icon_button(ui, xr, id.with("insp_x"), LineIcon::X.into(), false);
@@ -586,8 +677,14 @@ impl<'a> AppShell<'a> {
                     st.inspector = false;
                 }
             }
-            ip.line_segment([pos2(ir.min.x, full.min.y + 56.0), pos2(ir.max.x, full.min.y + 56.0)], Stroke::new(1.0, t.border));
-            let body = Rect::from_min_max(pos2(full.min.x + 18.0, full.min.y + 72.0), pos2(full.max.x - 18.0, full.max.y - 16.0));
+            ip.line_segment(
+                [pos2(ir.min.x, full.min.y + 56.0), pos2(ir.max.x, full.min.y + 56.0)],
+                Stroke::new(1.0, t.border),
+            );
+            let body = Rect::from_min_max(
+                pos2(full.min.x + 18.0, full.min.y + 72.0),
+                pos2(full.max.x - 18.0, full.max.y - 16.0),
+            );
             let route = &mut *self.route;
             kit::child(ui, body.intersect(ir), |ui| {
                 ui.set_width(body.width());
@@ -608,43 +705,54 @@ impl<'a> AppShell<'a> {
                 let user = self.user.as_ref();
                 let upgrade = self.upgrade;
                 let mut picked = None;
-                egui::Area::new(id.with("drawer_layer")).order(Order::Foreground).fixed_pos(rect.min).constrain(false).show(&ctx, |ui| {
-                    ui.set_clip_rect(rect);
-                    let bg = ui.interact(rect, id.with("drawer_bg"), Sense::click());
-                    ui.painter().rect_filled(rect, outer_r, Color32::from_black_alpha((120.0 * de) as u8));
-                    if bg.clicked() {
-                        close = true;
-                    }
-                    let dr = Rect::from_min_size(pos2(rect.min.x - dw * (1.0 - de), rect.min.y), vec2(dw, rect.height()));
-                    ui.painter().rect_filled(dr, egui::CornerRadius { nw: outer_r as u8, sw: outer_r as u8, ne: 0, se: 0 }, chrome);
-                    ui.painter().line_segment([dr.right_top(), dr.right_bottom()], Stroke::new(1.0, t.border));
-                    ui.interact(dr, id.with("drawer_block"), Sense::click());
-                    let out = sidebar(
-                        ui,
-                        dr,
-                        0.0,
-                        SideCfg {
-                            id: id.with("drawer_side"),
-                            nav,
-                            route,
-                            workspaces: ws,
-                            workspace: &mut ws_idx,
-                            user,
-                            upgrade,
-                            upgrade_dismissed: &mut upgrade_dismissed,
-                            bg: chrome,
-                            bounds: rect,
-                            only_section: None,
-                            header: true,
-                            footer_user: true,
-                            titles: true,
-                        },
-                    );
-                    if out.navigated {
-                        close = true;
-                    }
-                    picked = out.menu;
-                });
+                egui::Area::new(id.with("drawer_layer"))
+                    .order(Order::Foreground)
+                    .fixed_pos(rect.min)
+                    .constrain(false)
+                    .show(&ctx, |ui| {
+                        ui.set_clip_rect(rect);
+                        let bg = ui.interact(rect, id.with("drawer_bg"), Sense::click());
+                        ui.painter().rect_filled(rect, outer_r, Color32::from_black_alpha((120.0 * de) as u8));
+                        if bg.clicked() {
+                            close = true;
+                        }
+                        let dr = Rect::from_min_size(
+                            pos2(rect.min.x - dw * (1.0 - de), rect.min.y),
+                            vec2(dw, rect.height()),
+                        );
+                        ui.painter().rect_filled(
+                            dr,
+                            egui::CornerRadius { nw: outer_r as u8, sw: outer_r as u8, ne: 0, se: 0 },
+                            chrome,
+                        );
+                        ui.painter().line_segment([dr.right_top(), dr.right_bottom()], Stroke::new(1.0, t.border));
+                        ui.interact(dr, id.with("drawer_block"), Sense::click());
+                        let out = sidebar(
+                            ui,
+                            dr,
+                            0.0,
+                            SideCfg {
+                                id: id.with("drawer_side"),
+                                nav,
+                                route,
+                                workspaces: ws,
+                                workspace: &mut ws_idx,
+                                user,
+                                upgrade,
+                                upgrade_dismissed: &mut upgrade_dismissed,
+                                bg: chrome,
+                                bounds: rect,
+                                only_section: None,
+                                header: true,
+                                footer_user: true,
+                                titles: true,
+                            },
+                        );
+                        if out.navigated {
+                            close = true;
+                        }
+                        picked = out.menu;
+                    });
                 if picked.is_some() {
                     menu = picked;
                 }
@@ -656,8 +764,10 @@ impl<'a> AppShell<'a> {
 
         // ---- command palette --------------------------------------------------------------
         if self.search {
-            let leaves: Vec<(String, String, Option<AppIcon>, Option<String>)> =
-                nav_leaves(self.nav).iter().map(|l| (l.label.clone(), l.route.clone(), l.icon, l.shortcut.clone())).collect();
+            let leaves: Vec<(String, String, Option<AppIcon>, Option<String>)> = nav_leaves(self.nav)
+                .iter()
+                .map(|l| (l.label.clone(), l.route.clone(), l.icon, l.shortcut.clone()))
+                .collect();
             let pages: Vec<CommandItem> = leaves
                 .iter()
                 .map(|(label, route, icon, sc)| {
@@ -672,16 +782,20 @@ impl<'a> AppShell<'a> {
                     ci
                 })
                 .collect();
-            let mut actions = vec![
-                CommandItem::new("Toggle theme").icon(if t.dark { LineIcon::Sun } else { LineIcon::Moon }).keywords("dark light mode appearance"),
-            ];
+            let mut actions = vec![CommandItem::new("Toggle theme")
+                .icon(if t.dark { LineIcon::Sun } else { LineIcon::Moon })
+                .keywords("dark light mode appearance")];
             if has_sidebar {
                 actions.push(CommandItem::new("Toggle sidebar").icon(LineIcon::Sidebar).shortcut("Ctrl+B"));
             }
             if self.notifications.is_some() {
                 actions.push(CommandItem::new("Mark notifications as read").icon(LineIcon::Bell));
             }
-            let mut palette = CommandPalette::new(&mut st.palette).placeholder("Search pages and actions…").within(rect).group("Pages", pages).group("Actions", actions);
+            let mut palette = CommandPalette::new(&mut st.palette)
+                .placeholder("Search pages and actions…")
+                .within(rect)
+                .group("Pages", pages)
+                .group("Actions", actions);
             if !self.commands.is_empty() {
                 palette = palette.group("Commands", std::mem::take(&mut self.commands));
             }
@@ -725,7 +839,11 @@ impl<'a> AppShell<'a> {
             // hairline outline so the app reads as a window on any backdrop
             ui.painter().rect_stroke(rect, outer_r, Stroke::new(1.0, t.border), StrokeKind::Inside);
         }
-        Toaster::new().within(rect.shrink(4.0)).position(ToastPosition::BottomRight).width(340.0f32.min(rect.width() - 24.0)).show(ui);
+        Toaster::new()
+            .within(rect.shrink(4.0))
+            .position(ToastPosition::BottomRight)
+            .width(340.0f32.min(rect.width() - 24.0))
+            .show(ui);
 
         st.upgrade_dismissed = upgrade_dismissed;
         glowkit_core::set_state(ui, id.with("ws"), ws_idx);
@@ -739,7 +857,15 @@ impl<'a> AppShell<'a> {
     }
 
     /// The dual layout's icon rail: workspace logo, one icon per section, user avatar.
-    fn dual_rail(&mut self, ui: &mut Ui, rr: Rect, id: Id, st: &mut ShellState, ws_idx: &mut usize, bounds: Rect) -> Option<String> {
+    fn dual_rail(
+        &mut self,
+        ui: &mut Ui,
+        rr: Rect,
+        id: Id,
+        st: &mut ShellState,
+        ws_idx: &mut usize,
+        bounds: Rect,
+    ) -> Option<String> {
         let t = Theme::of(ui);
         let p = ui.painter_at(rr);
         let mut menu = None;
@@ -759,7 +885,10 @@ impl<'a> AppShell<'a> {
                 toast(ui.ctx(), Toast::success(format!("Switched to {sel}")));
             }
         }
-        p.line_segment([pos2(rr.min.x + 14.0, rr.min.y + 58.0), pos2(rr.max.x - 14.0, rr.min.y + 58.0)], Stroke::new(1.0, t.border));
+        p.line_segment(
+            [pos2(rr.min.x + 14.0, rr.min.y + 58.0), pos2(rr.max.x - 14.0, rr.min.y + 58.0)],
+            Stroke::new(1.0, t.border),
+        );
         let cur = self.dual_section(st);
         let mut y = rr.min.y + 72.0;
         let mut active_y = None;
@@ -775,7 +904,11 @@ impl<'a> AppShell<'a> {
                 p.rect_filled(br, t.radius * 0.7, kit::hover_fill(&t, hv * 1.4));
             }
             let col = if on { t.accent } else { t.muted_foreground.lerp_to_gamma(t.foreground, hv) };
-            sec.icon.unwrap_or(AppIcon::Line(LineIcon::Folder)).paint(&p, Rect::from_center_size(br.center(), vec2(18.0, 18.0)), col);
+            sec.icon.unwrap_or(AppIcon::Line(LineIcon::Folder)).paint(
+                &p,
+                Rect::from_center_size(br.center(), vec2(18.0, 18.0)),
+                col,
+            );
             Tooltip::new(sec.title.clone()).placement(Placement::Right).delay(0.1).show(&resp);
             if resp.clicked() {
                 st.dual_section = Some(si);
@@ -791,7 +924,11 @@ impl<'a> AppShell<'a> {
             p.rect_filled(Rect::from_min_size(pos2(rr.min.x + 1.0, yy + 10.0), vec2(3.0, 16.0)), 2.0, t.accent);
             // repaint icon on top of the highlight
             let sec = &self.nav[cur];
-            sec.icon.unwrap_or(AppIcon::Line(LineIcon::Folder)).paint(&p, Rect::from_center_size(pos2(rr.center().x, ay + 18.0), vec2(18.0, 18.0)), t.accent);
+            sec.icon.unwrap_or(AppIcon::Line(LineIcon::Folder)).paint(
+                &p,
+                Rect::from_center_size(pos2(rr.center().x, ay + 18.0), vec2(18.0, 18.0)),
+                t.accent,
+            );
         }
         if let Some(user) = &self.user {
             let ar = Rect::from_center_size(pos2(rr.center().x, rr.max.y - 30.0), vec2(32.0, 32.0));
@@ -841,10 +978,17 @@ impl<'a> AppShell<'a> {
                 let br = kit::text_at(&p, pos2(x, cy), Align2::LEFT_CENTER, &ws, 15.0, t.foreground, 140.0);
                 x = br.max.x + 22.0;
             }
-            navigated |= self.top_tabs(ui, Rect::from_min_max(pos2(x, r.min.y), pos2(r.max.x - 300.0, r.max.y)), id, bounds);
+            navigated |=
+                self.top_tabs(ui, Rect::from_min_max(pos2(x, r.min.y), pos2(r.max.x - 300.0, r.max.y)), id, bounds);
         } else {
             let tr = Rect::from_center_size(pos2(x + 14.0, cy), vec2(30.0, 30.0));
-            let tog = kit::icon_button(ui, tr, id.with("toggle"), if phone { LineIcon::Menu.into() } else { LineIcon::Sidebar.into() }, false);
+            let tog = kit::icon_button(
+                ui,
+                tr,
+                id.with("toggle"),
+                if phone { LineIcon::Menu.into() } else { LineIcon::Sidebar.into() },
+                false,
+            );
             kit::tip(&tog, "Toggle sidebar", Some("Ctrl+B"));
             if tog.clicked() {
                 if phone {
@@ -867,16 +1011,21 @@ impl<'a> AppShell<'a> {
                 let cw = (r.max.x - x - if narrow { 150.0 } else { 420.0 }).max(60.0);
                 let cr = Rect::from_min_size(pos2(x, cy - 13.0), vec2(cw, 26.0));
                 let items: Vec<&str> = crumbs.iter().map(|s| s.as_str()).collect();
-                let clicked = kit::child(ui, cr, |ui| Breadcrumb::new(&items).max_items(if r.width() < 560.0 { 2 } else { 4 }).size(13.5).show(ui));
+                let clicked = kit::child(ui, cr, |ui| {
+                    Breadcrumb::new(&items).max_items(if r.width() < 560.0 { 2 } else { 4 }).size(13.5).show(ui)
+                });
                 if let Some(i) = clicked {
                     // navigate to the first leaf under the clicked crumb
                     if i > 0 {
                         let path = nav_path(self.nav, self.route);
                         if let Some(label) = path.get(i - 1) {
-                            let target = nav_leaves(self.nav).iter().find(|l| {
-                                let lp = nav_path(self.nav, &l.route);
-                                lp.get(i - 1) == Some(label)
-                            }).map(|l| l.route.clone());
+                            let target = nav_leaves(self.nav)
+                                .iter()
+                                .find(|l| {
+                                    let lp = nav_path(self.nav, &l.route);
+                                    lp.get(i - 1) == Some(label)
+                                })
+                                .map(|l| l.route.clone());
                             if let Some(tg) = target {
                                 *self.route = tg;
                                 navigated = true;
@@ -940,10 +1089,33 @@ impl<'a> AppShell<'a> {
                 let sr = Rect::from_min_max(pos2(rx - 6.0 - sw, cy - 17.0), pos2(rx - 6.0, cy + 17.0));
                 let resp = ui.interact(sr, id.with("search"), Sense::click()).on_hover_cursor(CursorIcon::Text);
                 let hv = kit::hover(ui, id.with("search"), resp.hovered());
-                p.rect_filled(sr, t.radius * 0.7, if t.dark { mix(t.background, t.foreground, 0.03 + 0.02 * hv) } else { mix(t.background, t.foreground, 0.02 + 0.015 * hv) });
-                p.rect_stroke(sr, t.radius * 0.7, Stroke::new(1.0, t.border.lerp_to_gamma(t.muted_foreground, hv * 0.4)), StrokeKind::Inside);
-                LineIcon::Search.paint(&p, Rect::from_center_size(pos2(sr.min.x + 18.0, cy), vec2(15.0, 15.0)), t.muted_foreground);
-                p.text(pos2(sr.min.x + 34.0, cy), Align2::LEFT_CENTER, "Search…", egui::FontId::proportional(13.5), t.muted_foreground);
+                p.rect_filled(
+                    sr,
+                    t.radius * 0.7,
+                    if t.dark {
+                        mix(t.background, t.foreground, 0.03 + 0.02 * hv)
+                    } else {
+                        mix(t.background, t.foreground, 0.02 + 0.015 * hv)
+                    },
+                );
+                p.rect_stroke(
+                    sr,
+                    t.radius * 0.7,
+                    Stroke::new(1.0, t.border.lerp_to_gamma(t.muted_foreground, hv * 0.4)),
+                    StrokeKind::Inside,
+                );
+                LineIcon::Search.paint(
+                    &p,
+                    Rect::from_center_size(pos2(sr.min.x + 18.0, cy), vec2(15.0, 15.0)),
+                    t.muted_foreground,
+                );
+                p.text(
+                    pos2(sr.min.x + 34.0, cy),
+                    Align2::LEFT_CENTER,
+                    "Search…",
+                    egui::FontId::proportional(13.5),
+                    t.muted_foreground,
+                );
                 kit::kbd(&p, pos2(sr.max.x - 8.0, cy), "Ctrl K", &t);
                 if resp.clicked() {
                     st.palette = true;
@@ -980,7 +1152,14 @@ impl<'a> AppShell<'a> {
             .iter()
             .flat_map(|s| s.items.iter())
             .take(7)
-            .map(|i| (i.label.clone(), i.route.clone(), i.contains(self.route), i.children.iter().map(|c| (c.label.clone(), c.route.clone())).collect()))
+            .map(|i| {
+                (
+                    i.label.clone(),
+                    i.route.clone(),
+                    i.contains(self.route),
+                    i.children.iter().map(|c| (c.label.clone(), c.route.clone())).collect(),
+                )
+            })
             .collect();
         for (k, (label, route, on, kids)) in items.iter().enumerate() {
             let w = kit::text_w(&p, label, 13.5) + 20.0 + if kids.is_empty() { 0.0 } else { 16.0 };
@@ -995,9 +1174,21 @@ impl<'a> AppShell<'a> {
                 p.rect_filled(tr, t.radius * 0.6, kit::hover_fill(&t, hv * 1.2));
             }
             let col = if *on { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, hv) };
-            p.text(pos2(tr.min.x + 10.0, tr.center().y), Align2::LEFT_CENTER, label, egui::FontId::proportional(13.5), col);
+            p.text(
+                pos2(tr.min.x + 10.0, tr.center().y),
+                Align2::LEFT_CENTER,
+                label,
+                egui::FontId::proportional(13.5),
+                col,
+            );
             if !kids.is_empty() {
-                chevron(&p, pos2(tr.max.x - 14.0, tr.center().y + 1.0), 8.0, std::f32::consts::FRAC_PI_2, t.muted_foreground);
+                chevron(
+                    &p,
+                    pos2(tr.max.x - 14.0, tr.center().y + 1.0),
+                    8.0,
+                    std::f32::consts::FRAC_PI_2,
+                    t.muted_foreground,
+                );
                 let entries: Vec<MenuEntry> = kids.iter().map(|(l, _)| MenuEntry::item(l.clone())).collect();
                 if let Some(sel) = DropdownMenu::new(entries).width(180.0).within(bounds).show(&resp) {
                     if let Some((_, rt)) = kids.iter().find(|(l, _)| *l == sel) {
@@ -1024,7 +1215,16 @@ impl<'a> AppShell<'a> {
 
     /// BottomNav: mobile app bar.
     #[allow(clippy::too_many_arguments)]
-    fn app_bar(&mut self, ui: &mut Ui, r: Rect, id: Id, _st: &mut ShellState, notification: &mut Option<usize>, menu: &mut Option<String>, bounds: Rect) {
+    fn app_bar(
+        &mut self,
+        ui: &mut Ui,
+        r: Rect,
+        id: Id,
+        _st: &mut ShellState,
+        notification: &mut Option<usize>,
+        menu: &mut Option<String>,
+        bounds: Rect,
+    ) {
         let t = Theme::of(ui);
         let p = ui.painter_at(r);
         p.line_segment([pos2(r.min.x, r.max.y - 0.5), pos2(r.max.x, r.max.y - 0.5)], Stroke::new(1.0, t.border));
@@ -1037,7 +1237,10 @@ impl<'a> AppShell<'a> {
                 *menu = Some(sel);
             }
         }
-        let title = self.title.clone().unwrap_or_else(|| nav_find(self.nav, self.route).map(|i| i.label.clone()).unwrap_or_default());
+        let title = self
+            .title
+            .clone()
+            .unwrap_or_else(|| nav_find(self.nav, self.route).map(|i| i.label.clone()).unwrap_or_default());
         kit::text_at(&p, pos2(r.min.x + 56.0, cy), Align2::LEFT_CENTER, &title, 16.5, t.foreground, r.width() - 150.0);
         let mut rx = r.max.x - 12.0;
         if self.theme_toggle {
@@ -1060,7 +1263,16 @@ impl<'a> AppShell<'a> {
     fn bottom_bar(&mut self, ui: &mut Ui, r: Rect, id: Id) -> bool {
         let t = Theme::of(ui);
         let p = ui.painter_at(r);
-        p.rect_filled(r, egui::CornerRadius { sw: if self.rounded { self.corner.unwrap_or(t.radius) as u8 } else { 0 }, se: if self.rounded { self.corner.unwrap_or(t.radius) as u8 } else { 0 }, nw: 0, ne: 0 }, kit::chrome_bg(&t));
+        p.rect_filled(
+            r,
+            egui::CornerRadius {
+                sw: if self.rounded { self.corner.unwrap_or(t.radius) as u8 } else { 0 },
+                se: if self.rounded { self.corner.unwrap_or(t.radius) as u8 } else { 0 },
+                nw: 0,
+                ne: 0,
+            },
+            kit::chrome_bg(&t),
+        );
         p.line_segment([r.left_top(), r.right_top()], Stroke::new(1.0, t.border));
         #[allow(clippy::type_complexity)]
         let items: Vec<(String, String, Option<AppIcon>, Option<String>, bool)> = self
@@ -1096,7 +1308,15 @@ impl<'a> AppShell<'a> {
                 p.rect_filled(br, 8.0, t.destructive);
                 p.galley(br.center() - g.size() / 2.0, g, Color32::WHITE);
             }
-            kit::text_at(&p, pos2(cell.center().x, cell.min.y + 48.0), Align2::CENTER_CENTER, label, 11.5, if *on { t.foreground } else { col }, w - 6.0);
+            kit::text_at(
+                &p,
+                pos2(cell.center().x, cell.min.y + 48.0),
+                Align2::CENTER_CENTER,
+                label,
+                11.5,
+                if *on { t.foreground } else { col },
+                w - 6.0,
+            );
             if resp.clicked() && *self.route != *route {
                 *self.route = route.clone();
                 navigated = true;
@@ -1126,7 +1346,11 @@ fn theme_button(ui: &mut Ui, r: Rect, id: Id) -> egui::Response {
     let s = 17.0;
     let mut sp = p.clone();
     sp.multiply_opacity(1.0 - d);
-    LineIcon::Sun.paint(&sp, Rect::from_center_size(r.center() + vec2(0.0, d * 6.0), vec2(s * (1.0 - 0.3 * d), s * (1.0 - 0.3 * d))), col);
+    LineIcon::Sun.paint(
+        &sp,
+        Rect::from_center_size(r.center() + vec2(0.0, d * 6.0), vec2(s * (1.0 - 0.3 * d), s * (1.0 - 0.3 * d))),
+        col,
+    );
     let mut mp = p.clone();
     mp.multiply_opacity(d);
     moon(&mp, r.center() + vec2(0.0, (1.0 - d) * -6.0), s * 0.42 * (0.7 + 0.3 * d), col);
@@ -1161,26 +1385,63 @@ fn bell(ui: &mut Ui, r: Rect, id: Id, notes: &mut [ShellNotification], bounds: R
         let w = ui.available_width();
         let hr = kit::alloc_row(ui, 30.0);
         let p = ui.painter().clone();
-        kit::text_at(&p, pos2(hr.min.x, hr.center().y), Align2::LEFT_CENTER, "Notifications", 14.5, t.foreground, 160.0);
+        kit::text_at(
+            &p,
+            pos2(hr.min.x, hr.center().y),
+            Align2::LEFT_CENTER,
+            "Notifications",
+            14.5,
+            t.foreground,
+            160.0,
+        );
         if unread > 0 {
-            let lr = kit::pill(&p, pos2(hr.min.x + kit::text_w(&p, "Notifications", 14.5) + 8.0, hr.center().y), false, &format!("{unread} new"), t.accent, with_alpha(t.accent, 0.14), 10.5);
+            let lr = kit::pill(
+                &p,
+                pos2(hr.min.x + kit::text_w(&p, "Notifications", 14.5) + 8.0, hr.center().y),
+                false,
+                &format!("{unread} new"),
+                t.accent,
+                with_alpha(t.accent, 0.14),
+                10.5,
+            );
             let _ = lr;
             let mr = Rect::from_min_max(pos2(hr.max.x - 110.0, hr.min.y), hr.max);
             let mresp = ui.interact(mr, id.with("mark_all"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
             let h = kit::hover(ui, id.with("mark_all"), mresp.hovered());
-            kit::text_at(&p, pos2(mr.max.x, mr.center().y), Align2::RIGHT_CENTER, "Mark all as read", 12.5, t.muted_foreground.lerp_to_gamma(t.accent, h), 110.0);
+            kit::text_at(
+                &p,
+                pos2(mr.max.x, mr.center().y),
+                Align2::RIGHT_CENTER,
+                "Mark all as read",
+                12.5,
+                t.muted_foreground.lerp_to_gamma(t.accent, h),
+                110.0,
+            );
             if mresp.clicked() {
                 notes.iter_mut().for_each(|n| n.unread = false);
             }
         }
         ui.add_space(8.0);
         let sep = kit::alloc_row(ui, 1.0);
-        p.line_segment([pos2(sep.min.x - 12.0, sep.center().y), pos2(sep.max.x + 12.0, sep.center().y)], Stroke::new(1.0, t.border));
+        p.line_segment(
+            [pos2(sep.min.x - 12.0, sep.center().y), pos2(sep.max.x + 12.0, sep.center().y)],
+            Stroke::new(1.0, t.border),
+        );
         ui.add_space(6.0);
         if notes.is_empty() {
             let er = kit::alloc_row(ui, 90.0);
-            LineIcon::CircleCheck.paint(&p, Rect::from_center_size(er.center() - vec2(0.0, 14.0), vec2(22.0, 22.0)), t.muted_foreground);
-            p.text(er.center() + vec2(0.0, 16.0), Align2::CENTER_CENTER, "You're all caught up", egui::FontId::proportional(13.0), t.muted_foreground);
+            LineIcon::CircleCheck.paint(
+                &p,
+                Rect::from_center_size(er.center() - vec2(0.0, 14.0), vec2(22.0, 22.0)),
+                t.muted_foreground,
+            );
+            p.text(
+                er.center() + vec2(0.0, 16.0),
+                Align2::CENTER_CENTER,
+                "You're all caught up",
+                egui::FontId::proportional(13.0),
+                t.muted_foreground,
+            );
         }
         for (i, n) in notes.iter_mut().enumerate().take(6) {
             let rr = kit::alloc_row(ui, 66.0);
@@ -1189,11 +1450,31 @@ fn bell(ui: &mut Ui, r: Rect, id: Id, notes: &mut [ShellNotification], bounds: R
             let p = ui.painter().clone();
             let ic = pos2(rr.min.x + 24.0, rr.min.y + 24.0);
             p.circle_filled(ic, 16.0, if n.unread { with_alpha(t.accent, 0.14) } else { t.muted });
-            n.icon.paint(&p, Rect::from_center_size(ic, vec2(15.0, 15.0)), if n.unread { t.accent } else { t.muted_foreground });
+            n.icon.paint(
+                &p,
+                Rect::from_center_size(ic, vec2(15.0, 15.0)),
+                if n.unread { t.accent } else { t.muted_foreground },
+            );
             let tx = rr.min.x + 50.0;
             let time_w = kit::text_w(&p, &n.time, 11.5);
-            kit::text_at(&p, pos2(rr.max.x - 8.0, rr.min.y + 14.0), Align2::RIGHT_CENTER, &n.time, 11.5, t.muted_foreground, 80.0);
-            kit::text_at(&p, pos2(tx, rr.min.y + 14.0), Align2::LEFT_CENTER, &n.title, 13.5, t.foreground, rr.max.x - tx - time_w - 22.0);
+            kit::text_at(
+                &p,
+                pos2(rr.max.x - 8.0, rr.min.y + 14.0),
+                Align2::RIGHT_CENTER,
+                &n.time,
+                11.5,
+                t.muted_foreground,
+                80.0,
+            );
+            kit::text_at(
+                &p,
+                pos2(tx, rr.min.y + 14.0),
+                Align2::LEFT_CENTER,
+                &n.title,
+                13.5,
+                t.foreground,
+                rr.max.x - tx - time_w - 22.0,
+            );
             let g = kit::wrapped(&p, &n.body, 12.5, t.muted_foreground, rr.max.x - tx - 22.0, 2);
             p.galley(pos2(tx, rr.min.y + 24.0), g, t.muted_foreground);
             if n.unread {

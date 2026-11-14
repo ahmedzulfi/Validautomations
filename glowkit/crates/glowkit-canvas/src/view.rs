@@ -796,9 +796,7 @@ mod tests {
 
     #[test]
     fn transform_roundtrip() {
-        let mut v = CanvasView::default();
-        v.pan = vec2(37.0, -12.0);
-        v.zoom = 1.7;
+        let v = CanvasView { pan: vec2(37.0, -12.0), zoom: 1.7, ..Default::default() };
         let w = pos2(123.0, -45.0);
         let back = v.to_world(canvas(), v.to_screen(canvas(), w));
         assert!((back - w).length() < 1e-3);
@@ -842,9 +840,7 @@ mod tests {
     fn fit_centers_content() {
         let content = Rect::from_min_size(pos2(1000.0, 1000.0), vec2(200.0, 100.0));
         let (pan, zoom) = fit_view(vec2(800.0, 400.0), content, 20.0, 0.1, 10.0);
-        let mut v = CanvasView::default();
-        v.pan = pan;
-        v.zoom = zoom;
+        let v = CanvasView { pan, zoom, ..Default::default() };
         let c = v.to_screen(canvas(), content.center());
         assert!((c - canvas().center()).length() < 1e-2);
         let sr = v.rect_to_screen(canvas(), content);

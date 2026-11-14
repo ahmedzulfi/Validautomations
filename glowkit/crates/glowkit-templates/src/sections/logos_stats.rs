@@ -46,7 +46,10 @@ impl LogoCloudSection {
     pub fn new() -> Self {
         Self {
             title: "Trusted by teams at the world's most ambitious companies".into(),
-            logos: ["Acme", "Globex", "Initech", "Umbrella", "Hooli", "Vandelay", "Stark", "Wayne"].iter().map(|s| s.to_string()).collect(),
+            logos: ["Acme", "Globex", "Initech", "Umbrella", "Hooli", "Vandelay", "Stark", "Wayne"]
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
             layout: LogoCloudLayout::Row,
             background: SectionBackground::Plain,
             logo_height: 22.0,
@@ -90,7 +93,9 @@ impl LogoCloudSection {
         section(ui, Frame::new(id, self.background).pad(56.0), |ui, sec| {
             let t = sec.t.clone();
             if !self.title.is_empty() {
-                sec.fade(ui, 0, |ui| Tx::new(&self.title).size(14.0).color(t.muted_foreground).align(Align::Center).show(ui));
+                sec.fade(ui, 0, |ui| {
+                    Tx::new(&self.title).size(14.0).color(t.muted_foreground).align(Align::Center).show(ui)
+                });
                 ui.add_space(28.0);
             }
             let h = self.logo_height;
@@ -110,7 +115,13 @@ impl LogoCloudSection {
                         let ch = 96.0;
                         let (rect, _) = ui.allocate_exact_size(vec2(w, ch * rows as f32), Sense::hover());
                         let cr = CornerRadius::same((t.radius * 1.4) as u8);
-                        ui.painter().rect(rect, cr, egui::Color32::TRANSPARENT, Stroke::new(1.0, t.border), StrokeKind::Inside);
+                        ui.painter().rect(
+                            rect,
+                            cr,
+                            egui::Color32::TRANSPARENT,
+                            Stroke::new(1.0, t.border),
+                            StrokeKind::Inside,
+                        );
                         for c in 1..cols {
                             ui.painter().vline(rect.min.x + c as f32 * cw, rect.y_range(), Stroke::new(1.0, t.border));
                         }
@@ -118,7 +129,10 @@ impl LogoCloudSection {
                             ui.painter().hline(rect.x_range(), rect.min.y + r as f32 * ch, Stroke::new(1.0, t.border));
                         }
                         for (k, name) in self.logos.iter().enumerate() {
-                            let cell = Rect::from_min_size(pos2(rect.min.x + (k % cols) as f32 * cw, rect.min.y + (k / cols) as f32 * ch), vec2(cw, ch));
+                            let cell = Rect::from_min_size(
+                                pos2(rect.min.x + (k % cols) as f32 * cw, rect.min.y + (k / cols) as f32 * ch),
+                                vec2(cw, ch),
+                            );
                             let resp = ui.interact(cell, id.with(("cell", k)), Sense::hover());
                             let hv = ui.ctx().animate_bool_with_time(resp.id, resp.hovered(), 0.2);
                             if hv > 0.0 {
@@ -126,21 +140,35 @@ impl LogoCloudSection {
                             }
                             let lw = logo_width(ui, name, h);
                             let col = with_alpha(t.muted_foreground, 0.75).lerp_to_gamma(t.foreground, hv);
-                            paint_logo(ui.painter(), pos2(cell.center().x - lw / 2.0, cell.center().y), name, k, col, h);
+                            paint_logo(
+                                ui.painter(),
+                                pos2(cell.center().x - lw / 2.0, cell.center().y),
+                                name,
+                                k,
+                                col,
+                                h,
+                            );
                         }
                     });
                 }
                 LogoCloudLayout::Marquee => {
                     for (r, rev) in [(0, false), (1, true)] {
                         sec.fade(ui, 1 + r, |ui| {
-                            glowkit_effects::Marquee::new().speed(32.0).reverse(rev).gap(56.0).fade(120.0).fade_color(muted_or_bg(&t, self.background)).id_salt(("logos", r)).show(ui, |ui| {
-                                ui.spacing_mut().item_spacing.x = 56.0;
-                                let n = self.logos.len();
-                                for k in 0..n {
-                                    let kk = if rev { (k + n / 2) % n } else { k };
-                                    logo_item(ui, &self.logos[kk], kk, h);
-                                }
-                            });
+                            glowkit_effects::Marquee::new()
+                                .speed(32.0)
+                                .reverse(rev)
+                                .gap(56.0)
+                                .fade(120.0)
+                                .fade_color(muted_or_bg(&t, self.background))
+                                .id_salt(("logos", r))
+                                .show(ui, |ui| {
+                                    ui.spacing_mut().item_spacing.x = 56.0;
+                                    let n = self.logos.len();
+                                    for k in 0..n {
+                                        let kk = if rev { (k + n / 2) % n } else { k };
+                                        logo_item(ui, &self.logos[kk], kk, h);
+                                    }
+                                });
                         });
                         ui.add_space(20.0);
                     }
@@ -183,7 +211,15 @@ pub struct StatItem {
 impl StatItem {
     /// A stat with a value and label.
     pub fn new(value: f64, label: impl Into<String>) -> Self {
-        Self { value, prefix: String::new(), suffix: String::new(), decimals: 0, label: label.into(), detail: String::new(), icon: UiIcon::Activity }
+        Self {
+            value,
+            prefix: String::new(),
+            suffix: String::new(),
+            decimals: 0,
+            label: label.into(),
+            detail: String::new(),
+            icon: UiIcon::Activity,
+        }
     }
     /// Prefix such as `"$"`.
     pub fn prefix(mut self, p: impl Into<String>) -> Self {
@@ -258,10 +294,23 @@ impl StatsSection {
             eyebrow: None,
             subtitle: None,
             items: vec![
-                StatItem::new(12.4, "Active developers").suffix("k+").decimals(1).icon(UiIcon::Users).detail("Across 90 countries"),
-                StatItem::new(99.99, "Uptime").suffix("%").decimals(2).icon(UiIcon::Activity).detail("Over the last 12 months"),
+                StatItem::new(12.4, "Active developers")
+                    .suffix("k+")
+                    .decimals(1)
+                    .icon(UiIcon::Users)
+                    .detail("Across 90 countries"),
+                StatItem::new(99.99, "Uptime")
+                    .suffix("%")
+                    .decimals(2)
+                    .icon(UiIcon::Activity)
+                    .detail("Over the last 12 months"),
                 StatItem::new(48.0, "Components").suffix("+").icon(UiIcon::Grid).detail("And growing every week"),
-                StatItem::new(2.1, "Saved per sprint").prefix("$").suffix("M").decimals(1).icon(UiIcon::Dollar).detail("Reported by customers"),
+                StatItem::new(2.1, "Saved per sprint")
+                    .prefix("$")
+                    .suffix("M")
+                    .decimals(1)
+                    .icon(UiIcon::Dollar)
+                    .detail("Reported by customers"),
             ],
             layout: StatsLayout::Row,
             background: SectionBackground::Plain,
@@ -313,7 +362,10 @@ impl StatsSection {
             let split = self.layout == StatsLayout::Split && !sec.narrow;
             if !split {
                 if let Some(title) = &self.title {
-                    next = Heading::new(title).eyebrow(self.eyebrow.as_deref()).subtitle(self.subtitle.as_deref()).show(ui, sec, 0);
+                    next = Heading::new(title)
+                        .eyebrow(self.eyebrow.as_deref())
+                        .subtitle(self.subtitle.as_deref())
+                        .show(ui, sec, 0);
                     ui.add_space(48.0);
                 }
             }
@@ -321,7 +373,18 @@ impl StatsSection {
             let number = |ui: &mut Ui, it: &StatItem, size: f32, align: Align| {
                 let v = if seen { it.value } else { 0.0 };
                 row(ui, ui.scope_id().with("num"), align, 0.0, |ui| {
-                    ui.add(glowkit_text::CountUp::new(v).from(0.0).duration(1.6).decimals(it.decimals).prefix(&it.prefix).suffix(&it.suffix).size(size).bold(true).color(t.foreground).affix_color(t.accent));
+                    ui.add(
+                        glowkit_text::CountUp::new(v)
+                            .from(0.0)
+                            .duration(1.6)
+                            .decimals(it.decimals)
+                            .prefix(&it.prefix)
+                            .suffix(&it.suffix)
+                            .size(size)
+                            .bold(true)
+                            .color(t.foreground)
+                            .affix_color(t.accent),
+                    );
                 });
             };
             match self.layout {
@@ -332,7 +395,11 @@ impl StatsSection {
                         let it = &self.items[i];
                         let r = ui.max_rect();
                         if i % cols != 0 {
-                            ui.painter().vline(r.min.x, r.min.y + 6.0..=r.min.y + row_h.max(60.0) - 6.0, Stroke::new(1.0, t.border));
+                            ui.painter().vline(
+                                r.min.x,
+                                r.min.y + 6.0..=r.min.y + row_h.max(60.0) - 6.0,
+                                Stroke::new(1.0, t.border),
+                            );
                         }
                         sec.fade(ui, next + i, |ui| {
                             ui.add_space(4.0);
@@ -376,7 +443,12 @@ impl StatsSection {
                         sec.narrow,
                         true,
                         |ui| {
-                            Heading::new(&title).eyebrow(self.eyebrow.as_deref()).subtitle(self.subtitle.as_deref()).align(Align::Min).size(34.0).show(ui, sec, 0);
+                            Heading::new(&title)
+                                .eyebrow(self.eyebrow.as_deref())
+                                .subtitle(self.subtitle.as_deref())
+                                .align(Align::Min)
+                                .size(34.0)
+                                .show(ui, sec, 0);
                         },
                         |ui| {
                             grid(ui, id.with("g2"), self.items.len(), 2, 16.0, |ui, i, row_h| {

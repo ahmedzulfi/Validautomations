@@ -632,11 +632,11 @@ mod tests {
 
     #[test]
     fn rot90_matches_quat() {
-        for axis in 0..3 {
+        for (axis, axis_vec) in AXES.iter().enumerate() {
             for dir in [-1i8, 1] {
                 let p = [1i8, -1, 0];
                 let r = rot90(p, axis, dir);
-                let q = Quat::from_axis_angle(AXES[axis], FRAC_PI_2 * dir as f32).rotate(vec3(1.0, -1.0, 0.0));
+                let q = Quat::from_axis_angle(*axis_vec, FRAC_PI_2 * dir as f32).rotate(vec3(1.0, -1.0, 0.0));
                 assert!((q - vec3(r[0] as f32, r[1] as f32, r[2] as f32)).length() < 1e-4);
             }
         }

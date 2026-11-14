@@ -60,10 +60,13 @@ pub(crate) fn page(ui: &mut Ui, id: Id, opts: PageOpts, add: impl FnOnce(&mut Ui
     let mut ctx = PageCtx { t, height: h, clicked: None, submitted: None };
     let mut child = ui.new_child(UiBuilder::new().max_rect(rect).layout(Layout::top_down(Align::Min)).id_salt(id));
     child.set_clip_rect(rect.intersect(ui.clip_rect()));
-    ScrollArea::vertical().id_salt(id.with("scroll")).auto_shrink([false, false]).max_height(h).show(&mut child, |ui| {
-        ui.spacing_mut().item_spacing = vec2(0.0, 0.0);
-        add(ui, &mut ctx);
-    });
+    ScrollArea::vertical().id_salt(id.with("scroll")).auto_shrink([false, false]).max_height(h).show(
+        &mut child,
+        |ui| {
+            ui.spacing_mut().item_spacing = vec2(0.0, 0.0);
+            add(ui, &mut ctx);
+        },
+    );
     SectionResponse { response, clicked: ctx.clicked, submitted: ctx.submitted }
 }
 

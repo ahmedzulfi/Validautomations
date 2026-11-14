@@ -633,7 +633,7 @@ ui.add(DatePicker::range(&mut from, &mut to));"##,
             name: "File Dropzone",
             category: C,
             description: "A dashed drop area whose border marches while files hover, with an animated list of received files.",
-            covers: &["Origin UI: File upload", "Kibo UI: Dropzone", "Dice UI: File Upload", "Uiverse: File input"],
+            covers: &["Origin UI: File upload", "Kibo UI: Dropzone", "Dice UI: File Upload", "Uiverse: File input", "Aceternity UI: File Upload"],
             code: r##"ui.add(FileDropzone::new(&mut files)
     .hint("PNG, JPG or PDF up to 10 MB")
     .on_drop(|f| println!("got {:?}", f.path())));"##,

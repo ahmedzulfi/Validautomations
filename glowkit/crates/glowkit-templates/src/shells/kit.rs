@@ -73,7 +73,6 @@ pub(crate) fn loading(ui: &Ui, id: Id, secs: f32) -> bool {
     }
 }
 
-
 /// Replay the loading gate of `id`.
 pub(crate) fn reset_loading(ui: &Ui, id: Id) {
     let now = ui.input(|i| i.time);
@@ -147,7 +146,6 @@ pub(crate) fn card(painter: &Painter, rect: Rect, t: &Theme) {
     painter.rect_stroke(rect, t.radius, Stroke::new(1.0, t.border), StrokeKind::Inside);
 }
 
-
 /// Run `add` in a child ui confined (and clipped) to `rect`.
 pub(crate) fn child<R>(ui: &mut Ui, rect: Rect, add: impl FnOnce(&mut Ui) -> R) -> R {
     let clip = rect.intersect(ui.clip_rect());
@@ -155,7 +153,6 @@ pub(crate) fn child<R>(ui: &mut Ui, rect: Rect, add: impl FnOnce(&mut Ui) -> R) 
     c.set_clip_rect(clip);
     add(&mut c)
 }
-
 
 /// A card with a title row (title, optional subtitle) and a body below. `add` receives the body rect.
 pub(crate) fn titled_card<R>(
@@ -169,10 +166,26 @@ pub(crate) fn titled_card<R>(
     card(ui.painter(), rect, &t);
     let inner = rect.shrink(18.0);
     let p = ui.painter().clone();
-    text_at(&p, pos2(inner.min.x, inner.min.y + 8.0), Align2::LEFT_CENTER, title, 15.0, t.foreground, inner.width() * 0.6);
+    text_at(
+        &p,
+        pos2(inner.min.x, inner.min.y + 8.0),
+        Align2::LEFT_CENTER,
+        title,
+        15.0,
+        t.foreground,
+        inner.width() * 0.6,
+    );
     let mut top = inner.min.y + 22.0;
     if !subtitle.is_empty() {
-        text_at(&p, pos2(inner.min.x, inner.min.y + 28.0), Align2::LEFT_CENTER, subtitle, 12.5, t.muted_foreground, inner.width() * 0.62);
+        text_at(
+            &p,
+            pos2(inner.min.x, inner.min.y + 28.0),
+            Align2::LEFT_CENTER,
+            subtitle,
+            12.5,
+            t.muted_foreground,
+            inner.width() * 0.62,
+        );
         top += 20.0;
     }
     let body = Rect::from_min_max(pos2(inner.min.x, top + 10.0), inner.max);
@@ -202,7 +215,14 @@ pub(crate) fn trunc_mono(painter: &Painter, text: &str, size: f32, color: Color3
 }
 
 /// Wrapped text limited to `rows` lines (ellipsis on the last).
-pub(crate) fn wrapped(painter: &Painter, text: &str, size: f32, color: Color32, width: f32, rows: usize) -> Arc<Galley> {
+pub(crate) fn wrapped(
+    painter: &Painter,
+    text: &str,
+    size: f32,
+    color: Color32,
+    width: f32,
+    rows: usize,
+) -> Arc<Galley> {
     let mut job = LayoutJob::simple(text.to_owned(), FontId::proportional(size), color, width.max(8.0));
     job.wrap.max_rows = rows;
     job.wrap.break_anywhere = false;
@@ -211,7 +231,15 @@ pub(crate) fn wrapped(painter: &Painter, text: &str, size: f32, color: Color32, 
 }
 
 /// Paint truncated text anchored at `pos` with `align`. Returns the painted rect.
-pub(crate) fn text_at(painter: &Painter, pos: Pos2, align: Align2, text: &str, size: f32, color: Color32, max_w: f32) -> Rect {
+pub(crate) fn text_at(
+    painter: &Painter,
+    pos: Pos2,
+    align: Align2,
+    text: &str,
+    size: f32,
+    color: Color32,
+    max_w: f32,
+) -> Rect {
     let g = trunc(painter, text, size, color, max_w);
     let r = align.anchor_size(pos, g.size());
     painter.galley(r.min, g, color);
@@ -219,7 +247,15 @@ pub(crate) fn text_at(painter: &Painter, pos: Pos2, align: Align2, text: &str, s
 }
 
 /// Monospace variant of [`text_at`].
-pub(crate) fn mono_at(painter: &Painter, pos: Pos2, align: Align2, text: &str, size: f32, color: Color32, max_w: f32) -> Rect {
+pub(crate) fn mono_at(
+    painter: &Painter,
+    pos: Pos2,
+    align: Align2,
+    text: &str,
+    size: f32,
+    color: Color32,
+    max_w: f32,
+) -> Rect {
     let g = trunc_mono(painter, text, size, color, max_w);
     let r = align.anchor_size(pos, g.size());
     painter.galley(r.min, g, color);
@@ -252,12 +288,10 @@ pub(crate) fn split_x(rect: Rect, widths: &[f32], gap: f32) -> Vec<Rect> {
         .collect()
 }
 
-
 /// `n` equal columns.
 pub(crate) fn cols(rect: Rect, n: usize, gap: f32) -> Vec<Rect> {
     split_x(rect, &vec![0.0; n.max(1)], gap)
 }
-
 
 // ---------------------------------------------------------------------------------------------
 // interaction
@@ -303,7 +337,10 @@ pub(crate) fn tip(resp: &Response, text: &str, shortcut: Option<&str>) {
 /// A keyboard hint chip whose right edge sits at `right_center`.
 pub(crate) fn kbd(painter: &Painter, right_center: Pos2, text: &str, t: &Theme) -> Rect {
     let g = painter.layout_no_wrap(text.to_owned(), FontId::proportional(11.0), t.muted_foreground);
-    let r = Rect::from_min_max(pos2(right_center.x - g.size().x - 10.0, right_center.y - 10.0), pos2(right_center.x, right_center.y + 10.0));
+    let r = Rect::from_min_max(
+        pos2(right_center.x - g.size().x - 10.0, right_center.y - 10.0),
+        pos2(right_center.x, right_center.y + 10.0),
+    );
     painter.rect_filled(r, 5.0, t.muted);
     painter.rect_stroke(r, 5.0, Stroke::new(1.0, t.border), StrokeKind::Inside);
     painter.galley(r.center() - g.size() / 2.0, g, t.muted_foreground);
@@ -353,7 +390,13 @@ pub(crate) fn avatar(ui: &Ui, rect: Rect, name: &str) {
 
 /// A full-width ghost / outline / primary button at `rect`.
 pub(crate) fn button_at(ui: &mut Ui, rect: Rect, label: &str, variant: glowkit_components::ButtonVariant) -> Response {
-    ui.put(rect, glowkit_components::Button::new(label).variant(variant).size(glowkit_components::ControlSize::Sm).width(rect.width()))
+    ui.put(
+        rect,
+        glowkit_components::Button::new(label)
+            .variant(variant)
+            .size(glowkit_components::ControlSize::Sm)
+            .width(rect.width()),
+    )
 }
 
 /// Horizontal hairline.
@@ -369,7 +412,13 @@ pub(crate) fn vline(painter: &Painter, x: f32, y0: f32, y1: f32, t: &Theme) {
 /// A logo tile: rounded gradient square with a letter or icon.
 pub(crate) fn logo(painter: &Painter, rect: Rect, t: &Theme, letter: &str) {
     paint::gradient_rect(painter, rect, rect.height() * 0.26, 45.0, &t.gradient);
-    painter.text(rect.center(), Align2::CENTER_CENTER, letter, FontId::proportional(rect.height() * 0.48), Color32::WHITE);
+    painter.text(
+        rect.center(),
+        Align2::CENTER_CENTER,
+        letter,
+        FontId::proportional(rect.height() * 0.48),
+        Color32::WHITE,
+    );
 }
 
 /// Page heading: big title + muted subtitle at the top-left of `rect`. Returns the bottom y.
@@ -437,15 +486,37 @@ pub(crate) fn vgrad(painter: &Painter, rect: Rect, top: Color32, bottom: Color32
 }
 
 /// A legend list: colored dot, label, value and share, one row each. Returns the used height.
-pub(crate) fn legend_list(painter: &Painter, rect: Rect, items: &[(String, f64, Color32)], fmt: fn(f64) -> String, t: &Theme) -> f32 {
+pub(crate) fn legend_list(
+    painter: &Painter,
+    rect: Rect,
+    items: &[(String, f64, Color32)],
+    fmt: fn(f64) -> String,
+    t: &Theme,
+) -> f32 {
     let total: f64 = items.iter().map(|i| i.1).sum::<f64>().max(1e-9);
     let rh = 26.0;
     for (i, (label, v, c)) in items.iter().enumerate() {
         let y = rect.min.y + i as f32 * rh + rh / 2.0;
         painter.circle_filled(pos2(rect.min.x + 5.0, y), 4.0, *c);
-        let vr = text_at(painter, pos2(rect.max.x, y), Align2::RIGHT_CENTER, &format!("{:.0}%", v / total * 100.0), 12.0, t.muted_foreground, 44.0);
+        let vr = text_at(
+            painter,
+            pos2(rect.max.x, y),
+            Align2::RIGHT_CENTER,
+            &format!("{:.0}%", v / total * 100.0),
+            12.0,
+            t.muted_foreground,
+            44.0,
+        );
         let vr2 = text_at(painter, pos2(vr.min.x - 10.0, y), Align2::RIGHT_CENTER, &fmt(*v), 12.5, t.foreground, 70.0);
-        text_at(painter, pos2(rect.min.x + 16.0, y), Align2::LEFT_CENTER, label, 12.5, t.muted_foreground, vr2.min.x - rect.min.x - 22.0);
+        text_at(
+            painter,
+            pos2(rect.min.x + 16.0, y),
+            Align2::LEFT_CENTER,
+            label,
+            12.5,
+            t.muted_foreground,
+            vr2.min.x - rect.min.x - 22.0,
+        );
     }
     items.len() as f32 * rh
 }

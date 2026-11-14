@@ -51,7 +51,7 @@ pub fn all() -> Vec<Demo> {
             name: "Line Chart",
             category: C,
             description: "Multi-series lines that draw in, with a snapping crosshair tooltip, clickable legend, glow, gradient and dashed variants.",
-            covers: &["shadcn/ui: Line Chart", "Recharts: LineChart", "Tremor: Line Chart", "Evil Charts: Glowing Line", "Evil Charts: Dotted Line", "Nivo: Line", "Unovis: Line"],
+            covers: &["shadcn/ui: Line Chart", "Recharts: LineChart", "Tremor: Line Chart", "Evil Charts: Glowing Line", "Evil Charts: Dotted Line", "Nivo: Line", "Unovis: Line", "shadcn/ui: Chart"],
             code: r##"let series = [Series::new("Desktop", desktop), Series::new("Mobile", mobile)];
 ui.add(LineChart::new(&series).labels(&MONTHS).dots(true).height(260.0));
 ui.add(LineChart::new(&revenue).glow(true).gradient_stroke(true).curve(Curve::Natural));

@@ -77,7 +77,15 @@ pub struct TestimonialsSection {
 impl TestimonialsSection {
     /// A testimonials section with placeholder quotes.
     pub fn new(title: impl Into<String>) -> Self {
-        Self { title: title.into(), eyebrow: None, subtitle: None, items: Testimonial::defaults(), layout: TestimonialsLayout::Grid, background: SectionBackground::Plain, salt: None }
+        Self {
+            title: title.into(),
+            eyebrow: None,
+            subtitle: None,
+            items: Testimonial::defaults(),
+            layout: TestimonialsLayout::Grid,
+            background: SectionBackground::Plain,
+            salt: None,
+        }
     }
     /// Small label above the title.
     pub fn eyebrow(mut self, e: impl Into<String>) -> Self {
@@ -115,31 +123,51 @@ impl TestimonialsSection {
         let id = section_id(ui, "testimonials", &self.salt);
         section(ui, Frame::new(id, self.background), |ui, sec| {
             let t = sec.t.clone();
-            let next = Heading::new(&self.title).eyebrow(self.eyebrow.as_deref()).subtitle(self.subtitle.as_deref()).show(ui, sec, 0);
+            let next = Heading::new(&self.title)
+                .eyebrow(self.eyebrow.as_deref())
+                .subtitle(self.subtitle.as_deref())
+                .show(ui, sec, 0);
             ui.add_space(if sec.narrow { 36.0 } else { 52.0 });
             match self.layout {
                 TestimonialsLayout::Grid => {
                     let cols = sec.cols(280.0, 3);
                     grid(ui, id.with("g"), self.items.len(), cols, 20.0, |ui, i, row_h| {
                         sec.fade(ui, next + i / cols + i % cols, |ui| {
-                            card(ui, id.with(("q", i)), CardLook::of(&t).min_h(row_h), |ui| quote_body(ui, &self.items[i], i, &t, f32::INFINITY));
+                            card(ui, id.with(("q", i)), CardLook::of(&t).min_h(row_h), |ui| {
+                                quote_body(ui, &self.items[i], i, &t, f32::INFINITY)
+                            });
                         });
                     });
                 }
                 TestimonialsLayout::Marquee => {
                     let half = self.items.len().div_ceil(2);
                     for (r, rev) in [(0usize, false), (1, true)] {
-                        let slice: Vec<(usize, &Testimonial)> = self.items.iter().enumerate().skip(r * half).take(half).collect();
+                        let slice: Vec<(usize, &Testimonial)> =
+                            self.items.iter().enumerate().skip(r * half).take(half).collect();
                         sec.fade(ui, next + r, |ui| {
-                            glowkit_effects::Marquee::new().speed(28.0).reverse(rev).gap(20.0).fade(140.0).fade_color(muted_or_bg(&t, self.background)).pause_on_hover(true).id_salt(("tm", r)).show(ui, |ui| {
-                                ui.spacing_mut().item_spacing.x = 20.0;
-                                for (i, q) in &slice {
-                                    ui.allocate_ui_with_layout(vec2(340.0, 400.0), egui::Layout::top_down(Align::Min), |ui| {
-                                        ui.set_width(340.0);
-                                        card(ui, id.with(("mq", r, *i)), CardLook::of(&t).min_h(196.0), |ui| quote_body(ui, q, *i, &t, f32::INFINITY));
-                                    });
-                                }
-                            });
+                            glowkit_effects::Marquee::new()
+                                .speed(28.0)
+                                .reverse(rev)
+                                .gap(20.0)
+                                .fade(140.0)
+                                .fade_color(muted_or_bg(&t, self.background))
+                                .pause_on_hover(true)
+                                .id_salt(("tm", r))
+                                .show(ui, |ui| {
+                                    ui.spacing_mut().item_spacing.x = 20.0;
+                                    for (i, q) in &slice {
+                                        ui.allocate_ui_with_layout(
+                                            vec2(340.0, 400.0),
+                                            egui::Layout::top_down(Align::Min),
+                                            |ui| {
+                                                ui.set_width(340.0);
+                                                card(ui, id.with(("mq", r, *i)), CardLook::of(&t).min_h(196.0), |ui| {
+                                                    quote_body(ui, q, *i, &t, f32::INFINITY)
+                                                });
+                                            },
+                                        );
+                                    }
+                                });
                         });
                         ui.add_space(20.0);
                     }
@@ -165,10 +193,18 @@ impl TestimonialsSection {
                             let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), 48.0), Sense::hover());
                             paint_quote_mark(ui.painter(), r.center_top() + vec2(0.0, 6.0), 40.0, t.accent);
                             ui.add_space(8.0);
-                            Tx::new(format!("\u{201C}{}\u{201D}", q.quote)).size(if sec.narrow { 20.0 } else { 28.0 }).line(1.45).align(Align::Center).max_width(820.0).color(t.foreground).show(ui);
+                            Tx::new(format!("\u{201C}{}\u{201D}", q.quote))
+                                .size(if sec.narrow { 20.0 } else { 28.0 })
+                                .line(1.45)
+                                .align(Align::Center)
+                                .max_width(820.0)
+                                .color(t.foreground)
+                                .show(ui);
                             ui.add_space(32.0);
                             row(ui, id.with("who"), Align::Center, 14.0, |ui| {
-                                ui.add(Avatar::new(&q.name).size(48.0).style(AvatarStyle::Solid).color(t.chart[cur % 6]));
+                                ui.add(
+                                    Avatar::new(&q.name).size(48.0).style(AvatarStyle::Solid).color(t.chart[cur % 6]),
+                                );
                                 ui.vertical(|ui| {
                                     ui.spacing_mut().item_spacing.y = 2.0;
                                     Tx::new(&q.name).size(15.5).semi().color(t.foreground).show_inline(ui);
@@ -186,10 +222,20 @@ impl TestimonialsSection {
                         for k in 0..n {
                             let w = if k == cur { active_w } else { dot_w };
                             let dr = Rect::from_min_size(pos2(x, r.min.y + 1.0), vec2(w, 8.0));
-                            let resp = ui.interact(dr.expand(4.0), id.with(("dot", k)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
-                            ui.painter().rect_filled(dr, CornerRadius::same(4), with_alpha(t.muted_foreground, if resp.hovered() { 0.6 } else { 0.3 }));
+                            let resp = ui
+                                .interact(dr.expand(4.0), id.with(("dot", k)), Sense::click())
+                                .on_hover_cursor(CursorIcon::PointingHand);
+                            ui.painter().rect_filled(
+                                dr,
+                                CornerRadius::same(4),
+                                with_alpha(t.muted_foreground, if resp.hovered() { 0.6 } else { 0.3 }),
+                            );
                             if k == cur {
-                                ui.painter().rect_filled(Rect::from_min_size(dr.min, vec2(w * phase, 8.0)), CornerRadius::same(4), t.accent);
+                                ui.painter().rect_filled(
+                                    Rect::from_min_size(dr.min, vec2(w * phase, 8.0)),
+                                    CornerRadius::same(4),
+                                    t.accent,
+                                );
                             }
                             if resp.clicked() {
                                 glowkit_core::set_state(ui, id.with("pick"), Some((k, now)));
@@ -205,7 +251,13 @@ impl TestimonialsSection {
 
 /// Paint a big typographic quote mark.
 fn paint_quote_mark(p: &egui::Painter, center: egui::Pos2, size: f32, color: Color32) {
-    p.text(center + vec2(0.0, size * 0.25), egui::Align2::CENTER_CENTER, "\u{201C}", FontId::proportional(size * 1.8), with_alpha(color, 0.8));
+    p.text(
+        center + vec2(0.0, size * 0.25),
+        egui::Align2::CENTER_CENTER,
+        "\u{201C}",
+        FontId::proportional(size * 1.8),
+        with_alpha(color, 0.8),
+    );
 }
 
 /// Stars, quote and author row (used by cards).
@@ -317,7 +369,11 @@ impl CtaSection {
     /// Show the section.
     pub fn show(self, ui: &mut Ui) -> SectionResponse {
         let id = section_id(ui, "cta", &self.salt);
-        let bg = if self.layout == CtaLayout::Minimal && self.background == SectionBackground::Plain { SectionBackground::Glow } else { self.background };
+        let bg = if self.layout == CtaLayout::Minimal && self.background == SectionBackground::Plain {
+            SectionBackground::Glow
+        } else {
+            self.background
+        };
         section(ui, Frame::new(id, bg).pad(72.0), |ui, sec| {
             let t = sec.t.clone();
             let mut clicked = None;
@@ -328,20 +384,39 @@ impl CtaSection {
                 row(ui, id.with(("btns", align as u8)), align, 12.0, |ui| {
                     if let Some(p) = &self.primary {
                         let r = if on_color {
-                            ui.add(glowkit_components::Button::new(p).size(glowkit_components::ControlSize::Lg).fill(Color32::WHITE).trailing_icon(UiIcon::ArrowRight))
+                            ui.add(
+                                glowkit_components::Button::new(p)
+                                    .size(glowkit_components::ControlSize::Lg)
+                                    .fill(Color32::WHITE)
+                                    .trailing_icon(UiIcon::ArrowRight),
+                            )
                         } else {
-                            cta_button(ui, p, if self.layout == CtaLayout::Beam { SectionCtaStyle::Shimmer } else { SectionCtaStyle::Primary }, true)
+                            cta_button(
+                                ui,
+                                p,
+                                if self.layout == CtaLayout::Beam {
+                                    SectionCtaStyle::Shimmer
+                                } else {
+                                    SectionCtaStyle::Primary
+                                },
+                                true,
+                            )
                         };
                         if r.clicked() {
                             *clicked = Some(p.clone());
                         }
                     }
                     if let Some(s) = &self.secondary {
-                        let r = if on_color {
-                            ui.add(glowkit_components::Button::new(s).size(glowkit_components::ControlSize::Lg).fill(mix(t.gradient[0], Color32::BLACK, 0.3)))
-                        } else {
-                            cta_button(ui, s, SectionCtaStyle::Outline, true)
-                        };
+                        let r =
+                            if on_color {
+                                ui.add(
+                                    glowkit_components::Button::new(s)
+                                        .size(glowkit_components::ControlSize::Lg)
+                                        .fill(mix(t.gradient[0], Color32::BLACK, 0.3)),
+                                )
+                            } else {
+                                cta_button(ui, s, SectionCtaStyle::Outline, true)
+                            };
                         if r.clicked() {
                             *clicked = Some(s.clone());
                         }
@@ -366,12 +441,35 @@ impl CtaSection {
                         let r = (t.radius * 2.0).round();
                         let painter = ui.painter().clone();
                         if self.layout == CtaLayout::Gradient {
-                            paint::soft_shadow(&painter, panel, r, 40.0, vec2(0.0, 16.0), with_alpha(t.gradient[0], if t.dark { 0.35 } else { 0.25 }));
-                            paint::gradient_rect(&painter, panel, r, 120.0, &[t.gradient[0], t.gradient[1], t.gradient[2]]);
+                            paint::soft_shadow(
+                                &painter,
+                                panel,
+                                r,
+                                40.0,
+                                vec2(0.0, 16.0),
+                                with_alpha(t.gradient[0], if t.dark { 0.35 } else { 0.25 }),
+                            );
+                            paint::gradient_rect(
+                                &painter,
+                                panel,
+                                r,
+                                120.0,
+                                &[t.gradient[0], t.gradient[1], t.gradient[2]],
+                            );
                             let clip = painter.with_clip_rect(panel.intersect(ui.clip_rect()));
                             let time = glowkit_core::time(ui);
-                            paint::glow(&clip, panel.left_top() + vec2(panel.width() * (0.2 + 0.05 * (time * 0.4).sin()), 20.0), panel.height() * 0.9, with_alpha(Color32::WHITE, 0.18));
-                            paint::glow(&clip, panel.right_bottom() - vec2(80.0, 10.0), panel.height(), with_alpha(Color32::BLACK, 0.18));
+                            paint::glow(
+                                &clip,
+                                panel.left_top() + vec2(panel.width() * (0.2 + 0.05 * (time * 0.4).sin()), 20.0),
+                                panel.height() * 0.9,
+                                with_alpha(Color32::WHITE, 0.18),
+                            );
+                            paint::glow(
+                                &clip,
+                                panel.right_bottom() - vec2(80.0, 10.0),
+                                panel.height(),
+                                with_alpha(Color32::BLACK, 0.18),
+                            );
                             // faint grid on the gradient
                             let step = 32.0;
                             let mut x = panel.min.x + step;
@@ -387,14 +485,43 @@ impl CtaSection {
                             glowkit_core::animate(ui);
                         } else {
                             let fill = if t.dark { mix(t.background, t.card, 0.8) } else { t.card };
-                            painter.rect(panel, CornerRadius::same(r as u8), fill, Stroke::new(1.0, t.border), StrokeKind::Inside);
-                            glowkit_backgrounds::DotGrid::new().id_salt(id.with("dots")).transparent().gap(20.0).dot_size(1.4).auto_hover(false).paint(ui, panel.shrink(2.0));
-                            paint::glow_ellipse(&painter, panel.center_bottom(), vec2(panel.width() * 0.45, panel.height() * 0.7), with_alpha(t.accent, if t.dark { 0.22 } else { 0.1 }));
+                            painter.rect(
+                                panel,
+                                CornerRadius::same(r as u8),
+                                fill,
+                                Stroke::new(1.0, t.border),
+                                StrokeKind::Inside,
+                            );
+                            glowkit_backgrounds::DotGrid::new()
+                                .id_salt(id.with("dots"))
+                                .transparent()
+                                .gap(20.0)
+                                .dot_size(1.4)
+                                .auto_hover(false)
+                                .paint(ui, panel.shrink(2.0));
+                            paint::glow_ellipse(
+                                &painter,
+                                panel.center_bottom(),
+                                vec2(panel.width() * 0.45, panel.height() * 0.7),
+                                with_alpha(t.accent, if t.dark { 0.22 } else { 0.1 }),
+                            );
                             glowkit_effects::BorderBeam::new().radius(r).duration(6.0).thickness(2.0).paint(ui, panel);
-                            glowkit_effects::BorderBeam::new().radius(r).duration(6.0).delay(3.0).thickness(2.0).paint(ui, panel);
+                            glowkit_effects::BorderBeam::new()
+                                .radius(r)
+                                .duration(6.0)
+                                .delay(3.0)
+                                .thickness(2.0)
+                                .paint(ui, panel);
                         }
                         let pad = if sec.narrow { 28.0 } else { 64.0 };
-                        let mut child = ui.new_child(egui::UiBuilder::new().max_rect(Rect::from_min_size(origin + vec2(pad, pad), vec2(w - pad * 2.0, f32::INFINITY))).layout(egui::Layout::top_down(Align::Min)));
+                        let mut child = ui.new_child(
+                            egui::UiBuilder::new()
+                                .max_rect(Rect::from_min_size(
+                                    origin + vec2(pad, pad),
+                                    vec2(w - pad * 2.0, f32::INFINITY),
+                                ))
+                                .layout(egui::Layout::top_down(Align::Min)),
+                        );
                         copy(&mut child, Align::Center, title_size);
                         child.add_space(28.0);
                         buttons(&mut child, Align::Center, &mut clicked);
@@ -412,11 +539,30 @@ impl CtaSection {
                 }
                 CtaLayout::Split => {
                     sec.fade(ui, 0, |ui| {
-                        card(ui, id.with("split"), CardLook::of(&t).pad(if sec.narrow { 24.0 } else { 40.0 }).hover(false), |ui| {
-                            let r = ui.max_rect();
-                            paint::glow_ellipse(ui.painter(), pos2(r.max.x, r.min.y), vec2(300.0, 160.0), with_alpha(t.accent, if t.dark { 0.14 } else { 0.07 }));
-                            two_col(ui, id.with("cols"), 0.62, 32.0, sec.narrow, true, |ui| copy(ui, Align::Min, title_size * 0.8), |ui| buttons(ui, if sec.narrow { Align::Min } else { Align::Max }, &mut clicked));
-                        });
+                        card(
+                            ui,
+                            id.with("split"),
+                            CardLook::of(&t).pad(if sec.narrow { 24.0 } else { 40.0 }).hover(false),
+                            |ui| {
+                                let r = ui.max_rect();
+                                paint::glow_ellipse(
+                                    ui.painter(),
+                                    pos2(r.max.x, r.min.y),
+                                    vec2(300.0, 160.0),
+                                    with_alpha(t.accent, if t.dark { 0.14 } else { 0.07 }),
+                                );
+                                two_col(
+                                    ui,
+                                    id.with("cols"),
+                                    0.62,
+                                    32.0,
+                                    sec.narrow,
+                                    true,
+                                    |ui| copy(ui, Align::Min, title_size * 0.8),
+                                    |ui| buttons(ui, if sec.narrow { Align::Min } else { Align::Max }, &mut clicked),
+                                );
+                            },
+                        );
                     });
                 }
                 CtaLayout::Minimal => {
@@ -550,7 +696,8 @@ impl FaqSection {
                 }
             };
             let accordion = |ui: &mut Ui| {
-                let mut acc = Accordion::new(id.with("acc")).card(true).default_open(Some(0)).width(ui.available_width());
+                let mut acc =
+                    Accordion::new(id.with("acc")).card(true).default_open(Some(0)).width(ui.available_width());
                 for (q, a) in &self.items {
                     acc = acc.item_text(q, a);
                 }
@@ -558,12 +705,19 @@ impl FaqSection {
             };
             match self.layout {
                 FaqLayout::Centered => {
-                    let next = Heading::new(&self.title).eyebrow(self.eyebrow.as_deref()).subtitle(self.subtitle.as_deref()).show(ui, sec, 0);
+                    let next = Heading::new(&self.title)
+                        .eyebrow(self.eyebrow.as_deref())
+                        .subtitle(self.subtitle.as_deref())
+                        .show(ui, sec, 0);
                     ui.add_space(40.0);
                     sec.fade(ui, next, |ui| {
                         let w = ui.available_width().min(760.0);
                         let x = ui.cursor().min.x + (ui.available_width() - w) / 2.0;
-                        let mut child = ui.new_child(egui::UiBuilder::new().max_rect(Rect::from_min_size(pos2(x, ui.cursor().min.y), vec2(w, f32::INFINITY))).layout(egui::Layout::top_down(Align::Min)));
+                        let mut child = ui.new_child(
+                            egui::UiBuilder::new()
+                                .max_rect(Rect::from_min_size(pos2(x, ui.cursor().min.y), vec2(w, f32::INFINITY)))
+                                .layout(egui::Layout::top_down(Align::Min)),
+                        );
                         accordion(&mut child);
                         let used = child.min_rect();
                         ui.advance_cursor_after_rect(Rect::from_min_max(pos2(ui.cursor().min.x, used.min.y), used.max));
@@ -580,7 +734,12 @@ impl FaqSection {
                         sec.narrow,
                         false,
                         |ui| {
-                            Heading::new(&self.title).eyebrow(self.eyebrow.as_deref()).subtitle(self.subtitle.as_deref()).align(Align::Min).size(34.0).show(ui, sec, 0);
+                            Heading::new(&self.title)
+                                .eyebrow(self.eyebrow.as_deref())
+                                .subtitle(self.subtitle.as_deref())
+                                .align(Align::Min)
+                                .size(34.0)
+                                .show(ui, sec, 0);
                             ui.add_space(24.0);
                             sec.fade(ui, 3, |ui| contact(ui, Align::Min, &mut clicked));
                         },
@@ -588,7 +747,10 @@ impl FaqSection {
                     );
                 }
                 FaqLayout::Grid => {
-                    let next = Heading::new(&self.title).eyebrow(self.eyebrow.as_deref()).subtitle(self.subtitle.as_deref()).show(ui, sec, 0);
+                    let next = Heading::new(&self.title)
+                        .eyebrow(self.eyebrow.as_deref())
+                        .subtitle(self.subtitle.as_deref())
+                        .show(ui, sec, 0);
                     ui.add_space(48.0);
                     let cols = sec.cols(320.0, 2);
                     grid(ui, id.with("g"), self.items.len(), cols, 36.0, |ui, i, _| {

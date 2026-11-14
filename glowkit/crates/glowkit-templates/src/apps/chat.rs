@@ -53,7 +53,14 @@ pub struct ChatApp {
 }
 
 fn post(ch: &str, who: &str, time: &str, text: &str, reactions: &[(&str, u32, bool)], replies: u32) -> ChatPost {
-    ChatPost { channel: ch.into(), author: who.into(), time: time.into(), text: text.into(), reactions: reactions.iter().map(|(e, n, m)| (e.to_string(), *n, *m)).collect(), replies }
+    ChatPost {
+        channel: ch.into(),
+        author: who.into(),
+        time: time.into(),
+        text: text.into(),
+        reactions: reactions.iter().map(|(e, n, m)| (e.to_string(), *n, *m)).collect(),
+        replies,
+    }
 }
 
 impl Default for ChatApp {
@@ -136,16 +143,43 @@ impl ChatApp {
             kit::avatar(ui, Rect::from_center_size(pos2(x + 14.0, hr.center().y), vec2(28.0, 28.0)), title);
             x += 36.0;
         } else {
-            AppIcon::Hash.paint(&p, Rect::from_center_size(pos2(x + 8.0, hr.center().y - 8.0), vec2(16.0, 16.0)), t.muted_foreground);
+            AppIcon::Hash.paint(
+                &p,
+                Rect::from_center_size(pos2(x + 8.0, hr.center().y - 8.0), vec2(16.0, 16.0)),
+                t.muted_foreground,
+            );
             x += 22.0;
         }
-        let tr = kit::text_at(&p, pos2(x, hr.center().y - (if is_dm { 0.0 } else { 8.0 })), Align2::LEFT_CENTER, title, 15.0, t.foreground, 260.0);
+        let tr = kit::text_at(
+            &p,
+            pos2(x, hr.center().y - (if is_dm { 0.0 } else { 8.0 })),
+            Align2::LEFT_CENTER,
+            title,
+            15.0,
+            t.foreground,
+            260.0,
+        );
         if !is_dm {
-            kit::text_at(&p, pos2(hr.min.x + 22.0, hr.center().y + 12.0), Align2::LEFT_CENTER, "Design reviews, critiques and inspiration · Review today at 2pm", 12.0, t.muted_foreground, hr.width() - 260.0);
+            kit::text_at(
+                &p,
+                pos2(hr.min.x + 22.0, hr.center().y + 12.0),
+                Align2::LEFT_CENTER,
+                "Design reviews, critiques and inspiration · Review today at 2pm",
+                12.0,
+                t.muted_foreground,
+                hr.width() - 260.0,
+            );
         }
         let _ = tr;
         let mut rx = hr.max.x - 16.0;
-        for (k, (icon, label)) in [(AppIcon::Line(LineIcon::Info), "Channel details"), (AppIcon::Bookmark, "Pinned messages"), (AppIcon::Line(LineIcon::Search), "Search in channel")].iter().enumerate() {
+        for (k, (icon, label)) in [
+            (AppIcon::Line(LineIcon::Info), "Channel details"),
+            (AppIcon::Bookmark, "Pinned messages"),
+            (AppIcon::Line(LineIcon::Search), "Search in channel"),
+        ]
+        .iter()
+        .enumerate()
+        {
             let br = Rect::from_center_size(pos2(rx - 16.0, hr.center().y), vec2(32.0, 32.0));
             let b = kit::icon_button(ui, br, id.with(("h", k)), *icon, false);
             kit::tip(&b, label, None);
@@ -156,7 +190,14 @@ impl ChatApp {
         }
         if !is_dm {
             let gr = Rect::from_min_size(pos2(rx - 104.0, hr.center().y - 14.0), vec2(100.0, 28.0));
-            kit::put(ui, gr, AvatarGroup::new(&["Mia Chen", "Liam Johnson", "Sofia Davis", "Noah Brown", "Ada Lovelace"]).max(3).size(26.0).extra(9));
+            kit::put(
+                ui,
+                gr,
+                AvatarGroup::new(&["Mia Chen", "Liam Johnson", "Sofia Davis", "Noah Brown", "Ada Lovelace"])
+                    .max(3)
+                    .size(26.0)
+                    .extra(9),
+            );
         }
         kit::hline(&p, rect.min.x, rect.max.x, hr.max.y, &t);
         // composer
@@ -168,96 +209,186 @@ impl ChatApp {
         let typing = self.pending.as_ref().filter(|(_, p)| p.channel == ch).map(|(_, p)| p.author.clone());
         let mut react: Option<(usize, usize)> = None;
         kit::child(ui, stream, |ui| {
-            egui::ScrollArea::vertical().id_salt(("chat_stream", ch)).auto_shrink([false, false]).stick_to_bottom(true).show(ui, |ui| {
-                ui.spacing_mut().item_spacing.y = 0.0;
-                let w = ui.available_width();
-                ui.add_space(12.0);
-                // day divider
-                let dr = kit::alloc_row(ui, 30.0);
-                let pp = ui.painter().clone();
-                pp.line_segment([pos2(dr.min.x + 20.0, dr.center().y), pos2(dr.max.x - 20.0, dr.center().y)], Stroke::new(1.0, t.border));
-                let g = kit::trunc(&pp, "Today", 11.5, t.muted_foreground, 100.0);
-                let pr = Rect::from_center_size(dr.center(), g.size() + vec2(20.0, 8.0));
-                pp.rect_filled(pr, pr.height() / 2.0, t.background);
-                pp.rect_stroke(pr, pr.height() / 2.0, Stroke::new(1.0, t.border), StrokeKind::Inside);
-                pp.galley(pr.center() - g.size() / 2.0, g, t.muted_foreground);
-                if loading {
-                    for k in 0..4 {
-                        let r = kit::alloc_row(ui, 76.0);
-                        kit::skel_r(ui, Rect::from_min_size(r.min + vec2(20.0, 10.0), vec2(36.0, 36.0)), 8.0);
-                        kit::skel(ui, Rect::from_min_size(r.min + vec2(68.0, 12.0), vec2(120.0, 9.0)));
-                        kit::skel(ui, Rect::from_min_size(r.min + vec2(68.0, 30.0), vec2((w - 120.0) * (0.8 - 0.15 * (k % 2) as f32), 9.0)));
-                    }
-                    return;
-                }
-                if idxs.is_empty() {
-                    let r = kit::alloc_row(ui, 160.0);
-                    ui.painter().text(r.center() - vec2(0.0, 10.0), Align2::CENTER_CENTER, format!("This is the start of {title}"), egui::FontId::proportional(15.0), t.foreground);
-                    ui.painter().text(r.center() + vec2(0.0, 14.0), Align2::CENTER_CENTER, "Say hi 👋", egui::FontId::proportional(12.5), t.muted_foreground);
-                }
-                let mut prev_author: Option<&str> = None;
-                for &pi in &idxs {
-                    let m = &self.posts[pi];
-                    let first = prev_author != Some(m.author.as_str());
-                    prev_author = Some(m.author.as_str());
-                    let text_w = w - 68.0 - 24.0;
-                    let g = ui.painter().layout(m.text.clone(), egui::FontId::proportional(13.5), t.foreground, text_w);
-                    let extra = if m.reactions.is_empty() && m.replies == 0 { 0.0 } else { 30.0 };
-                    let h = g.size().y + if first { 30.0 } else { 8.0 } + extra + 6.0;
-                    let r = kit::alloc_row(ui, h);
-                    let rid = id.with(("post", pi));
-                    let resp = ui.interact(r, rid, Sense::hover());
-                    let hv = kit::hover(ui, rid, resp.hovered());
+            egui::ScrollArea::vertical()
+                .id_salt(("chat_stream", ch))
+                .auto_shrink([false, false])
+                .stick_to_bottom(true)
+                .show(ui, |ui| {
+                    ui.spacing_mut().item_spacing.y = 0.0;
+                    let w = ui.available_width();
+                    ui.add_space(12.0);
+                    // day divider
+                    let dr = kit::alloc_row(ui, 30.0);
                     let pp = ui.painter().clone();
-                    if hv > 0.01 {
-                        pp.rect_filled(r, 0.0, kit::hover_fill(&t, hv * 0.8));
-                    }
-                    let mut y = r.min.y + 4.0;
-                    if first {
-                        kit::avatar(ui, Rect::from_min_size(pos2(r.min.x + 20.0, r.min.y + 6.0), vec2(36.0, 36.0)), &m.author);
-                        let nr = kit::text_at(&pp, pos2(r.min.x + 68.0, r.min.y + 14.0), Align2::LEFT_CENTER, &m.author, 13.5, t.foreground, 200.0);
-                        kit::text_at(&pp, pos2(nr.max.x + 8.0, r.min.y + 14.0), Align2::LEFT_CENTER, &m.time, 11.5, t.muted_foreground, 80.0);
-                        y = r.min.y + 26.0;
-                    } else if hv > 0.3 {
-                        kit::text_at(&pp, pos2(r.min.x + 56.0, y + 9.0), Align2::RIGHT_CENTER, &m.time.replace(" AM", "").replace(" PM", ""), 10.5, t.muted_foreground, 40.0);
-                    }
-                    pp.galley(pos2(r.min.x + 68.0, y), g.clone(), t.foreground);
-                    y += g.size().y + 6.0;
-                    let mut rx0 = r.min.x + 68.0;
-                    for (ri, (e, n, mine)) in m.reactions.iter().enumerate() {
-                        let label = format!("{e} {n}");
-                        let gw = kit::text_w(&pp, &label, 12.0) + 16.0;
-                        let cr = Rect::from_min_size(pos2(rx0, y), vec2(gw, 24.0));
-                        let cid = rid.with(("re", ri));
-                        let cresp = ui.interact(cr, cid, Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
-                        let chv = kit::hover(ui, cid, cresp.hovered());
-                        pp.rect_filled(cr, 12.0, if *mine { with_alpha(t.accent, 0.16) } else { mix(t.muted, t.foreground, 0.04 * chv) });
-                        pp.rect_stroke(cr, 12.0, Stroke::new(1.0, if *mine { with_alpha(t.accent, 0.6) } else { t.border }), StrokeKind::Inside);
-                        pp.text(cr.center(), Align2::CENTER_CENTER, &label, egui::FontId::proportional(12.0), if *mine { t.accent } else { t.foreground });
-                        if cresp.clicked() {
-                            react = Some((pi, ri));
+                    pp.line_segment(
+                        [pos2(dr.min.x + 20.0, dr.center().y), pos2(dr.max.x - 20.0, dr.center().y)],
+                        Stroke::new(1.0, t.border),
+                    );
+                    let g = kit::trunc(&pp, "Today", 11.5, t.muted_foreground, 100.0);
+                    let pr = Rect::from_center_size(dr.center(), g.size() + vec2(20.0, 8.0));
+                    pp.rect_filled(pr, pr.height() / 2.0, t.background);
+                    pp.rect_stroke(pr, pr.height() / 2.0, Stroke::new(1.0, t.border), StrokeKind::Inside);
+                    pp.galley(pr.center() - g.size() / 2.0, g, t.muted_foreground);
+                    if loading {
+                        for k in 0..4 {
+                            let r = kit::alloc_row(ui, 76.0);
+                            kit::skel_r(ui, Rect::from_min_size(r.min + vec2(20.0, 10.0), vec2(36.0, 36.0)), 8.0);
+                            kit::skel(ui, Rect::from_min_size(r.min + vec2(68.0, 12.0), vec2(120.0, 9.0)));
+                            kit::skel(
+                                ui,
+                                Rect::from_min_size(
+                                    r.min + vec2(68.0, 30.0),
+                                    vec2((w - 120.0) * (0.8 - 0.15 * (k % 2) as f32), 9.0),
+                                ),
+                            );
                         }
-                        rx0 = cr.max.x + 6.0;
+                        return;
                     }
-                    if m.replies > 0 {
-                        let label = format!("{} replies", m.replies);
-                        let lr = kit::text_at(&pp, pos2(rx0 + if m.reactions.is_empty() { 0.0 } else { 6.0 }, y + 12.0), Align2::LEFT_CENTER, &label, 12.5, t.accent, 120.0);
-                        let lresp = ui.interact(lr.expand(4.0), rid.with("thread"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
-                        if lresp.clicked() {
-                            toast(ui.ctx(), Toast::new("Thread").description(format!("{} replies to {}", m.replies, m.author)));
+                    if idxs.is_empty() {
+                        let r = kit::alloc_row(ui, 160.0);
+                        ui.painter().text(
+                            r.center() - vec2(0.0, 10.0),
+                            Align2::CENTER_CENTER,
+                            format!("This is the start of {title}"),
+                            egui::FontId::proportional(15.0),
+                            t.foreground,
+                        );
+                        ui.painter().text(
+                            r.center() + vec2(0.0, 14.0),
+                            Align2::CENTER_CENTER,
+                            "Say hi 👋",
+                            egui::FontId::proportional(12.5),
+                            t.muted_foreground,
+                        );
+                    }
+                    let mut prev_author: Option<&str> = None;
+                    for &pi in &idxs {
+                        let m = &self.posts[pi];
+                        let first = prev_author != Some(m.author.as_str());
+                        prev_author = Some(m.author.as_str());
+                        let text_w = w - 68.0 - 24.0;
+                        let g =
+                            ui.painter().layout(m.text.clone(), egui::FontId::proportional(13.5), t.foreground, text_w);
+                        let extra = if m.reactions.is_empty() && m.replies == 0 { 0.0 } else { 30.0 };
+                        let h = g.size().y + if first { 30.0 } else { 8.0 } + extra + 6.0;
+                        let r = kit::alloc_row(ui, h);
+                        let rid = id.with(("post", pi));
+                        let resp = ui.interact(r, rid, Sense::hover());
+                        let hv = kit::hover(ui, rid, resp.hovered());
+                        let pp = ui.painter().clone();
+                        if hv > 0.01 {
+                            pp.rect_filled(r, 0.0, kit::hover_fill(&t, hv * 0.8));
+                        }
+                        let mut y = r.min.y + 4.0;
+                        if first {
+                            kit::avatar(
+                                ui,
+                                Rect::from_min_size(pos2(r.min.x + 20.0, r.min.y + 6.0), vec2(36.0, 36.0)),
+                                &m.author,
+                            );
+                            let nr = kit::text_at(
+                                &pp,
+                                pos2(r.min.x + 68.0, r.min.y + 14.0),
+                                Align2::LEFT_CENTER,
+                                &m.author,
+                                13.5,
+                                t.foreground,
+                                200.0,
+                            );
+                            kit::text_at(
+                                &pp,
+                                pos2(nr.max.x + 8.0, r.min.y + 14.0),
+                                Align2::LEFT_CENTER,
+                                &m.time,
+                                11.5,
+                                t.muted_foreground,
+                                80.0,
+                            );
+                            y = r.min.y + 26.0;
+                        } else if hv > 0.3 {
+                            kit::text_at(
+                                &pp,
+                                pos2(r.min.x + 56.0, y + 9.0),
+                                Align2::RIGHT_CENTER,
+                                &m.time.replace(" AM", "").replace(" PM", ""),
+                                10.5,
+                                t.muted_foreground,
+                                40.0,
+                            );
+                        }
+                        pp.galley(pos2(r.min.x + 68.0, y), g.clone(), t.foreground);
+                        y += g.size().y + 6.0;
+                        let mut rx0 = r.min.x + 68.0;
+                        for (ri, (e, n, mine)) in m.reactions.iter().enumerate() {
+                            let label = format!("{e} {n}");
+                            let gw = kit::text_w(&pp, &label, 12.0) + 16.0;
+                            let cr = Rect::from_min_size(pos2(rx0, y), vec2(gw, 24.0));
+                            let cid = rid.with(("re", ri));
+                            let cresp = ui.interact(cr, cid, Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
+                            let chv = kit::hover(ui, cid, cresp.hovered());
+                            pp.rect_filled(
+                                cr,
+                                12.0,
+                                if *mine { with_alpha(t.accent, 0.16) } else { mix(t.muted, t.foreground, 0.04 * chv) },
+                            );
+                            pp.rect_stroke(
+                                cr,
+                                12.0,
+                                Stroke::new(1.0, if *mine { with_alpha(t.accent, 0.6) } else { t.border }),
+                                StrokeKind::Inside,
+                            );
+                            pp.text(
+                                cr.center(),
+                                Align2::CENTER_CENTER,
+                                &label,
+                                egui::FontId::proportional(12.0),
+                                if *mine { t.accent } else { t.foreground },
+                            );
+                            if cresp.clicked() {
+                                react = Some((pi, ri));
+                            }
+                            rx0 = cr.max.x + 6.0;
+                        }
+                        if m.replies > 0 {
+                            let label = format!("{} replies", m.replies);
+                            let lr = kit::text_at(
+                                &pp,
+                                pos2(rx0 + if m.reactions.is_empty() { 0.0 } else { 6.0 }, y + 12.0),
+                                Align2::LEFT_CENTER,
+                                &label,
+                                12.5,
+                                t.accent,
+                                120.0,
+                            );
+                            let lresp = ui
+                                .interact(lr.expand(4.0), rid.with("thread"), Sense::click())
+                                .on_hover_cursor(CursorIcon::PointingHand);
+                            if lresp.clicked() {
+                                toast(
+                                    ui.ctx(),
+                                    Toast::new("Thread").description(format!("{} replies to {}", m.replies, m.author)),
+                                );
+                            }
                         }
                     }
-                }
-                if let Some(who) = &typing {
-                    let r = kit::alloc_row(ui, 44.0);
-                    let tr = Rect::from_min_size(pos2(r.min.x + 68.0, r.min.y + 6.0), vec2(80.0, 32.0));
-                    kit::child(ui, tr, |ui| {
-                        ui.add(glowkit_ai::TypingIndicator::new().bubble(true).size(6.0));
-                    });
-                    kit::text_at(ui.painter(), pos2(tr.min.x + 72.0, r.center().y), Align2::LEFT_CENTER, &format!("{who} is typing…"), 12.0, t.muted_foreground, 200.0);
-                }
-                ui.add_space(10.0);
-            });
+                    if let Some(who) = &typing {
+                        let r = kit::alloc_row(ui, 44.0);
+                        let tr = Rect::from_min_size(pos2(r.min.x + 68.0, r.min.y + 6.0), vec2(80.0, 32.0));
+                        kit::child(ui, tr, |ui| {
+                            ui.add(glowkit_ai::TypingIndicator::new().bubble(true).size(6.0));
+                        });
+                        kit::text_at(
+                            ui.painter(),
+                            pos2(tr.min.x + 72.0, r.center().y),
+                            Align2::LEFT_CENTER,
+                            &format!("{who} is typing…"),
+                            12.0,
+                            t.muted_foreground,
+                            200.0,
+                        );
+                    }
+                    ui.add_space(10.0);
+                });
         });
         if let Some((pi, ri)) = react {
             let r = &mut self.posts[pi].reactions[ri];
@@ -293,7 +424,15 @@ impl ChatApp {
         // toolbar
         let ty = cr.max.y - 20.0;
         let mut x = cr.min.x + 10.0;
-        for (k, (icon, label)) in [(AppIcon::Line(LineIcon::Plus), "Attach"), (AppIcon::Smile, "Emoji"), (AppIcon::AtSign, "Mention someone"), (AppIcon::Paperclip, "Upload file")].iter().enumerate() {
+        for (k, (icon, label)) in [
+            (AppIcon::Line(LineIcon::Plus), "Attach"),
+            (AppIcon::Smile, "Emoji"),
+            (AppIcon::AtSign, "Mention someone"),
+            (AppIcon::Paperclip, "Upload file"),
+        ]
+        .iter()
+        .enumerate()
+        {
             let br = Rect::from_center_size(pos2(x + 14.0, ty), vec2(28.0, 28.0));
             let b = kit::icon_button(ui, br, id.with(("ct", k)), *icon, false);
             kit::tip(&b, label, None);
@@ -308,22 +447,51 @@ impl ChatApp {
             }
             x += 32.0;
         }
-        kit::text_at(&p, pos2(cr.max.x - 52.0, ty), Align2::RIGHT_CENTER, "Enter to send · Shift+Enter for newline", 11.5, t.muted_foreground, 260.0);
+        kit::text_at(
+            &p,
+            pos2(cr.max.x - 52.0, ty),
+            Align2::RIGHT_CENTER,
+            "Enter to send · Shift+Enter for newline",
+            11.5,
+            t.muted_foreground,
+            260.0,
+        );
         let sr = Rect::from_center_size(pos2(cr.max.x - 26.0, ty), vec2(32.0, 28.0));
         let can = !self.draft.trim().is_empty();
         let sresp = ui.interact(sr, id.with("send"), if can { Sense::click() } else { Sense::hover() });
         let shv = kit::hover(ui, id.with("send"), sresp.hovered() && can);
         p.rect_filled(sr, t.radius * 0.6, if can { t.primary.gamma_multiply(0.9 + 0.1 * shv) } else { t.muted });
-        AppIcon::Send.paint(&p, Rect::from_center_size(sr.center(), vec2(15.0, 15.0)), if can { t.primary_foreground } else { t.muted_foreground });
+        AppIcon::Send.paint(
+            &p,
+            Rect::from_center_size(sr.center(), vec2(15.0, 15.0)),
+            if can { t.primary_foreground } else { t.muted_foreground },
+        );
         if sresp.clicked() {
             send = true;
         }
         if send && can {
             let text = self.draft.trim().to_string();
             self.draft.clear();
-            self.posts.push(ChatPost { channel: ch.into(), author: "Ada Lovelace".into(), time: "Just now".into(), text, reactions: vec![], replies: 0 });
+            self.posts.push(ChatPost {
+                channel: ch.into(),
+                author: "Ada Lovelace".into(),
+                time: "Just now".into(),
+                text,
+                reactions: vec![],
+                replies: 0,
+            });
             let who = if is_dm { title.to_string() } else { "Mia Chen".to_string() };
-            self.pending = Some((now + 1.8, ChatPost { channel: ch.into(), author: who, time: "Just now".into(), text: "Sounds good! I'll take a look and get back to you before lunch.".into(), reactions: vec![], replies: 0 }));
+            self.pending = Some((
+                now + 1.8,
+                ChatPost {
+                    channel: ch.into(),
+                    author: who,
+                    time: "Just now".into(),
+                    text: "Sounds good! I'll take a look and get back to you before lunch.".into(),
+                    reactions: vec![],
+                    replies: 0,
+                },
+            ));
         }
         if let Some((at, _)) = &self.pending {
             if now >= *at {

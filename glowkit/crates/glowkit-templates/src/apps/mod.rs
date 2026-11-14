@@ -4,36 +4,36 @@
 
 mod analytics;
 mod assistant;
+mod auth;
+mod calendar;
 mod chat;
 mod commerce;
 mod common;
-mod auth;
+mod crm;
 mod devconsole;
 mod docs;
-mod calendar;
-mod music;
 mod files;
-mod crm;
 mod finance;
 mod mail;
+mod music;
 mod projects;
 mod settings;
 
 pub use analytics::AnalyticsApp;
+pub use assistant::{AssistantApp, AssistantChat};
 pub use auth::AuthGateApp;
+pub use calendar::{CalEvent, CalendarApp};
+pub use chat::{ChatApp, ChatPost};
+pub use commerce::{CommerceApp, ShopOrder, ShopProduct};
+pub use crm::{CrmApp, CrmCustomer, CrmDeal};
 pub use devconsole::{ApiKey, DevConsoleApp};
 pub use docs::DocsApp;
-pub use calendar::{CalEvent, CalendarApp};
-pub use music::{MusicApp, MusicTrack};
 pub use files::{FileManagerApp, FsEntry};
-pub use commerce::{CommerceApp, ShopOrder, ShopProduct};
 pub use finance::{FinanceAccount, FinanceApp, FinanceTxn};
-pub use projects::{ProjectTask, ProjectsApp};
 pub use mail::{MailApp, MailMessage};
-pub use chat::{ChatApp, ChatPost};
-pub use assistant::{AssistantApp, AssistantChat};
+pub use music::{MusicApp, MusicTrack};
+pub use projects::{ProjectTask, ProjectsApp};
 pub use settings::{SettingsApp, TeamMember};
-pub use crm::{CrmApp, CrmCustomer, CrmDeal};
 
 #[cfg(feature = "demos")]
 mod demos;

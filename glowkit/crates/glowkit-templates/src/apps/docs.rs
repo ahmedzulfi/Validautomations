@@ -42,7 +42,14 @@ const TREE: [(&str, &[&str]); 3] = [
     ("Reference", &["Theme tokens", "Animation", "Painting helpers"]),
 ];
 
-const HEADINGS: [(u8, &str); 6] = [(1, "Overview"), (1, "Create the navigation"), (2, "Nested items"), (1, "Pick a layout"), (2, "Responsive behavior"), (1, "Next steps")];
+const HEADINGS: [(u8, &str); 6] = [
+    (1, "Overview"),
+    (1, "Create the navigation"),
+    (2, "Nested items"),
+    (1, "Pick a layout"),
+    (2, "Responsive behavior"),
+    (1, "Next steps"),
+];
 
 impl Default for DocsApp {
     fn default() -> Self {
@@ -112,7 +119,15 @@ impl DocsApp {
                 let mut k = 0;
                 for (sec, pages) in TREE.iter() {
                     let r = kit::alloc_row(ui, 30.0);
-                    kit::text_at(ui.painter(), pos2(r.min.x + 8.0, r.center().y + 2.0), Align2::LEFT_CENTER, sec, 13.0, t.foreground, r.width());
+                    kit::text_at(
+                        ui.painter(),
+                        pos2(r.min.x + 8.0, r.center().y + 2.0),
+                        Align2::LEFT_CENTER,
+                        sec,
+                        13.0,
+                        t.foreground,
+                        r.width(),
+                    );
                     for pg in pages.iter() {
                         let r = kit::alloc_row(ui, 30.0);
                         let rid = id.with(("p", k));
@@ -120,11 +135,26 @@ impl DocsApp {
                         let hv = kit::hover(ui, rid, resp.hovered());
                         let on = k == self.page;
                         let pp = ui.painter();
-                        pp.line_segment([pos2(r.min.x + 8.0, r.min.y), pos2(r.min.x + 8.0, r.max.y)], Stroke::new(if on { 2.0 } else { 1.0 }, if on { t.accent } else { t.border }));
+                        pp.line_segment(
+                            [pos2(r.min.x + 8.0, r.min.y), pos2(r.min.x + 8.0, r.max.y)],
+                            Stroke::new(if on { 2.0 } else { 1.0 }, if on { t.accent } else { t.border }),
+                        );
                         if hv > 0.01 && !on {
-                            pp.rect_filled(r.shrink2(vec2(0.0, 1.0)).translate(vec2(10.0, 0.0)), t.radius * 0.5, kit::hover_fill(&t, hv));
+                            pp.rect_filled(
+                                r.shrink2(vec2(0.0, 1.0)).translate(vec2(10.0, 0.0)),
+                                t.radius * 0.5,
+                                kit::hover_fill(&t, hv),
+                            );
                         }
-                        kit::text_at(pp, pos2(r.min.x + 22.0, r.center().y), Align2::LEFT_CENTER, pg, 13.0, if on { t.accent } else { t.muted_foreground.lerp_to_gamma(t.foreground, hv) }, r.width() - 26.0);
+                        kit::text_at(
+                            pp,
+                            pos2(r.min.x + 22.0, r.center().y),
+                            Align2::LEFT_CENTER,
+                            pg,
+                            13.0,
+                            if on { t.accent } else { t.muted_foreground.lerp_to_gamma(t.foreground, hv) },
+                            r.width() - 26.0,
+                        );
                         if resp.clicked() {
                             pick = Some(k);
                         }
@@ -267,7 +297,9 @@ impl DocsApp {
         // toc
         if toc_w > 0.0 {
             let tr = parts[2].shrink2(vec2(18.0, 28.0));
-            let clicked = kit::child(ui, tr, |ui| TableOfContents::new(&HEADINGS, self.active_heading).title(Some("On this page")).show(ui));
+            let clicked = kit::child(ui, tr, |ui| {
+                TableOfContents::new(&HEADINGS, self.active_heading).title(Some("On this page")).show(ui)
+            });
             if let Some(i) = clicked {
                 self.active_heading = i;
                 self.scroll_to = Some(i);
@@ -275,8 +307,20 @@ impl DocsApp {
             let er = Rect::from_min_size(pos2(tr.min.x, tr.min.y + 230.0), vec2(tr.width(), 30.0));
             let resp = ui.interact(er, id.with("edit"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
             let hv = kit::hover(ui, id.with("edit"), resp.hovered());
-            AppIcon::External.paint(&p, Rect::from_center_size(pos2(er.min.x + 7.0, er.center().y), vec2(13.0, 13.0)), t.muted_foreground);
-            kit::text_at(&p, pos2(er.min.x + 22.0, er.center().y), Align2::LEFT_CENTER, "Edit this page", 12.5, t.muted_foreground.lerp_to_gamma(t.foreground, hv), 160.0);
+            AppIcon::External.paint(
+                &p,
+                Rect::from_center_size(pos2(er.min.x + 7.0, er.center().y), vec2(13.0, 13.0)),
+                t.muted_foreground,
+            );
+            kit::text_at(
+                &p,
+                pos2(er.min.x + 22.0, er.center().y),
+                Align2::LEFT_CENTER,
+                "Edit this page",
+                12.5,
+                t.muted_foreground.lerp_to_gamma(t.foreground, hv),
+                160.0,
+            );
             if resp.clicked() {
                 toast(ui.ctx(), Toast::new("Opening editor").description("docs/app-shells.md"));
             }

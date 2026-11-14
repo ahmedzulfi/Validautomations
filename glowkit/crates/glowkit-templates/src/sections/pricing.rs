@@ -86,11 +86,20 @@ impl PricingTier {
     /// Three ready-made tiers (Hobby, Pro highlighted, Enterprise).
     pub fn defaults() -> Vec<PricingTier> {
         vec![
-            PricingTier::new("Hobby", 0.0, 0.0).description("For side projects and tinkering.").features(&["Up to 3 projects", "Community support", "All core components", "Dark and light themes"]).cta("Start for free"),
+            PricingTier::new("Hobby", 0.0, 0.0)
+                .description("For side projects and tinkering.")
+                .features(&["Up to 3 projects", "Community support", "All core components", "Dark and light themes"])
+                .cta("Start for free"),
             PricingTier::new("Pro", 24.0, 19.0)
                 .description("For professionals shipping real products.")
                 .features_intro("Everything in Hobby, plus:")
-                .features(&["Unlimited projects", "Premium templates", "Priority email support", "Figma kit", "Commercial license"])
+                .features(&[
+                    "Unlimited projects",
+                    "Premium templates",
+                    "Priority email support",
+                    "Figma kit",
+                    "Commercial license",
+                ])
                 .cta("Upgrade to Pro")
                 .highlighted(true),
             PricingTier::new("Enterprise", 0.0, 0.0)
@@ -219,13 +228,20 @@ impl PricingSection {
         let id = section_id(ui, "pricing", &self.salt);
         section(ui, Frame::new(id, self.background), |ui, sec| {
             let t = sec.t.clone();
-            let mut next = Heading::new(&self.title).eyebrow(self.eyebrow.as_deref()).subtitle(self.subtitle.as_deref()).show(ui, sec, 0);
+            let mut next = Heading::new(&self.title)
+                .eyebrow(self.eyebrow.as_deref())
+                .subtitle(self.subtitle.as_deref())
+                .show(ui, sec, 0);
             let mut billing: usize = glowkit_core::state(ui, id.with("billing"), || usize::from(self.yearly_default));
             if self.toggle {
                 ui.add_space(32.0);
                 sec.fade(ui, next, |ui| {
                     row(ui, id.with("toggle"), Align::Center, 12.0, |ui| {
-                        ui.add(SegmentedControl::new(&mut billing, ["Monthly", "Yearly"]).size(ControlSize::Md).equal_widths(true));
+                        ui.add(
+                            SegmentedControl::new(&mut billing, ["Monthly", "Yearly"])
+                                .size(ControlSize::Md)
+                                .equal_widths(true),
+                        );
                         if !self.save_label.is_empty() {
                             save_badge(ui, &self.save_label, billing == 1);
                         }
@@ -270,16 +286,36 @@ impl PricingSection {
     fn price(&self, ui: &mut Ui, tier: &PricingTier, yearly: bool, size: f32, t: &Theme) {
         // fixed-height row so buttons line up across tiers whatever the price looks like
         let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), (size * 1.25).round()), Sense::hover());
-        let mut row_ui = ui.new_child(egui::UiBuilder::new().max_rect(r).layout(egui::Layout::left_to_right(Align::Max)));
+        let mut row_ui =
+            ui.new_child(egui::UiBuilder::new().max_rect(r).layout(egui::Layout::left_to_right(Align::Max)));
         row_ui.spacing_mut().item_spacing.x = 6.0;
         if let Some(l) = &tier.price_label {
             Tx::new(l).size(size * 0.92).bold().color(t.foreground).show_inline(&mut row_ui);
         } else {
             let v = if yearly { tier.yearly } else { tier.monthly };
             let dec = if v.fract().abs() > 1e-6 { 2 } else { 0 };
-            row_ui.add(glowkit_text::CountUp::new(v).from(v).duration(0.6).decimals(dec).prefix(&self.currency).size(size).bold(true).color(t.foreground));
+            row_ui.add(
+                glowkit_text::CountUp::new(v)
+                    .from(v)
+                    .duration(0.6)
+                    .decimals(dec)
+                    .prefix(&self.currency)
+                    .size(size)
+                    .bold(true)
+                    .color(t.foreground),
+            );
             let g = Tx::new(&self.period).size(14.0).color(t.muted_foreground);
-            let (pr, _) = row_ui.allocate_exact_size(vec2(row_ui.painter().layout_no_wrap(self.period.clone(), egui::FontId::proportional(14.0), Color32::WHITE).size().x, size * 0.62), Sense::hover());
+            let (pr, _) = row_ui.allocate_exact_size(
+                vec2(
+                    row_ui
+                        .painter()
+                        .layout_no_wrap(self.period.clone(), egui::FontId::proportional(14.0), Color32::WHITE)
+                        .size()
+                        .x,
+                    size * 0.62,
+                ),
+                Sense::hover(),
+            );
             let gal = g.galley(&row_ui, f32::INFINITY);
             g.paint(&row_ui, &gal, pos2(pr.min.x, pr.max.y - gal.size().y), pr.width(), t.muted_foreground);
         }
@@ -307,11 +343,20 @@ impl PricingSection {
         } else {
             t.card
         };
-        let look = CardLook::of(t).min_h(row_h).pad(28.0).fill(fill).stroke(if hl { with_alpha(t.accent, 0.5) } else { t.border });
+        let look = CardLook::of(t).min_h(row_h).pad(28.0).fill(fill).stroke(if hl {
+            with_alpha(t.accent, 0.5)
+        } else {
+            t.border
+        });
         // glow behind the highlighted tier
         if hl {
             let prev = Rect::from_min_size(ui.cursor().min, vec2(ui.available_width(), row_h.max(200.0)));
-            paint::glow_ellipse(ui.painter(), prev.center_top() + vec2(0.0, 40.0), vec2(prev.width() * 0.7, 160.0), with_alpha(t.accent, if t.dark { 0.18 } else { 0.08 }));
+            paint::glow_ellipse(
+                ui.painter(),
+                prev.center_top() + vec2(0.0, 40.0),
+                vec2(prev.width() * 0.7, 160.0),
+                with_alpha(t.accent, if t.dark { 0.18 } else { 0.08 }),
+            );
         }
         let out = card(ui, id, look, |ui| {
             ui.horizontal(|ui| {
@@ -327,7 +372,10 @@ impl PricingSection {
             ui.add_space(20.0);
             self.price(ui, tier, yearly, 42.0, t);
             ui.add_space(20.0);
-            let b = Button::new(&tier.cta).variant(if hl { ButtonVariant::Default } else { ButtonVariant::Outline }).size(ControlSize::Lg).width(f32::INFINITY);
+            let b = Button::new(&tier.cta)
+                .variant(if hl { ButtonVariant::Default } else { ButtonVariant::Outline })
+                .size(ControlSize::Lg)
+                .width(f32::INFINITY);
             let b = if hl { b.fill(t.accent) } else { b };
             if ui.add(b).clicked() {
                 clicked = true;
@@ -345,7 +393,11 @@ impl PricingSection {
             }
         });
         if hl {
-            glowkit_effects::BorderBeam::new().radius(look.radius).duration(7.0).thickness(1.8).paint(ui, out.rect.translate(vec2(0.0, -2.0 * out.hover)));
+            glowkit_effects::BorderBeam::new()
+                .radius(look.radius)
+                .duration(7.0)
+                .thickness(1.8)
+                .paint(ui, out.rect.translate(vec2(0.0, -2.0 * out.hover)));
         }
         clicked
     }
@@ -372,7 +424,9 @@ impl PricingSection {
             let right = |ui: &mut Ui| {
                 self.price(ui, tier, yearly, 34.0, t);
                 ui.add_space(10.0);
-                let b = Button::new(&tier.cta).variant(if hl { ButtonVariant::Default } else { ButtonVariant::Outline }).width(f32::INFINITY);
+                let b = Button::new(&tier.cta)
+                    .variant(if hl { ButtonVariant::Default } else { ButtonVariant::Outline })
+                    .width(f32::INFINITY);
                 if ui.add(if hl { b.fill(t.accent) } else { b }).clicked() {
                     clicked = true;
                 }
@@ -380,7 +434,9 @@ impl PricingSection {
             two_col(ui, id.with("cols"), 0.66, 32.0, narrow, true, left, right);
         });
         if hl {
-            glowkit_effects::BorderBeam::new().radius(look.radius).paint(ui, out.rect.translate(vec2(0.0, -2.0 * out.hover)));
+            glowkit_effects::BorderBeam::new()
+                .radius(look.radius)
+                .paint(ui, out.rect.translate(vec2(0.0, -2.0 * out.hover)));
         }
         clicked
     }
@@ -405,7 +461,17 @@ fn save_badge(ui: &mut Ui, text: &str, active: bool) {
     let size = g.size() + vec2(28.0, 10.0);
     let (r, _) = ui.allocate_exact_size(size, Sense::hover());
     let col = mix(t.muted_foreground, t.success, k);
-    ui.painter().rect(r, CornerRadius::same(99), with_alpha(col, 0.12), Stroke::new(1.0, with_alpha(col, 0.35)), StrokeKind::Inside);
-    UiIcon::Sparkles.paint(ui.painter(), Rect::from_center_size(pos2(r.min.x + 11.0, r.center().y), egui::Vec2::splat(11.0)), col);
+    ui.painter().rect(
+        r,
+        CornerRadius::same(99),
+        with_alpha(col, 0.12),
+        Stroke::new(1.0, with_alpha(col, 0.35)),
+        StrokeKind::Inside,
+    );
+    UiIcon::Sparkles.paint(
+        ui.painter(),
+        Rect::from_center_size(pos2(r.min.x + 11.0, r.center().y), egui::Vec2::splat(11.0)),
+        col,
+    );
     tx.paint(ui, &g, r.min + vec2(20.0, 5.0), g.size().x, col);
 }

@@ -285,7 +285,7 @@ ui.add(FuzzyText::new("not found").size(40.0).base_intensity(0.2));"##,
             name: "Circular Text",
             category: C,
             description: "Text set around a slowly rotating ring; hovering spins it faster.",
-            covers: &["React Bits: Circular Text", "Magic UI: Spinning Text"],
+            covers: &["React Bits: Circular Text", "Magic UI: Spinning Text", "Motion Primitives: Spinning Text"],
             code: r##"ui.add(CircularText::new("GLOWKIT • ANIMATED • RUST • ").center_text("✦"));
 ui.add(CircularText::new("hover to slow down * ").on_hover(HoverSpin::SlowDown));"##,
             show: |ui| centered_at(ui, 30.0, |ui| {
@@ -316,7 +316,7 @@ ui.add(CircularText::new("hover to slow down * ").on_hover(HoverSpin::SlowDown))
             name: "Wave Text",
             category: C,
             description: "Letters bob on a travelling sine wave, optionally with a gradient riding the crest.",
-            covers: &["Animata: Wave Text", "Magic UI: Text Animate (wave)", "Cult UI: Text Wave"],
+            covers: &["Animata: Wave Text", "Magic UI: Text Animate (wave)", "Cult UI: Text Wave", "Motion Primitives: Text Shimmer Wave"],
             code: r##"ui.add(WaveText::new("Riding the wave").size(52.0));
 ui.add(WaveText::new("with a gradient").colors(&theme.gradient));"##,
             show: |ui| centered_at(ui, 95.0, |ui| {

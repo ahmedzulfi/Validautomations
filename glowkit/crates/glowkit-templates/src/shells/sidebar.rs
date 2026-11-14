@@ -70,9 +70,29 @@ pub(crate) fn sidebar(ui: &mut Ui, rect: Rect, c: f32, cfg: SideCfg<'_>) -> Side
         let lr = Rect::from_min_size(pos2(lx, hr.center().y - 16.0), vec2(32.0, 32.0));
         kit::logo(&p, lr, &t, &ws.name.chars().next().unwrap_or('A').to_string());
         let tw = inner_w - 42.0 - 30.0;
-        kit::text_at(&lp, pos2(lr.max.x + 10.0, hr.center().y - 8.0), Align2::LEFT_CENTER, &ws.name, 14.0, t.foreground, tw);
-        kit::text_at(&lp, pos2(lr.max.x + 10.0, hr.center().y + 9.0), Align2::LEFT_CENTER, &ws.plan, 12.0, t.muted_foreground, tw);
-        UiIcon::ChevronsUpDown.paint(&lp, Rect::from_center_size(pos2(hr.max.x - 14.0, hr.center().y), vec2(15.0, 15.0)), t.muted_foreground);
+        kit::text_at(
+            &lp,
+            pos2(lr.max.x + 10.0, hr.center().y - 8.0),
+            Align2::LEFT_CENTER,
+            &ws.name,
+            14.0,
+            t.foreground,
+            tw,
+        );
+        kit::text_at(
+            &lp,
+            pos2(lr.max.x + 10.0, hr.center().y + 9.0),
+            Align2::LEFT_CENTER,
+            &ws.plan,
+            12.0,
+            t.muted_foreground,
+            tw,
+        );
+        UiIcon::ChevronsUpDown.paint(
+            &lp,
+            Rect::from_center_size(pos2(hr.max.x - 14.0, hr.center().y), vec2(15.0, 15.0)),
+            t.muted_foreground,
+        );
         if c > 0.6 {
             Tooltip::new(ws.name.clone()).placement(Placement::Right).delay(0.15).show(&resp);
         }
@@ -131,10 +151,21 @@ pub(crate) fn sidebar(ui: &mut Ui, rect: Rect, c: f32, cfg: SideCfg<'_>) -> Side
                     if la > 0.0 && cfg_titles && !sec.title.is_empty() {
                         let mut tp = ui.painter().clone();
                         tp.multiply_opacity(la);
-                        kit::text_at(&tp, pos2(x0 + 8.0, tr.center().y + 2.0), Align2::LEFT_CENTER, &sec.title, 12.0, t.muted_foreground, inner_w - 16.0);
+                        kit::text_at(
+                            &tp,
+                            pos2(x0 + 8.0, tr.center().y + 2.0),
+                            Align2::LEFT_CENTER,
+                            &sec.title,
+                            12.0,
+                            t.muted_foreground,
+                            inner_w - 16.0,
+                        );
                     }
                     if c > 0.5 && si > 0 {
-                        ui.painter().line_segment([pos2(x0 + 8.0, tr.center().y), pos2(x0 + inner_w - 8.0, tr.center().y)], Stroke::new(1.0, with_alpha(t.border, (c - 0.5) * 2.0)));
+                        ui.painter().line_segment(
+                            [pos2(x0 + 8.0, tr.center().y), pos2(x0 + inner_w - 8.0, tr.center().y)],
+                            Stroke::new(1.0, with_alpha(t.border, (c - 0.5) * 2.0)),
+                        );
                     }
                     for (ii, item) in sec.items.iter_mut().enumerate() {
                         let (rr, _) = ui.allocate_exact_size(vec2(rect.width(), 34.0), Sense::hover());
@@ -151,28 +182,56 @@ pub(crate) fn sidebar(ui: &mut Ui, rect: Rect, c: f32, cfg: SideCfg<'_>) -> Side
                             ui.painter().rect_filled(r, r6, kit::hover_fill(&t, hv * 1.2));
                         }
                         let pnt = ui.painter().clone();
-                        let col = if is_active { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, hv) };
+                        let col =
+                            if is_active { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, hv) };
                         let ic = pos2(rect.min.x + RAIL_W / 2.0, r.center().y);
                         if let Some(icon) = item.icon {
-                            icon.paint(&pnt, Rect::from_center_size(ic, vec2(16.0, 16.0)), if is_active { t.accent } else { col });
+                            icon.paint(
+                                &pnt,
+                                Rect::from_center_size(ic, vec2(16.0, 16.0)),
+                                if is_active { t.accent } else { col },
+                            );
                         }
                         let mut lab = pnt.clone();
                         lab.multiply_opacity(la);
                         let mut right = r.max.x - 8.0;
                         if has_kids {
-                            let e = kit::follow(ui.ctx(), rid.with("chev"), if item.expanded { 1.0 } else { 0.0 }, 16.0);
-                            chevron(&lab, pos2(right - 6.0, r.center().y), 9.0, e * std::f32::consts::FRAC_PI_2, t.muted_foreground);
+                            let e =
+                                kit::follow(ui.ctx(), rid.with("chev"), if item.expanded { 1.0 } else { 0.0 }, 16.0);
+                            chevron(
+                                &lab,
+                                pos2(right - 6.0, r.center().y),
+                                9.0,
+                                e * std::f32::consts::FRAC_PI_2,
+                                t.muted_foreground,
+                            );
                             right -= 20.0;
                         }
                         if let Some(b) = &item.badge {
-                            let br = kit::pill(&lab, pos2(right, r.center().y), true, b, if is_active { t.accent } else { t.muted_foreground }, if is_active { with_alpha(t.accent, 0.16) } else { t.muted }, 11.0);
+                            let br = kit::pill(
+                                &lab,
+                                pos2(right, r.center().y),
+                                true,
+                                b,
+                                if is_active { t.accent } else { t.muted_foreground },
+                                if is_active { with_alpha(t.accent, 0.16) } else { t.muted },
+                                11.0,
+                            );
                             right = br.min.x - 6.0;
                             if c > 0.5 {
                                 pnt.circle_filled(ic + vec2(8.0, -7.0), 4.5, bg);
                                 pnt.circle_filled(ic + vec2(8.0, -7.0), 3.0, t.accent);
                             }
                         }
-                        kit::text_at(&lab, pos2(r.min.x + 34.0, r.center().y), Align2::LEFT_CENTER, &item.label, 13.5, col, right - r.min.x - 40.0);
+                        kit::text_at(
+                            &lab,
+                            pos2(r.min.x + 34.0, r.center().y),
+                            Align2::LEFT_CENTER,
+                            &item.label,
+                            13.5,
+                            col,
+                            right - r.min.x - 40.0,
+                        );
                         if c > 0.6 {
                             Tooltip::new(item.label.clone()).placement(Placement::Right).delay(0.1).show(&resp);
                         }
@@ -198,13 +257,21 @@ pub(crate) fn sidebar(ui: &mut Ui, rect: Rect, c: f32, cfg: SideCfg<'_>) -> Side
                                 let cp = ui.painter().with_clip_rect(clip);
                                 let mut cpl = cp.clone();
                                 cpl.multiply_opacity(e * la);
-                                cpl.line_segment([pos2(ic.x, cr.min.y), pos2(ic.x, cr.min.y + full - 6.0)], Stroke::new(1.0, t.border));
+                                cpl.line_segment(
+                                    [pos2(ic.x, cr.min.y), pos2(ic.x, cr.min.y + full - 6.0)],
+                                    Stroke::new(1.0, t.border),
+                                );
                                 for (ci, ch) in item.children.iter().enumerate() {
-                                    let crr = Rect::from_min_size(pos2(ic.x + 10.0, cr.min.y + ci as f32 * 30.0), vec2(r.max.x - ic.x - 10.0, 28.0));
+                                    let crr = Rect::from_min_size(
+                                        pos2(ic.x + 10.0, cr.min.y + ci as f32 * 30.0),
+                                        vec2(r.max.x - ic.x - 10.0, 28.0),
+                                    );
                                     let cid = rid.with(("child", ci));
                                     let ch_active = *route == ch.route;
                                     let hv2 = if e > 0.6 && clip.intersects(crr) {
-                                        let cresp = ui.interact(crr.intersect(clip), cid, Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+                                        let cresp = ui
+                                            .interact(crr.intersect(clip), cid, Sense::click())
+                                            .on_hover_cursor(egui::CursorIcon::PointingHand);
                                         if cresp.clicked() {
                                             nav_to = Some(ch.route.clone());
                                         }
@@ -217,13 +284,33 @@ pub(crate) fn sidebar(ui: &mut Ui, rect: Rect, c: f32, cfg: SideCfg<'_>) -> Side
                                     } else if hv2 > 0.01 {
                                         cpl.rect_filled(crr, r6, kit::hover_fill(&t, hv2 * 1.2));
                                     }
-                                    let ccol = if ch_active { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, hv2) };
+                                    let ccol = if ch_active {
+                                        t.foreground
+                                    } else {
+                                        t.muted_foreground.lerp_to_gamma(t.foreground, hv2)
+                                    };
                                     let mut cr_right = crr.max.x - 8.0;
                                     if let Some(b) = &ch.badge {
-                                        let br = kit::pill(&cpl, pos2(cr_right, crr.center().y), true, b, t.muted_foreground, t.muted, 10.5);
+                                        let br = kit::pill(
+                                            &cpl,
+                                            pos2(cr_right, crr.center().y),
+                                            true,
+                                            b,
+                                            t.muted_foreground,
+                                            t.muted,
+                                            10.5,
+                                        );
                                         cr_right = br.min.x - 6.0;
                                     }
-                                    kit::text_at(&cpl, pos2(crr.min.x + 12.0, crr.center().y), Align2::LEFT_CENTER, &ch.label, 13.0, ccol, cr_right - crr.min.x - 14.0);
+                                    kit::text_at(
+                                        &cpl,
+                                        pos2(crr.min.x + 12.0, crr.center().y),
+                                        Align2::LEFT_CENTER,
+                                        &ch.label,
+                                        13.0,
+                                        ccol,
+                                        cr_right - crr.min.x - 14.0,
+                                    );
                                 }
                             }
                         }
@@ -256,7 +343,8 @@ pub(crate) fn sidebar(ui: &mut Ui, rect: Rect, c: f32, cfg: SideCfg<'_>) -> Side
     });
     let _ = bounds;
     // soft fade where the list scrolls under the footer
-    let fade = Rect::from_min_max(pos2(rect.min.x + 1.0, list_rect.max.y - 18.0), pos2(rect.max.x - 1.0, list_rect.max.y));
+    let fade =
+        Rect::from_min_max(pos2(rect.min.x + 1.0, list_rect.max.y - 18.0), pos2(rect.max.x - 1.0, list_rect.max.y));
     kit::vgrad(&p, fade, with_alpha(bg, 0.0), bg);
 
     // ---- upgrade card -------------------------------------------------------------------
@@ -271,16 +359,41 @@ pub(crate) fn sidebar(ui: &mut Ui, rect: Rect, c: f32, cfg: SideCfg<'_>) -> Side
         let g = t.gradient;
         paint::gradient_border(&cp, full, t.radius, 1.0, |u| with_alpha(gradient(&[g[0], g[1], g[2], g[0]], u), 0.7));
         paint::glow(&cp, full.left_top() + vec2(22.0, 22.0), 28.0, with_alpha(t.accent, 0.18));
-        AppIcon::Ui(UiIcon::Sparkles).paint(&cp, Rect::from_center_size(full.left_top() + vec2(22.0, 22.0), vec2(16.0, 16.0)), t.accent);
-        kit::text_at(&cp, full.left_top() + vec2(38.0, 22.0), Align2::LEFT_CENTER, "Upgrade to Pro", 13.5, t.foreground, inner_w - 70.0);
-        let body = kit::wrapped(&cp, "Unlimited projects, SSO and priority support.", 12.0, t.muted_foreground, inner_w - 28.0, 2);
+        AppIcon::Ui(UiIcon::Sparkles).paint(
+            &cp,
+            Rect::from_center_size(full.left_top() + vec2(22.0, 22.0), vec2(16.0, 16.0)),
+            t.accent,
+        );
+        kit::text_at(
+            &cp,
+            full.left_top() + vec2(38.0, 22.0),
+            Align2::LEFT_CENTER,
+            "Upgrade to Pro",
+            13.5,
+            t.foreground,
+            inner_w - 70.0,
+        );
+        let body = kit::wrapped(
+            &cp,
+            "Unlimited projects, SSO and priority support.",
+            12.0,
+            t.muted_foreground,
+            inner_w - 28.0,
+            2,
+        );
         cp.galley(full.left_top() + vec2(14.0, 38.0), body, t.muted_foreground);
         let by = full.min.y + 82.0;
         kit::text_at(&cp, pos2(full.min.x + 14.0, by), Align2::LEFT_CENTER, "Storage", 11.5, t.muted_foreground, 80.0);
         kit::text_at(&cp, pos2(full.max.x - 14.0, by), Align2::RIGHT_CENTER, "7.2 of 10 GB", 11.5, t.foreground, 100.0);
         let track = Rect::from_min_size(pos2(full.min.x + 14.0, by + 10.0), vec2(inner_w - 28.0, 5.0));
         cp.rect_filled(track, 3.0, with_alpha(t.foreground, 0.08));
-        paint::gradient_rect(&cp, Rect::from_min_size(track.min, vec2(track.width() * 0.72, 5.0)), 2.5, 0.0, &[g[0], g[1]]);
+        paint::gradient_rect(
+            &cp,
+            Rect::from_min_size(track.min, vec2(track.width() * 0.72, 5.0)),
+            2.5,
+            0.0,
+            &[g[0], g[1]],
+        );
         if up_e > 0.95 {
             let btn = Rect::from_min_size(pos2(full.min.x + 12.0, full.max.y - 40.0), vec2(inner_w - 24.0, 28.0));
             if kit::button_at(ui, btn, "Upgrade plan", glowkit_components::ButtonVariant::Default).clicked() {
@@ -302,9 +415,29 @@ pub(crate) fn sidebar(ui: &mut Ui, rect: Rect, c: f32, cfg: SideCfg<'_>) -> Side
         let ac = pos2(rect.min.x + RAIL_W / 2.0, fr.center().y);
         kit::avatar(ui, Rect::from_center_size(ac, vec2(32.0, 32.0)), &user.name);
         let tw = inner_w - 64.0;
-        kit::text_at(&lp, pos2(ac.x + 24.0, fr.center().y - 8.0), Align2::LEFT_CENTER, &user.name, 13.5, t.foreground, tw);
-        kit::text_at(&lp, pos2(ac.x + 24.0, fr.center().y + 9.0), Align2::LEFT_CENTER, &user.email, 12.0, t.muted_foreground, tw);
-        UiIcon::ChevronsUpDown.paint(&lp, Rect::from_center_size(pos2(fr.max.x - 14.0, fr.center().y), vec2(15.0, 15.0)), t.muted_foreground);
+        kit::text_at(
+            &lp,
+            pos2(ac.x + 24.0, fr.center().y - 8.0),
+            Align2::LEFT_CENTER,
+            &user.name,
+            13.5,
+            t.foreground,
+            tw,
+        );
+        kit::text_at(
+            &lp,
+            pos2(ac.x + 24.0, fr.center().y + 9.0),
+            Align2::LEFT_CENTER,
+            &user.email,
+            12.0,
+            t.muted_foreground,
+            tw,
+        );
+        UiIcon::ChevronsUpDown.paint(
+            &lp,
+            Rect::from_center_size(pos2(fr.max.x - 14.0, fr.center().y), vec2(15.0, 15.0)),
+            t.muted_foreground,
+        );
         if c > 0.6 {
             Tooltip::new(user.name.clone()).placement(Placement::Right).delay(0.15).show(&resp);
         }

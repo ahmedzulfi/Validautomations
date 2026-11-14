@@ -9,7 +9,10 @@ pub(crate) fn picker(ui: &mut Ui, labels: &[&str]) -> usize {
     let id = ui.scope_id().with("variant_picker");
     let mut sel: usize = glowkit_core::state(ui, id, || 0);
     ui.vertical_centered(|ui| {
-        ui.add(glowkit_components::SegmentedControl::new(&mut sel, labels.iter().copied()).size(glowkit_components::ControlSize::Sm));
+        ui.add(
+            glowkit_components::SegmentedControl::new(&mut sel, labels.iter().copied())
+                .size(glowkit_components::ControlSize::Sm),
+        );
     });
     glowkit_core::set_state(ui, id, sel);
     ui.add_space(12.0);
@@ -325,7 +328,7 @@ if let Some(msg) = r.submitted { /* send */ }"##,
             name: "About / Story",
             category: Category::Blocks,
             description: "Company story with a timeline that draws itself in, or story paragraphs beside an illustration with a milestone strip.",
-            covers: &["MVP Blocks: About", "Tailark: About", "shadcnblocks: Timeline"],
+            covers: &["MVP Blocks: About", "Tailark: About", "shadcnblocks: Timeline", "MVP Blocks: Timeline"],
             code: r##"AboutSection::new("From side project to 1.0").milestone(Milestone::new("2024", "Founded", "Two engineers, one idea.")).show(ui);"##,
             show: |ui| {
                 let v = picker(ui, &["Timeline", "Story"]);

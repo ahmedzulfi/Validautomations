@@ -242,7 +242,7 @@ ui.add(Globe3D::new().arcs(vec![GlobeArc::new((51.5, -0.1), (40.7, -74.0))]));"#
             },
         },
         Demo {
-            id: "galaxy",
+            id: "galaxy-3d",
             name: "Galaxy",
             category: C,
             description: "A spiral galaxy of thousands of twinkling stars with differential rotation, nebula dust and a glowing core; the camera swoops through it on a cinematic path.",

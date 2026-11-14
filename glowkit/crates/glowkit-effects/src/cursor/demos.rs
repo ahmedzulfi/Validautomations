@@ -211,7 +211,7 @@ PixelTrail::new().cell(14.0).rounding(0.5).rainbow(true).brush(1).show(ui, rect)
             category: C,
             description:
                 "A custom cursor glides after the pointer on a spring, turning to face its direction of travel.",
-            covers: &["Magic UI: Smooth Cursor"],
+            covers: &["Magic UI: Smooth Cursor", "Motion Primitives: Cursor", "Magic UI: Pointer"],
             code: r##"SmoothCursor::new().size(14.0).spring(400.0, 34.0).show(ui, rect);"##,
             show: |ui| {
                 let r = stages(ui, 2, 340.0, &["Snappy", "Lazy & big"]);

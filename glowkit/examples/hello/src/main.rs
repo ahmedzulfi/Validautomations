@@ -46,7 +46,10 @@ impl eframe::App for App {
                 });
                 ui.add_space(28.0);
                 if ui.add(ShimmerButton::new("Get started")).clicked() {
-                    toast(ui.ctx(), Toast::success("Welcome to glowkit").description("You clicked the shimmer button."));
+                    toast(
+                        ui.ctx(),
+                        Toast::success("Welcome to glowkit").description("You clicked the shimmer button."),
+                    );
                 }
             });
         });

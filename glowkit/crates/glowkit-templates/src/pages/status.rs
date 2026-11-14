@@ -8,7 +8,14 @@ use glowkit_core::color::with_alpha;
 use glowkit_core::{paint, Theme};
 
 /// Full-height centered column on a background; content vertically centered.
-fn centered_page(ui: &mut Ui, p: &mut PageCtx, id: egui::Id, bg: SectionBackground, max_w: f32, add: impl FnOnce(&mut Ui, &mut Sec)) {
+fn centered_page(
+    ui: &mut Ui,
+    p: &mut PageCtx,
+    id: egui::Id,
+    bg: SectionBackground,
+    max_w: f32,
+    add: impl FnOnce(&mut Ui, &mut Sec),
+) {
     let h = p.height;
     let r = section(ui, Frame::new(id, bg).pad(48.0).min_h(h).max_w(max_w), |ui, sec| {
         let ch: f32 = glowkit_core::state(ui, id.with("ch"), || 0.0);
@@ -34,12 +41,18 @@ fn big_code(ui: &mut Ui, text: &str, sec: &Sec, glitch: bool) {
         });
         return;
     }
-    let tx = Tx::new(text).size(size).bold().align(Align::Center).gradient(&[t.gradient[0], t.gradient[1], t.gradient[2]]);
+    let tx =
+        Tx::new(text).size(size).bold().align(Align::Center).gradient(&[t.gradient[0], t.gradient[1], t.gradient[2]]);
     let g = tx.galley(ui, sec.w);
     let time = glowkit_core::time(ui);
     let bob = (time * 1.3).sin() * 6.0;
     let (r, _) = ui.allocate_exact_size(vec2(sec.w, g.size().y * 0.92), Sense::hover());
-    paint::glow_ellipse(ui.painter(), r.center() + vec2(0.0, g.size().y * 0.35), vec2(g.size().x * 0.5, 30.0), with_alpha(t.gradient[1], if t.dark { 0.25 } else { 0.12 }));
+    paint::glow_ellipse(
+        ui.painter(),
+        r.center() + vec2(0.0, g.size().y * 0.35),
+        vec2(g.size().x * 0.5, 30.0),
+        with_alpha(t.gradient[1], if t.dark { 0.25 } else { 0.12 }),
+    );
     tx.paint(ui, &g, r.min + vec2(0.0, bob - g.size().y * 0.04), r.width(), t.foreground);
     glowkit_core::animate(ui);
 }
@@ -79,7 +92,9 @@ impl NotFoundPage {
     pub fn new() -> Self {
         Self {
             title: "Lost in space".into(),
-            message: "The page you're looking for drifted out of orbit. It may have been moved, renamed or never existed.".into(),
+            message:
+                "The page you're looking for drifted out of orbit. It may have been moved, renamed or never existed."
+                    .into(),
             primary: "Go back home".into(),
             secondary: "Contact support".into(),
             search: true,
@@ -144,7 +159,13 @@ impl NotFoundPage {
                 sec.fade(ui, 1, |ui| {
                     Tx::new(&self.title).size(30.0).bold().align(Align::Center).color(t.foreground).show(ui);
                     ui.add_space(8.0);
-                    Tx::new(&self.message).size(16.0).line(1.55).align(Align::Center).max_width(520.0).color(t.muted_foreground).show(ui);
+                    Tx::new(&self.message)
+                        .size(16.0)
+                        .line(1.55)
+                        .align(Align::Center)
+                        .max_width(520.0)
+                        .color(t.muted_foreground)
+                        .show(ui);
                 });
                 if self.search {
                     ui.add_space(24.0);
@@ -152,7 +173,15 @@ impl NotFoundPage {
                     sec.fade(ui, 2, |ui| {
                         centered_column(ui, 420.0, |ui| {
                             let mut q: String = glowkit_core::state(ui, id.with("q"), String::new);
-                            let r = ui.add(Input::new(&mut q).placeholder("Search the docs...").icon(UiIcon::Search).shortcut("Enter").width(f32::INFINITY).pill(true).id_salt(id.with("search")));
+                            let r = ui.add(
+                                Input::new(&mut q)
+                                    .placeholder("Search the docs...")
+                                    .icon(UiIcon::Search)
+                                    .shortcut("Enter")
+                                    .width(f32::INFINITY)
+                                    .pill(true)
+                                    .id_salt(id.with("search")),
+                            );
                             if r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) && !q.trim().is_empty() {
                                 query = Some(q.trim().to_string());
                             }
@@ -170,7 +199,10 @@ impl NotFoundPage {
                         if ui.add(Button::new(&self.primary).icon(UiIcon::ArrowLeft).size(ControlSize::Lg)).clicked() {
                             clicked = Some(self.primary.clone());
                         }
-                        if ui.add(Button::new(&self.secondary).variant(ButtonVariant::Outline).size(ControlSize::Lg)).clicked() {
+                        if ui
+                            .add(Button::new(&self.secondary).variant(ButtonVariant::Outline).size(ControlSize::Lg))
+                            .clicked()
+                        {
                             clicked = Some(self.secondary.clone());
                         }
                     });
@@ -182,17 +214,22 @@ impl NotFoundPage {
                     grid(ui, id.with("links"), n, cols, 12.0, |ui, i, row_h| {
                         let (icon, title, desc) = &self.links[i];
                         sec.fade(ui, 4 + i, |ui| {
-                            let out = card(ui, id.with(("l", i)), CardLook::of(&t).pad(16.0).min_h(row_h).clickable(true), |ui| {
-                                ui.horizontal(|ui| {
-                                    let (r, _) = ui.allocate_exact_size(Vec2::splat(34.0), Sense::hover());
-                                    icon_tile(ui.painter(), r, *icon, t.accent, &t);
-                                    ui.vertical(|ui| {
-                                        ui.spacing_mut().item_spacing.y = 1.0;
-                                        Tx::new(title).size(14.5).semi().color(t.foreground).show_inline(ui);
-                                        Tx::new(desc).size(12.5).color(t.muted_foreground).show_inline(ui);
+                            let out = card(
+                                ui,
+                                id.with(("l", i)),
+                                CardLook::of(&t).pad(16.0).min_h(row_h).clickable(true),
+                                |ui| {
+                                    ui.horizontal(|ui| {
+                                        let (r, _) = ui.allocate_exact_size(Vec2::splat(34.0), Sense::hover());
+                                        icon_tile(ui.painter(), r, *icon, t.accent, &t);
+                                        ui.vertical(|ui| {
+                                            ui.spacing_mut().item_spacing.y = 1.0;
+                                            Tx::new(title).size(14.5).semi().color(t.foreground).show_inline(ui);
+                                            Tx::new(desc).size(12.5).color(t.muted_foreground).show_inline(ui);
+                                        });
                                     });
-                                });
-                            });
+                                },
+                            );
                             if out.response.clicked() {
                                 clicked = Some(title.clone());
                             }
@@ -241,7 +278,12 @@ impl ServerErrorPage {
             title: "Something went wrong".into(),
             message: "We hit an unexpected error on our side. Our engineers have been notified and are on it.".into(),
             incident: "INC-2026-1104".into(),
-            services: vec![("API".into(), false), ("Dashboard".into(), true), ("Authentication".into(), true), ("Webhooks".into(), true)],
+            services: vec![
+                ("API".into(), false),
+                ("Dashboard".into(), true),
+                ("Authentication".into(), true),
+                ("Webhooks".into(), true),
+            ],
             background: SectionBackground::Grid,
             opts: PageOpts::default(),
             salt: None,
@@ -286,7 +328,13 @@ impl ServerErrorPage {
                         let txt = Tx::new("Internal server error").size(12.5).semi().color(t.destructive);
                         let g = txt.galley(ui, f32::INFINITY);
                         let (r, _) = ui.allocate_exact_size(g.size() + vec2(34.0, 12.0), Sense::hover());
-                        ui.painter().rect(r, CornerRadius::same(99), with_alpha(t.destructive, 0.1), Stroke::new(1.0, with_alpha(t.destructive, 0.35)), StrokeKind::Inside);
+                        ui.painter().rect(
+                            r,
+                            CornerRadius::same(99),
+                            with_alpha(t.destructive, 0.1),
+                            Stroke::new(1.0, with_alpha(t.destructive, 0.35)),
+                            StrokeKind::Inside,
+                        );
                         let ph = (glowkit_core::time(ui) * 0.9).fract();
                         let c = pos2(r.min.x + 13.0, r.center().y);
                         ui.painter().circle_filled(c, 3.0 + 5.0 * ph, with_alpha(t.destructive, 0.4 * (1.0 - ph)));
@@ -301,7 +349,13 @@ impl ServerErrorPage {
                 sec.fade(ui, 1, |ui| {
                     Tx::new(&self.title).size(30.0).bold().align(Align::Center).color(t.foreground).show(ui);
                     ui.add_space(8.0);
-                    Tx::new(&self.message).size(16.0).line(1.55).align(Align::Center).max_width(500.0).color(t.muted_foreground).show(ui);
+                    Tx::new(&self.message)
+                        .size(16.0)
+                        .line(1.55)
+                        .align(Align::Center)
+                        .max_width(500.0)
+                        .color(t.muted_foreground)
+                        .show(ui);
                 });
                 ui.add_space(28.0);
                 let retry_at: Option<f64> = glowkit_core::state(ui, id.with("retry"), || None);
@@ -311,11 +365,27 @@ impl ServerErrorPage {
                 }
                 sec.fade(ui, 2, |ui| {
                     row(ui, id.with("btns"), Align::Center, 12.0, |ui| {
-                        if ui.add(Button::new(if loading { "Retrying..." } else { "Try again" }).size(ControlSize::Lg).loading(loading).icon(UiIcon::ArrowUpDown)).clicked() {
+                        if ui
+                            .add(
+                                Button::new(if loading { "Retrying..." } else { "Try again" })
+                                    .size(ControlSize::Lg)
+                                    .loading(loading)
+                                    .icon(UiIcon::ArrowUpDown),
+                            )
+                            .clicked()
+                        {
                             glowkit_core::set_state(ui, id.with("retry"), Some(ui.input(|i| i.time)));
                             clicked = Some("Try again".to_string());
                         }
-                        if ui.add(Button::new("Status page").variant(ButtonVariant::Outline).size(ControlSize::Lg).trailing_icon(UiIcon::ArrowRight)).clicked() {
+                        if ui
+                            .add(
+                                Button::new("Status page")
+                                    .variant(ButtonVariant::Outline)
+                                    .size(ControlSize::Lg)
+                                    .trailing_icon(UiIcon::ArrowRight),
+                            )
+                            .clicked()
+                        {
                             clicked = Some("Status page".to_string());
                         }
                     });
@@ -338,7 +408,8 @@ impl ServerErrorPage {
                                 ui.set_min_height(28.0);
                                 Tx::new(name).size(14.0).color(t.foreground).show_inline(ui);
                                 ui.with_layout(egui::Layout::right_to_left(Align::Center), |ui| {
-                                    let (c, label) = if *ok { (t.success, "Operational") } else { (t.destructive, "Degraded") };
+                                    let (c, label) =
+                                        if *ok { (t.success, "Operational") } else { (t.destructive, "Degraded") };
                                     Tx::new(label).size(13.0).color(c).show_inline(ui);
                                     let (r, _) = ui.allocate_exact_size(Vec2::splat(10.0), Sense::hover());
                                     ui.painter().circle_filled(r.center(), 4.0, c);
@@ -347,8 +418,16 @@ impl ServerErrorPage {
                                     for b in 0..24 {
                                         let x = br.min.x + b as f32 * 5.0;
                                         let bad = !*ok && b >= 21 || (b * 7 + k * 3) % 23 == 0;
-                                        let col = if bad { with_alpha(t.destructive, 0.8) } else { with_alpha(t.success, 0.7) };
-                                        ui.painter().rect_filled(Rect::from_min_size(pos2(x, br.min.y + 2.0), vec2(3.0, 14.0)), 1.0, col);
+                                        let col = if bad {
+                                            with_alpha(t.destructive, 0.8)
+                                        } else {
+                                            with_alpha(t.success, 0.7)
+                                        };
+                                        ui.painter().rect_filled(
+                                            Rect::from_min_size(pos2(x, br.min.y + 2.0), vec2(3.0, 14.0)),
+                                            1.0,
+                                            col,
+                                        );
                                     }
                                 });
                             });
@@ -422,7 +501,8 @@ impl ComingSoonPage {
         self.maintenance = on;
         if on && self.title == "Something big is coming" {
             self.title = "We'll be back soon".into();
-            self.message = "We're performing scheduled maintenance to make things faster. Thanks for your patience.".into();
+            self.message =
+                "We're performing scheduled maintenance to make things faster. Thanks for your patience.".into();
             self.seconds = 47.0 * 60.0 + 12.0;
         }
         self
@@ -458,14 +538,26 @@ impl ComingSoonPage {
                     sec.click(self.brand.clone());
                 }
                 ui.add_space(28.0);
-                let heading = Heading::new(&self.title).eyebrow(Some(if self.maintenance { "Scheduled maintenance" } else { "Launching soon" })).subtitle(Some(&self.message)).size(if sec.narrow { 34.0 } else { 52.0 });
+                let heading = Heading::new(&self.title)
+                    .eyebrow(Some(if self.maintenance { "Scheduled maintenance" } else { "Launching soon" }))
+                    .subtitle(Some(&self.message))
+                    .size(if sec.narrow { 34.0 } else { 52.0 });
                 let next = heading.show(ui, sec, 1);
                 ui.add_space(36.0);
                 sec.fade(ui, next, |ui| {
                     let units: Vec<(u64, &str)> = if self.maintenance {
-                        vec![((left / 3600.0) as u64, "Hours"), ((left / 60.0) as u64 % 60, "Minutes"), (left as u64 % 60, "Seconds")]
+                        vec![
+                            ((left / 3600.0) as u64, "Hours"),
+                            ((left / 60.0) as u64 % 60, "Minutes"),
+                            (left as u64 % 60, "Seconds"),
+                        ]
                     } else {
-                        vec![((left / 86400.0) as u64, "Days"), ((left / 3600.0) as u64 % 24, "Hours"), ((left / 60.0) as u64 % 60, "Minutes"), (left as u64 % 60, "Seconds")]
+                        vec![
+                            ((left / 86400.0) as u64, "Days"),
+                            ((left / 3600.0) as u64 % 24, "Hours"),
+                            ((left / 60.0) as u64 % 60, "Minutes"),
+                            (left as u64 % 60, "Seconds"),
+                        ]
                     };
                     let frac = left.fract() as f32;
                     countdown(ui, &units, frac, &t, sec.narrow);
@@ -477,7 +569,11 @@ impl ComingSoonPage {
                             ui.horizontal(|ui| {
                                 Tx::new("Upgrading databases").size(13.5).color(t.muted_foreground).show_inline(ui);
                                 ui.with_layout(egui::Layout::right_to_left(Align::Center), |ui| {
-                                    Tx::new(format!("{}%", (self.progress * 100.0).round())).size(13.5).semi().color(t.foreground).show_inline(ui);
+                                    Tx::new(format!("{}%", (self.progress * 100.0).round()))
+                                        .size(13.5)
+                                        .semi()
+                                        .color(t.foreground)
+                                        .show_inline(ui);
                                 });
                             });
                             ui.add(Progress::new(self.progress));
@@ -487,7 +583,14 @@ impl ComingSoonPage {
                     let mut sent = None;
                     sec.fade(ui, next + 1, |ui| {
                         centered_column(ui, 440.0, |ui| {
-                            sent = email_form(ui, id.with("notify"), "you@company.com", "Notify me", "Thanks! We'll email you on launch day.", false);
+                            sent = email_form(
+                                ui,
+                                id.with("notify"),
+                                "you@company.com",
+                                "Notify me",
+                                "Thanks! We'll email you on launch day.",
+                                false,
+                            );
                         });
                     });
                     if sent.is_some() {
@@ -526,7 +629,14 @@ fn countdown(ui: &mut Ui, units: &[(u64, &str)], frac: f32, t: &Theme, narrow: b
     let font = FontId::proportional(bw * 0.42);
     for (k, (v, label)) in units.iter().enumerate() {
         let r = Rect::from_min_size(pos2(x0 + k as f32 * (bw + gap), row_r.min.y), vec2(bw, bh));
-        paint::soft_shadow(painter, r, 14.0, 20.0, vec2(0.0, 8.0), with_alpha(Color32::BLACK, if t.dark { 0.4 } else { 0.1 }));
+        paint::soft_shadow(
+            painter,
+            r,
+            14.0,
+            20.0,
+            vec2(0.0, 8.0),
+            with_alpha(Color32::BLACK, if t.dark { 0.4 } else { 0.1 }),
+        );
         let fill = if t.dark { with_alpha(t.card, 0.85) } else { with_alpha(t.card, 0.92) };
         painter.rect(r, CornerRadius::same(14), fill, Stroke::new(1.0, t.border), StrokeKind::Inside);
         painter.hline(r.shrink(1.0).x_range(), r.center().y, Stroke::new(1.0, with_alpha(t.border, 0.6)));
@@ -549,7 +659,13 @@ fn countdown(ui: &mut Ui, units: &[(u64, &str)], frac: f32, t: &Theme, narrow: b
         } else {
             draw(&cur, 0.0, 1.0);
         }
-        painter.text(pos2(r.center().x, r.max.y + 14.0), egui::Align2::CENTER_CENTER, label.to_uppercase(), FontId::proportional(11.0), t.muted_foreground);
+        painter.text(
+            pos2(r.center().x, r.max.y + 14.0),
+            egui::Align2::CENTER_CENTER,
+            label.to_uppercase(),
+            FontId::proportional(11.0),
+            t.muted_foreground,
+        );
     }
 }
 
@@ -662,13 +778,25 @@ impl ThankYouPage {
                 let ring = glowkit_core::ease(glowkit_core::Easing::OutCubic, (k / 0.6).min(1.0));
                 paint::glow(painter, c, 90.0, with_alpha(t.success, 0.18 * ring));
                 painter.circle_filled(c, 44.0 * ring, with_alpha(t.success, 0.14));
-                paint::arc(painter, c, 34.0, -std::f32::consts::FRAC_PI_2, -std::f32::consts::FRAC_PI_2 + std::f32::consts::TAU * ring, 3.0, t.success);
+                paint::arc(
+                    painter,
+                    c,
+                    34.0,
+                    -std::f32::consts::FRAC_PI_2,
+                    -std::f32::consts::FRAC_PI_2 + std::f32::consts::TAU * ring,
+                    3.0,
+                    t.success,
+                );
                 let ck = ((k - 0.5) / 0.5).clamp(0.0, 1.0);
                 if ck > 0.0 {
                     let a = c + vec2(-14.0, 1.0);
                     let b = c + vec2(-4.0, 11.0);
                     let e = c + vec2(15.0, -10.0);
-                    let pts = if ck < 0.4 { vec![a, a + (b - a) * (ck / 0.4)] } else { vec![a, b, b + (e - b) * ((ck - 0.4) / 0.6)] };
+                    let pts = if ck < 0.4 {
+                        vec![a, a + (b - a) * (ck / 0.4)]
+                    } else {
+                        vec![a, b, b + (e - b) * ((ck - 0.4) / 0.6)]
+                    };
                     painter.add(Shape::line(pts, Stroke::new(4.0, t.success)));
                 }
                 if self.confetti {
@@ -689,7 +817,11 @@ impl ThankYouPage {
                             ui.horizontal(|ui| {
                                 Tx::new("Order summary").size(15.0).semi().color(t.foreground).show_inline(ui);
                                 ui.with_layout(egui::Layout::right_to_left(Align::Center), |ui| {
-                                    Tx::new(&self.reference).size(13.0).mono().color(t.muted_foreground).show_inline(ui);
+                                    Tx::new(&self.reference)
+                                        .size(13.0)
+                                        .mono()
+                                        .color(t.muted_foreground)
+                                        .show_inline(ui);
                                 });
                             });
                             ui.add_space(10.0);
@@ -697,7 +829,10 @@ impl ThankYouPage {
                                 ui.horizontal(|ui| {
                                     Tx::new(label).size(14.0).color(t.muted_foreground).show_inline(ui);
                                     ui.with_layout(egui::Layout::right_to_left(Align::Center), |ui| {
-                                        Tx::new(amount).size(14.0).color(if amount.starts_with('-') { t.success } else { t.foreground }).show_inline(ui);
+                                        Tx::new(amount)
+                                            .size(14.0)
+                                            .color(if amount.starts_with('-') { t.success } else { t.foreground })
+                                            .show_inline(ui);
                                     });
                                 });
                                 ui.add_space(2.0);
@@ -735,10 +870,28 @@ impl ThankYouPage {
                     let w = (ui.available_width() - 12.0) / 2.0;
                     ui.horizontal(|ui| {
                         ui.spacing_mut().item_spacing.x = 12.0;
-                        if ui.add(Button::new(&self.secondary).variant(ButtonVariant::Outline).size(ControlSize::Lg).icon(UiIcon::Download).width(w)).clicked() {
+                        if ui
+                            .add(
+                                Button::new(&self.secondary)
+                                    .variant(ButtonVariant::Outline)
+                                    .size(ControlSize::Lg)
+                                    .icon(UiIcon::Download)
+                                    .width(w),
+                            )
+                            .clicked()
+                        {
                             clicked = Some(self.secondary.clone());
                         }
-                        if ui.add(Button::new(&self.primary).size(ControlSize::Lg).fill(t.accent).trailing_icon(UiIcon::ArrowRight).width(w)).clicked() {
+                        if ui
+                            .add(
+                                Button::new(&self.primary)
+                                    .size(ControlSize::Lg)
+                                    .fill(t.accent)
+                                    .trailing_icon(UiIcon::ArrowRight)
+                                    .width(w),
+                            )
+                            .clicked()
+                        {
                             clicked = Some(self.primary.clone());
                         }
                     });

@@ -104,7 +104,7 @@ ui.add(Markdown::new(&partial).caret(true).fade_tail(24));"##,
             name: "Streaming Response",
             category: C,
             description: "Reveals a response token by token with a per-token fade and a blinking caret; works for plain text or live Markdown.",
-            covers: &["Vercel AI Elements: Response", "prompt-kit: Response Stream", "Kibo UI: AI Response", "llm-ui: Streaming"],
+            covers: &["Vercel AI Elements: Response", "prompt-kit: Response Stream", "Kibo UI: AI Response", "llm-ui: Streaming", "ElevenLabs UI: Response"],
             code: r##"ui.add(StreamingText::new(text).tokens_per_second(14.0));
 ui.add(StreamingText::new(markdown).markdown(true).progress(p));"##,
             show: |ui| column(ui, 720.0, |ui| {
@@ -125,7 +125,7 @@ ui.add(StreamingText::new(markdown).markdown(true).progress(p));"##,
             name: "Chat Message",
             category: C,
             description: "User bubbles on the right, assistant answers on the left with an avatar, hover-revealed actions and a branch switcher.",
-            covers: &["Vercel AI Elements: Message", "Vercel AI Elements: Actions", "Vercel AI Elements: Branch", "prompt-kit: Message", "assistant-ui: Message", "assistant-ui: Branch Picker", "shadcn-chatbot-kit: Chat Message"],
+            covers: &["Vercel AI Elements: Message", "Vercel AI Elements: Actions", "Vercel AI Elements: Branch", "prompt-kit: Message", "assistant-ui: Message", "assistant-ui: Branch Picker", "shadcn-chatbot-kit: Chat Message", "prompt-kit: Feedback Bar", "ElevenLabs UI: Message"],
             code: r##"ui.add(ChatMessage::new(Role::User, "Can you explain closures?").timestamp("2:14 PM"));
 let out = ChatMessage::new(Role::Assistant, answer)
     .name("Assistant").timestamp("2:14 PM")
@@ -160,7 +160,7 @@ let out = ChatMessage::new(Role::Assistant, answer)
             name: "Conversation",
             category: C,
             description: "A scroll area that sticks to the bottom as messages stream in; scroll up and a floating button glides you back down.",
-            covers: &["Vercel AI Elements: Conversation", "prompt-kit: Chat Container", "prompt-kit: Scroll Button", "assistant-ui: Thread Viewport"],
+            covers: &["Vercel AI Elements: Conversation", "prompt-kit: Chat Container", "prompt-kit: Scroll Button", "assistant-ui: Thread Viewport", "ElevenLabs UI: Conversation"],
             code: r##"Conversation::new().height(400.0).fade_edges(bg).show(ui, |ui| {
     for m in &messages { ui.add(ChatMessage::new(m.role, &m.text)); }
 });"##,
@@ -276,7 +276,7 @@ if out.stop { cancel(); }"##,
             name: "Reasoning & Chain of Thought",
             category: C,
             description: "A collapsible \"Thinking…\" block that shimmers while streaming and folds to \"Thought for 4s\", plus a step timeline with icons and connectors.",
-            covers: &["Vercel AI Elements: Reasoning", "Vercel AI Elements: Chain of Thought", "prompt-kit: Reasoning", "prompt-kit: Thinking Bar", "assistant-ui: Reasoning"],
+            covers: &["Vercel AI Elements: Reasoning", "Vercel AI Elements: Chain of Thought", "prompt-kit: Reasoning", "prompt-kit: Thinking Bar", "assistant-ui: Reasoning", "prompt-kit: Steps"],
             code: r##"ui.add(Reasoning::new(&thoughts).streaming(still_thinking));
 ui.add(ChainOfThought::new(vec![
     ThoughtStep::new(Icon::Search, "Searching the web").chips(&["rust-lang.org"]),
@@ -353,7 +353,7 @@ ui.horizontal_wrapped(|ui| {
             name: "AI Loaders",
             category: C,
             description: "Typing indicator and loader variants for model activity: dots, typing, pulse, wave, circular, bars, text shimmer and text blink.",
-            covers: &["prompt-kit: Loader", "prompt-kit: Text Shimmer", "Vercel AI Elements: Loader", "Vercel AI Elements: Shimmer", "shadcn-chatbot-kit: Typing Indicator", "Kibo UI: AI Loader"],
+            covers: &["prompt-kit: Loader", "prompt-kit: Text Shimmer", "Vercel AI Elements: Loader", "Vercel AI Elements: Shimmer", "shadcn-chatbot-kit: Typing Indicator", "Kibo UI: AI Loader", "ElevenLabs UI: Shimmering Text"],
             code: r##"ui.add(TypingIndicator::new().bubble(true));
 ui.add(Loader::new(LoaderKind::Wave));
 ui.add(ShimmerText::new("Thinking…"));"##,
@@ -645,7 +645,7 @@ if ui.add(VoiceButton::new(listening).amplitude(mic_level)).clicked() {
             name: "Model Selector & Checkpoint",
             category: C,
             description: "A model picker pill with provider badges and a dropdown, plus a \"Restore checkpoint\" conversation divider.",
-            covers: &["Vercel AI Elements: Model Selector", "Vercel AI Elements: Checkpoint", "prompt-kit: Model Selector", "assistant-ui: Model Picker"],
+            covers: &["Vercel AI Elements: Model Selector", "Vercel AI Elements: Checkpoint", "prompt-kit: Model Selector", "assistant-ui: Model Picker", "ElevenLabs UI: Voice Picker"],
             code: r##"ui.add(ModelSelector::new(&models, &mut selected));
 if ui.add(Checkpoint::new().time("2 min ago")).clicked() { restore(); }"##,
             show: |ui| column(ui, 640.0, |ui| {

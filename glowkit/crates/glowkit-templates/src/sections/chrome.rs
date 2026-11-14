@@ -104,7 +104,11 @@ impl HeaderSection {
     pub fn show(self, ui: &mut Ui) -> SectionResponse {
         let id = section_id(ui, "header", &self.salt);
         let floating = self.layout == HeaderLayout::Floating;
-        let frame = Frame::new(id, self.background).pad(if floating { 16.0 } else { 0.0 }).max_w(if floating { 860.0 } else { SECTION_MAX_WIDTH });
+        let frame = Frame::new(id, self.background).pad(if floating { 16.0 } else { 0.0 }).max_w(if floating {
+            860.0
+        } else {
+            SECTION_MAX_WIDTH
+        });
         section(ui, frame, |ui, sec| {
             let t = sec.t.clone();
             let narrow = sec.w < 760.0;
@@ -114,22 +118,50 @@ impl HeaderSection {
             let (bar, _) = ui.allocate_exact_size(vec2(ui.available_width(), h), Sense::hover());
             let painter = ui.painter().clone();
             if floating {
-                paint::soft_shadow(&painter, bar, h / 2.0, 24.0, vec2(0.0, 8.0), with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.1 }));
+                paint::soft_shadow(
+                    &painter,
+                    bar,
+                    h / 2.0,
+                    24.0,
+                    vec2(0.0, 8.0),
+                    with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.1 }),
+                );
                 let fill = if t.dark { mix(t.card, t.popover, 0.5) } else { t.card };
-                painter.rect(bar, CornerRadius::same((h / 2.0) as u8), with_alpha(fill, 0.92), Stroke::new(1.0, t.border), StrokeKind::Inside);
+                painter.rect(
+                    bar,
+                    CornerRadius::same((h / 2.0) as u8),
+                    with_alpha(fill, 0.92),
+                    Stroke::new(1.0, t.border),
+                    StrokeKind::Inside,
+                );
             } else {
-                ui.painter().with_clip_rect(ui.clip_rect()).hline(sec.full_x, bar.max.y - 0.5, Stroke::new(1.0, t.border));
+                ui.painter().with_clip_rect(ui.clip_rect()).hline(
+                    sec.full_x,
+                    bar.max.y - 0.5,
+                    Stroke::new(1.0, t.border),
+                );
             }
             let inner = bar.shrink2(vec2(if floating { 10.0 } else { 0.0 }, 0.0));
             let mut clicked: Option<String> = None;
             // brand
-            let mut left = ui.new_child(egui::UiBuilder::new().max_rect(Rect::from_min_size(inner.min + vec2(if floating { 8.0 } else { 0.0 }, 0.0), vec2(220.0, h))).layout(egui::Layout::left_to_right(Align::Center)));
+            let mut left = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(Rect::from_min_size(
+                        inner.min + vec2(if floating { 8.0 } else { 0.0 }, 0.0),
+                        vec2(220.0, h),
+                    ))
+                    .layout(egui::Layout::left_to_right(Align::Center)),
+            );
             if brand(&mut left, &self.brand, 16.0).clicked() {
                 clicked = Some(self.brand.clone());
             }
             let brand_right = left.min_rect().max.x;
             // right side
-            let mut right = ui.new_child(egui::UiBuilder::new().max_rect(Rect::from_min_max(pos2(inner.center().x, inner.min.y), inner.max)).layout(egui::Layout::right_to_left(Align::Center)));
+            let mut right = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(Rect::from_min_max(pos2(inner.center().x, inner.min.y), inner.max))
+                    .layout(egui::Layout::right_to_left(Align::Center)),
+            );
             right.spacing_mut().item_spacing.x = 8.0;
             if narrow {
                 let icon = if open { UiIcon::X } else { UiIcon::List };
@@ -154,7 +186,12 @@ impl HeaderSection {
             // links
             if !narrow && !self.links.is_empty() {
                 let gap = 4.0;
-                let widths: Vec<f32> = self.links.iter().enumerate().map(|(i, l)| link_w(ui, l, self.badge.as_ref().filter(|b| b.0 == i).map(|b| b.1.as_str()))).collect();
+                let widths: Vec<f32> = self
+                    .links
+                    .iter()
+                    .enumerate()
+                    .map(|(i, l)| link_w(ui, l, self.badge.as_ref().filter(|b| b.0 == i).map(|b| b.1.as_str())))
+                    .collect();
                 let total: f32 = widths.iter().sum::<f32>() + gap * (widths.len() as f32 - 1.0);
                 let x0 = match self.layout {
                     HeaderLayout::Left => brand_right + 28.0,
@@ -177,11 +214,16 @@ impl HeaderSection {
                 let cw = glowkit_core::anim::spring(ui, id.with("hlw"), goal.width(), 400.0, 32.0);
                 if vis > 0.0 {
                     let hr = Rect::from_center_size(pos2(cx, goal.center().y), vec2(cw, 32.0));
-                    painter.rect_filled(hr, CornerRadius::same(if floating { 16 } else { 8 }), with_alpha(t.foreground, (if t.dark { 0.07 } else { 0.05 }) * vis));
+                    painter.rect_filled(
+                        hr,
+                        CornerRadius::same(if floating { 16 } else { 8 }),
+                        with_alpha(t.foreground, (if t.dark { 0.07 } else { 0.05 }) * vis),
+                    );
                 }
                 for (i, l) in self.links.iter().enumerate() {
                     let r = rects[i];
-                    let resp = ui.interact(r, id.with(("link", i)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
+                    let resp =
+                        ui.interact(r, id.with(("link", i)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
                     let hv = ui.ctx().animate_bool_with_time(resp.id, resp.hovered() || active == i, 0.15);
                     let col = t.muted_foreground.lerp_to_gamma(t.foreground, hv);
                     let tx = Tx::new(l).size(14.0);
@@ -190,12 +232,19 @@ impl HeaderSection {
                     if let Some((_, b)) = self.badge.as_ref().filter(|b| b.0 == i) {
                         let bt = Tx::new(b).size(10.5).semi().color(t.accent);
                         let bg = bt.galley(ui, f32::INFINITY);
-                        let br = Rect::from_min_size(pos2(r.min.x + 12.0 + g.size().x + 6.0, r.center().y - bg.size().y / 2.0 - 2.0), bg.size() + vec2(10.0, 4.0));
+                        let br = Rect::from_min_size(
+                            pos2(r.min.x + 12.0 + g.size().x + 6.0, r.center().y - bg.size().y / 2.0 - 2.0),
+                            bg.size() + vec2(10.0, 4.0),
+                        );
                         painter.rect_filled(br, CornerRadius::same(99), with_alpha(t.accent, 0.14));
                         bt.paint(ui, &bg, br.min + vec2(5.0, 2.0), bg.size().x, t.accent);
                     }
                     if active == i && !floating {
-                        painter.hline(r.min.x + 12.0..=r.min.x + 12.0 + g.size().x, bar.max.y - 1.0, Stroke::new(2.0, t.accent));
+                        painter.hline(
+                            r.min.x + 12.0..=r.min.x + 12.0 + g.size().x,
+                            bar.max.y - 1.0,
+                            Stroke::new(2.0, t.accent),
+                        );
                     } else if active == i {
                         painter.circle_filled(pos2(r.min.x + 12.0 + g.size().x / 2.0, r.max.y + 1.0), 2.0, t.accent);
                     }
@@ -215,10 +264,24 @@ impl HeaderSection {
                             let (r, resp) = ui.allocate_exact_size(vec2(ui.available_width(), 40.0), Sense::click());
                             let hv = ui.ctx().animate_bool_with_time(resp.id, resp.hovered(), 0.12);
                             if hv > 0.0 || active == i {
-                                ui.painter().rect_filled(r, CornerRadius::same(8), with_alpha(t.foreground, 0.05 * hv.max(if active == i { 1.0 } else { 0.0 })));
+                                ui.painter().rect_filled(
+                                    r,
+                                    CornerRadius::same(8),
+                                    with_alpha(t.foreground, 0.05 * hv.max(if active == i { 1.0 } else { 0.0 })),
+                                );
                             }
-                            ui.painter().text(r.left_center() + vec2(12.0, 0.0), egui::Align2::LEFT_CENTER, l, egui::FontId::proportional(15.0), if active == i { t.foreground } else { t.muted_foreground });
-                            UiIcon::ChevronRight.paint(ui.painter(), Rect::from_center_size(r.right_center() - vec2(16.0, 0.0), Vec2::splat(14.0)), with_alpha(t.muted_foreground, 0.6));
+                            ui.painter().text(
+                                r.left_center() + vec2(12.0, 0.0),
+                                egui::Align2::LEFT_CENTER,
+                                l,
+                                egui::FontId::proportional(15.0),
+                                if active == i { t.foreground } else { t.muted_foreground },
+                            );
+                            UiIcon::ChevronRight.paint(
+                                ui.painter(),
+                                Rect::from_center_size(r.right_center() - vec2(16.0, 0.0), Vec2::splat(14.0)),
+                                with_alpha(t.muted_foreground, 0.6),
+                            );
                             if resp.clicked() {
                                 active = i;
                                 open = false;
@@ -250,7 +313,9 @@ impl HeaderSection {
 
 fn link_w(ui: &Ui, l: &str, badge: Option<&str>) -> f32 {
     let g = ui.painter().layout_no_wrap(l.to_owned(), egui::FontId::proportional(14.0), Color32::WHITE);
-    let b = badge.map_or(0.0, |b| ui.painter().layout_no_wrap(b.to_owned(), egui::FontId::proportional(10.5), Color32::WHITE).size().x + 16.0);
+    let b = badge.map_or(0.0, |b| {
+        ui.painter().layout_no_wrap(b.to_owned(), egui::FontId::proportional(10.5), Color32::WHITE).size().x + 16.0
+    });
     g.size().x + 24.0 + b
 }
 
@@ -298,8 +363,14 @@ impl FooterSection {
             brand,
             tagline: "Beautiful, animated interfaces for Rust. Native and on the web.".into(),
             columns: vec![
-                ("Product".into(), ["Features", "Pricing", "Changelog", "Roadmap"].iter().map(|s| s.to_string()).collect()),
-                ("Resources".into(), ["Documentation", "Guides", "Blog", "Templates"].iter().map(|s| s.to_string()).collect()),
+                (
+                    "Product".into(),
+                    ["Features", "Pricing", "Changelog", "Roadmap"].iter().map(|s| s.to_string()).collect(),
+                ),
+                (
+                    "Resources".into(),
+                    ["Documentation", "Guides", "Blog", "Templates"].iter().map(|s| s.to_string()).collect(),
+                ),
                 ("Company".into(), ["About", "Careers", "Press", "Contact"].iter().map(|s| s.to_string()).collect()),
             ],
             socials: vec![SectionSocial::X, SectionSocial::GitHub, SectionSocial::Discord, SectionSocial::YouTube],
@@ -317,7 +388,12 @@ impl FooterSection {
     }
     /// Add a link column (the first call replaces the defaults).
     pub fn column(mut self, title: impl Into<String>, links: &[&str]) -> Self {
-        if self.columns.first().is_some_and(|c| c.0 == "Product" && c.1.first().is_some_and(|l| l == "Features") && c.1.len() == 4 && self.columns.len() == 3) {
+        if self.columns.first().is_some_and(|c| {
+            c.0 == "Product"
+                && c.1.first().is_some_and(|l| l == "Features")
+                && c.1.len() == 4
+                && self.columns.len() == 3
+        }) {
             self.columns.clear();
         }
         self.columns.push((title.into(), links.iter().map(|s| s.to_string()).collect()));
@@ -403,10 +479,20 @@ impl FooterSection {
                             true,
                             |ui| {
                                 Tx::new("Stay in the loop").size(22.0).bold().color(t.foreground).show(ui);
-                                Tx::new("New components and templates, once a month.").size(14.5).color(t.muted_foreground).show(ui);
+                                Tx::new("New components and templates, once a month.")
+                                    .size(14.5)
+                                    .color(t.muted_foreground)
+                                    .show(ui);
                             },
                             |ui| {
-                                if let Some(e) = email_form(ui, id.with("nlform"), "you@company.com", "Subscribe", "Thanks! You're subscribed.", false) {
+                                if let Some(e) = email_form(
+                                    ui,
+                                    id.with("nlform"),
+                                    "you@company.com",
+                                    "Subscribe",
+                                    "Thanks! You're subscribed.",
+                                    false,
+                                ) {
                                     sec.submitted = Some(e);
                                 }
                             },
@@ -428,7 +514,12 @@ impl FooterSection {
                                 clicked = Some(self.brand.clone());
                             }
                             ui.add_space(12.0);
-                            Tx::new(&self.tagline).size(14.0).line(1.55).max_width(300.0).color(t.muted_foreground).show(ui);
+                            Tx::new(&self.tagline)
+                                .size(14.0)
+                                .line(1.55)
+                                .max_width(300.0)
+                                .color(t.muted_foreground)
+                                .show(ui);
                             ui.add_space(20.0);
                             socials(ui, &mut clicked);
                         },
@@ -485,7 +576,15 @@ impl FooterSection {
                         let mut clip = clip;
                         clip.set_clip_rect(r.intersect(ui.clip_rect()));
                         tx.paint(&clip, &g, r.min, r.width(), top);
-                        paint::fade_edges_vertical(&ui.painter_at(r), Rect::from_min_max(pos2(r.min.x, r.max.y - r.height() * 0.9), r.max + vec2(0.0, r.height() * 0.9)), r.height() * 0.9, if self.background == SectionBackground::Muted { muted_band(&t) } else { t.background });
+                        paint::fade_edges_vertical(
+                            &ui.painter_at(r),
+                            Rect::from_min_max(
+                                pos2(r.min.x, r.max.y - r.height() * 0.9),
+                                r.max + vec2(0.0, r.height() * 0.9),
+                            ),
+                            r.height() * 0.9,
+                            if self.background == SectionBackground::Muted { muted_band(&t) } else { t.background },
+                        );
                     }
                 }
                 FooterLayout::Simple => {
@@ -496,7 +595,15 @@ impl FooterSection {
                     });
                     ui.add_space(20.0);
                     let all: Vec<&String> = self.columns.iter().flat_map(|c| c.1.iter()).take(7).collect();
-                    let widths: Vec<f32> = all.iter().map(|l| ui.painter().layout_no_wrap((*l).clone(), egui::FontId::proportional(14.0), Color32::WHITE).size().x).collect();
+                    let widths: Vec<f32> = all
+                        .iter()
+                        .map(|l| {
+                            ui.painter()
+                                .layout_no_wrap((*l).clone(), egui::FontId::proportional(14.0), Color32::WHITE)
+                                .size()
+                                .x
+                        })
+                        .collect();
                     wrap_rows(ui, &widths, 20.0, 28.0, 10.0, Align::Center, |ui, i| {
                         if link(ui, all[i], 14.0, t.muted_foreground, t.foreground).clicked() {
                             clicked = Some(all[i].clone());
@@ -567,7 +674,14 @@ pub struct AnnouncementBar {
 impl AnnouncementBar {
     /// A bar with a message.
     pub fn new(text: impl Into<String>) -> Self {
-        Self { text: text.into(), link: None, style: AnnouncementStyle::Gradient, dismissible: true, icon: UiIcon::Sparkles, salt: None }
+        Self {
+            text: text.into(),
+            link: None,
+            style: AnnouncementStyle::Gradient,
+            dismissible: true,
+            icon: UiIcon::Sparkles,
+            salt: None,
+        }
     }
     /// Link label after the message.
     pub fn link(mut self, l: impl Into<String>) -> Self {
@@ -632,18 +746,30 @@ impl AnnouncementBar {
                     (t.foreground, t.accent)
                 }
             };
-            let mut child = ui.new_child(egui::UiBuilder::new().max_rect(rect.translate(vec2(0.0, h - full_h))).layout(egui::Layout::left_to_right(Align::Center)));
+            let mut child = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(rect.translate(vec2(0.0, h - full_h)))
+                    .layout(egui::Layout::left_to_right(Align::Center)),
+            );
             child.set_clip_rect(rect.intersect(ui.clip_rect()));
             child.multiply_opacity(k);
-            let msg_w = child.painter().layout_no_wrap(self.text.clone(), egui::FontId::proportional(13.5), fg).size().x;
-            let link_w = self.link.as_ref().map_or(0.0, |l| child.painter().layout_no_wrap(l.clone(), egui::FontId::proportional(13.5), fg).size().x + 30.0);
+            let msg_w =
+                child.painter().layout_no_wrap(self.text.clone(), egui::FontId::proportional(13.5), fg).size().x;
+            let link_w = self.link.as_ref().map_or(0.0, |l| {
+                child.painter().layout_no_wrap(l.clone(), egui::FontId::proportional(13.5), fg).size().x + 30.0
+            });
             let total = 22.0 + msg_w + link_w;
             child.add_space(((rect.width() - total) / 2.0).max(12.0));
             let (ir, _) = child.allocate_exact_size(Vec2::splat(15.0), Sense::hover());
             self.icon.paint(child.painter(), ir, fg);
             child.add_space(2.0);
             if self.style == AnnouncementStyle::Subtle {
-                child.add(glowkit_text::ShinyText::new(&self.text).size(13.5).color(t.muted_foreground).shine_color(t.foreground));
+                child.add(
+                    glowkit_text::ShinyText::new(&self.text)
+                        .size(13.5)
+                        .color(t.muted_foreground)
+                        .shine_color(t.foreground),
+                );
             } else {
                 Tx::new(&self.text).size(13.5).color(fg).show_inline(&mut child);
             }
@@ -651,13 +777,20 @@ impl AnnouncementBar {
                 child.add_space(8.0);
                 let r = link(&mut child, l, 13.5, link_col, link_col);
                 let (ar, _) = child.allocate_exact_size(Vec2::splat(13.0), Sense::hover());
-                UiIcon::ArrowRight.paint(child.painter(), ar.translate(vec2(if r.hovered() { 2.0 } else { 0.0 }, 0.0)), link_col);
+                UiIcon::ArrowRight.paint(
+                    child.painter(),
+                    ar.translate(vec2(if r.hovered() { 2.0 } else { 0.0 }, 0.0)),
+                    link_col,
+                );
                 if r.clicked() {
                     clicked = Some(l.clone());
                 }
             }
             if self.dismissible {
-                let cr = Rect::from_center_size(pos2(rect.max.x - 22.0, rect.center().y + (h - full_h) / 2.0), Vec2::splat(24.0));
+                let cr = Rect::from_center_size(
+                    pos2(rect.max.x - 22.0, rect.center().y + (h - full_h) / 2.0),
+                    Vec2::splat(24.0),
+                );
                 let resp = ui.interact(cr, id.with("x"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
                 if resp.hovered() {
                     painter.rect_filled(cr, CornerRadius::same(6), with_alpha(fg, 0.15));

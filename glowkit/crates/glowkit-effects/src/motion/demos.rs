@@ -148,7 +148,7 @@ pub fn all() -> Vec<Demo> {
             name: "Dock",
             category: C,
             description: "A macOS-style dock: icons magnify around the pointer, show a label and bounce when clicked.",
-            covers: &["Magic UI: Dock", "React Bits: Dock", "Aceternity: Floating Dock"],
+            covers: &["Magic UI: Dock", "React Bits: Dock", "Aceternity: Floating Dock", "Motion Primitives: Dock"],
             code: r##"let items = [DockItem::new("🏠", "Home").active(true), DockItem::new("✉", "Mail")];
 let r = Dock::new(&items).magnification(1.75).show(ui);
 if let Some(i) = r.clicked { /* open items[i] */ }"##,
@@ -166,7 +166,7 @@ if let Some(i) = r.clicked { /* open items[i] */ }"##,
             name: "Marquee",
             category: C,
             description: "Infinite scrolling strips of any content with faded edges; hover to pause, reverse for variety.",
-            covers: &["Magic UI: Marquee", "React Bits: Logo Loop", "Aceternity: Infinite Moving Cards"],
+            covers: &["Magic UI: Marquee", "React Bits: Logo Loop", "Aceternity: Infinite Moving Cards", "Motion Primitives: Infinite Slider"],
             code: r##"Marquee::new().speed(50.0).pause_on_hover(true).show(ui, |ui| {
     for name in ["Rust", "egui", "WebAssembly"] {
         ui.label(name);
@@ -217,7 +217,7 @@ if let Some(i) = r.clicked { /* open items[i] */ }"##,
             name: "Stack",
             category: C,
             description: "A draggable card stack: fling the top card away and it tucks itself in at the back.",
-            covers: &["React Bits: Stack", "Tinder-style swipe cards"],
+            covers: &["React Bits: Stack", "Tinder-style swipe cards", "Aceternity UI: Card Stack"],
             code: r##"let faces = [CardFace::new("🌊", "Ocean"), CardFace::new("🌅", "Sunset")];
 ui.add(StackCards::new(&faces).card_size(vec2(200.0, 260.0)));"##,
             show: |ui| {
@@ -262,7 +262,7 @@ ui.add(StackCards::new(&faces).card_size(vec2(200.0, 260.0)));"##,
             name: "Carousel",
             category: C,
             description: "Drag or swipe between items that snap into place on a spring; neighbors peek in and dots track position.",
-            covers: &["React Bits: Carousel", "Embla-style carousel"],
+            covers: &["React Bits: Carousel", "Embla-style carousel", "Motion Primitives: Carousel", "Aceternity UI: Carousel", "shadcn/ui: Carousel"],
             code: r##"Carousel::new(5).autoplay(3.0).looping(true).show(ui, |ui, i| {
     ui.heading(format!("Slide {i}"));
 });"##,
@@ -324,7 +324,7 @@ ui.add(StackCards::new(&faces).card_size(vec2(200.0, 260.0)));"##,
             },
         },
         Demo {
-            id: "stepper",
+            id: "animated-stepper",
             name: "Stepper",
             category: C,
             description: "A multi-step flow with animated indicators, sliding step content and a height that springs to fit.",
@@ -403,7 +403,7 @@ ui.add(AnimatedTabs::new(&mut tab, &labels).style(TabHighlight::Underline));"##,
             name: "Expandable Card",
             category: C,
             description: "Compact cards grow in place into a detail panel over a dimmed backdrop, and shrink back on close.",
-            covers: &["Aceternity: Expandable Card", "Framer Motion: shared layout"],
+            covers: &["Aceternity: Expandable Card", "Framer Motion: shared layout", "Motion Primitives: Morphing Dialog"],
             code: r##"let items = [ExpandableItem::new("🎧", "Lo-fi Beats", "Chillhop").body("…").action("Play")];
 ui.add(ExpandableCard::new(&items));"##,
             show: |ui| {

@@ -47,7 +47,9 @@ pub enum FeatureVisual {
 impl FeatureVisual {
     fn resolve(self, i: usize) -> Self {
         match self {
-            FeatureVisual::Auto => [Self::Chart, Self::Orbit, Self::Code, Self::Bars, Self::Pulse, Self::Toggles][i % 6],
+            FeatureVisual::Auto => {
+                [Self::Chart, Self::Orbit, Self::Code, Self::Bars, Self::Pulse, Self::Toggles][i % 6]
+            }
             v => v,
         }
     }
@@ -71,7 +73,13 @@ pub struct FeatureItem {
 impl FeatureItem {
     /// A feature with an icon, title and description.
     pub fn new(icon: UiIcon, title: impl Into<String>, description: impl Into<String>) -> Self {
-        Self { icon, title: title.into(), description: description.into(), bullets: Vec::new(), visual: FeatureVisual::Auto }
+        Self {
+            icon,
+            title: title.into(),
+            description: description.into(),
+            bullets: Vec::new(),
+            visual: FeatureVisual::Auto,
+        }
     }
     /// Add checklist bullets.
     pub fn bullets(mut self, b: &[&str]) -> Self {
@@ -87,12 +95,42 @@ impl FeatureItem {
     /// A ready-made set of six generic product features.
     pub fn defaults() -> Vec<FeatureItem> {
         vec![
-            FeatureItem::new(UiIcon::Zap, "Blazing fast", "Immediate-mode rendering at 120 fps, with work skipped for anything off screen.").bullets(&["Sub-millisecond widgets", "No virtual DOM", "GPU tessellation"]),
-            FeatureItem::new(UiIcon::Sparkles, "Delightful motion", "Springs, staggers and easings tuned so every interaction feels alive.").bullets(&["Spring physics", "Staggered reveals", "Hover and press states"]),
-            FeatureItem::new(UiIcon::Code, "Pure Rust", "One language from logic to pixels. No JavaScript, no CSS, no build chain.").bullets(&["Type-safe builders", "Cargo features", "Zero unsafe"]),
-            FeatureItem::new(UiIcon::Activity, "Live charts", "Animated, themeable charts that update in real time as data streams in.").bullets(&["Area, bar and pie", "Smooth transitions", "Tooltips"]),
-            FeatureItem::new(UiIcon::Globe, "Runs everywhere", "Windows, macOS, Linux and the web via WebAssembly from one codebase.").bullets(&["Native windows", "WASM builds", "Mobile-friendly"]),
-            FeatureItem::new(UiIcon::Lock, "Secure by default", "No network, no telemetry, no surprises. Your data never leaves the app.").bullets(&["Offline first", "Auditable", "MIT licensed"]),
+            FeatureItem::new(
+                UiIcon::Zap,
+                "Blazing fast",
+                "Immediate-mode rendering at 120 fps, with work skipped for anything off screen.",
+            )
+            .bullets(&["Sub-millisecond widgets", "No virtual DOM", "GPU tessellation"]),
+            FeatureItem::new(
+                UiIcon::Sparkles,
+                "Delightful motion",
+                "Springs, staggers and easings tuned so every interaction feels alive.",
+            )
+            .bullets(&["Spring physics", "Staggered reveals", "Hover and press states"]),
+            FeatureItem::new(
+                UiIcon::Code,
+                "Pure Rust",
+                "One language from logic to pixels. No JavaScript, no CSS, no build chain.",
+            )
+            .bullets(&["Type-safe builders", "Cargo features", "Zero unsafe"]),
+            FeatureItem::new(
+                UiIcon::Activity,
+                "Live charts",
+                "Animated, themeable charts that update in real time as data streams in.",
+            )
+            .bullets(&["Area, bar and pie", "Smooth transitions", "Tooltips"]),
+            FeatureItem::new(
+                UiIcon::Globe,
+                "Runs everywhere",
+                "Windows, macOS, Linux and the web via WebAssembly from one codebase.",
+            )
+            .bullets(&["Native windows", "WASM builds", "Mobile-friendly"]),
+            FeatureItem::new(
+                UiIcon::Lock,
+                "Secure by default",
+                "No network, no telemetry, no surprises. Your data never leaves the app.",
+            )
+            .bullets(&["Offline first", "Auditable", "MIT licensed"]),
         ]
     }
 }
@@ -191,7 +229,11 @@ impl FeaturesSection {
         let id = section_id(ui, "features", &self.salt);
         section(ui, Frame::new(id, self.background), |ui, sec| {
             let align = self.align.align();
-            let next = Heading::new(&self.title).eyebrow(self.eyebrow.as_deref()).subtitle(self.subtitle.as_deref()).align(align).show(ui, sec, 0);
+            let next = Heading::new(&self.title)
+                .eyebrow(self.eyebrow.as_deref())
+                .subtitle(self.subtitle.as_deref())
+                .align(align)
+                .show(ui, sec, 0);
             ui.add_space(if sec.narrow { 40.0 } else { 56.0 });
             match self.layout {
                 FeaturesLayout::IconGrid => self.icon_grid(ui, sec, next, true),
@@ -260,7 +302,12 @@ impl FeaturesSection {
                 let (col, span) = spans[i];
                 let x = origin.x + col as f32 * (cw + gap);
                 let width = cw * span as f32 + gap * (span as f32 - 1.0);
-                let mut child = ui.new_child(egui::UiBuilder::new().max_rect(Rect::from_min_size(pos2(x, y), vec2(width, f32::INFINITY))).layout(egui::Layout::top_down(Align::Min)).id_salt(("bento", i)));
+                let mut child = ui.new_child(
+                    egui::UiBuilder::new()
+                        .max_rect(Rect::from_min_size(pos2(x, y), vec2(width, f32::INFINITY)))
+                        .layout(egui::Layout::top_down(Align::Min))
+                        .id_salt(("bento", i)),
+                );
                 let vis_h = if span == 3 { 120.0 } else { 160.0 };
                 sec.fade(&mut child, first + i, |ui| bento_card(ui, id, &self.items[i], i, &t, prev, vis_h));
                 max_h = max_h.max(child.min_rect().height());
@@ -290,7 +337,12 @@ impl FeaturesSection {
                     let (r, _) = ui.allocate_exact_size(Vec2::splat(44.0), Sense::hover());
                     icon_tile(ui.painter(), r, it.icon, t.chart[i % 6], &t);
                     ui.add_space(16.0);
-                    Tx::new(&it.title).size(if sec.narrow { 24.0 } else { 30.0 }).bold().line(1.2).color(t.foreground).show(ui);
+                    Tx::new(&it.title)
+                        .size(if sec.narrow { 24.0 } else { 30.0 })
+                        .bold()
+                        .line(1.2)
+                        .color(t.foreground)
+                        .show(ui);
                     ui.add_space(10.0);
                     Tx::new(&it.description).size(16.0).line(1.6).color(t.muted_foreground).show(ui);
                     if !it.bullets.is_empty() {
@@ -349,44 +401,59 @@ impl FeaturesSection {
         }
         ui.add_space(32.0);
         let it = &self.items[sel.min(self.items.len().saturating_sub(1))];
-        let p = glowkit_core::ease(glowkit_core::Easing::OutCubic, (glowkit_core::anim::Clock::elapsed(ui, id.with("tabclock")) / 0.45).min(1.0));
+        let p = glowkit_core::ease(
+            glowkit_core::Easing::OutCubic,
+            (glowkit_core::anim::Clock::elapsed(ui, id.with("tabclock")) / 0.45).min(1.0),
+        );
         if p < 1.0 {
             ui.ctx().request_repaint();
         }
         let panel = |ui: &mut Ui| {
-            card(ui, id.with("tabcard"), CardLook::of(&t).pad(if sec.narrow { 20.0 } else { 40.0 }).hover(false), |ui| {
-                two_col(
-                    ui,
-                    id.with("tabcols"),
-                    0.44,
-                    40.0,
-                    sec.narrow,
-                    true,
-                    |ui| {
-                        fade_up(ui, p, 10.0, |ui| {
-                            let (r, _) = ui.allocate_exact_size(Vec2::splat(44.0), Sense::hover());
-                            icon_tile(ui.painter(), r, it.icon, t.accent, &t);
-                            ui.add_space(16.0);
-                            Tx::new(&it.title).size(26.0).bold().color(t.foreground).show(ui);
-                            ui.add_space(8.0);
-                            Tx::new(&it.description).size(15.5).line(1.6).color(t.muted_foreground).show(ui);
-                            ui.add_space(16.0);
-                            for b in &it.bullets {
-                                check_row(ui, b, t.accent, false);
-                                ui.add_space(2.0);
-                            }
-                        });
-                    },
-                    |ui| {
-                        fade_up(ui, p, 16.0, |ui| {
-                            let w = ui.available_width();
-                            let (r, _) = ui.allocate_exact_size(vec2(w, 280.0), Sense::hover());
-                            paint_art(ui.painter(), r, sel + 2, &t, (t.radius * 1.2).round(), glowkit_core::time(ui));
-                            paint_mini(ui, ui.painter(), r.shrink(36.0), it.visual.resolve(sel), &t, sel, true);
-                        });
-                    },
-                );
-            });
+            card(
+                ui,
+                id.with("tabcard"),
+                CardLook::of(&t).pad(if sec.narrow { 20.0 } else { 40.0 }).hover(false),
+                |ui| {
+                    two_col(
+                        ui,
+                        id.with("tabcols"),
+                        0.44,
+                        40.0,
+                        sec.narrow,
+                        true,
+                        |ui| {
+                            fade_up(ui, p, 10.0, |ui| {
+                                let (r, _) = ui.allocate_exact_size(Vec2::splat(44.0), Sense::hover());
+                                icon_tile(ui.painter(), r, it.icon, t.accent, &t);
+                                ui.add_space(16.0);
+                                Tx::new(&it.title).size(26.0).bold().color(t.foreground).show(ui);
+                                ui.add_space(8.0);
+                                Tx::new(&it.description).size(15.5).line(1.6).color(t.muted_foreground).show(ui);
+                                ui.add_space(16.0);
+                                for b in &it.bullets {
+                                    check_row(ui, b, t.accent, false);
+                                    ui.add_space(2.0);
+                                }
+                            });
+                        },
+                        |ui| {
+                            fade_up(ui, p, 16.0, |ui| {
+                                let w = ui.available_width();
+                                let (r, _) = ui.allocate_exact_size(vec2(w, 280.0), Sense::hover());
+                                paint_art(
+                                    ui.painter(),
+                                    r,
+                                    sel + 2,
+                                    &t,
+                                    (t.radius * 1.2).round(),
+                                    glowkit_core::time(ui),
+                                );
+                                paint_mini(ui, ui.painter(), r.shrink(36.0), it.visual.resolve(sel), &t, sel, true);
+                            });
+                        },
+                    );
+                },
+            );
         };
         sec.fade(ui, first + 1, panel);
     }
@@ -410,13 +477,27 @@ fn bento_card(ui: &mut Ui, id: egui::Id, it: &FeatureItem, i: usize, t: &Theme, 
     let r = out.inner;
     let p = ui.painter();
     let cr = CornerRadius::same((t.radius * 0.9) as u8);
-    p.rect(r, cr, if t.dark { mix(t.card, t.muted, 0.55) } else { mix(t.card, t.muted, 0.6) }, Stroke::new(1.0, with_alpha(t.border, 0.7)), StrokeKind::Inside);
+    p.rect(
+        r,
+        cr,
+        if t.dark { mix(t.card, t.muted, 0.55) } else { mix(t.card, t.muted, 0.6) },
+        Stroke::new(1.0, with_alpha(t.border, 0.7)),
+        StrokeKind::Inside,
+    );
     let clip = ui.painter().with_clip_rect(r.intersect(ui.clip_rect()));
     paint_mini(ui, &clip, r.shrink(14.0), it.visual.resolve(i), t, i, true);
 }
 
 /// Paint a small looping illustration into `rect`.
-pub(crate) fn paint_mini(ui: &Ui, p: &egui::Painter, rect: Rect, kind: FeatureVisual, t: &Theme, seed: usize, live: bool) {
+pub(crate) fn paint_mini(
+    ui: &Ui,
+    p: &egui::Painter,
+    rect: Rect,
+    kind: FeatureVisual,
+    t: &Theme,
+    seed: usize,
+    live: bool,
+) {
     if !ui.is_rect_visible(rect) {
         return;
     }
@@ -443,7 +524,11 @@ pub(crate) fn paint_mini(ui: &Ui, p: &egui::Painter, rect: Rect, kind: FeatureVi
             p.add(Shape::line(s.clone(), Stroke::new(2.0, accent)));
             if let Some(last) = s.last() {
                 p.circle_filled(*last, 4.0, accent);
-                p.circle_stroke(*last, 4.0 + (time * 2.0).fract() * 8.0, Stroke::new(1.5, with_alpha(accent, 1.0 - (time * 2.0).fract())));
+                p.circle_stroke(
+                    *last,
+                    4.0 + (time * 2.0).fract() * 8.0,
+                    Stroke::new(1.5, with_alpha(accent, 1.0 - (time * 2.0).fract())),
+                );
             }
         }
         FeatureVisual::Orbit => {
@@ -454,7 +539,8 @@ pub(crate) fn paint_mini(ui: &Ui, p: &egui::Painter, rect: Rect, kind: FeatureVi
                 p.circle_stroke(c, r, Stroke::new(1.0, faint));
                 let count = 2 + k;
                 for j in 0..count {
-                    let a = time * (0.5 - k as f32 * 0.12) * if k % 2 == 0 { 1.0 } else { -1.0 } + j as f32 / count as f32 * TAU;
+                    let a = time * (0.5 - k as f32 * 0.12) * if k % 2 == 0 { 1.0 } else { -1.0 }
+                        + j as f32 / count as f32 * TAU;
                     let q = c + vec2(a.cos(), a.sin()) * r;
                     let col = t.chart[(k + j + seed) % 6];
                     p.circle_filled(q, 9.0, mix(t.card, col, 0.25));
@@ -477,11 +563,28 @@ pub(crate) fn paint_mini(ui: &Ui, p: &egui::Painter, rect: Rect, kind: FeatureVi
                 }
                 let indent = [0.0, 14.0, 28.0, 28.0, 14.0, 14.0, 0.0][k];
                 let vis = ((typed - k as f32).clamp(0.0, 1.0)) * len;
-                p.text(pos2(rect.min.x, y - 2.0), egui::Align2::LEFT_TOP, format!("{}", k + 1), FontId::monospace(10.0), with_alpha(t.muted_foreground, 0.5));
+                p.text(
+                    pos2(rect.min.x, y - 2.0),
+                    egui::Align2::LEFT_TOP,
+                    format!("{}", k + 1),
+                    FontId::monospace(10.0),
+                    with_alpha(t.muted_foreground, 0.5),
+                );
                 let x = rect.min.x + 20.0 + indent;
                 let full = rect.width() - 20.0 - indent;
-                p.rect_filled(Rect::from_min_size(pos2(x, y), vec2(full * vis * 0.3, 7.0)), CornerRadius::same(3), with_alpha(t.chart[(k + seed) % 6], 0.85));
-                p.rect_filled(Rect::from_min_size(pos2(x + full * vis * 0.3 + 4.0, y), vec2((full * vis * 0.7 - 4.0).max(0.0), 7.0)), CornerRadius::same(3), faint);
+                p.rect_filled(
+                    Rect::from_min_size(pos2(x, y), vec2(full * vis * 0.3, 7.0)),
+                    CornerRadius::same(3),
+                    with_alpha(t.chart[(k + seed) % 6], 0.85),
+                );
+                p.rect_filled(
+                    Rect::from_min_size(
+                        pos2(x + full * vis * 0.3 + 4.0, y),
+                        vec2((full * vis * 0.7 - 4.0).max(0.0), 7.0),
+                    ),
+                    CornerRadius::same(3),
+                    faint,
+                );
                 if typed >= k as f32 && typed < k as f32 + 1.0 {
                     p.vline(x + full * vis + 3.0, (y - 3.0)..=(y + 10.0), Stroke::new(1.5, t.foreground));
                 }
@@ -492,9 +595,15 @@ pub(crate) fn paint_mini(ui: &Ui, p: &egui::Painter, rect: Rect, kind: FeatureVi
             let gap = 8.0;
             let bw = (rect.width() - gap * (n as f32 - 1.0)) / n as f32;
             for k in 0..n {
-                let v = 0.3 + 0.6 * (0.5 + 0.5 * (time * 1.3 + k as f32 * 0.8).sin()) * (0.6 + 0.4 * ((k * 7 % 5) as f32 / 4.0));
+                let v = 0.3
+                    + 0.6
+                        * (0.5 + 0.5 * (time * 1.3 + k as f32 * 0.8).sin())
+                        * (0.6 + 0.4 * ((k * 7 % 5) as f32 / 4.0));
                 let h = rect.height() * v;
-                let r = Rect::from_min_max(pos2(rect.min.x + k as f32 * (bw + gap), rect.max.y - h), pos2(rect.min.x + k as f32 * (bw + gap) + bw, rect.max.y));
+                let r = Rect::from_min_max(
+                    pos2(rect.min.x + k as f32 * (bw + gap), rect.max.y - h),
+                    pos2(rect.min.x + k as f32 * (bw + gap) + bw, rect.max.y),
+                );
                 let col = if k == n - 3 { accent } else { with_alpha(accent, 0.35) };
                 p.rect_filled(r, CornerRadius { nw: 4, ne: 4, sw: 1, se: 1 }, col);
             }
@@ -508,7 +617,9 @@ pub(crate) fn paint_mini(ui: &Ui, p: &egui::Painter, rect: Rect, kind: FeatureVi
                 p.circle_stroke(c, rmax * ph, Stroke::new(1.5, with_alpha(accent, (1.0 - ph) * 0.8)));
             }
             let sweep = time * 1.2;
-            let pts: Vec<_> = (0..=16).map(|i| c + vec2((sweep - i as f32 * 0.04).cos(), (sweep - i as f32 * 0.04).sin()) * rmax * 0.95).collect();
+            let pts: Vec<_> = (0..=16)
+                .map(|i| c + vec2((sweep - i as f32 * 0.04).cos(), (sweep - i as f32 * 0.04).sin()) * rmax * 0.95)
+                .collect();
             for (i, q) in pts.iter().enumerate() {
                 p.line_segment([c, *q], Stroke::new(2.0, with_alpha(accent, 0.25 * (1.0 - i as f32 / 16.0))));
             }
@@ -527,9 +638,17 @@ pub(crate) fn paint_mini(ui: &Ui, p: &egui::Painter, rect: Rect, kind: FeatureVi
                 let on_t = (time * 0.7 + k as f32 * 0.9).sin() > -0.2;
                 let pv = if on_t { 1.0 } else { 0.0 };
                 p.circle_filled(pos2(rect.min.x + 10.0, y), 9.0, with_alpha(t.chart[(k + seed) % 6], 0.2));
-                p.rect_filled(Rect::from_min_size(pos2(rect.min.x + 28.0, y - 4.0), vec2(rect.width() * 0.4, 7.0)), CornerRadius::same(3), faint);
+                p.rect_filled(
+                    Rect::from_min_size(pos2(rect.min.x + 28.0, y - 4.0), vec2(rect.width() * 0.4, 7.0)),
+                    CornerRadius::same(3),
+                    faint,
+                );
                 let track = Rect::from_center_size(pos2(rect.max.x - 22.0, y), vec2(38.0, 22.0));
-                p.rect_filled(track, CornerRadius::same(11), if on_t { accent } else { with_alpha(t.foreground, 0.15) });
+                p.rect_filled(
+                    track,
+                    CornerRadius::same(11),
+                    if on_t { accent } else { with_alpha(t.foreground, 0.15) },
+                );
                 let kx = track.min.x + 11.0 + pv * 16.0;
                 p.circle_filled(pos2(kx, y), 8.0, Color32::WHITE);
             }

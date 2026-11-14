@@ -2,8 +2,8 @@
 
 use egui::{pos2, vec2, Align2, CursorIcon, Id, Rect, Sense, Stroke, StrokeKind, Ui};
 use glowkit_components::{
-    toast, AlertDialog, Button, ButtonVariant, Checkbox, ControlSize, DescriptionList, Dialog, DropdownMenu, Input, LineIcon, MenuEntry, Pagination,
-    SegmentedControl, Select, Sheet, SheetSide, Timeline, TimelineItem, Toast, UiIcon,
+    toast, AlertDialog, Button, ButtonVariant, Checkbox, ControlSize, DescriptionList, Dialog, DropdownMenu, Input,
+    LineIcon, MenuEntry, Pagination, SegmentedControl, Select, Sheet, SheetSide, Timeline, TimelineItem, Toast, UiIcon,
 };
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
@@ -114,7 +114,11 @@ fn customers() -> Vec<CrmCustomer> {
     raw.iter()
         .map(|(n, c, s, p, m, l)| CrmCustomer {
             name: (*n).into(),
-            email: format!("{}@{}.com", n.split(' ').next().unwrap_or("x").to_lowercase(), c.split(' ').next().unwrap_or("x").to_lowercase()),
+            email: format!(
+                "{}@{}.com",
+                n.split(' ').next().unwrap_or("x").to_lowercase(),
+                c.split(' ').next().unwrap_or("x").to_lowercase()
+            ),
             company: (*c).into(),
             status: *s,
             plan: PLANS[*p].into(),
@@ -139,7 +143,14 @@ fn deals() -> Vec<CrmDeal> {
         ("Webinar signup", "Gringotts", "Henry Wright", 2_400.0, 0, "Inbound"),
     ];
     raw.iter()
-        .map(|(t, c, o, v, s, g)| CrmDeal { title: (*t).into(), company: (*c).into(), owner: (*o).into(), value: *v, stage: *s, tag: (*g).into() })
+        .map(|(t, c, o, v, s, g)| CrmDeal {
+            title: (*t).into(),
+            company: (*c).into(),
+            owner: (*o).into(),
+            value: *v,
+            stage: *s,
+            tag: (*g).into(),
+        })
         .collect()
 }
 
@@ -153,7 +164,13 @@ impl Default for CrmApp {
                     .item(NavItem::new("customers", "Customers").icon(LineIcon::Users).badge("18").shortcut("G C"))
                     .item(NavItem::new("pipeline", "Pipeline").icon(AppIcon::Kanban).shortcut("G P"))
                     .item(NavItem::new("activity", "Activity").icon(UiIcon::Activity))
-                    .item(NavItem::new("reports", "Reports").icon(LineIcon::Chart).child(NavItem::new("reports/revenue", "Revenue")).child(NavItem::new("reports/churn", "Churn")).child(NavItem::new("reports/cohorts", "Cohorts"))),
+                    .item(
+                        NavItem::new("reports", "Reports")
+                            .icon(LineIcon::Chart)
+                            .child(NavItem::new("reports/revenue", "Revenue"))
+                            .child(NavItem::new("reports/churn", "Churn"))
+                            .child(NavItem::new("reports/cohorts", "Cohorts")),
+                    ),
                 NavSection::new("Admin")
                     .item(NavItem::new("billing", "Billing").icon(LineIcon::CreditCard))
                     .item(NavItem::new("integrations", "Integrations").icon(LineIcon::Layers).badge("3"))
@@ -220,7 +237,10 @@ impl CrmApp {
         let mut v: Vec<usize> = (0..self.customers.len())
             .filter(|&i| {
                 let c = &self.customers[i];
-                (q.is_empty() || c.name.to_lowercase().contains(&q) || c.email.to_lowercase().contains(&q) || c.company.to_lowercase().contains(&q))
+                (q.is_empty()
+                    || c.name.to_lowercase().contains(&q)
+                    || c.email.to_lowercase().contains(&q)
+                    || c.company.to_lowercase().contains(&q))
                     && (self.status_filter == 0 || c.status as usize == self.status_filter - 1)
                     && self.plan_filter.is_none_or(|p| c.plan == PLANS[p])
             })
@@ -256,8 +276,15 @@ impl CrmApp {
             if ui.add(Button::new("Add customer").icon(UiIcon::Plus).size(ControlSize::Sm)).clicked() {
                 add = true;
             }
-            if ui.add(Button::new("Export").icon(UiIcon::Download).variant(ButtonVariant::Outline).size(ControlSize::Sm)).clicked() {
-                toast(ui.ctx(), Toast::success("Export ready").description(format!("{} customers exported to CSV.", self.customers.len())));
+            if ui
+                .add(Button::new("Export").icon(UiIcon::Download).variant(ButtonVariant::Outline).size(ControlSize::Sm))
+                .clicked()
+            {
+                toast(
+                    ui.ctx(),
+                    Toast::success("Export ready")
+                        .description(format!("{} customers exported to CSV.", self.customers.len())),
+                );
             }
         });
         if add {
@@ -276,34 +303,87 @@ impl CrmApp {
                 ui.memory_mut(|m| m.request_focus(sid));
             }
             let before = self.query.clone();
-            kit::put(ui, Rect::from_min_size(pos2(x, cy - 16.0), vec2(260.0, 32.0)), Input::new(&mut self.query).placeholder("Search customers…").icon(UiIcon::Search).shortcut("/").clearable(true).width(260.0).size(ControlSize::Sm).id_salt("crm_search"));
+            kit::put(
+                ui,
+                Rect::from_min_size(pos2(x, cy - 16.0), vec2(260.0, 32.0)),
+                Input::new(&mut self.query)
+                    .placeholder("Search customers…")
+                    .icon(UiIcon::Search)
+                    .shortcut("/")
+                    .clearable(true)
+                    .width(260.0)
+                    .size(ControlSize::Sm)
+                    .id_salt("crm_search"),
+            );
             if before != self.query {
                 self.page = 1;
             }
             x += 272.0;
             let sf = self.status_filter;
-            kit::put(ui, Rect::from_min_size(pos2(x, cy - 16.0), vec2(300.0, 32.0)), SegmentedControl::new(&mut self.status_filter, ["All", "Active", "Trial", "Churned"]).size(ControlSize::Sm).width(300.0));
+            kit::put(
+                ui,
+                Rect::from_min_size(pos2(x, cy - 16.0), vec2(300.0, 32.0)),
+                SegmentedControl::new(&mut self.status_filter, ["All", "Active", "Trial", "Churned"])
+                    .size(ControlSize::Sm)
+                    .width(300.0),
+            );
             if sf != self.status_filter {
                 self.page = 1;
             }
             x += 312.0;
             if bar.max.x - x > 360.0 {
                 let pf = self.plan_filter;
-                kit::put(ui, Rect::from_min_size(pos2(x, cy - 16.0), vec2(150.0, 32.0)), Select::new(&mut self.plan_filter, PLANS).placeholder("All plans").size(ControlSize::Sm).width(150.0).id_salt("crm_plan"));
+                kit::put(
+                    ui,
+                    Rect::from_min_size(pos2(x, cy - 16.0), vec2(150.0, 32.0)),
+                    Select::new(&mut self.plan_filter, PLANS)
+                        .placeholder("All plans")
+                        .size(ControlSize::Sm)
+                        .width(150.0)
+                        .id_salt("crm_plan"),
+                );
                 if pf != self.plan_filter {
                     self.page = 1;
                 }
                 x += 160.0;
-                if self.plan_filter.is_some() && kit::put(ui, Rect::from_min_size(pos2(x, cy - 16.0), vec2(84.0, 32.0)), Button::new("Reset").variant(ButtonVariant::Ghost).size(ControlSize::Sm).trailing_icon(UiIcon::X)).clicked() {
+                if self.plan_filter.is_some()
+                    && kit::put(
+                        ui,
+                        Rect::from_min_size(pos2(x, cy - 16.0), vec2(84.0, 32.0)),
+                        Button::new("Reset")
+                            .variant(ButtonVariant::Ghost)
+                            .size(ControlSize::Sm)
+                            .trailing_icon(UiIcon::X),
+                    )
+                    .clicked()
+                {
                     self.plan_filter = None;
                 }
             }
             if sel_count > 0 {
                 let br = Rect::from_min_size(pos2(bar.max.x - 110.0, cy - 16.0), vec2(110.0, 32.0));
-                if kit::put(ui, br, Button::new(format!("Delete {sel_count}")).icon(UiIcon::Trash).variant(ButtonVariant::Destructive).size(ControlSize::Sm).width(110.0)).clicked() {
+                if kit::put(
+                    ui,
+                    br,
+                    Button::new(format!("Delete {sel_count}"))
+                        .icon(UiIcon::Trash)
+                        .variant(ButtonVariant::Destructive)
+                        .size(ControlSize::Sm)
+                        .width(110.0),
+                )
+                .clicked()
+                {
                     self.confirm_delete = true;
                 }
-                kit::text_at(ui.painter(), pos2(br.min.x - 10.0, cy), Align2::RIGHT_CENTER, &format!("{sel_count} selected"), 12.5, t.muted_foreground, 100.0);
+                kit::text_at(
+                    ui.painter(),
+                    pos2(br.min.x - 10.0, cy),
+                    Align2::RIGHT_CENTER,
+                    &format!("{sel_count} selected"),
+                    12.5,
+                    t.muted_foreground,
+                    100.0,
+                );
             }
         }
         // table
@@ -315,13 +395,21 @@ impl CrmApp {
         kit::card(ui.painter(), table, &t);
         let wide = table.width() > 900.0;
         // columns: check, customer, company, status, plan, mrr, last seen, menu
-        let widths: Vec<f32> = if wide { vec![44.0, 0.0, 0.0, 110.0, 100.0, 100.0, 120.0, 44.0] } else { vec![44.0, 0.0, 0.0, 100.0, 0.0, 90.0, 0.0, 44.0] };
+        let widths: Vec<f32> = if wide {
+            vec![44.0, 0.0, 0.0, 110.0, 100.0, 100.0, 120.0, 44.0]
+        } else {
+            vec![44.0, 0.0, 0.0, 100.0, 0.0, 90.0, 0.0, 44.0]
+        };
         let head_h = 40.0;
         let row_h = ((table.height() - head_h) / per_page as f32).clamp(44.0, 56.0);
         let hr = Rect::from_min_size(table.min, vec2(table.width(), head_h));
         let cells = kit::split_x(hr.shrink2(vec2(8.0, 0.0)), &widths, 8.0);
         let p = ui.painter().clone();
-        p.rect_filled(hr.shrink(1.0), egui::CornerRadius { nw: t.radius as u8, ne: t.radius as u8, sw: 0, se: 0 }, with_alpha(t.muted, 0.5));
+        p.rect_filled(
+            hr.shrink(1.0),
+            egui::CornerRadius { nw: t.radius as u8, ne: t.radius as u8, sw: 0, se: 0 },
+            with_alpha(t.muted, 0.5),
+        );
         kit::hline(&p, table.min.x, table.max.x, hr.max.y, &t);
         // header checkbox (select all on page)
         let page_rows: Vec<usize> = rows.iter().skip((self.page - 1) * per_page).take(per_page).copied().collect();
@@ -347,11 +435,31 @@ impl CrmApp {
             let hv = kit::hover(ui, hid, resp.hovered() && sortable);
             let on = self.sort.0 == k;
             let col = if on { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, hv) };
-            let tr = kit::text_at(&p, if right { pos2(c.max.x - 18.0, c.center().y) } else { c.left_center() }, if right { Align2::RIGHT_CENTER } else { Align2::LEFT_CENTER }, title, 12.5, col, c.width() - 20.0);
+            let tr = kit::text_at(
+                &p,
+                if right { pos2(c.max.x - 18.0, c.center().y) } else { c.left_center() },
+                if right { Align2::RIGHT_CENTER } else { Align2::LEFT_CENTER },
+                title,
+                12.5,
+                col,
+                c.width() - 20.0,
+            );
             if sortable && (on || hv > 0.01) {
-                let ic = if on { if self.sort.1 { UiIcon::ArrowUp } else { UiIcon::ArrowDown } } else { UiIcon::ArrowUpDown };
+                let ic = if on {
+                    if self.sort.1 {
+                        UiIcon::ArrowUp
+                    } else {
+                        UiIcon::ArrowDown
+                    }
+                } else {
+                    UiIcon::ArrowUpDown
+                };
                 let ix = if right { tr.max.x + 9.0 } else { tr.max.x + 10.0 };
-                ic.paint(&p, Rect::from_center_size(pos2(ix, c.center().y), vec2(12.0, 12.0)), if on { col } else { with_alpha(col, hv) });
+                ic.paint(
+                    &p,
+                    Rect::from_center_size(pos2(ix, c.center().y), vec2(12.0, 12.0)),
+                    if on { col } else { with_alpha(col, hv) },
+                );
             }
             if resp.clicked() && sortable {
                 self.sort = if on { (k, !self.sort.1) } else { (k, k <= 1) };
@@ -368,18 +476,32 @@ impl CrmApp {
             if loading {
                 let cc = kit::split_x(rr.shrink2(vec2(8.0, 0.0)), &widths, 8.0);
                 kit::skel_r(ui, Rect::from_center_size(cc[0].center(), vec2(16.0, 16.0)), 4.0);
-                kit::skel_r(ui, Rect::from_center_size(pos2(cc[1].min.x + 16.0, rr.center().y), vec2(32.0, 32.0)), 16.0);
-                kit::skel(ui, Rect::from_min_size(pos2(cc[1].min.x + 44.0, rr.center().y - 9.0), vec2(cc[1].width() * 0.5, 8.0)));
-                kit::skel(ui, Rect::from_min_size(pos2(cc[1].min.x + 44.0, rr.center().y + 3.0), vec2(cc[1].width() * 0.35, 7.0)));
+                kit::skel_r(
+                    ui,
+                    Rect::from_center_size(pos2(cc[1].min.x + 16.0, rr.center().y), vec2(32.0, 32.0)),
+                    16.0,
+                );
+                kit::skel(
+                    ui,
+                    Rect::from_min_size(pos2(cc[1].min.x + 44.0, rr.center().y - 9.0), vec2(cc[1].width() * 0.5, 8.0)),
+                );
+                kit::skel(
+                    ui,
+                    Rect::from_min_size(pos2(cc[1].min.x + 44.0, rr.center().y + 3.0), vec2(cc[1].width() * 0.35, 7.0)),
+                );
                 for c in &cc[2..7] {
                     if c.width() > 1.0 {
-                        kit::skel(ui, Rect::from_min_size(pos2(c.min.x, rr.center().y - 4.0), vec2(c.width() * 0.6, 8.0)));
+                        kit::skel(
+                            ui,
+                            Rect::from_min_size(pos2(c.min.x, rr.center().y - 4.0), vec2(c.width() * 0.6, 8.0)),
+                        );
                     }
                 }
                 continue;
             }
             let rid = id.with(("row", ci));
-            let resp = ui.interact(rr.shrink2(vec2(1.0, 0.0)), rid, Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
+            let resp =
+                ui.interact(rr.shrink2(vec2(1.0, 0.0)), rid, Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
             let hv = kit::hover(ui, rid, resp.hovered());
             let sel = self.selected[ci];
             if sel {
@@ -388,7 +510,10 @@ impl CrmApp {
                 p.rect_filled(rr.shrink2(vec2(1.0, 0.0)), 0.0, kit::hover_fill(&t, hv));
             }
             if ri + 1 < page_rows.len() {
-                p.line_segment([pos2(rr.min.x + 1.0, rr.max.y), pos2(rr.max.x - 1.0, rr.max.y)], Stroke::new(1.0, with_alpha(t.border, 0.7)));
+                p.line_segment(
+                    [pos2(rr.min.x + 1.0, rr.max.y), pos2(rr.max.x - 1.0, rr.max.y)],
+                    Stroke::new(1.0, with_alpha(t.border, 0.7)),
+                );
             }
             let cc = kit::split_x(rr.shrink2(vec2(8.0, 0.0)), &widths, 8.0);
             let c = &self.customers[ci];
@@ -399,17 +524,57 @@ impl CrmApp {
                 self.selected[ci] = s;
             }
             kit::avatar(ui, Rect::from_center_size(pos2(cc[1].min.x + 16.0, rr.center().y), vec2(32.0, 32.0)), &c.name);
-            kit::text_at(&p, pos2(cc[1].min.x + 42.0, rr.center().y - 8.0), Align2::LEFT_CENTER, &c.name, 13.5, t.foreground, cc[1].width() - 44.0);
-            kit::text_at(&p, pos2(cc[1].min.x + 42.0, rr.center().y + 9.0), Align2::LEFT_CENTER, &c.email, 12.0, t.muted_foreground, cc[1].width() - 44.0);
+            kit::text_at(
+                &p,
+                pos2(cc[1].min.x + 42.0, rr.center().y - 8.0),
+                Align2::LEFT_CENTER,
+                &c.name,
+                13.5,
+                t.foreground,
+                cc[1].width() - 44.0,
+            );
+            kit::text_at(
+                &p,
+                pos2(cc[1].min.x + 42.0, rr.center().y + 9.0),
+                Align2::LEFT_CENTER,
+                &c.email,
+                12.0,
+                t.muted_foreground,
+                cc[1].width() - 44.0,
+            );
             kit::text_at(&p, cc[2].left_center(), Align2::LEFT_CENTER, &c.company, 13.0, t.foreground, cc[2].width());
             let (st, tone) = status_of(c.status);
             kit::status_pill(&p, cc[3].left_center(), false, st, kit::tone(&t, tone), &t);
             if cc[4].width() > 1.0 {
-                kit::text_at(&p, cc[4].left_center(), Align2::LEFT_CENTER, &c.plan, 13.0, t.muted_foreground, cc[4].width());
+                kit::text_at(
+                    &p,
+                    cc[4].left_center(),
+                    Align2::LEFT_CENTER,
+                    &c.plan,
+                    13.0,
+                    t.muted_foreground,
+                    cc[4].width(),
+                );
             }
-            kit::text_at(&p, pos2(cc[5].max.x - 18.0, rr.center().y), Align2::RIGHT_CENTER, &kit::money(c.mrr), 13.0, if c.mrr > 0.0 { t.foreground } else { t.muted_foreground }, cc[5].width());
+            kit::text_at(
+                &p,
+                pos2(cc[5].max.x - 18.0, rr.center().y),
+                Align2::RIGHT_CENTER,
+                &kit::money(c.mrr),
+                13.0,
+                if c.mrr > 0.0 { t.foreground } else { t.muted_foreground },
+                cc[5].width(),
+            );
             if cc[6].width() > 1.0 {
-                kit::text_at(&p, cc[6].left_center(), Align2::LEFT_CENTER, &c.last_seen, 12.5, t.muted_foreground, cc[6].width());
+                kit::text_at(
+                    &p,
+                    cc[6].left_center(),
+                    Align2::LEFT_CENTER,
+                    &c.last_seen,
+                    12.5,
+                    t.muted_foreground,
+                    cc[6].width(),
+                );
             }
             let mr = Rect::from_center_size(cc[7].center(), vec2(28.0, 28.0));
             let mresp = kit::icon_button(ui, mr, rid.with("menu"), AppIcon::Ui(UiIcon::MoreHorizontal), false);
@@ -423,7 +588,10 @@ impl CrmApp {
             match DropdownMenu::new(entries).width(190.0).within(bounds).show(&mresp).as_deref() {
                 Some("View details") => open_detail = Some(ci),
                 Some("Send email") => {
-                    toast(ui.ctx(), Toast::success(format!("Email drafted to {}", c.name)).description(c.email.clone()));
+                    toast(
+                        ui.ctx(),
+                        Toast::success(format!("Email drafted to {}", c.name)).description(c.email.clone()),
+                    );
                 }
                 Some("Copy email") => {
                     ui.ctx().copy_text(c.email.clone());
@@ -438,14 +606,29 @@ impl CrmApp {
         }
         if page_rows.is_empty() && !loading {
             let er = Rect::from_min_max(pos2(table.min.x, hr.max.y), table.max);
-            p.text(er.center() - vec2(0.0, 10.0), Align2::CENTER_CENTER, "No customers match your filters", egui::FontId::proportional(14.0), t.foreground);
-            p.text(er.center() + vec2(0.0, 12.0), Align2::CENTER_CENTER, "Try a different search or clear the filters.", egui::FontId::proportional(12.5), t.muted_foreground);
+            p.text(
+                er.center() - vec2(0.0, 10.0),
+                Align2::CENTER_CENTER,
+                "No customers match your filters",
+                egui::FontId::proportional(14.0),
+                t.foreground,
+            );
+            p.text(
+                er.center() + vec2(0.0, 12.0),
+                Align2::CENTER_CENTER,
+                "Try a different search or clear the filters.",
+                egui::FontId::proportional(12.5),
+                t.muted_foreground,
+            );
         }
         if let Some(i) = delete_one {
             let name = self.customers[i].name.clone();
             self.customers.remove(i);
             self.selected.remove(i);
-            toast(ui.ctx(), Toast::success(format!("{name} deleted")).description("The customer and their history were removed."));
+            toast(
+                ui.ctx(),
+                Toast::success(format!("{name} deleted")).description("The customer and their history were removed."),
+            );
         }
         if let Some(i) = open_detail {
             self.detail = Some(i);
@@ -455,7 +638,15 @@ impl CrmApp {
         let fr = Rect::from_min_max(pos2(rect.min.x, rect.max.y - 34.0), rect.max);
         let shown_from = if rows.is_empty() { 0 } else { (self.page - 1) * per_page + 1 };
         let shown_to = (self.page * per_page).min(rows.len());
-        kit::text_at(&p, fr.left_center(), Align2::LEFT_CENTER, &format!("Showing {shown_from}–{shown_to} of {}", rows.len()), 12.5, t.muted_foreground, 220.0);
+        kit::text_at(
+            &p,
+            fr.left_center(),
+            Align2::LEFT_CENTER,
+            &format!("Showing {shown_from}–{shown_to} of {}", rows.len()),
+            12.5,
+            t.muted_foreground,
+            220.0,
+        );
         kit::child(ui, Rect::from_min_max(pos2(fr.min.x + 220.0, fr.min.y), fr.max), |ui| {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 ui.add(Pagination::new(&mut self.page, pages));
@@ -470,23 +661,48 @@ impl CrmApp {
         if let Some(i) = self.detail.filter(|i| *i < self.customers.len()) {
             let c = self.customers[i].clone();
             let mut open = self.sheet_open;
-            let r = Sheet::new(&mut open, c.name.clone()).description(format!("{} · customer since 2023", c.company)).side(SheetSide::Right).size(400.0).within(bounds).primary("Send email").secondary("Close").show(ui, |ui| {
-                ui.spacing_mut().item_spacing.y = 12.0;
-                let hr = kit::alloc_row(ui, 64.0);
-                kit::avatar(ui, Rect::from_min_size(hr.min, vec2(56.0, 56.0)), &c.name);
-                let p = ui.painter().clone();
-                kit::text_at(&p, pos2(hr.min.x + 70.0, hr.min.y + 16.0), Align2::LEFT_CENTER, &c.email, 13.5, t.foreground, hr.width() - 80.0);
-                let (st, tone) = status_of(c.status);
-                kit::status_pill(&p, pos2(hr.min.x + 70.0, hr.min.y + 42.0), false, st, kit::tone(&t, tone), &t);
-                let mrr = kit::money(c.mrr);
-                ui.add(DescriptionList::new(&[("Company", c.company.as_str()), ("Plan", c.plan.as_str()), ("MRR", mrr.as_str()), ("Last seen", c.last_seen.as_str()), ("Owner", "Ada Lovelace")]).key_width(90.0).width(ui.available_width()));
-                ui.label(egui::RichText::new("Activity").size(13.5).color(t.foreground));
-                ui.add(Timeline::new(vec![
-                    TimelineItem::new("Upgraded plan", "2d ago", "Moved to Pro (annual)"),
-                    TimelineItem::new("Support ticket closed", "1w ago", "#4821 · SSO configuration"),
-                    TimelineItem::new("Invited 4 teammates", "3w ago", "Design and Marketing"),
-                ]));
-            });
+            let r = Sheet::new(&mut open, c.name.clone())
+                .description(format!("{} · customer since 2023", c.company))
+                .side(SheetSide::Right)
+                .size(400.0)
+                .within(bounds)
+                .primary("Send email")
+                .secondary("Close")
+                .show(ui, |ui| {
+                    ui.spacing_mut().item_spacing.y = 12.0;
+                    let hr = kit::alloc_row(ui, 64.0);
+                    kit::avatar(ui, Rect::from_min_size(hr.min, vec2(56.0, 56.0)), &c.name);
+                    let p = ui.painter().clone();
+                    kit::text_at(
+                        &p,
+                        pos2(hr.min.x + 70.0, hr.min.y + 16.0),
+                        Align2::LEFT_CENTER,
+                        &c.email,
+                        13.5,
+                        t.foreground,
+                        hr.width() - 80.0,
+                    );
+                    let (st, tone) = status_of(c.status);
+                    kit::status_pill(&p, pos2(hr.min.x + 70.0, hr.min.y + 42.0), false, st, kit::tone(&t, tone), &t);
+                    let mrr = kit::money(c.mrr);
+                    ui.add(
+                        DescriptionList::new(&[
+                            ("Company", c.company.as_str()),
+                            ("Plan", c.plan.as_str()),
+                            ("MRR", mrr.as_str()),
+                            ("Last seen", c.last_seen.as_str()),
+                            ("Owner", "Ada Lovelace"),
+                        ])
+                        .key_width(90.0)
+                        .width(ui.available_width()),
+                    );
+                    ui.label(egui::RichText::new("Activity").size(13.5).color(t.foreground));
+                    ui.add(Timeline::new(vec![
+                        TimelineItem::new("Upgraded plan", "2d ago", "Moved to Pro (annual)"),
+                        TimelineItem::new("Support ticket closed", "1w ago", "#4821 · SSO configuration"),
+                        TimelineItem::new("Invited 4 teammates", "3w ago", "Design and Marketing"),
+                    ]));
+                });
             if r.primary_clicked {
                 toast(ui.ctx(), Toast::success(format!("Email drafted to {}", c.name)).description(c.email.clone()));
             }
@@ -496,15 +712,43 @@ impl CrmApp {
         let mut open = self.add_open;
         let form = &mut self.form;
         let err = self.form_error;
-        let r = Dialog::new(&mut open, "Add customer").description("Create a customer record. They won't be emailed.").primary("Create customer").secondary("Cancel").width(440.0).within(bounds).show(ui, |ui| {
-            ui.spacing_mut().item_spacing.y = 12.0;
-            let w = ui.available_width();
-            let name_err = if err && form.0.trim().is_empty() { Some("Name is required".to_string()) } else { None };
-            ui.add(Input::new(&mut form.0).label("Full name").placeholder("Jane Cooper").required(true).error_opt(name_err).width(w).id_salt("crm_f_name"));
-            ui.add(Input::new(&mut form.1).label("Email").placeholder("jane@company.com").icon(UiIcon::Mail).width(w).id_salt("crm_f_email"));
-            ui.add(Input::new(&mut form.2).label("Company").placeholder("Company name").width(w).id_salt("crm_f_company"));
-            ui.add(Select::new(&mut form.3, PLANS).label("Plan").width(w).id_salt("crm_f_plan"));
-        });
+        let r = Dialog::new(&mut open, "Add customer")
+            .description("Create a customer record. They won't be emailed.")
+            .primary("Create customer")
+            .secondary("Cancel")
+            .width(440.0)
+            .within(bounds)
+            .show(ui, |ui| {
+                ui.spacing_mut().item_spacing.y = 12.0;
+                let w = ui.available_width();
+                let name_err =
+                    if err && form.0.trim().is_empty() { Some("Name is required".to_string()) } else { None };
+                ui.add(
+                    Input::new(&mut form.0)
+                        .label("Full name")
+                        .placeholder("Jane Cooper")
+                        .required(true)
+                        .error_opt(name_err)
+                        .width(w)
+                        .id_salt("crm_f_name"),
+                );
+                ui.add(
+                    Input::new(&mut form.1)
+                        .label("Email")
+                        .placeholder("jane@company.com")
+                        .icon(UiIcon::Mail)
+                        .width(w)
+                        .id_salt("crm_f_email"),
+                );
+                ui.add(
+                    Input::new(&mut form.2)
+                        .label("Company")
+                        .placeholder("Company name")
+                        .width(w)
+                        .id_salt("crm_f_company"),
+                );
+                ui.add(Select::new(&mut form.3, PLANS).label("Plan").width(w).id_salt("crm_f_plan"));
+            });
         if r.primary_clicked {
             if self.form.0.trim().is_empty() {
                 self.form_error = true;
@@ -515,7 +759,11 @@ impl CrmApp {
                 self.customers.insert(
                     0,
                     CrmCustomer {
-                        email: if self.form.1.is_empty() { format!("{}@example.com", name.split(' ').next().unwrap_or("new").to_lowercase()) } else { self.form.1.clone() },
+                        email: if self.form.1.is_empty() {
+                            format!("{}@example.com", name.split(' ').next().unwrap_or("new").to_lowercase())
+                        } else {
+                            self.form.1.clone()
+                        },
                         company: if self.form.2.is_empty() { "—".into() } else { self.form.2.clone() },
                         name: name.clone(),
                         status: 1,
@@ -526,7 +774,10 @@ impl CrmApp {
                 );
                 self.selected.insert(0, false);
                 self.sort = (4, false);
-                toast(ui.ctx(), Toast::success(format!("{name} added")).description("Started a 14-day trial.").action("Undo"));
+                toast(
+                    ui.ctx(),
+                    Toast::success(format!("{name} added")).description("Started a 14-day trial.").action("Undo"),
+                );
                 open = false;
             }
         }
@@ -534,7 +785,14 @@ impl CrmApp {
         // bulk delete confirm
         let n = self.selected.iter().filter(|s| **s).count();
         let mut c_open = self.confirm_delete;
-        let r = AlertDialog::new(&mut c_open, format!("Delete {n} customers?")).description("This permanently removes the selected customers and their history. This action cannot be undone.").confirm("Delete").destructive(true).within(bounds).show(ui);
+        let r = AlertDialog::new(&mut c_open, format!("Delete {n} customers?"))
+            .description(
+                "This permanently removes the selected customers and their history. This action cannot be undone.",
+            )
+            .confirm("Delete")
+            .destructive(true)
+            .within(bounds)
+            .show(ui);
         if r.confirmed {
             let mut i = 0;
             self.customers.retain(|_| {
@@ -553,12 +811,32 @@ impl CrmApp {
         let id = ui.scope_id().with("crm_pipeline");
         let loading = kit::loading(ui, id, 0.6);
         let total: f64 = self.deals.iter().filter(|d| d.stage < 4).map(|d| d.value).sum();
-        let top = page_header(ui, rect, "Pipeline", &format!("{} open deals · {} weighted", self.deals.iter().filter(|d| d.stage < 4).count(), kit::money(total * 0.42)), |ui| {
-            if ui.add(Button::new("New deal").icon(UiIcon::Plus).size(ControlSize::Sm)).clicked() {
-                self.deals.push(CrmDeal { title: "New opportunity".into(), company: "Untitled Co.".into(), owner: "Ada Lovelace".into(), value: 5_000.0, stage: 0, tag: "New".into() });
-                toast(ui.ctx(), Toast::success("Deal created").description("Added to Lead. Drag it across stages."));
-            }
-        });
+        let top = page_header(
+            ui,
+            rect,
+            "Pipeline",
+            &format!(
+                "{} open deals · {} weighted",
+                self.deals.iter().filter(|d| d.stage < 4).count(),
+                kit::money(total * 0.42)
+            ),
+            |ui| {
+                if ui.add(Button::new("New deal").icon(UiIcon::Plus).size(ControlSize::Sm)).clicked() {
+                    self.deals.push(CrmDeal {
+                        title: "New opportunity".into(),
+                        company: "Untitled Co.".into(),
+                        owner: "Ada Lovelace".into(),
+                        value: 5_000.0,
+                        stage: 0,
+                        tag: "New".into(),
+                    });
+                    toast(
+                        ui.ctx(),
+                        Toast::success("Deal created").description("Added to Lead. Drag it across stages."),
+                    );
+                }
+            },
+        );
         let board = Rect::from_min_max(pos2(rect.min.x, top), rect.max);
         let colw = kit::cols(board, STAGES.len(), 12.0);
         let pointer = ui.input(|i| i.pointer.hover_pos());
@@ -567,7 +845,15 @@ impl CrmApp {
         let p = ui.painter().clone();
         for (s, cr) in colw.iter().enumerate() {
             let hovering_drop = self.drag.is_some() && pointer.is_some_and(|pp| cr.contains(pp));
-            p.rect_filled(*cr, t.radius, if hovering_drop { with_alpha(t.accent, 0.08) } else { with_alpha(t.muted, if t.dark { 0.5 } else { 0.7 }) });
+            p.rect_filled(
+                *cr,
+                t.radius,
+                if hovering_drop {
+                    with_alpha(t.accent, 0.08)
+                } else {
+                    with_alpha(t.muted, if t.dark { 0.5 } else { 0.7 })
+                },
+            );
             if hovering_drop {
                 p.rect_stroke(*cr, t.radius, Stroke::new(1.0, with_alpha(t.accent, 0.5)), StrokeKind::Inside);
                 if released {
@@ -578,14 +864,46 @@ impl CrmApp {
             let cnt = self.deals.iter().filter(|d| d.stage == s).count();
             let dot = [t.muted_foreground, t.info, t.chart[0], t.warning, t.success][s];
             p.circle_filled(pos2(cr.min.x + 16.0, cr.min.y + 20.0), 4.0, dot);
-            let tr = kit::text_at(&p, pos2(cr.min.x + 26.0, cr.min.y + 20.0), Align2::LEFT_CENTER, STAGES[s], 13.5, t.foreground, cr.width() - 90.0);
-            kit::pill(&p, pos2(tr.max.x + 6.0, cr.min.y + 20.0), false, &cnt.to_string(), t.muted_foreground, if t.dark { t.secondary } else { t.background }, 10.5);
-            kit::text_at(&p, pos2(cr.max.x - 12.0, cr.min.y + 20.0), Align2::RIGHT_CENTER, &format!("${}", glowkit_charts::format_compact(sum)), 12.0, t.muted_foreground, 70.0);
+            let tr = kit::text_at(
+                &p,
+                pos2(cr.min.x + 26.0, cr.min.y + 20.0),
+                Align2::LEFT_CENTER,
+                STAGES[s],
+                13.5,
+                t.foreground,
+                cr.width() - 90.0,
+            );
+            kit::pill(
+                &p,
+                pos2(tr.max.x + 6.0, cr.min.y + 20.0),
+                false,
+                &cnt.to_string(),
+                t.muted_foreground,
+                if t.dark { t.secondary } else { t.background },
+                10.5,
+            );
+            kit::text_at(
+                &p,
+                pos2(cr.max.x - 12.0, cr.min.y + 20.0),
+                Align2::RIGHT_CENTER,
+                &format!("${}", glowkit_charts::format_compact(sum)),
+                12.0,
+                t.muted_foreground,
+                70.0,
+            );
             let mut y = cr.min.y + 40.0;
             for (di, d) in self.deals.iter().enumerate().filter(|(_, d)| d.stage == s) {
                 let card = Rect::from_min_size(pos2(cr.min.x + 8.0, y), vec2(cr.width() - 16.0, 96.0));
                 if card.max.y > cr.max.y - 6.0 {
-                    kit::text_at(&p, pos2(cr.center().x, cr.max.y - 14.0), Align2::CENTER_CENTER, "More…", 12.0, t.muted_foreground, 100.0);
+                    kit::text_at(
+                        &p,
+                        pos2(cr.center().x, cr.max.y - 14.0),
+                        Align2::CENTER_CENTER,
+                        "More…",
+                        12.0,
+                        t.muted_foreground,
+                        100.0,
+                    );
                     break;
                 }
                 y += 104.0;
@@ -606,7 +924,15 @@ impl CrmApp {
                 }
                 deal_card(&cp, card, d, hv, &t);
                 if resp.clicked() {
-                    toast(ui.ctx(), Toast::new(d.title.clone()).description(format!("{} · {} · {}", d.company, kit::money(d.value), STAGES[d.stage])));
+                    toast(
+                        ui.ctx(),
+                        Toast::new(d.title.clone()).description(format!(
+                            "{} · {} · {}",
+                            d.company,
+                            kit::money(d.value),
+                            STAGES[d.stage]
+                        )),
+                    );
                 }
             }
         }
@@ -628,7 +954,14 @@ impl CrmApp {
                     let d = self.deals.remove(di);
                     let title = d.title.clone();
                     self.deals.push(d);
-                    toast(ui.ctx(), if s == 4 { Toast::success(format!("{title} won!")).description("Nice work. Revenue updated.") } else { Toast::new(format!("Moved to {}", STAGES[s])).description(title) });
+                    toast(
+                        ui.ctx(),
+                        if s == 4 {
+                            Toast::success(format!("{title} won!")).description("Nice work. Revenue updated.")
+                        } else {
+                            Toast::new(format!("Moved to {}", STAGES[s])).description(title)
+                        },
+                    );
                 }
             }
             self.drag = None;
@@ -638,15 +971,59 @@ impl CrmApp {
 
 fn deal_card(p: &egui::Painter, card: Rect, d: &CrmDeal, hv: f32, t: &Theme) {
     if hv > 0.01 {
-        glowkit_core::paint::soft_shadow(p, card, t.radius * 0.8, 10.0 * hv, vec2(0.0, 3.0), with_alpha(egui::Color32::BLACK, if t.dark { 0.3 } else { 0.08 } * hv));
+        glowkit_core::paint::soft_shadow(
+            p,
+            card,
+            t.radius * 0.8,
+            10.0 * hv,
+            vec2(0.0, 3.0),
+            with_alpha(egui::Color32::BLACK, if t.dark { 0.3 } else { 0.08 } * hv),
+        );
     }
     p.rect_filled(card, t.radius * 0.8, t.card);
-    p.rect_stroke(card, t.radius * 0.8, Stroke::new(1.0, t.border.lerp_to_gamma(t.muted_foreground, 0.3 * hv)), StrokeKind::Inside);
-    kit::text_at(p, card.left_top() + vec2(12.0, 18.0), Align2::LEFT_CENTER, &d.title, 13.5, t.foreground, card.width() - 24.0);
-    kit::text_at(p, card.left_top() + vec2(12.0, 37.0), Align2::LEFT_CENTER, &d.company, 12.0, t.muted_foreground, card.width() - 24.0);
+    p.rect_stroke(
+        card,
+        t.radius * 0.8,
+        Stroke::new(1.0, t.border.lerp_to_gamma(t.muted_foreground, 0.3 * hv)),
+        StrokeKind::Inside,
+    );
+    kit::text_at(
+        p,
+        card.left_top() + vec2(12.0, 18.0),
+        Align2::LEFT_CENTER,
+        &d.title,
+        13.5,
+        t.foreground,
+        card.width() - 24.0,
+    );
+    kit::text_at(
+        p,
+        card.left_top() + vec2(12.0, 37.0),
+        Align2::LEFT_CENTER,
+        &d.company,
+        12.0,
+        t.muted_foreground,
+        card.width() - 24.0,
+    );
     kit::pill(p, card.left_top() + vec2(12.0, 62.0), false, &d.tag, t.accent, with_alpha(t.accent, 0.12), 10.5);
-    kit::text_at(p, pos2(card.max.x - 12.0, card.min.y + 62.0), Align2::RIGHT_CENTER, &kit::money(d.value).replace(".00", ""), 13.0, t.foreground, 90.0);
+    kit::text_at(
+        p,
+        pos2(card.max.x - 12.0, card.min.y + 62.0),
+        Align2::RIGHT_CENTER,
+        &kit::money(d.value).replace(".00", ""),
+        13.0,
+        t.foreground,
+        90.0,
+    );
     let initials: String = d.owner.split(' ').filter_map(|w| w.chars().next()).collect();
-    kit::text_at(p, card.left_top() + vec2(12.0, 83.0), Align2::LEFT_CENTER, &format!("{} · {}", initials, d.owner), 11.5, t.muted_foreground, card.width() - 24.0);
+    kit::text_at(
+        p,
+        card.left_top() + vec2(12.0, 83.0),
+        Align2::LEFT_CENTER,
+        &format!("{} · {}", initials, d.owner),
+        11.5,
+        t.muted_foreground,
+        card.width() - 24.0,
+    );
     let _ = Id::NULL;
 }

@@ -1,7 +1,10 @@
 //! Mail client template: folders, message list, reading pane and compose dialog.
 
 use egui::{pos2, vec2, Align2, CursorIcon, Key, Rect, Sense, Stroke, Ui};
-use glowkit_components::{toast, Button, ButtonVariant, ControlSize, Dialog, Input, LineIcon, Switch, Tabs, TabsStyle, Textarea, Toast, UiIcon};
+use glowkit_components::{
+    toast, Button, ButtonVariant, ControlSize, Dialog, Input, LineIcon, Switch, Tabs, TabsStyle, Textarea, Toast,
+    UiIcon,
+};
 use glowkit_core::Theme;
 
 use super::common::{demo_notes, demo_user};
@@ -63,7 +66,11 @@ pub struct MailApp {
 
 fn msg(from: &str, subject: &str, body: &str, date: &str, unread: bool, labels: &[&str], folder: &str) -> MailMessage {
     MailMessage {
-        email: format!("{}@{}.com", from.split(' ').next().unwrap_or("x").to_lowercase(), if labels.contains(&"work") { "acme" } else { "example" }),
+        email: format!(
+            "{}@{}.com",
+            from.split(' ').next().unwrap_or("x").to_lowercase(),
+            if labels.contains(&"work") { "acme" } else { "example" }
+        ),
         from: from.into(),
         subject: subject.into(),
         body: body.into(),
@@ -134,7 +141,10 @@ impl MailApp {
         let prev_route = route.clone();
         AppShell::new(&mut route, &mut nav)
             .layout(ShellLayout::Sidebar)
-            .workspaces(vec![Workspace::new("Ada Lovelace", "ada@acme.dev"), Workspace::new("Acme Support", "support@acme.dev")])
+            .workspaces(vec![
+                Workspace::new("Ada Lovelace", "ada@acme.dev"),
+                Workspace::new("Acme Support", "support@acme.dev"),
+            ])
             .user(demo_user())
             .notifications(&mut notes)
             .padding(0.0)
@@ -154,7 +164,12 @@ impl MailApp {
         (0..self.messages.len())
             .filter(|&i| {
                 let m = &self.messages[i];
-                m.folder == folder && (self.tab == 0 || m.unread) && (q.is_empty() || m.subject.to_lowercase().contains(&q) || m.from.to_lowercase().contains(&q) || m.body.to_lowercase().contains(&q))
+                m.folder == folder
+                    && (self.tab == 0 || m.unread)
+                    && (q.is_empty()
+                        || m.subject.to_lowercase().contains(&q)
+                        || m.from.to_lowercase().contains(&q)
+                        || m.body.to_lowercase().contains(&q))
             })
             .collect()
     }
@@ -171,7 +186,15 @@ impl MailApp {
         // keyboard
         let typing = ui.memory(|m| m.focused().is_some());
         if !typing && !self.compose_open {
-            let (down, up, e, del, c) = ui.input(|i| (i.key_pressed(Key::ArrowDown) || i.key_pressed(Key::J), i.key_pressed(Key::ArrowUp) || i.key_pressed(Key::K), i.key_pressed(Key::E), i.key_pressed(Key::Delete), i.key_pressed(Key::C)));
+            let (down, up, e, del, c) = ui.input(|i| {
+                (
+                    i.key_pressed(Key::ArrowDown) || i.key_pressed(Key::J),
+                    i.key_pressed(Key::ArrowUp) || i.key_pressed(Key::K),
+                    i.key_pressed(Key::E),
+                    i.key_pressed(Key::Delete),
+                    i.key_pressed(Key::C),
+                )
+            });
             let pos = self.selected.and_then(|s| vis.iter().position(|v| *v == s));
             if down && !vis.is_empty() {
                 self.selected = Some(vis[pos.map_or(0, |p| (p + 1).min(vis.len() - 1))]);
@@ -197,22 +220,44 @@ impl MailApp {
         // ---- list pane --------------------------------------------------------------------
         let p = ui.painter().clone();
         let title = folder[..1].to_uppercase() + &folder[1..];
-        kit::text_at(&p, pos2(lr.min.x + 18.0, lr.min.y + 28.0), Align2::LEFT_CENTER, &title, 18.0, t.foreground, 160.0);
+        kit::text_at(
+            &p,
+            pos2(lr.min.x + 18.0, lr.min.y + 28.0),
+            Align2::LEFT_CENTER,
+            &title,
+            18.0,
+            t.foreground,
+            160.0,
+        );
         let mut compose = false;
-        kit::child(ui, Rect::from_min_max(pos2(lr.max.x - 280.0, lr.min.y + 12.0), pos2(lr.max.x - 14.0, lr.min.y + 44.0)), |ui| {
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
-                let b = ui.add(Button::new("Compose").icon(UiIcon::Plus).size(ControlSize::Sm));
-                kit::tip(&b, "New message", Some("C"));
-                compose = b.clicked();
-                ui.add(Tabs::new(&mut self.tab, &["All", "Unread"]).style(TabsStyle::Segmented).height(32.0));
-            });
-        });
+        kit::child(
+            ui,
+            Rect::from_min_max(pos2(lr.max.x - 280.0, lr.min.y + 12.0), pos2(lr.max.x - 14.0, lr.min.y + 44.0)),
+            |ui| {
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
+                    let b = ui.add(Button::new("Compose").icon(UiIcon::Plus).size(ControlSize::Sm));
+                    kit::tip(&b, "New message", Some("C"));
+                    compose = b.clicked();
+                    ui.add(Tabs::new(&mut self.tab, &["All", "Unread"]).style(TabsStyle::Segmented).height(32.0));
+                });
+            },
+        );
         if compose {
             self.compose_open = true;
             self.compose = (String::new(), String::new(), String::new());
         }
         kit::hline(&p, lr.min.x, lr.max.x, lr.min.y + 56.0, &t);
-        kit::put(ui, Rect::from_min_size(pos2(lr.min.x + 14.0, lr.min.y + 68.0), vec2(lr.width() - 28.0, 32.0)), Input::new(&mut self.query).placeholder("Search mail…").icon(UiIcon::Search).clearable(true).size(ControlSize::Sm).width(lr.width() - 28.0).id_salt("mail_q"));
+        kit::put(
+            ui,
+            Rect::from_min_size(pos2(lr.min.x + 14.0, lr.min.y + 68.0), vec2(lr.width() - 28.0, 32.0)),
+            Input::new(&mut self.query)
+                .placeholder("Search mail…")
+                .icon(UiIcon::Search)
+                .clearable(true)
+                .size(ControlSize::Sm)
+                .width(lr.width() - 28.0)
+                .id_salt("mail_q"),
+        );
         let list = Rect::from_min_max(pos2(lr.min.x, lr.min.y + 112.0), lr.max);
         let mut clicked = None;
         kit::child(ui, list, |ui| {
@@ -232,7 +277,11 @@ impl MailApp {
                     let resp = ui.interact(r, rid, Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
                     let hv = kit::hover(ui, rid, resp.hovered());
                     let p = ui.painter();
-                    p.rect_filled(r, t.radius, if sel { kit::active_fill(&t, t.background) } else { kit::hover_fill(&t, hv) });
+                    p.rect_filled(
+                        r,
+                        t.radius,
+                        if sel { kit::active_fill(&t, t.background) } else { kit::hover_fill(&t, hv) },
+                    );
                     p.rect_stroke(r, t.radius, Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
                     let x = r.min.x + 14.0;
                     let mut nx = x;
@@ -240,15 +289,47 @@ impl MailApp {
                         p.circle_filled(pos2(x + 3.0, r.min.y + 20.0), 4.0, t.info);
                         nx += 14.0;
                     }
-                    let dr = kit::text_at(p, pos2(r.max.x - 14.0, r.min.y + 20.0), Align2::RIGHT_CENTER, &m.date, 11.5, if sel { t.foreground } else { t.muted_foreground }, 90.0);
-                    kit::text_at(p, pos2(nx, r.min.y + 20.0), Align2::LEFT_CENTER, &m.from, 14.0, t.foreground, dr.min.x - nx - 10.0);
-                    kit::text_at(p, pos2(x, r.min.y + 40.0), Align2::LEFT_CENTER, &m.subject, 12.5, t.foreground, r.width() - 28.0);
+                    let dr = kit::text_at(
+                        p,
+                        pos2(r.max.x - 14.0, r.min.y + 20.0),
+                        Align2::RIGHT_CENTER,
+                        &m.date,
+                        11.5,
+                        if sel { t.foreground } else { t.muted_foreground },
+                        90.0,
+                    );
+                    kit::text_at(
+                        p,
+                        pos2(nx, r.min.y + 20.0),
+                        Align2::LEFT_CENTER,
+                        &m.from,
+                        14.0,
+                        t.foreground,
+                        dr.min.x - nx - 10.0,
+                    );
+                    kit::text_at(
+                        p,
+                        pos2(x, r.min.y + 40.0),
+                        Align2::LEFT_CENTER,
+                        &m.subject,
+                        12.5,
+                        t.foreground,
+                        r.width() - 28.0,
+                    );
                     let g = kit::wrapped(p, &m.body, 12.0, t.muted_foreground, r.width() - 28.0, 2);
                     p.galley(pos2(x, r.min.y + 52.0), g, t.muted_foreground);
                     let mut lx = x;
                     for l in &m.labels {
                         let important = l == "work" || l == "important";
-                        let pr = kit::pill(p, pos2(lx, r.max.y - 15.0), false, l, if important { t.primary_foreground } else { t.secondary_foreground }, if important { t.primary } else { t.secondary }, 10.5);
+                        let pr = kit::pill(
+                            p,
+                            pos2(lx, r.max.y - 15.0),
+                            false,
+                            l,
+                            if important { t.primary_foreground } else { t.secondary_foreground },
+                            if important { t.primary } else { t.secondary },
+                            10.5,
+                        );
                         lx = pr.max.x + 6.0;
                     }
                     if resp.clicked() {
@@ -257,8 +338,20 @@ impl MailApp {
                 }
                 if vis.is_empty() {
                     let r = kit::alloc_row(ui, 200.0);
-                    ui.painter().text(r.center() - vec2(0.0, 10.0), Align2::CENTER_CENTER, if self.query.is_empty() { "No messages" } else { "No messages match your search" }, egui::FontId::proportional(14.0), t.foreground);
-                    ui.painter().text(r.center() + vec2(0.0, 12.0), Align2::CENTER_CENTER, "You're all caught up.", egui::FontId::proportional(12.5), t.muted_foreground);
+                    ui.painter().text(
+                        r.center() - vec2(0.0, 10.0),
+                        Align2::CENTER_CENTER,
+                        if self.query.is_empty() { "No messages" } else { "No messages match your search" },
+                        egui::FontId::proportional(14.0),
+                        t.foreground,
+                    );
+                    ui.painter().text(
+                        r.center() + vec2(0.0, 12.0),
+                        Align2::CENTER_CENTER,
+                        "You're all caught up.",
+                        egui::FontId::proportional(12.5),
+                        t.muted_foreground,
+                    );
                 }
             });
         });
@@ -278,7 +371,12 @@ impl MailApp {
             let subject = self.messages[s].subject.clone();
             let pos = vis.iter().position(|v| *v == s).unwrap_or(0);
             self.selected = vis.iter().filter(|v| **v != s).nth(pos.min(vis.len().saturating_sub(2))).copied();
-            toast(ui.ctx(), Toast::new(if to == "trash" { "Moved to Trash" } else { "Archived" }).description(format!("“{subject}” from {from}")).action("Undo"));
+            toast(
+                ui.ctx(),
+                Toast::new(if to == "trash" { "Moved to Trash" } else { "Archived" })
+                    .description(format!("“{subject}” from {from}"))
+                    .action("Undo"),
+            );
         }
     }
 
@@ -312,7 +410,15 @@ impl MailApp {
             }
         }
         let mut rx = tb.max.x - 12.0;
-        for (k, (icon, label)) in [(AppIcon::Ui(UiIcon::MoreHorizontal), "More"), (AppIcon::Forward, "Forward"), (AppIcon::ReplyAll, "Reply all"), (AppIcon::Reply, "Reply")].iter().enumerate() {
+        for (k, (icon, label)) in [
+            (AppIcon::Ui(UiIcon::MoreHorizontal), "More"),
+            (AppIcon::Forward, "Forward"),
+            (AppIcon::ReplyAll, "Reply all"),
+            (AppIcon::Reply, "Reply"),
+        ]
+        .iter()
+        .enumerate()
+        {
             let br = Rect::from_center_size(pos2(rx - 16.0, tb.center().y), vec2(32.0, 32.0));
             let b = kit::icon_button(ui, br, id.with(("tr", k)), *icon, false);
             kit::tip(&b, label, None);
@@ -333,7 +439,13 @@ impl MailApp {
             _ => {}
         }
         let Some(mi) = self.selected.filter(|s| *s < self.messages.len()) else {
-            p.text(rr.center(), Align2::CENTER_CENTER, "No message selected", egui::FontId::proportional(14.0), t.muted_foreground);
+            p.text(
+                rr.center(),
+                Align2::CENTER_CENTER,
+                "No message selected",
+                egui::FontId::proportional(14.0),
+                t.muted_foreground,
+            );
             return;
         };
         let body = Rect::from_min_max(pos2(rr.min.x, tb.max.y), rr.max);
@@ -343,20 +455,61 @@ impl MailApp {
             kit::skel(ui, Rect::from_min_size(b.min + vec2(52.0, 4.0), vec2(b.width() * 0.3, 10.0)));
             kit::skel(ui, Rect::from_min_size(b.min + vec2(52.0, 22.0), vec2(b.width() * 0.45, 9.0)));
             for i in 0..5 {
-                kit::skel(ui, Rect::from_min_size(b.min + vec2(0.0, 80.0 + i as f32 * 20.0), vec2(b.width() * (0.9 - 0.08 * (i % 3) as f32), 9.0)));
+                kit::skel(
+                    ui,
+                    Rect::from_min_size(
+                        b.min + vec2(0.0, 80.0 + i as f32 * 20.0),
+                        vec2(b.width() * (0.9 - 0.08 * (i % 3) as f32), 9.0),
+                    ),
+                );
             }
             return;
         }
         let m = self.messages[mi].clone();
         let hr = Rect::from_min_size(body.min + vec2(20.0, 18.0), vec2(body.width() - 40.0, 52.0));
         kit::avatar(ui, Rect::from_min_size(hr.min, vec2(40.0, 40.0)), &m.from);
-        let dr = kit::text_at(&p, pos2(hr.max.x, hr.min.y + 9.0), Align2::RIGHT_CENTER, &m.date, 12.0, t.muted_foreground, 100.0);
-        kit::text_at(&p, pos2(hr.min.x + 52.0, hr.min.y + 9.0), Align2::LEFT_CENTER, &m.from, 14.0, t.foreground, dr.min.x - hr.min.x - 64.0);
-        kit::text_at(&p, pos2(hr.min.x + 52.0, hr.min.y + 27.0), Align2::LEFT_CENTER, &m.subject, 12.5, t.foreground, hr.width() - 60.0);
-        kit::text_at(&p, pos2(hr.min.x + 52.0, hr.min.y + 44.0), Align2::LEFT_CENTER, &format!("Reply-To: {}", m.email), 12.0, t.muted_foreground, hr.width() - 60.0);
+        let dr = kit::text_at(
+            &p,
+            pos2(hr.max.x, hr.min.y + 9.0),
+            Align2::RIGHT_CENTER,
+            &m.date,
+            12.0,
+            t.muted_foreground,
+            100.0,
+        );
+        kit::text_at(
+            &p,
+            pos2(hr.min.x + 52.0, hr.min.y + 9.0),
+            Align2::LEFT_CENTER,
+            &m.from,
+            14.0,
+            t.foreground,
+            dr.min.x - hr.min.x - 64.0,
+        );
+        kit::text_at(
+            &p,
+            pos2(hr.min.x + 52.0, hr.min.y + 27.0),
+            Align2::LEFT_CENTER,
+            &m.subject,
+            12.5,
+            t.foreground,
+            hr.width() - 60.0,
+        );
+        kit::text_at(
+            &p,
+            pos2(hr.min.x + 52.0, hr.min.y + 44.0),
+            Align2::LEFT_CENTER,
+            &format!("Reply-To: {}", m.email),
+            12.0,
+            t.muted_foreground,
+            hr.width() - 60.0,
+        );
         kit::hline(&p, rr.min.x, rr.max.x, hr.max.y + 12.0, &t);
         let reply_h = 150.0;
-        let text_r = Rect::from_min_max(pos2(body.min.x + 20.0, hr.max.y + 26.0), pos2(body.max.x - 20.0, body.max.y - reply_h - 12.0));
+        let text_r = Rect::from_min_max(
+            pos2(body.min.x + 20.0, hr.max.y + 26.0),
+            pos2(body.max.x - 20.0, body.max.y - reply_h - 12.0),
+        );
         kit::child(ui, text_r, |ui| {
             kit::scroll(ui, "mail_body", |ui| {
                 ui.label(egui::RichText::new(&m.body).size(13.5).color(t.foreground).line_height(Some(21.0)));
@@ -367,16 +520,33 @@ impl MailApp {
         let mut send = false;
         kit::child(ui, rb, |ui| {
             ui.spacing_mut().item_spacing.y = 8.0;
-            ui.add(Textarea::new(&mut self.reply).placeholder(format!("Reply {}…", m.from)).rows(3).width(rb.width()).id_salt("mail_reply"));
+            ui.add(
+                Textarea::new(&mut self.reply)
+                    .placeholder(format!("Reply {}…", m.from))
+                    .rows(3)
+                    .width(rb.width())
+                    .id_salt("mail_reply"),
+            );
             ui.horizontal(|ui| {
                 ui.add(Switch::new(&mut self.mute).label("Mute this thread").size(ControlSize::Sm));
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    send = ui.add(Button::new("Send").size(ControlSize::Sm).disabled(self.reply.trim().is_empty())).clicked();
+                    send = ui
+                        .add(Button::new("Send").size(ControlSize::Sm).disabled(self.reply.trim().is_empty()))
+                        .clicked();
                 });
             });
         });
         if send {
-            self.messages.push(MailMessage { from: "Ada Lovelace".into(), email: "ada@acme.dev".into(), subject: format!("Re: {}", m.subject), body: self.reply.clone(), date: "Just now".into(), unread: false, labels: vec!["work".into()], folder: "sent".into() });
+            self.messages.push(MailMessage {
+                from: "Ada Lovelace".into(),
+                email: "ada@acme.dev".into(),
+                subject: format!("Re: {}", m.subject),
+                body: self.reply.clone(),
+                date: "Just now".into(),
+                unread: false,
+                labels: vec!["work".into()],
+                folder: "sent".into(),
+            });
             self.reply.clear();
             toast(ui.ctx(), Toast::success("Reply sent").description(format!("To {}", m.from)).action("Undo"));
         }
@@ -385,13 +555,38 @@ impl MailApp {
     fn compose_dialog(&mut self, ui: &mut Ui, bounds: Rect) {
         let mut open = self.compose_open;
         let c = &mut self.compose;
-        let r = Dialog::new(&mut open, "New message").primary("Send").secondary("Discard").width(520.0).within(bounds).show(ui, |ui| {
-            ui.spacing_mut().item_spacing.y = 10.0;
-            let w = ui.available_width();
-            ui.add(Input::new(&mut c.0).label("To").placeholder("name@example.com").icon(UiIcon::Mail).width(w).id_salt("mail_to"));
-            ui.add(Input::new(&mut c.1).label("Subject").placeholder("What's this about?").width(w).id_salt("mail_subject"));
-            ui.add(Textarea::new(&mut c.2).label("Message").placeholder("Write your message…").rows(6).width(w).id_salt("mail_body_c"));
-        });
+        let r = Dialog::new(&mut open, "New message")
+            .primary("Send")
+            .secondary("Discard")
+            .width(520.0)
+            .within(bounds)
+            .show(ui, |ui| {
+                ui.spacing_mut().item_spacing.y = 10.0;
+                let w = ui.available_width();
+                ui.add(
+                    Input::new(&mut c.0)
+                        .label("To")
+                        .placeholder("name@example.com")
+                        .icon(UiIcon::Mail)
+                        .width(w)
+                        .id_salt("mail_to"),
+                );
+                ui.add(
+                    Input::new(&mut c.1)
+                        .label("Subject")
+                        .placeholder("What's this about?")
+                        .width(w)
+                        .id_salt("mail_subject"),
+                );
+                ui.add(
+                    Textarea::new(&mut c.2)
+                        .label("Message")
+                        .placeholder("Write your message…")
+                        .rows(6)
+                        .width(w)
+                        .id_salt("mail_body_c"),
+                );
+            });
         if r.primary_clicked {
             if self.compose.0.contains('@') {
                 let to = self.compose.0.clone();

@@ -31,7 +31,15 @@ impl Gallery {
         let themes = Theme::presets();
         themes[0].install(&cc.egui_ctx);
         let demos = glowkit::all_demos();
-        let mut g = Self { demos, page: Page::Home, search: String::new(), theme_idx: 0, themes, copied_at: -10.0, bare: false };
+        let mut g = Self {
+            demos,
+            page: Page::Home,
+            search: String::new(),
+            theme_idx: 0,
+            themes,
+            copied_at: -10.0,
+            bare: false,
+        };
         if let Some(route) = initial {
             g.route(&route);
         }
@@ -70,14 +78,20 @@ impl Gallery {
     fn sidebar(&mut self, ui: &mut Ui) {
         let t = Theme::of(ui);
         ui.add_space(4.0);
-        ui.add(egui::TextEdit::singleline(&mut self.search).hint_text("🔍  Search components…").desired_width(f32::INFINITY));
+        ui.add(
+            egui::TextEdit::singleline(&mut self.search)
+                .hint_text("🔍  Search components…")
+                .desired_width(f32::INFINITY),
+        );
         ui.add_space(6.0);
         egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
             if nav_item(ui, "✦  Overview", self.page == Page::Home, None) {
                 self.page = Page::Home;
             }
             for cat in Category::ALL {
-                let items: Vec<usize> = (0..self.demos.len()).filter(|&i| self.demos[i].category == cat && self.matches(&self.demos[i])).collect();
+                let items: Vec<usize> = (0..self.demos.len())
+                    .filter(|&i| self.demos[i].category == cat && self.matches(&self.demos[i]))
+                    .collect();
                 if items.is_empty() {
                     continue;
                 }
@@ -124,14 +138,18 @@ impl Gallery {
             ui.label(RichText::new(format!("v{VERSION}")).size(11.0).color(t.muted_foreground));
             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                 let names: Vec<&str> = self.themes.iter().map(|t| t.name).collect();
-                egui::ComboBox::from_id_salt("theme")
-                    .selected_text(format!("🎨 {}", names[self.theme_idx]))
-                    .show_ui(ui, |ui| {
+                egui::ComboBox::from_id_salt("theme").selected_text(format!("🎨 {}", names[self.theme_idx])).show_ui(
+                    ui,
+                    |ui| {
                         for (i, n) in names.iter().enumerate() {
                             ui.selectable_value(&mut self.theme_idx, i, *n);
                         }
-                    });
-                ui.hyperlink_to(RichText::new("GitHub").color(t.muted_foreground), "https://github.com/glowkit-rs/glowkit");
+                    },
+                );
+                ui.hyperlink_to(
+                    RichText::new("GitHub").color(t.muted_foreground),
+                    "https://github.com/glowkit-rs/glowkit",
+                );
                 ui.label(RichText::new(format!("{} components", self.demos.len())).color(t.muted_foreground));
             });
         });
@@ -273,7 +291,10 @@ fn chip(ui: &mut Ui, text: &str) {
         .corner_radius(egui::CornerRadius::same(99))
         .inner_margin(egui::Margin::symmetric(8, 2))
         .show(ui, |ui| {
-            ui.add(egui::Label::new(RichText::new(text).size(11.0).color(t.muted_foreground)).wrap_mode(egui::TextWrapMode::Extend));
+            ui.add(
+                egui::Label::new(RichText::new(text).size(11.0).color(t.muted_foreground))
+                    .wrap_mode(egui::TextWrapMode::Extend),
+            );
         });
 }
 
@@ -296,7 +317,10 @@ fn code_block(ui: &mut Ui, code: &str) {
 fn highlight_rust(job: &mut egui::text::LayoutJob, code: &str, t: &Theme) {
     use glowkit::color::hex;
     let font = FontId::monospace(12.5);
-    let kw = ["use", "let", "mut", "fn", "pub", "struct", "impl", "for", "in", "if", "else", "match", "return", "move", "self", "Self", "true", "false", "as", "const", "while", "loop"];
+    let kw = [
+        "use", "let", "mut", "fn", "pub", "struct", "impl", "for", "in", "if", "else", "match", "return", "move",
+        "self", "Self", "true", "false", "as", "const", "while", "loop",
+    ];
     let (c_kw, c_str, c_com, c_num, c_ty, c_fn, c_txt) = if t.dark {
         (hex("#C792EA"), hex("#C3E88D"), hex("#636A80"), hex("#F78C6C"), hex("#FFCB6B"), hex("#82AAFF"), hex("#D4D4D8"))
     } else {
@@ -376,10 +400,20 @@ fn nav_item(ui: &mut Ui, label: &str, selected: bool, _badge: Option<&str>) -> b
         ui.painter().rect_filled(r, t.corner_scaled(0.6), fill);
     }
     if selected {
-        ui.painter().rect_filled(egui::Rect::from_min_size(r.min + vec2(0.0, 6.0), vec2(2.5, r.height() - 12.0)), 2.0, t.accent);
+        ui.painter().rect_filled(
+            egui::Rect::from_min_size(r.min + vec2(0.0, 6.0), vec2(2.5, r.height() - 12.0)),
+            2.0,
+            t.accent,
+        );
     }
     let col = if selected { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, hover) };
-    ui.painter().text(r.left_center() + vec2(10.0, 0.0), egui::Align2::LEFT_CENTER, label, FontId::proportional(13.0), col);
+    ui.painter().text(
+        r.left_center() + vec2(10.0, 0.0),
+        egui::Align2::LEFT_CENTER,
+        label,
+        FontId::proportional(13.0),
+        col,
+    );
     resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked()
 }
 
@@ -403,12 +437,22 @@ impl eframe::App for Gallery {
             }
         }
         egui::Panel::top("top")
-            .frame(egui::Frame::new().fill(theme.background).inner_margin(egui::Margin::symmetric(16, 4)).stroke(theme.border_stroke()))
+            .frame(
+                egui::Frame::new()
+                    .fill(theme.background)
+                    .inner_margin(egui::Margin::symmetric(16, 4))
+                    .stroke(theme.border_stroke()),
+            )
             .show(ui, |ui| self.top_bar(ui));
         egui::Panel::left("nav")
             .resizable(false)
             .exact_size(250.0)
-            .frame(egui::Frame::new().fill(theme.background).inner_margin(egui::Margin::same(12)).stroke(theme.border_stroke()))
+            .frame(
+                egui::Frame::new()
+                    .fill(theme.background)
+                    .inner_margin(egui::Margin::same(12))
+                    .stroke(theme.border_stroke()),
+            )
             .show(ui, |ui| self.sidebar(ui));
         egui::CentralPanel::default()
             .frame(egui::Frame::new().fill(theme.background).inner_margin(egui::Margin::symmetric(32, 0)))
@@ -471,7 +515,10 @@ fn main() -> eframe::Result {
         return Ok(());
     }
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([1360.0, 880.0]).with_min_inner_size([900.0, 600.0]).with_title("glowkit gallery"),
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size([1360.0, 880.0])
+            .with_min_inner_size([900.0, 600.0])
+            .with_title("glowkit gallery"),
         ..Default::default()
     };
     eframe::run_native("glowkit gallery", options, Box::new(|cc| Ok(Box::new(Gallery::new(cc, initial)))))
@@ -525,7 +572,11 @@ fn main() {
             .expect("not a canvas");
         let initial = web::hash();
         let start = eframe::WebRunner::new()
-            .start(canvas, eframe::WebOptions::default(), Box::new(move |cc| Ok(Box::new(Gallery::new(cc, Some(initial))))))
+            .start(
+                canvas,
+                eframe::WebOptions::default(),
+                Box::new(move |cc| Ok(Box::new(Gallery::new(cc, Some(initial))))),
+            )
             .await;
         if let Some(loading) = document.get_element_by_id("loading") {
             match start {

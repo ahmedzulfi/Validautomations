@@ -409,7 +409,7 @@ pub fn all() -> Vec<Demo> {
             name: "Node Editor",
             category: C,
             description: "A workflow-automation graph: drag nodes, connect handles with a live bezier preview, box-select, minimap, controls, undo/redo, copy/paste and auto-layout.",
-            covers: &["React Flow: Node-based UI", "React Flow: MiniMap", "React Flow: Controls", "React Flow: Node Toolbar", "xyflow: Workflow editor", "n8n: Workflow canvas"],
+            covers: &["React Flow: Node-based UI", "React Flow: MiniMap", "React Flow: Controls", "React Flow: Node Toolbar", "xyflow: Workflow editor", "n8n: Workflow canvas", "Vercel AI Elements: Controls", "Vercel AI Elements: Panel", "Vercel AI Elements: Connection", "React Flow: Edge Label", "React Flow: Custom Edges", "React Flow: Selection", "React Flow: Snap to Grid", "React Flow: Undo Redo", "React Flow: Auto Layout"],
             code: r##"let mut graph = Graph::new();
 let hook = graph.add(Node::new("Webhook", pos2(0.0, 0.0)).subtitle("POST /orders").output(Port::new("body")));
 let filter = graph.add(Node::new("If", pos2(280.0, 0.0)).input(Port::new("in")).output(Port::new("true")).output(Port::new("false")));

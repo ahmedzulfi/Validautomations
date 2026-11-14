@@ -57,7 +57,7 @@ if let Some(email) = r.submitted { /* signed in */ }"##,
             "signup-page",
             "Signup Page",
             "Create-account page: social buttons, divider, name/email/password with strength meter, terms checkbox, inline validation errors and a check-your-inbox state.",
-            ["MVP Blocks: Signup", "shadcn/ui: Signup blocks", "Tailark: Sign Up"],
+            ["MVP Blocks: Signup", "shadcn/ui: Signup blocks", "Tailark: Sign Up", "Aceternity UI: Signup Form"],
             r##"if let Some(email) = SignupPage::new("Glowkit").show(ui).submitted { /* create */ }"##,
             |ui| {
                 let v = crate::sections::demos::picker(ui, &["Split", "Centered"]);
@@ -88,7 +88,7 @@ if let Some(email) = r.submitted { /* signed in */ }"##,
             "not-found-page",
             "404 Not Found",
             "A giant floating gradient 404 over drifting particles, message, docs search, two actions and quick-link cards.",
-            ["MVP Blocks: 404", "shadcnblocks: 404", "Tailark: Not Found"],
+            ["MVP Blocks: 404", "MVP Blocks: Not Found", "shadcnblocks: 404", "Tailark: Not Found"],
             r##"let r = NotFoundPage::new().background(SectionBackground::Particles).show(ui);
 if r.clicked("Go back home") { /* route */ }"##,
             |ui| {
@@ -151,7 +151,7 @@ ComingSoonPage::new("Glowkit").maintenance(true).progress(0.7).show(ui);"##,
             "blog-post-page",
             "Blog Post",
             "Article page: category, title, author meta and share buttons, cover, prose with headings, quote, code, list, figure and callout, author card, related posts and newsletter.",
-            ["MVP Blocks: Blog Post", "shadcnblocks: Blog Post", "Tailwind Typography"],
+            ["MVP Blocks: Blog Post", "shadcnblocks: Blog Post", "Tailwind Typography", "shadcn/ui: Typography"],
             r##"BlogPostPage::new("Designing motion that feels native")
     .author("Mia Park", "Head of Design")
     .body(ArticleBlock::defaults())

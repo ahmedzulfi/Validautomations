@@ -85,3 +85,22 @@ pub fn all_demos() -> Vec<glowkit_core::demo::Demo> {
     v.sort_by_key(|d| d.category);
     v
 }
+
+#[cfg(all(test, feature = "demos"))]
+mod tests {
+    #[test]
+    fn demo_ids_are_unique_and_kebab_case() {
+        let demos = crate::all_demos();
+        let mut seen = std::collections::HashSet::new();
+        for d in &demos {
+            assert!(seen.insert(d.id), "duplicate demo id: {}", d.id);
+            assert!(
+                d.id.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-'),
+                "demo id is not kebab-case: {}",
+                d.id
+            );
+            assert!(!d.name.is_empty() && !d.description.is_empty(), "demo {} is missing text", d.id);
+            assert!(!d.code.trim().is_empty(), "demo {} has no usage code", d.id);
+        }
+    }
+}

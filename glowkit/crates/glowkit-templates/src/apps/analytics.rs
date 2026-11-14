@@ -2,7 +2,10 @@
 
 use egui::{pos2, vec2, Align2, Rect, Ui};
 use glowkit_charts::{AreaChart, BarList, Datum, DonutChart, Series, StatTile};
-use glowkit_components::{toast, BadgeVariant, Button, ButtonVariant, ControlSize, DataTable, LineIcon, TableCell, TableColumn, Tabs, TabsStyle, Toast, UiIcon};
+use glowkit_components::{
+    toast, BadgeVariant, Button, ButtonVariant, ControlSize, DataTable, LineIcon, TableCell, TableColumn, Tabs,
+    TabsStyle, Toast, UiIcon,
+};
 use glowkit_core::Theme;
 
 use super::common::{demo_notes, demo_user, demo_workspaces, page_header, series};
@@ -40,12 +43,20 @@ impl Default for AnalyticsApp {
                 NavSection::new("Overview")
                     .item(NavItem::new("analytics", "Analytics").icon(LineIcon::Chart))
                     .item(NavItem::new("realtime", "Realtime").icon(UiIcon::Activity).badge("Live"))
-                    .item(NavItem::new("reports", "Reports").icon(LineIcon::File).child(NavItem::new("reports/weekly", "Weekly")).child(NavItem::new("reports/monthly", "Monthly")).child(NavItem::new("reports/custom", "Custom"))),
+                    .item(
+                        NavItem::new("reports", "Reports")
+                            .icon(LineIcon::File)
+                            .child(NavItem::new("reports/weekly", "Weekly"))
+                            .child(NavItem::new("reports/monthly", "Monthly"))
+                            .child(NavItem::new("reports/custom", "Custom")),
+                    ),
                 NavSection::new("Audience")
                     .item(NavItem::new("audience", "Visitors").icon(LineIcon::Users))
                     .item(NavItem::new("geo", "Locations").icon(LineIcon::Globe))
                     .item(NavItem::new("devices", "Devices").icon(LineIcon::Phone)),
-                NavSection::new("Commerce").item(NavItem::new("orders", "Orders").icon(crate::shells::AppIcon::Cart).badge("24")).item(NavItem::new("products", "Products").icon(crate::shells::AppIcon::Package)),
+                NavSection::new("Commerce")
+                    .item(NavItem::new("orders", "Orders").icon(crate::shells::AppIcon::Cart).badge("24"))
+                    .item(NavItem::new("products", "Products").icon(crate::shells::AppIcon::Package)),
             ],
             notifications: demo_notes(),
             range: 1,
@@ -83,7 +94,10 @@ fn labels_for(range: usize) -> Vec<String> {
         0 => ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].iter().map(|s| s.to_string()).collect(),
         1 => (1..=30).map(|d| format!("Oct {d}")).collect(),
         2 => (1..=13).map(|w| format!("W{}", w + 27)).collect(),
-        _ => ["Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"].iter().map(|s| s.to_string()).collect(),
+        _ => ["Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect(),
     }
 }
 
@@ -92,8 +106,15 @@ fn dashboard(ui: &mut Ui, rect: Rect, range: &mut usize) {
     let id = ui.scope_id().with("analytics");
     let mut changed = false;
     let top = page_header(ui, rect, "Analytics", "Traffic, revenue and conversion across all channels.", |ui| {
-        if ui.add(Button::new("Export").icon(UiIcon::Download).variant(ButtonVariant::Outline).size(ControlSize::Sm)).clicked() {
-            toast(ui.ctx(), Toast::success("Report exported").description(format!("analytics-{}.csv is in your downloads.", RANGES[*range].replace(' ', ""))));
+        if ui
+            .add(Button::new("Export").icon(UiIcon::Download).variant(ButtonVariant::Outline).size(ControlSize::Sm))
+            .clicked()
+        {
+            toast(
+                ui.ctx(),
+                Toast::success("Report exported")
+                    .description(format!("analytics-{}.csv is in your downloads.", RANGES[*range].replace(' ', ""))),
+            );
         }
         let before = *range;
         ui.add(Tabs::new(range, &RANGES).style(TabsStyle::Segmented).height(32.0));
@@ -128,10 +149,27 @@ fn dashboard(ui: &mut Ui, rect: Rect, range: &mut usize) {
                     continue;
                 }
                 let tile = match i {
-                    0 => StatTile::new("Revenue", total_rev).prefix("$").delta(12.4 + *range as f64).caption("vs prev.").spark(&spark_rev),
-                    1 => StatTile::new("Visitors", visits.iter().sum::<f64>() * k).delta(8.1).caption("vs prev.").spark(&visits),
-                    2 => StatTile::new("Conversion", 3.42).suffix("%").decimals(2).delta(-0.8).caption("vs prev.").spark(&conv),
-                    _ => StatTile::new("Avg. order", 92.18).prefix("$").decimals(2).delta(4.6).caption("vs prev.").spark(&aov),
+                    0 => StatTile::new("Revenue", total_rev)
+                        .prefix("$")
+                        .delta(12.4 + *range as f64)
+                        .caption("vs prev.")
+                        .spark(&spark_rev),
+                    1 => StatTile::new("Visitors", visits.iter().sum::<f64>() * k)
+                        .delta(8.1)
+                        .caption("vs prev.")
+                        .spark(&visits),
+                    2 => StatTile::new("Conversion", 3.42)
+                        .suffix("%")
+                        .decimals(2)
+                        .delta(-0.8)
+                        .caption("vs prev.")
+                        .spark(&conv),
+                    _ => StatTile::new("Avg. order", 92.18)
+                        .prefix("$")
+                        .decimals(2)
+                        .delta(4.6)
+                        .caption("vs prev.")
+                        .spark(&aov),
                 };
                 kit::put(ui, *r, tile.size(r.size()).animate(true));
             }
@@ -141,10 +179,22 @@ fn dashboard(ui: &mut Ui, rect: Rect, range: &mut usize) {
             if loading {
                 parts.iter().for_each(|r| kit::skel_r(ui, *r, t.radius));
             } else {
-                kit::titled_card(ui, parts[0], "Revenue", &format!("{} total · last {}", kit::money(total_rev), RANGES[*range]), |ui, b| {
-                    let s = [Series::new("Revenue", rev.clone()), Series::new("Previous period", prev.clone())];
-                    ui.add(AreaChart::new(&s).labels(&labels).height(b.height()).format(|v| format!("${}", glowkit_charts::format_compact(v))).id_salt("an_rev"));
-                });
+                kit::titled_card(
+                    ui,
+                    parts[0],
+                    "Revenue",
+                    &format!("{} total · last {}", kit::money(total_rev), RANGES[*range]),
+                    |ui, b| {
+                        let s = [Series::new("Revenue", rev.clone()), Series::new("Previous period", prev.clone())];
+                        ui.add(
+                            AreaChart::new(&s)
+                                .labels(&labels)
+                                .height(b.height())
+                                .format(|v| format!("${}", glowkit_charts::format_compact(v)))
+                                .id_salt("an_rev"),
+                        );
+                    },
+                );
                 if parts.len() > 1 {
                     kit::titled_card(ui, parts[1], "Traffic sources", "Sessions by channel", |ui, b| {
                         let d = [
@@ -158,9 +208,26 @@ fn dashboard(ui: &mut Ui, rect: Rect, range: &mut usize) {
                         let lh = 5.0 * 26.0;
                         let dh = (b.height() - lh - 12.0).max(120.0);
                         let dr = Rect::from_min_size(b.min, vec2(b.width(), dh));
-                        kit::put(ui, dr, DonutChart::new(&d).center_title(glowkit_charts::format_compact(total)).center_caption("Sessions").legend(false).height(dh).width(b.width()).id_salt("an_donut"));
-                        let items: Vec<(String, f64, egui::Color32)> = d.iter().enumerate().map(|(i, x)| (x.label.clone(), x.value, t.chart[i % 6])).collect();
-                        kit::legend_list(ui.painter(), Rect::from_min_max(pos2(b.min.x, b.max.y - lh), b.max), &items, glowkit_charts::format_compact, &t);
+                        kit::put(
+                            ui,
+                            dr,
+                            DonutChart::new(&d)
+                                .center_title(glowkit_charts::format_compact(total))
+                                .center_caption("Sessions")
+                                .legend(false)
+                                .height(dh)
+                                .width(b.width())
+                                .id_salt("an_donut"),
+                        );
+                        let items: Vec<(String, f64, egui::Color32)> =
+                            d.iter().enumerate().map(|(i, x)| (x.label.clone(), x.value, t.chart[i % 6])).collect();
+                        kit::legend_list(
+                            ui.painter(),
+                            Rect::from_min_max(pos2(b.min.x, b.max.y - lh), b.max),
+                            &items,
+                            glowkit_charts::format_compact,
+                            &t,
+                        );
                     });
                 }
             }
@@ -192,7 +259,14 @@ fn dashboard(ui: &mut Ui, rect: Rect, range: &mut usize) {
                         let data = [
                             ("#3210", "Olivia Martin", "olivia@email.com", "Paid", BadgeVariant::Success, 1999.0),
                             ("#3209", "Jackson Lee", "jackson@email.com", "Pending", BadgeVariant::Warning, 39.0),
-                            ("#3208", "Isabella Nguyen", "isabella@email.com", "Refunded", BadgeVariant::Destructive, 299.0),
+                            (
+                                "#3208",
+                                "Isabella Nguyen",
+                                "isabella@email.com",
+                                "Refunded",
+                                BadgeVariant::Destructive,
+                                299.0,
+                            ),
                             ("#3207", "William Kim", "will@email.com", "Paid", BadgeVariant::Success, 99.0),
                             ("#3206", "Sofia Davis", "sofia@email.com", "Paid", BadgeVariant::Success, 450.0),
                             ("#3205", "Liam Johnson", "liam@email.com", "Shipped", BadgeVariant::Info, 129.0),
@@ -200,7 +274,12 @@ fn dashboard(ui: &mut Ui, rect: Rect, range: &mut usize) {
                         let rows: Vec<Vec<TableCell>> = data
                             .iter()
                             .map(|(o, n, e, s, v, a)| {
-                                vec![TableCell::Mono((*o).into()), TableCell::User { name: (*n).into(), email: (*e).into() }, TableCell::Badge((*s).into(), *v), TableCell::Number(*a, kit::money(*a))]
+                                vec![
+                                    TableCell::Mono((*o).into()),
+                                    TableCell::User { name: (*n).into(), email: (*e).into() },
+                                    TableCell::Badge((*s).into(), *v),
+                                    TableCell::Number(*a, kit::money(*a)),
+                                ]
                             })
                             .collect();
                         ui.add(DataTable::new(cols, &rows).row_height(46.0).page_size(4).id_salt("an_orders"));
@@ -220,10 +299,22 @@ pub(crate) fn placeholder(ui: &mut Ui, rect: Rect, route: &str) {
     if let Some(f) = title.get_mut(0..1) {
         f.make_ascii_uppercase();
     }
-    kit::heading(&p, rect, &title, "This page is part of the template's navigation. Build it from the same pieces.", &t);
+    kit::heading(
+        &p,
+        rect,
+        &title,
+        "This page is part of the template's navigation. Build it from the same pieces.",
+        &t,
+    );
     let r = Rect::from_center_size(rect.center() + vec2(0.0, 30.0), vec2(rect.width().min(440.0), 220.0));
     kit::child(ui, r, |ui| {
-        ui.add(glowkit_components::EmptyState::new(UiIcon::Grid, format!("Nothing in {title} yet")).description("Connect a data source or create your first item to see it here.").action("Create item").dashed(true).width(r.width()));
+        ui.add(
+            glowkit_components::EmptyState::new(UiIcon::Grid, format!("Nothing in {title} yet"))
+                .description("Connect a data source or create your first item to see it here.")
+                .action("Create item")
+                .dashed(true)
+                .width(r.width()),
+        );
     });
     let _ = Align2::CENTER_CENTER;
 }

@@ -60,11 +60,21 @@ pub struct MusicApp {
 
 impl Default for MusicApp {
     fn default() -> Self {
-        let tr = |t: &str, a: &str, al: &str, s: f32, art: usize| MusicTrack { title: t.into(), artist: a.into(), album: al.into(), secs: s, liked: art % 3 == 0, art };
+        let tr = |t: &str, a: &str, al: &str, s: f32, art: usize| MusicTrack {
+            title: t.into(),
+            artist: a.into(),
+            album: al.into(),
+            secs: s,
+            liked: art % 3 == 0,
+            art,
+        };
         Self {
             route: "playlist/late-night".into(),
             nav: vec![
-                NavSection::new("Discover").item(NavItem::new("listen", "Listen now").icon(AppIcon::Play)).item(NavItem::new("browse", "Browse").icon(LineIcon::Grid)).item(NavItem::new("radio", "Radio").icon(AppIcon::Radio)),
+                NavSection::new("Discover")
+                    .item(NavItem::new("listen", "Listen now").icon(AppIcon::Play))
+                    .item(NavItem::new("browse", "Browse").icon(LineIcon::Grid))
+                    .item(NavItem::new("radio", "Radio").icon(AppIcon::Radio)),
                 NavSection::new("Library")
                     .item(NavItem::new("songs", "Songs").icon(LineIcon::Music))
                     .item(NavItem::new("albums", "Albums").icon(AppIcon::Disc))
@@ -111,7 +121,11 @@ fn cover(p: &egui::Painter, r: Rect, seed: usize, t: &Theme) {
     paint::gradient_rect(p, r, (r.width() * 0.08).min(10.0), 30.0 + seed as f32 * 40.0, &[a, mix(a, b, 0.5), b]);
     let c = p.with_clip_rect(r.intersect(p.clip_rect()));
     for k in 0..3 {
-        c.circle_stroke(r.center() + vec2((seed as f32 * 7.0 + k as f32 * 9.0) % 20.0 - 10.0, 0.0), r.width() * (0.18 + 0.12 * k as f32), Stroke::new(1.0, with_alpha(Color32::WHITE, 0.22)));
+        c.circle_stroke(
+            r.center() + vec2((seed as f32 * 7.0 + k as f32 * 9.0) % 20.0 - 10.0, 0.0),
+            r.width() * (0.18 + 0.12 * k as f32),
+            Stroke::new(1.0, with_alpha(Color32::WHITE, 0.22)),
+        );
     }
 }
 
@@ -131,7 +145,8 @@ impl MusicApp {
         }
         let typing = ui.memory(|m| m.focused().is_some());
         if !typing {
-            let (sp, l, r) = ui.input(|i| (i.key_pressed(Key::Space), i.key_pressed(Key::ArrowLeft), i.key_pressed(Key::ArrowRight)));
+            let (sp, l, r) = ui
+                .input(|i| (i.key_pressed(Key::Space), i.key_pressed(Key::ArrowLeft), i.key_pressed(Key::ArrowRight)));
             if sp {
                 self.playing = !self.playing;
             }
@@ -174,7 +189,13 @@ impl MusicApp {
             self.pos = 0.0;
             return;
         }
-        self.current = if self.shuffle { (self.current * 7 + 3) % n as usize } else if self.repeat && d > 0 && self.pos >= self.tracks[self.current].secs { self.current } else { (self.current as i32 + d).rem_euclid(n) as usize };
+        self.current = if self.shuffle {
+            (self.current * 7 + 3) % n as usize
+        } else if self.repeat && d > 0 && self.pos >= self.tracks[self.current].secs {
+            self.current
+        } else {
+            (self.current as i32 + d).rem_euclid(n) as usize
+        };
         self.pos = 0.0;
     }
 
@@ -197,15 +218,35 @@ impl MusicApp {
         }
         let tx = art.max.x + 22.0;
         kit::text_at(&p, pos2(tx, art.min.y + 20.0), Align2::LEFT_CENTER, "PLAYLIST", 11.5, t.muted_foreground, 200.0);
-        kit::text_at(&p, pos2(tx, art.min.y + 56.0), Align2::LEFT_CENTER, "Late night coding", 30.0, t.foreground, main.max.x - tx);
+        kit::text_at(
+            &p,
+            pos2(tx, art.min.y + 56.0),
+            Align2::LEFT_CENTER,
+            "Late night coding",
+            30.0,
+            t.foreground,
+            main.max.x - tx,
+        );
         let total: f32 = self.tracks.iter().map(|x| x.secs).sum();
-        kit::text_at(&p, pos2(tx, art.min.y + 90.0), Align2::LEFT_CENTER, &format!("Ada Lovelace · {} songs · {} min", self.tracks.len(), (total / 60.0) as u32), 13.0, t.muted_foreground, main.max.x - tx);
+        kit::text_at(
+            &p,
+            pos2(tx, art.min.y + 90.0),
+            Align2::LEFT_CENTER,
+            &format!("Ada Lovelace · {} songs · {} min", self.tracks.len(), (total / 60.0) as u32),
+            13.0,
+            t.muted_foreground,
+            main.max.x - tx,
+        );
         // play + shuffle
         let pb = Rect::from_center_size(pos2(tx + 24.0, art.max.y - 22.0), vec2(44.0, 44.0));
         let presp = ui.interact(pb, id.with("hero_play"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
         let hv = kit::hover(ui, id.with("hero_play"), presp.hovered());
         p.circle_filled(pb.center(), 22.0 + hv * 1.5, t.accent);
-        (if self.playing { AppIcon::Pause } else { AppIcon::Play }).paint(&p, Rect::from_center_size(pb.center() + vec2(if self.playing { 0.0 } else { 1.5 }, 0.0), vec2(18.0, 18.0)), t.accent_foreground);
+        (if self.playing { AppIcon::Pause } else { AppIcon::Play }).paint(
+            &p,
+            Rect::from_center_size(pb.center() + vec2(if self.playing { 0.0 } else { 1.5 }, 0.0), vec2(18.0, 18.0)),
+            t.accent_foreground,
+        );
         kit::tip(&presp, if self.playing { "Pause" } else { "Play" }, Some("Space"));
         if presp.clicked() {
             self.playing = !self.playing;
@@ -221,8 +262,18 @@ impl MusicApp {
         let list = Rect::from_min_max(pos2(main.min.x, art.max.y + 24.0), main.max);
         let cols = [36.0, 0.0, 0.0, 40.0, 56.0];
         let head = Rect::from_min_size(list.min, vec2(list.width(), 28.0));
-        for (c, h) in kit::split_x(head.shrink2(vec2(8.0, 0.0)), &cols, 10.0).iter().zip(["#", "Title", "Album", "", "Time"]) {
-            kit::text_at(&p, if h == "Time" { c.right_center() } else { c.left_center() }, if h == "Time" { Align2::RIGHT_CENTER } else { Align2::LEFT_CENTER }, h, 12.0, t.muted_foreground, c.width());
+        for (c, h) in
+            kit::split_x(head.shrink2(vec2(8.0, 0.0)), &cols, 10.0).iter().zip(["#", "Title", "Album", "", "Time"])
+        {
+            kit::text_at(
+                &p,
+                if h == "Time" { c.right_center() } else { c.left_center() },
+                if h == "Time" { Align2::RIGHT_CENTER } else { Align2::LEFT_CENTER },
+                h,
+                12.0,
+                t.muted_foreground,
+                c.width(),
+            );
         }
         kit::hline(&p, list.min.x, list.max.x, head.max.y, &t);
         let rows = Rect::from_min_max(pos2(list.min.x, head.max.y + 6.0), list.max);
@@ -250,31 +301,93 @@ impl MusicApp {
                         for k in 0..3 {
                             let h = 4.0 + 10.0 * (0.5 + 0.5 * (time * (5.0 + k as f32 * 1.7) + k as f32).sin());
                             let x = cells[0].min.x + 4.0 + k as f32 * 5.0;
-                            pp.rect_filled(Rect::from_min_max(pos2(x, r.center().y + 7.0 - h), pos2(x + 3.0, r.center().y + 7.0)), 1.0, t.accent);
+                            pp.rect_filled(
+                                Rect::from_min_max(pos2(x, r.center().y + 7.0 - h), pos2(x + 3.0, r.center().y + 7.0)),
+                                1.0,
+                                t.accent,
+                            );
                         }
                     } else if hv > 0.5 {
-                        AppIcon::Play.paint(&pp, Rect::from_center_size(pos2(cells[0].min.x + 9.0, r.center().y), vec2(12.0, 12.0)), t.foreground);
+                        AppIcon::Play.paint(
+                            &pp,
+                            Rect::from_center_size(pos2(cells[0].min.x + 9.0, r.center().y), vec2(12.0, 12.0)),
+                            t.foreground,
+                        );
                     } else {
-                        kit::text_at(&pp, pos2(cells[0].min.x + 4.0, r.center().y), Align2::LEFT_CENTER, &(i + 1).to_string(), 13.0, if cur { t.accent } else { t.muted_foreground }, 30.0);
+                        kit::text_at(
+                            &pp,
+                            pos2(cells[0].min.x + 4.0, r.center().y),
+                            Align2::LEFT_CENTER,
+                            &(i + 1).to_string(),
+                            13.0,
+                            if cur { t.accent } else { t.muted_foreground },
+                            30.0,
+                        );
                     }
                     let ar = Rect::from_min_size(pos2(cells[1].min.x, r.center().y - 18.0), vec2(36.0, 36.0));
                     cover(&pp, ar, tr.art, &t);
-                    kit::text_at(&pp, pos2(ar.max.x + 12.0, r.center().y - 8.0), Align2::LEFT_CENTER, &tr.title, 13.5, if cur { t.accent } else { t.foreground }, cells[1].width() - 50.0);
-                    kit::text_at(&pp, pos2(ar.max.x + 12.0, r.center().y + 9.0), Align2::LEFT_CENTER, &tr.artist, 12.0, t.muted_foreground, cells[1].width() - 50.0);
-                    kit::text_at(&pp, cells[2].left_center(), Align2::LEFT_CENTER, &tr.album, 13.0, t.muted_foreground, cells[2].width());
+                    kit::text_at(
+                        &pp,
+                        pos2(ar.max.x + 12.0, r.center().y - 8.0),
+                        Align2::LEFT_CENTER,
+                        &tr.title,
+                        13.5,
+                        if cur { t.accent } else { t.foreground },
+                        cells[1].width() - 50.0,
+                    );
+                    kit::text_at(
+                        &pp,
+                        pos2(ar.max.x + 12.0, r.center().y + 9.0),
+                        Align2::LEFT_CENTER,
+                        &tr.artist,
+                        12.0,
+                        t.muted_foreground,
+                        cells[1].width() - 50.0,
+                    );
+                    kit::text_at(
+                        &pp,
+                        cells[2].left_center(),
+                        Align2::LEFT_CENTER,
+                        &tr.album,
+                        13.0,
+                        t.muted_foreground,
+                        cells[2].width(),
+                    );
                     let hr = Rect::from_center_size(cells[3].center(), vec2(28.0, 28.0));
-                    let hresp = ui.interact(hr, rid.with("like"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
+                    let hresp =
+                        ui.interact(hr, rid.with("like"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
                     if tr.liked {
                         filled_heart(&pp, hr.center(), 6.5, t.destructive);
                     } else if hv > 0.3 || hresp.hovered() {
-                        LineIcon::Heart.paint(&pp, Rect::from_center_size(hr.center(), vec2(15.0, 15.0)), t.muted_foreground);
+                        LineIcon::Heart.paint(
+                            &pp,
+                            Rect::from_center_size(hr.center(), vec2(15.0, 15.0)),
+                            t.muted_foreground,
+                        );
                     }
                     if hresp.clicked() {
                         tr.liked = !tr.liked;
-                        toast(ui.ctx(), Toast::new(if tr.liked { "Added to Liked Songs" } else { "Removed from Liked Songs" }).description(tr.title.clone()));
+                        toast(
+                            ui.ctx(),
+                            Toast::new(if tr.liked { "Added to Liked Songs" } else { "Removed from Liked Songs" })
+                                .description(tr.title.clone()),
+                        );
                     }
-                    kit::text_at(&pp, cells[4].right_center(), Align2::RIGHT_CENTER, &mmss(tr.secs), 12.5, t.muted_foreground, 60.0);
-                    if resp.double_clicked() || (resp.clicked() && !hresp.clicked() && hv > 0.5 && ui.input(|i| i.pointer.interact_pos()).is_some_and(|pp| cells[0].contains(pp))) {
+                    kit::text_at(
+                        &pp,
+                        cells[4].right_center(),
+                        Align2::RIGHT_CENTER,
+                        &mmss(tr.secs),
+                        12.5,
+                        t.muted_foreground,
+                        60.0,
+                    );
+                    if resp.double_clicked()
+                        || (resp.clicked()
+                            && !hresp.clicked()
+                            && hv > 0.5
+                            && ui.input(|i| i.pointer.interact_pos()).is_some_and(|pp| cells[0].contains(pp)))
+                    {
                         play = Some(i);
                     }
                 }
@@ -290,12 +403,36 @@ impl MusicApp {
             let q = parts[1];
             kit::vline(&p, q.min.x, q.min.y, q.max.y, &t);
             let qr = q.shrink(18.0);
-            kit::text_at(&p, qr.min + vec2(0.0, 8.0), Align2::LEFT_CENTER, "Now playing", 13.0, t.muted_foreground, 200.0);
+            kit::text_at(
+                &p,
+                qr.min + vec2(0.0, 8.0),
+                Align2::LEFT_CENTER,
+                "Now playing",
+                13.0,
+                t.muted_foreground,
+                200.0,
+            );
             let c = &self.tracks[self.current];
             let big = Rect::from_min_size(qr.min + vec2(0.0, 24.0), vec2(qr.width(), qr.width() * 0.62));
             cover(&p, big, c.art, &t);
-            kit::text_at(&p, pos2(qr.min.x, big.max.y + 20.0), Align2::LEFT_CENTER, &c.title, 15.0, t.foreground, qr.width());
-            kit::text_at(&p, pos2(qr.min.x, big.max.y + 40.0), Align2::LEFT_CENTER, &format!("{} · {}", c.artist, c.album), 12.5, t.muted_foreground, qr.width());
+            kit::text_at(
+                &p,
+                pos2(qr.min.x, big.max.y + 20.0),
+                Align2::LEFT_CENTER,
+                &c.title,
+                15.0,
+                t.foreground,
+                qr.width(),
+            );
+            kit::text_at(
+                &p,
+                pos2(qr.min.x, big.max.y + 40.0),
+                Align2::LEFT_CENTER,
+                &format!("{} · {}", c.artist, c.album),
+                12.5,
+                t.muted_foreground,
+                qr.width(),
+            );
             let mut y = big.max.y + 72.0;
             kit::text_at(&p, pos2(qr.min.x, y), Align2::LEFT_CENTER, "Up next", 13.0, t.muted_foreground, 200.0);
             y += 16.0;
@@ -310,9 +447,33 @@ impl MusicApp {
                 let tr = &self.tracks[i];
                 let pp = ui.painter().clone();
                 cover(&pp, Rect::from_min_size(r.min + vec2(6.0, 5.0), vec2(36.0, 36.0)), tr.art, &t);
-                kit::text_at(&pp, pos2(r.min.x + 52.0, r.center().y - 8.0), Align2::LEFT_CENTER, &tr.title, 13.0, t.foreground, r.width() - 100.0);
-                kit::text_at(&pp, pos2(r.min.x + 52.0, r.center().y + 9.0), Align2::LEFT_CENTER, &tr.artist, 11.5, t.muted_foreground, r.width() - 100.0);
-                kit::text_at(&pp, pos2(r.max.x - 8.0, r.center().y), Align2::RIGHT_CENTER, &mmss(tr.secs), 11.5, t.muted_foreground, 50.0);
+                kit::text_at(
+                    &pp,
+                    pos2(r.min.x + 52.0, r.center().y - 8.0),
+                    Align2::LEFT_CENTER,
+                    &tr.title,
+                    13.0,
+                    t.foreground,
+                    r.width() - 100.0,
+                );
+                kit::text_at(
+                    &pp,
+                    pos2(r.min.x + 52.0, r.center().y + 9.0),
+                    Align2::LEFT_CENTER,
+                    &tr.artist,
+                    11.5,
+                    t.muted_foreground,
+                    r.width() - 100.0,
+                );
+                kit::text_at(
+                    &pp,
+                    pos2(r.max.x - 8.0, r.center().y),
+                    Align2::RIGHT_CENTER,
+                    &mmss(tr.secs),
+                    11.5,
+                    t.muted_foreground,
+                    50.0,
+                );
                 if resp.clicked() {
                     self.current = i;
                     self.pos = 0.0;
@@ -333,11 +494,33 @@ impl MusicApp {
         let ar = Rect::from_min_size(pos2(bar.min.x + 18.0, cy - 24.0), vec2(48.0, 48.0));
         cover(&p, ar, c.art, &t);
         let info_w = (bar.width() * 0.26).min(260.0);
-        kit::text_at(&p, pos2(ar.max.x + 12.0, cy - 9.0), Align2::LEFT_CENTER, &c.title, 13.5, t.foreground, info_w - 70.0);
-        kit::text_at(&p, pos2(ar.max.x + 12.0, cy + 10.0), Align2::LEFT_CENTER, &c.artist, 12.0, t.muted_foreground, info_w - 70.0);
+        kit::text_at(
+            &p,
+            pos2(ar.max.x + 12.0, cy - 9.0),
+            Align2::LEFT_CENTER,
+            &c.title,
+            13.5,
+            t.foreground,
+            info_w - 70.0,
+        );
+        kit::text_at(
+            &p,
+            pos2(ar.max.x + 12.0, cy + 10.0),
+            Align2::LEFT_CENTER,
+            &c.artist,
+            12.0,
+            t.muted_foreground,
+            info_w - 70.0,
+        );
         // transport
         let mid = bar.center().x;
-        let buttons: [(AppIcon, &str, f32); 5] = [(AppIcon::Shuffle, "Shuffle", -86.0), (AppIcon::SkipBack, "Previous  ←", -44.0), (if self.playing { AppIcon::Pause } else { AppIcon::Play }, "Play / pause  Space", 0.0), (AppIcon::SkipForward, "Next  →", 44.0), (AppIcon::Repeat, "Repeat", 86.0)];
+        let buttons: [(AppIcon, &str, f32); 5] = [
+            (AppIcon::Shuffle, "Shuffle", -86.0),
+            (AppIcon::SkipBack, "Previous  ←", -44.0),
+            (if self.playing { AppIcon::Pause } else { AppIcon::Play }, "Play / pause  Space", 0.0),
+            (AppIcon::SkipForward, "Next  →", 44.0),
+            (AppIcon::Repeat, "Repeat", 86.0),
+        ];
         for (k, (icon, label, dx)) in buttons.iter().enumerate() {
             let center = pos2(mid + dx, cy - 10.0);
             if k == 2 {
@@ -345,7 +528,11 @@ impl MusicApp {
                 let resp = ui.interact(r, id.with("pp"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
                 let hv = kit::hover(ui, id.with("pp"), resp.hovered());
                 p.circle_filled(center, 17.0 + hv, t.foreground);
-                icon.paint(&p, Rect::from_center_size(center + vec2(if self.playing { 0.0 } else { 1.0 }, 0.0), vec2(14.0, 14.0)), t.background);
+                icon.paint(
+                    &p,
+                    Rect::from_center_size(center + vec2(if self.playing { 0.0 } else { 1.0 }, 0.0), vec2(14.0, 14.0)),
+                    t.background,
+                );
                 kit::tip(&resp, label, None);
                 if resp.clicked() {
                     self.playing = !self.playing;
@@ -379,16 +566,42 @@ impl MusicApp {
         let hv = kit::hover(ui, id.with("seek"), resp.hovered() || resp.dragged());
         let f = (self.pos / c.secs).clamp(0.0, 1.0);
         p.rect_filled(track, 2.0, with_alpha(t.foreground, 0.12));
-        p.rect_filled(Rect::from_min_size(track.min, vec2(track.width() * f, 4.0)), 2.0, if hv > 0.1 { t.accent } else { t.foreground });
+        p.rect_filled(
+            Rect::from_min_size(track.min, vec2(track.width() * f, 4.0)),
+            2.0,
+            if hv > 0.1 { t.accent } else { t.foreground },
+        );
         if hv > 0.01 {
             p.circle_filled(pos2(track.min.x + track.width() * f, track.center().y), 6.0 * hv, t.foreground);
         }
-        kit::text_at(&p, pos2(track.min.x - 10.0, track.center().y), Align2::RIGHT_CENTER, &mmss(self.pos), 11.5, t.muted_foreground, 50.0);
-        kit::text_at(&p, pos2(track.max.x + 10.0, track.center().y), Align2::LEFT_CENTER, &mmss(c.secs), 11.5, t.muted_foreground, 50.0);
+        kit::text_at(
+            &p,
+            pos2(track.min.x - 10.0, track.center().y),
+            Align2::RIGHT_CENTER,
+            &mmss(self.pos),
+            11.5,
+            t.muted_foreground,
+            50.0,
+        );
+        kit::text_at(
+            &p,
+            pos2(track.max.x + 10.0, track.center().y),
+            Align2::LEFT_CENTER,
+            &mmss(c.secs),
+            11.5,
+            t.muted_foreground,
+            50.0,
+        );
         // volume
         let vt = Rect::from_min_size(pos2(bar.max.x - 130.0, cy - 2.0), vec2(100.0, 4.0));
-        AppIcon::Volume.paint(&p, Rect::from_center_size(pos2(vt.min.x - 18.0, cy), vec2(16.0, 16.0)), t.muted_foreground);
-        let vresp = ui.interact(vt.expand2(vec2(0.0, 8.0)), id.with("vol"), Sense::click_and_drag()).on_hover_cursor(CursorIcon::PointingHand);
+        AppIcon::Volume.paint(
+            &p,
+            Rect::from_center_size(pos2(vt.min.x - 18.0, cy), vec2(16.0, 16.0)),
+            t.muted_foreground,
+        );
+        let vresp = ui
+            .interact(vt.expand2(vec2(0.0, 8.0)), id.with("vol"), Sense::click_and_drag())
+            .on_hover_cursor(CursorIcon::PointingHand);
         if let Some(pp) = vresp.interact_pointer_pos().filter(|_| vresp.dragged() || vresp.clicked()) {
             self.volume = ((pp.x - vt.min.x) / vt.width()).clamp(0.0, 1.0);
         }
@@ -413,7 +626,9 @@ fn filled_heart(p: &egui::Painter, c: egui::Pos2, r: f32, col: Color32) {
     for mut half in [l, rr] {
         half.push(c + vec2(0.0, -0.3 * r));
         let centroid = half.iter().fold(egui::Vec2::ZERO, |a, q| a + q.to_vec2()) / half.len() as f32;
-        half.sort_by(|a, b| (a.y - centroid.y).atan2(a.x - centroid.x).total_cmp(&(b.y - centroid.y).atan2(b.x - centroid.x)));
+        half.sort_by(|a, b| {
+            (a.y - centroid.y).atan2(a.x - centroid.x).total_cmp(&(b.y - centroid.y).atan2(b.x - centroid.x))
+        });
         p.add(egui::Shape::convex_polygon(half, col, Stroke::NONE));
     }
 }

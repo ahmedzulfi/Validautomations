@@ -92,30 +92,36 @@ impl eframe::App for App {
         }
         let generating = self.model.is_some();
 
-        egui::Panel::bottom("prompt").frame(egui::Frame::new().fill(theme.background).inner_margin(16)).show(ui, |ui| {
-            let out = PromptInput::new(&mut self.input).generating(generating).show(ui, |_| {});
-            if let Some(prompt) = out.submitted {
-                self.messages.push(Message { role: Role::User, text: prompt.clone() });
-                self.messages.push(Message { role: Role::Assistant, text: String::new() });
-                self.model = Some(FakeModel::answer(&prompt));
-            }
-            if out.stop {
-                self.model = None;
-            }
-        });
+        egui::Panel::bottom("prompt").frame(egui::Frame::new().fill(theme.background).inner_margin(16)).show(
+            ui,
+            |ui| {
+                let out = PromptInput::new(&mut self.input).generating(generating).show(ui, |_| {});
+                if let Some(prompt) = out.submitted {
+                    self.messages.push(Message { role: Role::User, text: prompt.clone() });
+                    self.messages.push(Message { role: Role::Assistant, text: String::new() });
+                    self.model = Some(FakeModel::answer(&prompt));
+                }
+                if out.stop {
+                    self.model = None;
+                }
+            },
+        );
 
-        egui::CentralPanel::default().frame(egui::Frame::new().fill(theme.background).inner_margin(16)).show(ui, |ui| {
-            let count = self.messages.len();
-            Conversation::new().show(ui, |ui| {
-                if self.messages.is_empty() {
-                    ui.label(egui::RichText::new("Ask anything to get started.").color(theme.muted_foreground));
-                }
-                for (i, m) in self.messages.iter().enumerate() {
-                    let streaming = generating && i + 1 == count;
-                    ChatMessage::new(m.role, &m.text).streaming(streaming).show(ui, |_| {});
-                    ui.add_space(12.0);
-                }
-            });
-        });
+        egui::CentralPanel::default().frame(egui::Frame::new().fill(theme.background).inner_margin(16)).show(
+            ui,
+            |ui| {
+                let count = self.messages.len();
+                Conversation::new().show(ui, |ui| {
+                    if self.messages.is_empty() {
+                        ui.label(egui::RichText::new("Ask anything to get started.").color(theme.muted_foreground));
+                    }
+                    for (i, m) in self.messages.iter().enumerate() {
+                        let streaming = generating && i + 1 == count;
+                        ChatMessage::new(m.role, &m.text).streaming(streaming).show(ui, |_| {});
+                        ui.add_space(12.0);
+                    }
+                });
+            },
+        );
     }
 }

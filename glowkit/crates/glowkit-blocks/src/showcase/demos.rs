@@ -534,7 +534,7 @@ ui.add(PixelBlast::new().pattern(PixelPattern::Waves).shape(PixelShape::Circle))
             name: "Glowing Stars Card",
             category: Category::CardsAndBorders,
             description: "A card with a grid of tiny stars where random ones softly glow; more of them light up on hover.",
-            covers: &["Aceternity: Glowing Stars Background Card"],
+            covers: &["Aceternity: Glowing Stars Background Card", "Aceternity UI: Glowing Stars"],
             code: r##"ui.add(GlowingStarsCard::new("Next-gen rendering", "Crisp, animated UI on every platform."));"##,
             show: |ui| {
                 let w = 2.0 * 340.0 + 28.0;

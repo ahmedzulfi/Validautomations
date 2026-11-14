@@ -534,7 +534,7 @@ ui.add(TreeView::new(&nodes, &mut selected).open_depth(2));"##,
             name: "Accordion",
             category: C,
             description: "Stacked sections that expand with animated height, a rotating chevron and hover underline.",
-            covers: &["shadcn/ui: Accordion", "Animate UI: Accordion", "Origin UI: Accordion"],
+            covers: &["shadcn/ui: Accordion", "Animate UI: Accordion", "Origin UI: Accordion", "Motion Primitives: Accordion"],
             code: r##"Accordion::new("faq")
     .item_text("Is it accessible?", "Yes. It supports keyboard focus and screen readers.")
     .item_text("Is it styled?", "Yes. It comes with default styles that match the other components.")
@@ -564,7 +564,7 @@ ui.add(TreeView::new(&nodes, &mut selected).open_depth(2));"##,
             name: "Collapsible",
             category: C,
             description: "A header with a toggle that reveals more rows with an animated height.",
-            covers: &["shadcn/ui: Collapsible", "Animate UI: Collapsible"],
+            covers: &["shadcn/ui: Collapsible", "Animate UI: Collapsible", "Motion Primitives: Disclosure"],
             code: r##"Collapsible::new("@peduarte starred 3 repositories").show(ui, |ui| {
     for repo in ["@radix-ui/colors", "@stitches/react"] { ui.label(repo); }
 });"##,

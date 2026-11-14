@@ -2,7 +2,9 @@
 //! comparison table and "how it works" steps.
 
 use super::kit::*;
-use egui::{pos2, vec2, Align, Color32, CornerRadius, CursorIcon, FontId, Rect, Sense, Shape, Stroke, StrokeKind, Ui, Vec2};
+use egui::{
+    pos2, vec2, Align, Color32, CornerRadius, CursorIcon, FontId, Rect, Sense, Shape, Stroke, StrokeKind, Ui, Vec2,
+};
 use glowkit_components::{Avatar, AvatarStyle, Badge, UiIcon};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{paint, Theme};
@@ -117,7 +119,8 @@ impl AboutSection {
             match self.layout {
                 AboutLayout::Timeline => {
                     let lead = self.story.first().map(String::as_str);
-                    let next = Heading::new(&self.title).eyebrow(self.eyebrow.as_deref()).subtitle(lead).show(ui, sec, 0);
+                    let next =
+                        Heading::new(&self.title).eyebrow(self.eyebrow.as_deref()).subtitle(lead).show(ui, sec, 0);
                     ui.add_space(56.0);
                     let origin = ui.cursor().min;
                     let w = ui.available_width();
@@ -128,8 +131,19 @@ impl AboutSection {
                     for (i, m) in self.milestones.iter().enumerate() {
                         let left_side = !sec.narrow && i % 2 == 0;
                         let cw = if sec.narrow { w - 44.0 } else { w / 2.0 - 40.0 };
-                        let x = if sec.narrow { origin.x + 44.0 } else if left_side { origin.x } else { center_x + 40.0 };
-                        let mut child = ui.new_child(egui::UiBuilder::new().max_rect(Rect::from_min_size(pos2(x, y), vec2(cw, f32::INFINITY))).layout(egui::Layout::top_down(if left_side { Align::Max } else { Align::Min })).id_salt(("ms", i)));
+                        let x = if sec.narrow {
+                            origin.x + 44.0
+                        } else if left_side {
+                            origin.x
+                        } else {
+                            center_x + 40.0
+                        };
+                        let mut child = ui.new_child(
+                            egui::UiBuilder::new()
+                                .max_rect(Rect::from_min_size(pos2(x, y), vec2(cw, f32::INFINITY)))
+                                .layout(egui::Layout::top_down(if left_side { Align::Max } else { Align::Min }))
+                                .id_salt(("ms", i)),
+                        );
                         let align = if left_side { Align::Max } else { Align::Min };
                         sec.fade(&mut child, next + i, |ui| {
                             card(ui, id.with(("mc", i)), CardLook::of(&t), |ui| {
@@ -137,7 +151,12 @@ impl AboutSection {
                                 ui.add_space(2.0);
                                 Tx::new(&m.title).size(18.0).semi().align(align).color(t.foreground).show(ui);
                                 ui.add_space(4.0);
-                                Tx::new(&m.description).size(14.5).line(1.55).align(align).color(t.muted_foreground).show(ui);
+                                Tx::new(&m.description)
+                                    .size(14.5)
+                                    .line(1.55)
+                                    .align(align)
+                                    .color(t.muted_foreground)
+                                    .show(ui);
                             });
                         });
                         let r = child.min_rect();
@@ -146,11 +165,26 @@ impl AboutSection {
                     }
                     let bottom = y - 28.0;
                     // line draws itself in
-                    let p = glowkit_core::ease(glowkit_core::Easing::InOutCubic, ((sec.elapsed - 0.2) / 1.4).clamp(0.0, 1.0));
+                    let p = glowkit_core::ease(
+                        glowkit_core::Easing::InOutCubic,
+                        ((sec.elapsed - 0.2) / 1.4).clamp(0.0, 1.0),
+                    );
                     let y1 = origin.y + (bottom - origin.y) * p;
                     let painter = ui.painter();
-                    painter.set(line_idx, Shape::line_segment([pos2(center_x, origin.y), pos2(center_x, bottom)], Stroke::new(2.0, t.border)));
-                    paint::gradient_polyline(painter, &[pos2(center_x, origin.y), pos2(center_x, y1.max(origin.y + 1.0))], false, 2.0, |u| mix(t.gradient[0], t.gradient[1], u));
+                    painter.set(
+                        line_idx,
+                        Shape::line_segment(
+                            [pos2(center_x, origin.y), pos2(center_x, bottom)],
+                            Stroke::new(2.0, t.border),
+                        ),
+                    );
+                    paint::gradient_polyline(
+                        painter,
+                        &[pos2(center_x, origin.y), pos2(center_x, y1.max(origin.y + 1.0))],
+                        false,
+                        2.0,
+                        |u| mix(t.gradient[0], t.gradient[1], u),
+                    );
                     for d in dots {
                         let lit = d.y <= y1;
                         painter.circle_filled(d, 9.0, t.background);
@@ -170,10 +204,16 @@ impl AboutSection {
                         sec.narrow,
                         true,
                         |ui| {
-                            let n = Heading::new(&self.title).eyebrow(self.eyebrow.as_deref()).align(Align::Min).size(36.0).show(ui, sec, 0);
+                            let n = Heading::new(&self.title)
+                                .eyebrow(self.eyebrow.as_deref())
+                                .align(Align::Min)
+                                .size(36.0)
+                                .show(ui, sec, 0);
                             ui.add_space(20.0);
                             for (k, p) in self.story.iter().enumerate() {
-                                sec.fade(ui, n + k, |ui| Tx::new(p).size(16.0).line(1.7).color(t.muted_foreground).show(ui));
+                                sec.fade(ui, n + k, |ui| {
+                                    Tx::new(p).size(16.0).line(1.7).color(t.muted_foreground).show(ui)
+                                });
                                 ui.add_space(12.0);
                             }
                         },
@@ -183,10 +223,35 @@ impl AboutSection {
                                 let (r, _) = ui.allocate_exact_size(vec2(w, (w * 0.75).min(360.0)), Sense::hover());
                                 paint_art(ui.painter(), r, 4, &t, (t.radius * 1.6).round(), glowkit_core::time(ui));
                                 let chip = Rect::from_min_size(r.left_bottom() + vec2(20.0, -84.0), vec2(200.0, 64.0));
-                                paint::soft_shadow(ui.painter(), chip, 12.0, 18.0, vec2(0.0, 6.0), with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.12 }));
-                                ui.painter().rect(chip, CornerRadius::same(12), t.popover, Stroke::new(1.0, t.border), StrokeKind::Inside);
-                                ui.painter().text(chip.min + vec2(16.0, 12.0), egui::Align2::LEFT_TOP, "Founded", FontId::proportional(12.0), t.muted_foreground);
-                                ui.painter().text(chip.min + vec2(16.0, 30.0), egui::Align2::LEFT_TOP, self.milestones.first().map_or("2023", |m| m.when.as_str()), FontId::proportional(20.0), t.foreground);
+                                paint::soft_shadow(
+                                    ui.painter(),
+                                    chip,
+                                    12.0,
+                                    18.0,
+                                    vec2(0.0, 6.0),
+                                    with_alpha(Color32::BLACK, if t.dark { 0.5 } else { 0.12 }),
+                                );
+                                ui.painter().rect(
+                                    chip,
+                                    CornerRadius::same(12),
+                                    t.popover,
+                                    Stroke::new(1.0, t.border),
+                                    StrokeKind::Inside,
+                                );
+                                ui.painter().text(
+                                    chip.min + vec2(16.0, 12.0),
+                                    egui::Align2::LEFT_TOP,
+                                    "Founded",
+                                    FontId::proportional(12.0),
+                                    t.muted_foreground,
+                                );
+                                ui.painter().text(
+                                    chip.min + vec2(16.0, 30.0),
+                                    egui::Align2::LEFT_TOP,
+                                    self.milestones.first().map_or("2023", |m| m.when.as_str()),
+                                    FontId::proportional(20.0),
+                                    t.foreground,
+                                );
                             });
                         },
                     );
@@ -338,7 +403,10 @@ impl IntegrationsSection {
         let id = section_id(ui, "integrations", &self.salt);
         section(ui, Frame::new(id, self.background), |ui, sec| {
             let t = sec.t.clone();
-            let next = Heading::new(&self.title).eyebrow(self.eyebrow.as_deref()).subtitle(self.subtitle.as_deref()).show(ui, sec, 0);
+            let next = Heading::new(&self.title)
+                .eyebrow(self.eyebrow.as_deref())
+                .subtitle(self.subtitle.as_deref())
+                .show(ui, sec, 0);
             ui.add_space(40.0);
             let mut clicked = None;
             match self.layout {
@@ -350,20 +418,35 @@ impl IntegrationsSection {
                         let c = rect.center();
                         let painter = ui.painter_at(rect);
                         let time = glowkit_core::time(ui);
-                        let slow = glowkit_core::anim::follow(ui, id.with("slow"), if resp.hovered() { 0.25 } else { 1.0 }, 4.0);
+                        let slow = glowkit_core::anim::follow(
+                            ui,
+                            id.with("slow"),
+                            if resp.hovered() { 0.25 } else { 1.0 },
+                            4.0,
+                        );
                         let dt = glowkit_core::dt(ui);
-                        let clock = glowkit_core::with_state(ui, id.with("clock"), || 0.0f32, |c| {
-                            *c += dt * slow;
-                            *c
-                        });
+                        let clock = glowkit_core::with_state(
+                            ui,
+                            id.with("clock"),
+                            || 0.0f32,
+                            |c| {
+                                *c += dt * slow;
+                                *c
+                            },
+                        );
                         let r1 = h * 0.26;
                         let r2 = h * 0.44;
                         paint::glow(&painter, c, r2 * 1.1, with_alpha(t.accent, if t.dark { 0.12 } else { 0.06 }));
                         for (k, r) in [r1, r2].iter().enumerate() {
-                            let pts: Vec<_> = (0..=96).map(|i| c + vec2((i as f32 / 96.0 * TAU).cos(), (i as f32 / 96.0 * TAU).sin()) * *r).collect();
+                            let pts: Vec<_> = (0..=96)
+                                .map(|i| c + vec2((i as f32 / 96.0 * TAU).cos(), (i as f32 / 96.0 * TAU).sin()) * *r)
+                                .collect();
                             for (j, seg) in pts.windows(2).enumerate() {
                                 if j % 2 == 0 {
-                                    painter.line_segment([seg[0], seg[1]], Stroke::new(1.0, with_alpha(t.foreground, if k == 0 { 0.14 } else { 0.1 })));
+                                    painter.line_segment(
+                                        [seg[0], seg[1]],
+                                        Stroke::new(1.0, with_alpha(t.foreground, if k == 0 { 0.14 } else { 0.1 })),
+                                    );
                                 }
                             }
                         }
@@ -371,12 +454,18 @@ impl IntegrationsSection {
                         let inner = n.min(4);
                         let mut hovered_app = None;
                         for (i, app) in self.apps.iter().enumerate() {
-                            let (ring, idx, count, dir) = if i < inner { (r1, i, inner, 1.0) } else { (r2, i - inner, n - inner, -1.0) };
-                            let a = clock * 0.25 * dir + idx as f32 / count.max(1) as f32 * TAU + if ring == r2 { 0.3 } else { 0.0 };
+                            let (ring, idx, count, dir) =
+                                if i < inner { (r1, i, inner, 1.0) } else { (r2, i - inner, n - inner, -1.0) };
+                            let a = clock * 0.25 * dir
+                                + idx as f32 / count.max(1) as f32 * TAU
+                                + if ring == r2 { 0.3 } else { 0.0 };
                             let p = c + vec2(a.cos(), a.sin()) * ring;
                             let size = if ring == r1 { 46.0 } else { 52.0 };
                             let tr = Rect::from_center_size(p, Vec2::splat(size));
-                            let hit = ui.interact(tr, id.with(("app", i)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand).on_hover_text(&app.name);
+                            let hit = ui
+                                .interact(tr, id.with(("app", i)), Sense::click())
+                                .on_hover_cursor(CursorIcon::PointingHand)
+                                .on_hover_text(&app.name);
                             let hv = ui.ctx().animate_bool_with_time(hit.id, hit.hovered(), 0.15);
                             if hit.hovered() {
                                 hovered_app = Some(p);
@@ -387,18 +476,30 @@ impl IntegrationsSection {
                             app_tile(&painter, tr.expand(3.0 * hv), &app.name, i, &t, hv);
                         }
                         if let Some(p) = hovered_app {
-                            paint::gradient_polyline(&painter, &[c, p], false, 1.5, |u| with_alpha(t.accent, 0.8 * (1.0 - u * 0.6)));
+                            paint::gradient_polyline(&painter, &[c, p], false, 1.5, |u| {
+                                with_alpha(t.accent, 0.8 * (1.0 - u * 0.6))
+                            });
                         }
                         // center brand tile with a pulse
                         let ct = Rect::from_center_size(c, Vec2::splat(76.0));
                         let ph = (time * 0.6).fract();
-                        painter.rect_stroke(ct.expand(10.0 + 26.0 * ph), CornerRadius::same((22.0 + 10.0 * ph) as u8), Stroke::new(1.5, with_alpha(t.accent, 0.5 * (1.0 - ph))), StrokeKind::Middle);
+                        painter.rect_stroke(
+                            ct.expand(10.0 + 26.0 * ph),
+                            CornerRadius::same((22.0 + 10.0 * ph) as u8),
+                            Stroke::new(1.5, with_alpha(t.accent, 0.5 * (1.0 - ph))),
+                            StrokeKind::Middle,
+                        );
                         paint::soft_shadow(&painter, ct, 20.0, 30.0, vec2(0.0, 8.0), with_alpha(t.accent, 0.45));
                         paint::gradient_rect(&painter, ct, 20.0, 135.0, &[t.gradient[0], t.gradient[1]]);
                         let g = painter.layout_no_wrap(self.brand.clone(), FontId::proportional(32.0), Color32::WHITE);
                         painter.galley(ct.center() - g.size() / 2.0, g.clone(), Color32::WHITE);
                         painter.galley(ct.center() - g.size() / 2.0 + vec2(1.0, 0.0), g, Color32::WHITE);
-                        paint::fade_edges_horizontal(&painter, rect, (w * 0.12).min(120.0), muted_or_plain(&t, self.background));
+                        paint::fade_edges_horizontal(
+                            &painter,
+                            rect,
+                            (w * 0.12).min(120.0),
+                            muted_or_plain(&t, self.background),
+                        );
                         glowkit_core::animate(ui);
                     });
                 }
@@ -408,25 +509,33 @@ impl IntegrationsSection {
                     grid(ui, id.with("g"), n, cols, 16.0, |ui, i, row_h| {
                         let app = &self.apps[i];
                         sec.fade(ui, next + i / cols + i % cols, |ui| {
-                            let out = card(ui, id.with(("ic", i)), CardLook::of(&t).min_h(row_h).pad(20.0).clickable(true), |ui| {
-                                ui.horizontal(|ui| {
-                                    let (r, _) = ui.allocate_exact_size(Vec2::splat(44.0), Sense::hover());
-                                    app_tile(ui.painter(), r, &app.name, i, &t, 0.0);
-                                    ui.add_space(4.0);
-                                    ui.vertical(|ui| {
-                                        ui.spacing_mut().item_spacing.y = 2.0;
-                                        Tx::new(&app.name).size(15.5).semi().color(t.foreground).show_inline(ui);
-                                        Tx::new(&app.category).size(12.5).color(t.muted_foreground).show_inline(ui);
+                            let out = card(
+                                ui,
+                                id.with(("ic", i)),
+                                CardLook::of(&t).min_h(row_h).pad(20.0).clickable(true),
+                                |ui| {
+                                    ui.horizontal(|ui| {
+                                        let (r, _) = ui.allocate_exact_size(Vec2::splat(44.0), Sense::hover());
+                                        app_tile(ui.painter(), r, &app.name, i, &t, 0.0);
+                                        ui.add_space(4.0);
+                                        ui.vertical(|ui| {
+                                            ui.spacing_mut().item_spacing.y = 2.0;
+                                            Tx::new(&app.name).size(15.5).semi().color(t.foreground).show_inline(ui);
+                                            Tx::new(&app.category).size(12.5).color(t.muted_foreground).show_inline(ui);
+                                        });
                                     });
-                                });
-                                ui.add_space(10.0);
-                                Tx::new(&app.description).size(14.0).line(1.5).color(t.muted_foreground).show(ui);
-                            });
+                                    ui.add_space(10.0);
+                                    Tx::new(&app.description).size(14.0).line(1.5).color(t.muted_foreground).show(ui);
+                                },
+                            );
                             // arrow that slides in on hover
                             let a = out.hover;
                             if a > 0.0 {
                                 let r = out.rect.translate(vec2(0.0, -2.0 * a));
-                                let ar = Rect::from_center_size(pos2(r.max.x - 26.0 + 4.0 * (1.0 - a), r.min.y + 30.0), Vec2::splat(16.0));
+                                let ar = Rect::from_center_size(
+                                    pos2(r.max.x - 26.0 + 4.0 * (1.0 - a), r.min.y + 30.0),
+                                    Vec2::splat(16.0),
+                                );
                                 UiIcon::ArrowUp.paint(ui.painter(), ar, with_alpha(t.accent, a));
                             }
                             if out.response.clicked() {
@@ -467,8 +576,21 @@ fn muted_or_plain(t: &Theme, bg: SectionBackground) -> Color32 {
 pub(crate) fn app_tile(painter: &egui::Painter, r: Rect, name: &str, i: usize, t: &Theme, hover: f32) {
     let col = t.chart[i % 6];
     let cr = CornerRadius::same((r.width() * 0.28) as u8);
-    paint::soft_shadow(painter, r, r.width() * 0.28, 12.0 + 8.0 * hover, vec2(0.0, 4.0), with_alpha(Color32::BLACK, if t.dark { 0.45 } else { 0.1 }));
-    painter.rect(r, cr, if t.dark { mix(t.card, col, 0.14 + 0.08 * hover) } else { mix(t.card, col, 0.08 + 0.06 * hover) }, Stroke::new(1.0, mix(t.border, col, 0.3 + 0.4 * hover)), StrokeKind::Inside);
+    paint::soft_shadow(
+        painter,
+        r,
+        r.width() * 0.28,
+        12.0 + 8.0 * hover,
+        vec2(0.0, 4.0),
+        with_alpha(Color32::BLACK, if t.dark { 0.45 } else { 0.1 }),
+    );
+    painter.rect(
+        r,
+        cr,
+        if t.dark { mix(t.card, col, 0.14 + 0.08 * hover) } else { mix(t.card, col, 0.08 + 0.06 * hover) },
+        Stroke::new(1.0, mix(t.border, col, 0.3 + 0.4 * hover)),
+        StrokeKind::Inside,
+    );
     let letter: String = name.chars().take(1).collect();
     let g = painter.layout_no_wrap(letter, FontId::proportional(r.width() * 0.42), col);
     let pos = r.center() - g.size() / 2.0;
@@ -485,7 +607,11 @@ pub(crate) fn app_tile(painter: &egui::Painter, r: Rect, name: &str, i: usize, t
             painter.rect_filled(Rect::from_center_size(q, Vec2::splat(d)), 2.0, with_alpha(col, 0.7));
         }
         _ => {
-            painter.add(Shape::convex_polygon(vec![q + vec2(0.0, -d * 0.6), q + vec2(d * 0.6, d * 0.5), q + vec2(-d * 0.6, d * 0.5)], with_alpha(col, 0.7), Stroke::NONE));
+            painter.add(Shape::convex_polygon(
+                vec![q + vec2(0.0, -d * 0.6), q + vec2(d * 0.6, d * 0.5), q + vec2(-d * 0.6, d * 0.5)],
+                with_alpha(col, 0.7),
+                Stroke::NONE,
+            ));
         }
     }
 }
@@ -512,7 +638,14 @@ pub struct ChangelogEntry {
 impl ChangelogEntry {
     /// A release entry.
     pub fn new(date: impl Into<String>, version: impl Into<String>, title: impl Into<String>) -> Self {
-        Self { date: date.into(), version: version.into(), title: title.into(), body: String::new(), changes: Vec::new(), tags: Vec::new() }
+        Self {
+            date: date.into(),
+            version: version.into(),
+            title: title.into(),
+            body: String::new(),
+            changes: Vec::new(),
+            tags: Vec::new(),
+        }
     }
     /// Body text.
     pub fn body(mut self, b: impl Into<String>) -> Self {
@@ -562,7 +695,13 @@ pub struct ChangelogSection {
 impl ChangelogSection {
     /// A changelog with placeholder entries.
     pub fn new(title: impl Into<String>) -> Self {
-        Self { title: title.into(), subtitle: Some("New updates and improvements to glowkit.".into()), entries: ChangelogEntry::defaults(), background: SectionBackground::Plain, salt: None }
+        Self {
+            title: title.into(),
+            subtitle: Some("New updates and improvements to glowkit.".into()),
+            entries: ChangelogEntry::defaults(),
+            background: SectionBackground::Plain,
+            salt: None,
+        }
     }
     /// Paragraph under the title.
     pub fn subtitle(mut self, s: impl Into<String>) -> Self {
@@ -590,13 +729,25 @@ impl ChangelogSection {
         let id = section_id(ui, "changelog", &self.salt);
         section(ui, Frame::new(id, self.background).max_w(900.0), |ui, sec| {
             let t = sec.t.clone();
-            let next = Heading::new(&self.title).subtitle(self.subtitle.as_deref()).align(Align::Min).size(40.0).show(ui, sec, 0);
+            let next = Heading::new(&self.title)
+                .subtitle(self.subtitle.as_deref())
+                .align(Align::Min)
+                .size(40.0)
+                .show(ui, sec, 0);
             ui.add_space(48.0);
             for (i, e) in self.entries.iter().enumerate() {
                 let left_w = if sec.narrow { 0.0 } else { 180.0 };
                 let origin = ui.cursor().min;
                 let w = ui.available_width();
-                let mut body = ui.new_child(egui::UiBuilder::new().max_rect(Rect::from_min_size(origin + vec2(left_w + 32.0, 0.0), vec2(w - left_w - 32.0, f32::INFINITY))).layout(egui::Layout::top_down(Align::Min)).id_salt(("cl", i)));
+                let mut body = ui.new_child(
+                    egui::UiBuilder::new()
+                        .max_rect(Rect::from_min_size(
+                            origin + vec2(left_w + 32.0, 0.0),
+                            vec2(w - left_w - 32.0, f32::INFINITY),
+                        ))
+                        .layout(egui::Layout::top_down(Align::Min))
+                        .id_salt(("cl", i)),
+                );
                 sec.fade(&mut body, next + i, |ui| {
                     if sec.narrow {
                         Tx::new(&e.date).size(13.0).color(t.muted_foreground).show(ui);
@@ -641,11 +792,29 @@ impl ChangelogSection {
                 let lx = origin.x + left_w + 8.0;
                 if !sec.narrow {
                     let p = sec.reveal(next + i);
-                    painter.text(pos2(origin.x, origin.y + 2.0), egui::Align2::LEFT_TOP, &e.date, FontId::proportional(14.0), with_alpha(t.muted_foreground, p));
+                    painter.text(
+                        pos2(origin.x, origin.y + 2.0),
+                        egui::Align2::LEFT_TOP,
+                        &e.date,
+                        FontId::proportional(14.0),
+                        with_alpha(t.muted_foreground, p),
+                    );
                 }
-                painter.vline(lx, (origin.y + 14.0)..=(used.max.y + 48.0).min(if i + 1 == self.entries.len() { used.max.y } else { f32::INFINITY }), Stroke::new(1.0, t.border));
+                painter.vline(
+                    lx,
+                    (origin.y + 14.0)..=(used.max.y + 48.0).min(if i + 1 == self.entries.len() {
+                        used.max.y
+                    } else {
+                        f32::INFINITY
+                    }),
+                    Stroke::new(1.0, t.border),
+                );
                 painter.circle_filled(pos2(lx, origin.y + 10.0), 6.0, t.background);
-                painter.circle_stroke(pos2(lx, origin.y + 10.0), 5.0, Stroke::new(2.0, if i == 0 { t.accent } else { t.border }));
+                painter.circle_stroke(
+                    pos2(lx, origin.y + 10.0),
+                    5.0,
+                    Stroke::new(2.0, if i == 0 { t.accent } else { t.border }),
+                );
                 ui.advance_cursor_after_rect(Rect::from_min_max(origin, pos2(origin.x + w, used.max.y)));
                 ui.add_space(48.0);
             }
@@ -675,7 +844,14 @@ pub struct BlogPost {
 impl BlogPost {
     /// A post.
     pub fn new(title: impl Into<String>, excerpt: impl Into<String>, category: impl Into<String>) -> Self {
-        Self { title: title.into(), excerpt: excerpt.into(), category: category.into(), author: "Ava Chen".into(), date: "Nov 2, 2026".into(), read_time: "5 min read".into() }
+        Self {
+            title: title.into(),
+            excerpt: excerpt.into(),
+            category: category.into(),
+            author: "Ava Chen".into(),
+            date: "Nov 2, 2026".into(),
+            read_time: "5 min read".into(),
+        }
     }
     /// Author name.
     pub fn author(mut self, a: impl Into<String>) -> Self {
@@ -696,12 +872,51 @@ impl BlogPost {
     /// Six placeholder posts.
     pub fn defaults() -> Vec<BlogPost> {
         vec![
-            BlogPost::new("Designing motion that feels native", "Springs, easing curves and why 200ms is usually too slow for hover states.", "Design").author("Mia Park").read_time("7 min read"),
-            BlogPost::new("Shipping Rust to the browser", "How we cut our WebAssembly bundle by a third without losing a single feature.", "Engineering").author("Liam Ortiz").date("Oct 28, 2026"),
-            BlogPost::new("Theming without CSS", "Semantic tokens, light and dark presets and brand colors in a few lines of Rust.", "Guides").author("Zoe King").date("Oct 19, 2026").read_time("4 min read"),
-            BlogPost::new("Inside the bento grid", "Mixed card sizes, equal row heights and animated mini illustrations.", "Design").author("Leo Rossi").date("Oct 7, 2026"),
-            BlogPost::new("Immediate mode at 120 fps", "Profiling the hot paths of an animated GUI, and what we learned.", "Engineering").author("Noah Smith").date("Sep 30, 2026").read_time("9 min read"),
-            BlogPost::new("Announcing our Seed round", "We're growing the team to build the best UI toolkit for Rust.", "Company").author("Ava Chen").date("Sep 12, 2026").read_time("3 min read"),
+            BlogPost::new(
+                "Designing motion that feels native",
+                "Springs, easing curves and why 200ms is usually too slow for hover states.",
+                "Design",
+            )
+            .author("Mia Park")
+            .read_time("7 min read"),
+            BlogPost::new(
+                "Shipping Rust to the browser",
+                "How we cut our WebAssembly bundle by a third without losing a single feature.",
+                "Engineering",
+            )
+            .author("Liam Ortiz")
+            .date("Oct 28, 2026"),
+            BlogPost::new(
+                "Theming without CSS",
+                "Semantic tokens, light and dark presets and brand colors in a few lines of Rust.",
+                "Guides",
+            )
+            .author("Zoe King")
+            .date("Oct 19, 2026")
+            .read_time("4 min read"),
+            BlogPost::new(
+                "Inside the bento grid",
+                "Mixed card sizes, equal row heights and animated mini illustrations.",
+                "Design",
+            )
+            .author("Leo Rossi")
+            .date("Oct 7, 2026"),
+            BlogPost::new(
+                "Immediate mode at 120 fps",
+                "Profiling the hot paths of an animated GUI, and what we learned.",
+                "Engineering",
+            )
+            .author("Noah Smith")
+            .date("Sep 30, 2026")
+            .read_time("9 min read"),
+            BlogPost::new(
+                "Announcing our Seed round",
+                "We're growing the team to build the best UI toolkit for Rust.",
+                "Company",
+            )
+            .author("Ava Chen")
+            .date("Sep 12, 2026")
+            .read_time("3 min read"),
         ]
     }
 }
@@ -739,7 +954,15 @@ pub struct BlogSection {
 impl BlogSection {
     /// A blog section with placeholder posts.
     pub fn new(title: impl Into<String>) -> Self {
-        Self { title: title.into(), eyebrow: Some("Blog".into()), subtitle: None, posts: BlogPost::defaults(), layout: BlogLayout::Grid, background: SectionBackground::Plain, salt: None }
+        Self {
+            title: title.into(),
+            eyebrow: Some("Blog".into()),
+            subtitle: None,
+            posts: BlogPost::defaults(),
+            layout: BlogLayout::Grid,
+            background: SectionBackground::Plain,
+            salt: None,
+        }
     }
     /// Small label above the title.
     pub fn eyebrow(mut self, e: impl Into<String>) -> Self {
@@ -777,7 +1000,10 @@ impl BlogSection {
         let id = section_id(ui, "blog", &self.salt);
         section(ui, Frame::new(id, self.background), |ui, sec| {
             let t = sec.t.clone();
-            let next = Heading::new(&self.title).eyebrow(self.eyebrow.as_deref()).subtitle(self.subtitle.as_deref()).show(ui, sec, 0);
+            let next = Heading::new(&self.title)
+                .eyebrow(self.eyebrow.as_deref())
+                .subtitle(self.subtitle.as_deref())
+                .show(ui, sec, 0);
             ui.add_space(48.0);
             let mut clicked = None;
             match self.layout {
@@ -855,7 +1081,11 @@ fn post_card(ui: &mut Ui, id: egui::Id, p: &BlogPost, i: usize, row_h: f32, cove
         let w = ui.available_width();
         let (r, _) = ui.allocate_exact_size(vec2(w, cover_h), Sense::hover());
         ui.add_space(10.0);
-        let mut inner = ui.new_child(egui::UiBuilder::new().max_rect(Rect::from_min_size(pos2(r.min.x + 12.0, ui.cursor().min.y), vec2(w - 24.0, f32::INFINITY))).layout(egui::Layout::top_down(Align::Min)));
+        let mut inner = ui.new_child(
+            egui::UiBuilder::new()
+                .max_rect(Rect::from_min_size(pos2(r.min.x + 12.0, ui.cursor().min.y), vec2(w - 24.0, f32::INFINITY)))
+                .layout(egui::Layout::top_down(Align::Min)),
+        );
         post_meta(&mut inner, p, i, t);
         inner.add_space(8.0);
         Tx::new(&p.title).size(18.0).semi().line(1.3).color(t.foreground).show(&mut inner);
@@ -1000,7 +1230,10 @@ impl GallerySection {
         let id = section_id(ui, "gallery", &self.salt);
         section(ui, Frame::new(id, self.background), |ui, sec| {
             let t = sec.t.clone();
-            let next = Heading::new(&self.title).eyebrow(self.eyebrow.as_deref()).subtitle(self.subtitle.as_deref()).show(ui, sec, 0);
+            let next = Heading::new(&self.title)
+                .eyebrow(self.eyebrow.as_deref())
+                .subtitle(self.subtitle.as_deref())
+                .show(ui, sec, 0);
             ui.add_space(44.0);
             let cols = sec.cols(220.0, 4);
             let gap = 16.0;
@@ -1024,7 +1257,8 @@ impl GallerySection {
                     col_y.iter_mut().for_each(|v| *v = y);
                 }
                 let p = sec.reveal(next + i / cols + c);
-                let resp = ui.interact(r, id.with(("tile", i)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
+                let resp =
+                    ui.interact(r, id.with(("tile", i)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
                 let hv = ui.ctx().animate_bool_with_time(resp.id, resp.hovered(), 0.25);
                 if resp.clicked() {
                     clicked = Some(title.clone());
@@ -1044,10 +1278,31 @@ impl GallerySection {
                 // caption overlay
                 let k = 0.35 + 0.65 * hv;
                 let band = Rect::from_min_max(pos2(rr.min.x, rr.max.y - 90.0), rr.max);
-                paint::quad(&painter, [band.left_top(), band.right_top(), band.right_bottom(), band.left_bottom()], [Color32::TRANSPARENT, Color32::TRANSPARENT, with_alpha(Color32::BLACK, 0.65 * k), with_alpha(Color32::BLACK, 0.65 * k)]);
+                paint::quad(
+                    &painter,
+                    [band.left_top(), band.right_top(), band.right_bottom(), band.left_bottom()],
+                    [
+                        Color32::TRANSPARENT,
+                        Color32::TRANSPARENT,
+                        with_alpha(Color32::BLACK, 0.65 * k),
+                        with_alpha(Color32::BLACK, 0.65 * k),
+                    ],
+                );
                 let ty = rr.max.y - 44.0 + 8.0 * (1.0 - hv);
-                painter.text(pos2(rr.min.x + 16.0, ty), egui::Align2::LEFT_TOP, title, FontId::proportional(15.0), with_alpha(Color32::WHITE, 0.75 + 0.25 * hv));
-                painter.text(pos2(rr.min.x + 16.0, ty + 19.0), egui::Align2::LEFT_TOP, caption, FontId::proportional(12.5), with_alpha(Color32::WHITE, 0.7 * hv));
+                painter.text(
+                    pos2(rr.min.x + 16.0, ty),
+                    egui::Align2::LEFT_TOP,
+                    title,
+                    FontId::proportional(15.0),
+                    with_alpha(Color32::WHITE, 0.75 + 0.25 * hv),
+                );
+                painter.text(
+                    pos2(rr.min.x + 16.0, ty + 19.0),
+                    egui::Align2::LEFT_TOP,
+                    caption,
+                    FontId::proportional(12.5),
+                    with_alpha(Color32::WHITE, 0.7 * hv),
+                );
                 if hv > 0.0 {
                     let br = Rect::from_center_size(pos2(rr.max.x - 26.0, rr.min.y + 26.0), Vec2::splat(30.0));
                     painter.circle_filled(br.center(), 15.0, with_alpha(Color32::WHITE, 0.9 * hv));
@@ -1056,8 +1311,18 @@ impl GallerySection {
                 // mask the zoomed art to rounded corners
                 let mut frame = ui.painter().clone();
                 frame.set_opacity(p);
-                frame.rect_stroke(rr, CornerRadius::same(rad as u8), Stroke::new(8.0, muted_or_plain(&t, self.background)), StrokeKind::Outside);
-                frame.rect_stroke(rr, CornerRadius::same(rad as u8), Stroke::new(1.0, with_alpha(t.border, 0.8)), StrokeKind::Inside);
+                frame.rect_stroke(
+                    rr,
+                    CornerRadius::same(rad as u8),
+                    Stroke::new(8.0, muted_or_plain(&t, self.background)),
+                    StrokeKind::Outside,
+                );
+                frame.rect_stroke(
+                    rr,
+                    CornerRadius::same(rad as u8),
+                    Stroke::new(1.0, with_alpha(t.border, 0.8)),
+                    StrokeKind::Inside,
+                );
             }
             let bottom = col_y.iter().cloned().fold(origin.y, f32::max) - gap;
             ui.advance_cursor_after_rect(Rect::from_min_max(origin, pos2(origin.x + w, bottom)));
@@ -1163,7 +1428,10 @@ impl ComparisonSection {
         let id = section_id(ui, "compare", &self.salt);
         section(ui, Frame::new(id, self.background).max_w(960.0), |ui, sec| {
             let t = sec.t.clone();
-            let next = Heading::new(&self.title).eyebrow(self.eyebrow.as_deref()).subtitle(self.subtitle.as_deref()).show(ui, sec, 0);
+            let next = Heading::new(&self.title)
+                .eyebrow(self.eyebrow.as_deref())
+                .subtitle(self.subtitle.as_deref())
+                .show(ui, sec, 0);
             ui.add_space(44.0);
             sec.fade(ui, next, |ui| {
                 let w = ui.available_width();
@@ -1178,8 +1446,19 @@ impl ComparisonSection {
                 let rad = (t.radius * 1.4).round();
                 // highlighted "us" column
                 let us = Rect::from_min_size(pos2(rect.min.x + feat_w, rect.min.y), vec2(cw, total_h));
-                paint::glow_ellipse(painter, us.center_top() + vec2(0.0, 30.0), vec2(cw * 0.9, 120.0), with_alpha(t.accent, if t.dark { 0.18 } else { 0.08 }));
-                painter.rect(us, CornerRadius::same(rad as u8), with_alpha(t.accent, if t.dark { 0.07 } else { 0.04 }), Stroke::new(1.0, with_alpha(t.accent, 0.4)), StrokeKind::Inside);
+                paint::glow_ellipse(
+                    painter,
+                    us.center_top() + vec2(0.0, 30.0),
+                    vec2(cw * 0.9, 120.0),
+                    with_alpha(t.accent, if t.dark { 0.18 } else { 0.08 }),
+                );
+                painter.rect(
+                    us,
+                    CornerRadius::same(rad as u8),
+                    with_alpha(t.accent, if t.dark { 0.07 } else { 0.04 }),
+                    Stroke::new(1.0, with_alpha(t.accent, 0.4)),
+                    StrokeKind::Inside,
+                );
                 glowkit_effects::BorderBeam::new().radius(rad).duration(8.0).paint(ui, us);
                 // header
                 for (c, name) in self.columns.iter().enumerate() {
@@ -1188,15 +1467,34 @@ impl ComparisonSection {
                     if c == 0 {
                         let g = painter.layout_no_wrap(name.clone(), FontId::proportional(16.0), col);
                         let lw = g.size().x + 26.0;
-                        let tile = Rect::from_center_size(pos2(cx - lw / 2.0 + 9.0, rect.min.y + head_h / 2.0), Vec2::splat(18.0));
+                        let tile = Rect::from_center_size(
+                            pos2(cx - lw / 2.0 + 9.0, rect.min.y + head_h / 2.0),
+                            Vec2::splat(18.0),
+                        );
                         paint::gradient_rect(painter, tile, 5.0, 135.0, &[t.gradient[0], t.gradient[1]]);
-                        painter.galley(pos2(tile.max.x + 8.0, rect.min.y + head_h / 2.0 - g.size().y / 2.0), g.clone(), col);
+                        painter.galley(
+                            pos2(tile.max.x + 8.0, rect.min.y + head_h / 2.0 - g.size().y / 2.0),
+                            g.clone(),
+                            col,
+                        );
                         painter.galley(pos2(tile.max.x + 8.6, rect.min.y + head_h / 2.0 - g.size().y / 2.0), g, col);
                     } else {
-                        painter.text(pos2(cx, rect.min.y + head_h / 2.0), egui::Align2::CENTER_CENTER, name, FontId::proportional(14.5), col);
+                        painter.text(
+                            pos2(cx, rect.min.y + head_h / 2.0),
+                            egui::Align2::CENTER_CENTER,
+                            name,
+                            FontId::proportional(14.5),
+                            col,
+                        );
                     }
                 }
-                painter.text(pos2(rect.min.x + 4.0, rect.min.y + head_h / 2.0), egui::Align2::LEFT_CENTER, "Feature", FontId::proportional(13.0), t.muted_foreground);
+                painter.text(
+                    pos2(rect.min.x + 4.0, rect.min.y + head_h / 2.0),
+                    egui::Align2::LEFT_CENTER,
+                    "Feature",
+                    FontId::proportional(13.0),
+                    t.muted_foreground,
+                );
                 for (r, (feat, vals)) in self.rows.iter().enumerate() {
                     let y = rect.min.y + head_h + r as f32 * row_h;
                     let row_rect = Rect::from_min_size(pos2(rect.min.x, y), vec2(w, row_h));
@@ -1206,7 +1504,12 @@ impl ComparisonSection {
                     }
                     painter.hline(rect.x_range(), y, Stroke::new(1.0, with_alpha(t.border, 0.8)));
                     let p = sec.reveal(next + 1 + r / 2);
-                    let tg = painter.layout(feat.clone(), FontId::proportional(14.5), with_alpha(t.foreground, p), feat_w - 12.0);
+                    let tg = painter.layout(
+                        feat.clone(),
+                        FontId::proportional(14.5),
+                        with_alpha(t.foreground, p),
+                        feat_w - 12.0,
+                    );
                     painter.galley(pos2(rect.min.x + 4.0, y + row_h / 2.0 - tg.size().y / 2.0), tg, t.foreground);
                     for (c, v) in vals.iter().enumerate().take(nc) {
                         let cc = pos2(rect.min.x + feat_w + cw * (c as f32 + 0.5), y + row_h / 2.0);
@@ -1215,10 +1518,18 @@ impl ComparisonSection {
                             CompareValue::Yes => {
                                 let col = if c == 0 { t.accent } else { t.success };
                                 painter.circle_filled(cc, s + 2.0, with_alpha(col, if c == 0 { 1.0 } else { 0.16 }));
-                                UiIcon::Check.paint(painter, Rect::from_center_size(cc, Vec2::splat(s * 1.3)), if c == 0 { glowkit_core::color::contrast_text(t.accent) } else { col });
+                                UiIcon::Check.paint(
+                                    painter,
+                                    Rect::from_center_size(cc, Vec2::splat(s * 1.3)),
+                                    if c == 0 { glowkit_core::color::contrast_text(t.accent) } else { col },
+                                );
                             }
                             CompareValue::No => {
-                                UiIcon::X.paint(painter, Rect::from_center_size(cc, Vec2::splat(s * 1.4)), with_alpha(t.muted_foreground, 0.6));
+                                UiIcon::X.paint(
+                                    painter,
+                                    Rect::from_center_size(cc, Vec2::splat(s * 1.4)),
+                                    with_alpha(t.muted_foreground, 0.6),
+                                );
                             }
                             CompareValue::Partial => {
                                 painter.circle_stroke(cc, s * 0.8, Stroke::new(1.5, t.warning));
@@ -1231,7 +1542,13 @@ impl ComparisonSection {
                                 painter.add(Shape::convex_polygon(half, t.warning, Stroke::NONE));
                             }
                             CompareValue::Text(s) => {
-                                painter.text(cc, egui::Align2::CENTER_CENTER, s, FontId::proportional(14.0), with_alpha(if c == 0 { t.foreground } else { t.muted_foreground }, p));
+                                painter.text(
+                                    cc,
+                                    egui::Align2::CENTER_CENTER,
+                                    s,
+                                    FontId::proportional(14.0),
+                                    with_alpha(if c == 0 { t.foreground } else { t.muted_foreground }, p),
+                                );
                             }
                         }
                     }
@@ -1281,9 +1598,21 @@ impl StepsSection {
             eyebrow: Some("How it works".into()),
             subtitle: Some("From zero to a polished app in three steps.".into()),
             steps: vec![
-                ("Install the crate".into(), "Add glowkit to Cargo.toml and pick the feature sets you need.".into(), UiIcon::Download),
-                ("Pick a template".into(), "Start from a landing page, dashboard or app template and make it yours.".into(), UiIcon::Grid),
-                ("Ship everywhere".into(), "Build native binaries for every desktop and a WebAssembly bundle for the web.".into(), UiIcon::Zap),
+                (
+                    "Install the crate".into(),
+                    "Add glowkit to Cargo.toml and pick the feature sets you need.".into(),
+                    UiIcon::Download,
+                ),
+                (
+                    "Pick a template".into(),
+                    "Start from a landing page, dashboard or app template and make it yours.".into(),
+                    UiIcon::Grid,
+                ),
+                (
+                    "Ship everywhere".into(),
+                    "Build native binaries for every desktop and a WebAssembly bundle for the web.".into(),
+                    UiIcon::Zap,
+                ),
             ],
             layout: StepsLayout::Horizontal,
             background: SectionBackground::Plain,
@@ -1333,10 +1662,14 @@ impl StepsSection {
         let id = section_id(ui, "steps", &self.salt);
         section(ui, Frame::new(id, self.background), |ui, sec| {
             let t = sec.t.clone();
-            let next = Heading::new(&self.title).eyebrow(self.eyebrow.as_deref()).subtitle(self.subtitle.as_deref()).show(ui, sec, 0);
+            let next = Heading::new(&self.title)
+                .eyebrow(self.eyebrow.as_deref())
+                .subtitle(self.subtitle.as_deref())
+                .show(ui, sec, 0);
             ui.add_space(52.0);
             let n = self.steps.len();
-            let layout = if sec.narrow && self.layout == StepsLayout::Horizontal { StepsLayout::Vertical } else { self.layout };
+            let layout =
+                if sec.narrow && self.layout == StepsLayout::Horizontal { StepsLayout::Vertical } else { self.layout };
             // progress of the connecting line: 0..n-1 (which segment is filled)
             let prog = ((sec.elapsed - 0.4) / 0.6).clamp(0.0, (n.max(1) - 1) as f32);
             if prog < (n.max(1) - 1) as f32 {
@@ -1344,7 +1677,7 @@ impl StepsSection {
             }
             let badge = |p: &egui::Painter, c: egui::Pos2, i: usize, lit: f32| {
                 p.circle_filled(c, 26.0, t.background);
-                p.circle(c, 24.0, mix(t.card, t.accent, 0.12 * lit), Stroke::new(1.5, mix(t.border, t.accent, lit)), );
+                p.circle(c, 24.0, mix(t.card, t.accent, 0.12 * lit), Stroke::new(1.5, mix(t.border, t.accent, lit)));
                 if lit > 0.5 {
                     p.circle_stroke(c, 30.0, Stroke::new(1.0, with_alpha(t.accent, 0.25 * lit)));
                 }
@@ -1366,20 +1699,36 @@ impl StepsSection {
                         let cx = origin.x + cw * (i as f32 + 0.5);
                         let lit = (prog - i as f32 + 1.0).clamp(0.0, 1.0);
                         badge(ui.painter(), pos2(cx, cy), i, lit);
-                        let mut child = ui.new_child(egui::UiBuilder::new().max_rect(Rect::from_min_size(pos2(cx - cw / 2.0 + 16.0, cy + 46.0), vec2(cw - 32.0, f32::INFINITY))).layout(egui::Layout::top_down(Align::Center)).id_salt(("st", i)));
+                        let mut child = ui.new_child(
+                            egui::UiBuilder::new()
+                                .max_rect(Rect::from_min_size(
+                                    pos2(cx - cw / 2.0 + 16.0, cy + 46.0),
+                                    vec2(cw - 32.0, f32::INFINITY),
+                                ))
+                                .layout(egui::Layout::top_down(Align::Center))
+                                .id_salt(("st", i)),
+                        );
                         sec.fade(&mut child, next + i, |ui| {
                             Tx::new(title).size(18.0).semi().align(Align::Center).color(t.foreground).show(ui);
                             ui.add_space(6.0);
-                            Tx::new(desc).size(14.5).line(1.55).align(Align::Center).max_width(300.0).color(t.muted_foreground).show(ui);
+                            Tx::new(desc)
+                                .size(14.5)
+                                .line(1.55)
+                                .align(Align::Center)
+                                .max_width(300.0)
+                                .color(t.muted_foreground)
+                                .show(ui);
                         });
                         bottom = bottom.max(child.min_rect().max.y);
                     }
                     let x0 = origin.x + cw * 0.5;
                     let x1 = origin.x + cw * (n as f32 - 0.5);
-                    ui.painter().set(line, Shape::line_segment([pos2(x0, cy), pos2(x1, cy)], Stroke::new(2.0, t.border)));
+                    ui.painter()
+                        .set(line, Shape::line_segment([pos2(x0, cy), pos2(x1, cy)], Stroke::new(2.0, t.border)));
                     let xf = x0 + (x1 - x0) * (prog / (n.max(2) - 1) as f32);
                     if xf > x0 {
-                        ui.painter().set(fill, Shape::line_segment([pos2(x0, cy), pos2(xf, cy)], Stroke::new(2.0, t.accent)));
+                        ui.painter()
+                            .set(fill, Shape::line_segment([pos2(x0, cy), pos2(xf, cy)], Stroke::new(2.0, t.accent)));
                     }
                     ui.advance_cursor_after_rect(Rect::from_min_max(origin, pos2(origin.x + w, bottom)));
                 }
@@ -1396,7 +1745,12 @@ impl StepsSection {
                         centers.push(c);
                         let lit = (prog - i as f32 + 1.0).clamp(0.0, 1.0);
                         badge(ui.painter(), c, i, lit);
-                        let mut child = ui.new_child(egui::UiBuilder::new().max_rect(Rect::from_min_size(pos2(x + 80.0, y + 8.0), vec2(w - 80.0, f32::INFINITY))).layout(egui::Layout::top_down(Align::Min)).id_salt(("sv", i)));
+                        let mut child = ui.new_child(
+                            egui::UiBuilder::new()
+                                .max_rect(Rect::from_min_size(pos2(x + 80.0, y + 8.0), vec2(w - 80.0, f32::INFINITY)))
+                                .layout(egui::Layout::top_down(Align::Min))
+                                .id_salt(("sv", i)),
+                        );
                         sec.fade(&mut child, next + i, |ui| {
                             card(ui, id.with(("svc", i)), CardLook::of(&t).pad(20.0), |ui| {
                                 ui.horizontal(|ui| {
@@ -1415,7 +1769,10 @@ impl StepsSection {
                         let yf = a.y + (b.y - a.y) * (prog / (n.max(2) - 1) as f32);
                         ui.painter().set(fill, Shape::line_segment([*a, pos2(a.x, yf)], Stroke::new(2.0, t.accent)));
                     }
-                    ui.advance_cursor_after_rect(Rect::from_min_max(origin, pos2(origin.x + ui.available_width(), y - 24.0)));
+                    ui.advance_cursor_after_rect(Rect::from_min_max(
+                        origin,
+                        pos2(origin.x + ui.available_width(), y - 24.0),
+                    ));
                 }
                 StepsLayout::Cards => {
                     let cols = sec.cols(240.0, n.min(4));
@@ -1431,10 +1788,20 @@ impl StepsSection {
                                 Tx::new(desc).size(14.5).line(1.55).color(t.muted_foreground).show(ui);
                             });
                             let r = out.rect.translate(vec2(0.0, -2.0 * out.hover));
-                            let g = ui.painter().layout_no_wrap(format!("{:02}", i + 1), FontId::proportional(56.0), Color32::WHITE);
+                            let g = ui.painter().layout_no_wrap(
+                                format!("{:02}", i + 1),
+                                FontId::proportional(56.0),
+                                Color32::WHITE,
+                            );
                             let pos = pos2(r.max.x - g.size().x - 18.0, r.min.y + 8.0);
                             let top = with_alpha(t.foreground, if t.dark { 0.09 } else { 0.07 });
-                            paint::galley_with(ui.painter(), pos, &g, |q| with_alpha(top, (1.0 - (q.y - pos.y) / g.size().y).clamp(0.0, 1.0) * if t.dark { 0.12 } else { 0.08 }));
+                            paint::galley_with(ui.painter(), pos, &g, |q| {
+                                with_alpha(
+                                    top,
+                                    (1.0 - (q.y - pos.y) / g.size().y).clamp(0.0, 1.0)
+                                        * if t.dark { 0.12 } else { 0.08 },
+                                )
+                            });
                         });
                     });
                 }

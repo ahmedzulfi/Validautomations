@@ -828,7 +828,8 @@ pub(crate) fn legend(ui: &mut Ui, id: Id, area: Rect, entries: &[LegendEntry], h
     let item_w = |w: f32| 10.0 + 6.0 + w;
     let n = entries.len();
     let mut gap = 16.0;
-    let sum = |widths: &[f32], gap: f32| widths.iter().map(|w| item_w(*w)).sum::<f32>() + gap * (n.saturating_sub(1)) as f32;
+    let sum =
+        |widths: &[f32], gap: f32| widths.iter().map(|w| item_w(*w)).sum::<f32>() + gap * (n.saturating_sub(1)) as f32;
     // Too wide for the area: tighten the gaps, then truncate the longest labels with "…".
     let avail = area.width() - 8.0;
     if sum(&widths, gap) > avail {
