@@ -200,7 +200,7 @@ impl PixelTransition {
         self.grid = n.clamp(2, 64);
         self
     }
-    /// Pixel color. Default: theme foreground.
+    /// Pixel color. Default: theme accent.
     pub fn pixel_color(mut self, c: Color32) -> Self {
         self.color = Some(c);
         self
@@ -311,7 +311,7 @@ impl PixelTransition {
             };
             let cw = rect.width() / cols as f32;
             let ch = rect.height() / rows as f32;
-            let color = self.color.unwrap_or(t.foreground);
+            let color = self.color.unwrap_or(t.accent);
             let clip = painter.with_clip_rect(rect);
             let (phase, frac) = if e < 0.5 { (0u64, e * 2.0) } else { (1, (e - 0.5) * 2.0) };
             let shape = outline(rect, radius, 6.0);

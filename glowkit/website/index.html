@@ -59,6 +59,7 @@
     .btn.primary::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(139,92,246,.35) 50%, transparent 70%); background-size: 250% 100%; animation: shine 3s linear infinite; }
     .install { position: relative; display: inline-flex; align-items: center; gap: 12px; margin-top: 26px; padding: 10px 16px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); font: 14px var(--mono); color: var(--muted); }
     .install b { color: var(--fg); font-weight: 500; }
+    .btn { cursor: pointer; color: inherit; font-family: inherit; }
     .install button { all: unset; cursor: pointer; color: var(--dim); font-size: 12px; }
     .install button:hover { color: var(--fg); }
 
@@ -229,6 +230,7 @@
       <div class="libs" id="libs"></div>
       <div class="search"><input id="q" placeholder="Search components, e.g. aurora, dock, typewriter, tool call…" aria-label="Search components" /><span class="count" id="count"></span></div>
       <div class="comps" id="comps"></div>
+      <div style="text-align:center;margin-top:20px"><button class="btn" id="more" hidden></button></div>
     </div>
   </section>
 
@@ -273,12 +275,19 @@
       }).join("");
       const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.style.width = e.target.dataset.w + "%"; io.unobserve(e.target); } }));
       document.querySelectorAll(".bar i").forEach((b) => io.observe(b));
+      let showAll = false;
+      const LIMIT = 40;
       const render = () => {
         const q = document.getElementById("q").value.toLowerCase().trim();
         const hits = demos.filter((d) => !q || [d.name, d.id, d.category, d.description, ...d.covers].join(" ").toLowerCase().includes(q));
+        const shown = q || showAll ? hits : hits.slice(0, LIMIT);
         document.getElementById("count").textContent = `${hits.length} of ${demos.length}`;
-        document.getElementById("comps").innerHTML = hits.map((d) => `<a class="comp" href="gallery/#${esc(d.id)}"><h4>${esc(d.name)}</h4><small>${esc(d.category)}</small><p>${esc(d.description)}</p></a>`).join("");
+        document.getElementById("comps").innerHTML = shown.map((d) => `<a class="comp" href="gallery/#${esc(d.id)}"><h4>${esc(d.name)}</h4><small>${esc(d.category)}</small><p>${esc(d.description)}</p></a>`).join("");
+        const more = document.getElementById("more");
+        more.hidden = shown.length >= hits.length;
+        more.textContent = `Show all ${hits.length} components`;
       };
+      document.getElementById("more").addEventListener("click", () => { showAll = true; render(); });
       document.getElementById("q").addEventListener("input", render);
       render();
     }).catch(() => {});
