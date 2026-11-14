@@ -411,12 +411,33 @@ fn rotated_rect(c: Pos2, size: f32, angle: f32, radius: f32) -> Vec<Pos2> {
     pts.into_iter().map(|p| c + vec2(p.x * co - p.y * s, p.x * s + p.y * co)).collect()
 }
 
+/// What happened in an [`EmptyState`] this frame (from [`EmptyState::show`]).
+#[derive(Debug)]
+pub struct EmptyStateResponse {
+    /// Response covering the whole block.
+    pub response: Response,
+    /// The primary action button was clicked.
+    pub primary: bool,
+    /// The secondary action button was clicked.
+    pub secondary: bool,
+}
+
 impl Widget for EmptyState {
+    /// `.clicked()` on the returned response reports the primary action.
     fn ui(self, ui: &mut Ui) -> Response {
+        self.show(ui).response
+    }
+}
+
+impl EmptyState {
+    /// Show the block and report which action (if any) was clicked. Use this instead of
+    /// `ui.add(..)` when you set both [`Self::action`] and [`Self::secondary_action`].
+    pub fn show(self, ui: &mut Ui) -> EmptyStateResponse {
         let t = Theme::of(ui);
         let w = self.width.unwrap_or_else(|| ui.available_width().min(520.0));
         let start = ui.cursor().min;
-        let mut clicked = None;
+        let mut clicked: Option<Response> = None;
+        let mut secondary_clicked = false;
         let inner = ui.allocate_ui_with_layout(vec2(w, 0.0), Layout::top_down(Align::Center), |ui| {
             ui.set_width(w);
             ui.add_space(30.0);
@@ -472,7 +493,7 @@ impl Widget for EmptyState {
                     + self.secondary.as_ref().map(|a| kit::text_width(ui, a, 14.0) + 32.0 + 8.0).unwrap_or(0.0);
                 ui.allocate_ui_with_layout(vec2(bw, 36.0), Layout::left_to_right(Align::Center), |ui| {
                     if let Some(s) = &self.secondary {
-                        ui.add(Button::new(s.clone()).variant(ButtonVariant::Outline));
+                        secondary_clicked = ui.add(Button::new(s.clone()).variant(ButtonVariant::Outline)).clicked();
                     }
                     if let Some(a) = &self.action {
                         let r = ui.add(Button::new(a.clone()).icon(UiIcon::Plus));
@@ -497,7 +518,8 @@ impl Widget for EmptyState {
                 Stroke::new(1.0, t.input.lerp_to_gamma(t.muted_foreground, 0.3)),
             );
         }
-        clicked.unwrap_or(inner.response)
+        let primary = clicked.is_some();
+        EmptyStateResponse { response: clicked.unwrap_or(inner.response), primary, secondary: secondary_clicked }
     }
 }
 

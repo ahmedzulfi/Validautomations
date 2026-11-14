@@ -3,12 +3,14 @@
 //! Modules are re-exported at the crate root, so `glowkit_components::Thing` works for every component.
 
 pub mod data;
+pub mod icon;
 pub mod feedback;
 pub mod inputs;
 pub mod navigation;
 pub mod overlays;
 
 pub use data::*;
+pub use icon::Icon;
 pub use feedback::*;
 pub use inputs::*;
 pub use navigation::*;

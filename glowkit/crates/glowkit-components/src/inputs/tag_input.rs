@@ -1,5 +1,5 @@
 use super::field::FieldLabel;
-use super::kit::{self, control_radius, UiIcon};
+use super::kit::{self, control_radius, ControlSize, UiIcon};
 use egui::{
     pos2, vec2, Align, Color32, CornerRadius, CursorIcon, FontId, Layout, Rect, Response, RichText, Sense, Shape,
     Stroke, StrokeKind, TextEdit, Ui, Widget,
@@ -64,7 +64,7 @@ impl Widget for TagInput<'_> {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
         let width = self.width.unwrap_or_else(|| ui.available_width().min(420.0));
-        ui.allocate_ui_with_layout(vec2(width, 0.0), Layout::top_down(Align::Min), |ui| {
+        ui.allocate_ui_with_layout(vec2(width, ControlSize::Md.height()), Layout::top_down(Align::Min), |ui| {
             ui.spacing_mut().item_spacing.y = 6.0;
             if let Some(l) = &self.label {
                 ui.add(FieldLabel::new(l.clone()));

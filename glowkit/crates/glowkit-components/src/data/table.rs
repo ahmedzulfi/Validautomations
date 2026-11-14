@@ -142,6 +142,7 @@ pub struct DataTable<'a> {
     width: Option<f32>,
     row_height: Option<f32>,
     id_salt: Option<Id>,
+    clicked_row: Option<&'a mut Option<usize>>,
 }
 
 impl<'a> DataTable<'a> {
@@ -156,7 +157,14 @@ impl<'a> DataTable<'a> {
             width: None,
             row_height: None,
             id_salt: None,
+            clicked_row: None,
         }
+    }
+    /// Report row clicks: `out` is set to `Some(row index)` (index into `rows`) on the frame a
+    /// row is clicked. Rows also get a pointing-hand cursor.
+    pub fn clicked_row(mut self, out: &'a mut Option<usize>) -> Self {
+        self.clicked_row = Some(out);
+        self
     }
     /// Add a checkbox column bound to per-row selection flags (resized to the row count).
     pub fn selection(mut self, s: &'a mut Vec<bool>) -> Self {
@@ -190,32 +198,39 @@ impl<'a> DataTable<'a> {
     }
 }
 
+/// Paint single-line text inside a cell, ending in "…" if it doesn't fit.
+fn cell_text(painter: &Painter, rect: Rect, right: bool, dx: f32, s: &str, font: FontId, color: Color32) {
+    let mut job = egui::text::LayoutJob::simple_singleline(s.to_owned(), font, color);
+    job.wrap.max_width = rect.width().max(8.0);
+    job.wrap.max_rows = 1;
+    job.wrap.break_anywhere = true;
+    job.wrap.overflow_character = Some('…');
+    let g = painter.layout_job(job);
+    let x = if right { rect.max.x - g.size().x } else { rect.min.x };
+    painter.galley(pos2(x + dx, rect.center().y - g.size().y / 2.0), g, color);
+}
+
 fn paint_cell(painter: &Painter, ui: &Ui, rect: Rect, cell: &TableCell, right: bool, t: &Theme, alpha: f32) {
     let al = |c: Color32| c.gamma_multiply(alpha);
-    let (x, align) = if right { (rect.max.x, Align2::RIGHT_CENTER) } else { (rect.min.x, Align2::LEFT_CENTER) };
+    let x = if right { rect.max.x } else { rect.min.x };
     let cy = rect.center().y;
     match cell {
         TableCell::Text(s) => {
-            painter.text(pos2(x, cy), align, s, FontId::proportional(13.5), al(t.foreground));
+            cell_text(painter, rect, right, 0.0, s, FontId::proportional(13.5), al(t.foreground));
         }
         TableCell::Muted(s) => {
-            painter.text(pos2(x, cy), align, s, FontId::proportional(13.5), al(t.muted_foreground));
+            cell_text(painter, rect, right, 0.0, s, FontId::proportional(13.5), al(t.muted_foreground));
         }
         TableCell::Strong(s) => {
-            painter.text(pos2(x, cy), align, s, FontId::proportional(14.0), al(t.foreground));
-            painter.text(
-                pos2(x + if right { -0.35 } else { 0.35 }, cy),
-                align,
-                s,
-                FontId::proportional(14.0),
-                al(with_alpha(t.foreground, 0.5)),
-            );
+            cell_text(painter, rect, right, 0.0, s, FontId::proportional(14.0), al(t.foreground));
+            let dx = if right { -0.35 } else { 0.35 };
+            cell_text(painter, rect, right, dx, s, FontId::proportional(14.0), al(with_alpha(t.foreground, 0.5)));
         }
         TableCell::Mono(s) => {
-            painter.text(pos2(x, cy), align, s, FontId::monospace(12.5), al(t.muted_foreground));
+            cell_text(painter, rect, right, 0.0, s, FontId::monospace(12.5), al(t.muted_foreground));
         }
         TableCell::Number(_, s) => {
-            painter.text(pos2(x, cy), align, s, FontId::proportional(13.5), al(t.foreground));
+            cell_text(painter, rect, right, 0.0, s, FontId::proportional(13.5), al(t.foreground));
         }
         TableCell::Badge(s, v) => {
             let (fill, text, border) = badge_colors(t, *v);
@@ -293,7 +308,7 @@ fn icon_btn(ui: &mut Ui, rect: Rect, id: Id, icon: UiIcon, enabled: bool) -> boo
 }
 
 impl Widget for DataTable<'_> {
-    fn ui(self, ui: &mut Ui) -> Response {
+    fn ui(mut self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
         let w = self.width.unwrap_or_else(|| ui.available_width());
         let id = match self.id_salt {
@@ -441,7 +456,13 @@ impl Widget for DataTable<'_> {
             if appear < 1.0 {
                 ui.ctx().request_repaint();
             }
-            let row_resp = ui.interact(rr, id.with(("row", ri)), Sense::click());
+            let mut row_resp = ui.interact(rr, id.with(("row", ri)), Sense::click());
+            if let Some(out) = self.clicked_row.as_deref_mut() {
+                row_resp = row_resp.on_hover_cursor(CursorIcon::PointingHand);
+                if row_resp.clicked() {
+                    *out = Some(ri);
+                }
+            }
             let hov = kit::anim(ui, id.with(("rh", ri)), row_resp.hovered(), 0.1);
             let selected = selection.as_deref().map(|s| s[ri]).unwrap_or(false);
             let sk = kit::anim(ui, id.with(("rs", ri)), selected, 0.14);

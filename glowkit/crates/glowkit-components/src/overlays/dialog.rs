@@ -1,5 +1,6 @@
 use super::kit::{self, Btn};
 use super::LineIcon;
+use crate::Icon;
 use egui::{
     pos2, vec2, Color32, CornerRadius, Id, Key, LayerId, Order, Rect, Sense, Stroke, StrokeKind, Ui, UiBuilder,
 };
@@ -90,7 +91,7 @@ pub struct Dialog<'a> {
     within: Option<Rect>,
     close_button: bool,
     dismissable: bool,
-    icon: Option<(LineIcon, Option<Color32>)>,
+    icon: Option<(Icon, Option<Color32>)>,
     id: Option<Id>,
 }
 
@@ -153,7 +154,8 @@ impl<'a> Dialog<'a> {
         self
     }
     /// Show an icon in a tinted circle above the title. `None` color uses the accent (or red when destructive).
-    pub fn icon(mut self, icon: LineIcon, color: Option<Color32>) -> Self {
+    pub fn icon(mut self, icon: impl Into<Icon>, color: Option<Color32>) -> Self {
+        let icon: Icon = icon.into();
         self.icon = Some((icon, color));
         self
     }

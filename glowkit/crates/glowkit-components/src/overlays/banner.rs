@@ -1,5 +1,6 @@
 use super::kit;
 use super::LineIcon;
+use crate::Icon;
 use egui::{pos2, vec2, Color32, CursorIcon, FontId, Rect, Sense, Stroke, StrokeKind, Ui};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{paint, Theme};
@@ -47,7 +48,7 @@ pub struct NoticeBanner<'a> {
     text: String,
     badge: Option<String>,
     action: Option<String>,
-    icon: Option<LineIcon>,
+    icon: Option<Icon>,
     style: BannerStyle,
     height: f32,
     dismissable: bool,
@@ -78,8 +79,8 @@ impl<'a> NoticeBanner<'a> {
         self
     }
     /// A leading icon.
-    pub fn icon(mut self, icon: LineIcon) -> Self {
-        self.icon = Some(icon);
+    pub fn icon(mut self, icon: impl Into<Icon>) -> Self {
+        self.icon = Some(icon.into());
         self
     }
     /// Visual style.

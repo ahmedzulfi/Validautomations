@@ -824,10 +824,34 @@ pub(crate) fn legend(ui: &mut Ui, id: Id, area: Rect, entries: &[LegendEntry], h
     let t = Theme::of(ui);
     let font = FontId::proportional(12.0);
     let painter = ui.painter_at(area.expand(4.0));
-    let widths: Vec<f32> = entries.iter().map(|e| text_width(&painter, &e.label, &font)).collect();
+    let mut widths: Vec<f32> = entries.iter().map(|e| text_width(&painter, &e.label, &font)).collect();
     let item_w = |w: f32| 10.0 + 6.0 + w;
-    let gap = 16.0;
-    let total: f32 = widths.iter().map(|w| item_w(*w)).sum::<f32>() + gap * (entries.len().saturating_sub(1)) as f32;
+    let n = entries.len();
+    let mut gap = 16.0;
+    let sum = |widths: &[f32], gap: f32| widths.iter().map(|w| item_w(*w)).sum::<f32>() + gap * (n.saturating_sub(1)) as f32;
+    // Too wide for the area: tighten the gaps, then truncate the longest labels with "…".
+    let avail = area.width() - 8.0;
+    if sum(&widths, gap) > avail {
+        gap = 10.0;
+    }
+    let mut truncated = vec![false; n];
+    if sum(&widths, gap) > avail && n > 0 {
+        let fixed = n as f32 * 16.0 + gap * (n - 1) as f32;
+        let mut budget = ((avail - fixed) / n as f32).max(18.0);
+        // give the slack of short labels to the long ones
+        let short: f32 = widths.iter().filter(|w| **w <= budget).sum();
+        let long = widths.iter().filter(|w| **w > budget).count();
+        if long > 0 {
+            budget = ((avail - fixed - short) / long as f32).max(budget);
+        }
+        for (i, w) in widths.iter_mut().enumerate() {
+            if *w > budget {
+                *w = budget;
+                truncated[i] = true;
+            }
+        }
+    }
+    let total = sum(&widths, gap);
     let mut x = area.center().x - total / 2.0;
     let cy = area.center().y;
     let mut hovered = None;
@@ -873,7 +897,22 @@ pub(crate) fn legend(ui: &mut Ui, id: Id, area: Rect, entries: &[LegendEntry], h
         } else {
             t.muted_foreground.lerp_to_gamma(t.foreground, 0.35 + 0.65 * hov)
         };
-        let tr = painter.text(pos2(x + 16.0, cy), Align2::LEFT_CENTER, &e.label, font.clone(), col);
+        let tr = if truncated[i] {
+            let mut job = egui::text::LayoutJob::simple_singleline(e.label.clone(), font.clone(), col);
+            job.wrap.max_width = widths[i];
+            job.wrap.max_rows = 1;
+            job.wrap.break_anywhere = true;
+            job.wrap.overflow_character = Some('…');
+            let g = painter.layout_job(job);
+            let r = Rect::from_min_size(pos2(x + 16.0, cy - g.size().y / 2.0), g.size());
+            painter.galley(r.min, g, col);
+            if resp.hovered() {
+                resp.clone().on_hover_text(&e.label);
+            }
+            r
+        } else {
+            painter.text(pos2(x + 16.0, cy), Align2::LEFT_CENTER, &e.label, font.clone(), col)
+        };
         if off {
             painter.hline(tr.x_range(), cy, Stroke::new(1.0, col));
         }

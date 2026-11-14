@@ -11,7 +11,7 @@ mod timeline;
 pub use avatar::{Avatar, AvatarCircles, AvatarGroup, AvatarStatus, AvatarStyle};
 pub use badge::{Badge, BadgeVariant, Chip, Kbd, Separator};
 pub use disclosure::{Accordion, Collapsible, TreeNode, TreeView};
-pub use display::{Alert, AlertVariant, Card, DescriptionList, EmptyState, KeyValue, StatCard};
+pub use display::{Alert, AlertVariant, Card, DescriptionList, EmptyState, EmptyStateResponse, KeyValue, StatCard};
 pub use table::{DataTable, TableCell, TableColumn};
 pub use timeline::{CodeBlock, Timeline, TimelineItem};
 

@@ -1,5 +1,6 @@
 use super::kit;
 use super::LineIcon;
+use crate::Icon;
 use egui::{pos2, vec2, Align2, Context, CursorIcon, FontId, Id, Key, Order, Pos2, Rect, Response, Sense, Stroke};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
@@ -24,7 +25,7 @@ pub enum MenuEntry {
         /// Text.
         label: String,
         /// Leading icon.
-        icon: Option<LineIcon>,
+        icon: Option<Icon>,
         /// Right-aligned shortcut hint.
         shortcut: Option<String>,
         /// Red "danger" styling.
@@ -55,7 +56,7 @@ pub enum MenuEntry {
         /// Text.
         label: String,
         /// Leading icon.
-        icon: Option<LineIcon>,
+        icon: Option<Icon>,
         /// Child entries.
         entries: Vec<MenuEntry>,
     },
@@ -87,7 +88,8 @@ impl MenuEntry {
         MenuEntry::Submenu { label: label.into(), icon: None, entries }
     }
     /// Set the leading icon (items and submenus).
-    pub fn icon(mut self, i: LineIcon) -> Self {
+    pub fn icon(mut self, i: impl Into<Icon>) -> Self {
+        let i: Icon = i.into();
         match &mut self {
             MenuEntry::Item { icon, .. } | MenuEntry::Submenu { icon, .. } => *icon = Some(i),
             _ => {}

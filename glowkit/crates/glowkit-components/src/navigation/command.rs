@@ -1,5 +1,6 @@
 use crate::overlays::kit;
 use crate::overlays::LineIcon;
+use crate::Icon;
 use egui::{
     pos2, vec2, Align2, CursorIcon, FontId, Key, LayerId, Modifiers, Order, Rect, Sense, Stroke, TextEdit, Ui,
     UiBuilder,
@@ -13,7 +14,7 @@ pub struct CommandItem {
     /// Text (also what the search matches against).
     pub label: String,
     /// Leading icon.
-    pub icon: Option<LineIcon>,
+    pub icon: Option<Icon>,
     /// Right-aligned shortcut hint.
     pub shortcut: Option<String>,
     /// Extra search keywords.
@@ -26,8 +27,8 @@ impl CommandItem {
         Self { label: label.into(), icon: None, shortcut: None, keywords: String::new() }
     }
     /// Leading icon.
-    pub fn icon(mut self, icon: LineIcon) -> Self {
-        self.icon = Some(icon);
+    pub fn icon(mut self, icon: impl Into<Icon>) -> Self {
+        self.icon = Some(icon.into());
         self
     }
     /// Shortcut hint.
