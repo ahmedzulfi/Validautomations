@@ -7,6 +7,7 @@ mod assistant;
 mod chat;
 mod commerce;
 mod common;
+mod auth;
 mod devconsole;
 mod docs;
 mod calendar;
@@ -19,6 +20,7 @@ mod projects;
 mod settings;
 
 pub use analytics::AnalyticsApp;
+pub use auth::AuthGateApp;
 pub use devconsole::{ApiKey, DevConsoleApp};
 pub use docs::DocsApp;
 pub use calendar::{CalEvent, CalendarApp};

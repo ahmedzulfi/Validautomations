@@ -174,7 +174,7 @@ impl DevConsoleApp {
         let id = ui.scope_id().with("dev_usage");
         let loading = kit::loading(ui, id, 0.6);
         let top = page_header(ui, rect, "Usage", "API traffic for acme-api over the last 30 days.", |ui| {
-            kit::put(ui, Rect::from_min_size(ui.cursor().min - vec2(150.0, 0.0), vec2(150.0, 32.0)), Select::new(&mut self.env, ["Production", "Staging", "All environments"]).size(ControlSize::Sm).width(150.0).id_salt("dev_env"));
+            ui.add(Select::new(&mut self.env, ["Production", "Staging", "All environments"]).size(ControlSize::Sm).width(170.0).id_salt("dev_env"));
         });
         let body = Rect::from_min_max(pos2(rect.min.x, top), rect.max);
         kit::child(ui, body, |ui| {
@@ -355,7 +355,7 @@ impl DevConsoleApp {
         let bar = Rect::from_min_size(pos2(rect.min.x, rect.min.y + 42.0), vec2(rect.width(), 32.0));
         kit::put(ui, Rect::from_min_size(bar.min, vec2(280.0, 32.0)), Input::new(&mut self.query).placeholder("Filter by path or status…").icon(UiIcon::Filter).clearable(true).size(ControlSize::Sm).width(280.0).id_salt("dev_log_q"));
         let mut lv = self.levels.clone();
-        kit::put(ui, Rect::from_min_size(bar.min + vec2(292.0, 0.0), vec2(230.0, 32.0)), ToggleGroup::multi(&mut lv, ["Info", "Warn", "Error"]).size(ControlSize::Sm));
+        kit::child(ui, Rect::from_min_size(bar.min + vec2(292.0, 0.0), vec2(230.0, 32.0)), |ui| ui.add(ToggleGroup::multi(&mut lv, ["Info", "Warn", "Error"]).size(ControlSize::Sm)));
         self.levels = lv;
         let pr = Rect::from_min_size(pos2(bar.max.x - 110.0, bar.min.y), vec2(110.0, 32.0));
         let pb = kit::put(ui, pr, Button::new(if self.paused { "Resume" } else { "Pause" }).icon(if self.paused { UiIcon::ArrowRight } else { UiIcon::Clock }).variant(ButtonVariant::Outline).size(ControlSize::Sm).width(110.0));

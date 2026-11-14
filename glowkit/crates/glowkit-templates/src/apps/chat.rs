@@ -192,7 +192,7 @@ impl ChatApp {
                 }
                 if idxs.is_empty() {
                     let r = kit::alloc_row(ui, 160.0);
-                    ui.painter().text(r.center() - vec2(0.0, 10.0), Align2::CENTER_CENTER, &format!("This is the start of {title}"), egui::FontId::proportional(15.0), t.foreground);
+                    ui.painter().text(r.center() - vec2(0.0, 10.0), Align2::CENTER_CENTER, format!("This is the start of {title}"), egui::FontId::proportional(15.0), t.foreground);
                     ui.painter().text(r.center() + vec2(0.0, 14.0), Align2::CENTER_CENTER, "Say hi 👋", egui::FontId::proportional(12.5), t.muted_foreground);
                 }
                 let mut prev_author: Option<&str> = None;

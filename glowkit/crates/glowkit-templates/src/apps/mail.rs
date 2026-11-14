@@ -2,7 +2,6 @@
 
 use egui::{pos2, vec2, Align2, CursorIcon, Key, Rect, Sense, Stroke, Ui};
 use glowkit_components::{toast, Button, ButtonVariant, ControlSize, Dialog, Input, LineIcon, Switch, Tabs, TabsStyle, Textarea, Toast, UiIcon};
-use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
 use super::common::{demo_notes, demo_user};

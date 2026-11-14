@@ -210,5 +210,27 @@ app.route = "logs".into();
 app.show(ui);"##,
         show: |ui| run_demo(ui, || embedded::<DevConsoleApp>(|a| { a.scoped_theme = true; a.route = "logs".into(); }), DevConsoleApp::show),
     },
+    Demo {
+        id: "app-auth-gate",
+        name: "Auth Gate & Sign-in",
+        category: Category::Templates,
+        description: "Signed-out state of an app: the shell stays, content becomes a sign-in card with OAuth buttons, validation, remember me and a loading sign-in that unlocks the workspace.",
+        covers: &["shadcn/ui: Authentication example", "Clerk: Sign-in", "Tailwind UI: Sign-in forms"],
+        code: r##"let mut app = AuthGateApp::default(); // signed_in = false
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<AuthGateApp>(|a| a.scoped_theme = true), AuthGateApp::show),
+    },
+    Demo {
+        id: "app-gated-states",
+        name: "Gated Empty States",
+        category: Category::Templates,
+        description: "Signed-in gates: an upgrade wall over a frosted preview (Reports), access denied with request access (Admin) and a first-run empty state that seeds sample data (Projects).",
+        covers: &["Linear: Upgrade prompt", "Vercel: Empty states", "Tailwind UI: Empty states"],
+        code: r##"let mut app = AuthGateApp::default();
+app.signed_in = true;
+app.route = "reports".into(); // "reports" | "admin" | "projects"
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<AuthGateApp>(|a| { a.scoped_theme = true; a.signed_in = true; a.route = "reports".into(); }), AuthGateApp::show),
+    },
     ]
 }

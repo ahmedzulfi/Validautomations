@@ -73,12 +73,6 @@ pub(crate) fn loading(ui: &Ui, id: Id, secs: f32) -> bool {
     }
 }
 
-/// Seconds since `id` first finished loading (for staggered appear animations).
-pub(crate) fn since_loaded(ui: &Ui, id: Id, secs: f32) -> f32 {
-    let now = ui.input(|i| i.time);
-    let t0: f64 = glowkit_core::state(ui, id.with("tpl_loading"), || now);
-    ((now - t0) as f32 - secs).max(0.0)
-}
 
 /// Replay the loading gate of `id`.
 pub(crate) fn reset_loading(ui: &Ui, id: Id) {
@@ -126,7 +120,6 @@ pub(crate) fn shadow(t: &Theme) -> Color32 {
 pub(crate) fn tone(t: &Theme, tone: Tone) -> Color32 {
     match tone {
         Tone::Neutral => t.muted_foreground,
-        Tone::Accent => t.accent,
         Tone::Success => t.success,
         Tone::Warning => t.warning,
         Tone::Danger => t.destructive,
@@ -138,7 +131,6 @@ pub(crate) fn tone(t: &Theme, tone: Tone) -> Color32 {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Tone {
     Neutral,
-    Accent,
     Success,
     Warning,
     Danger,
@@ -155,12 +147,6 @@ pub(crate) fn card(painter: &Painter, rect: Rect, t: &Theme) {
     painter.rect_stroke(rect, t.radius, Stroke::new(1.0, t.border), StrokeKind::Inside);
 }
 
-/// A floating surface: soft shadow, popover fill and hairline border.
-pub(crate) fn float_panel(painter: &Painter, rect: Rect, t: &Theme, radius: f32) {
-    paint::soft_shadow(painter, rect, radius, 24.0, vec2(0.0, 8.0), shadow(t));
-    painter.rect_filled(rect, radius, t.popover);
-    painter.rect_stroke(rect, radius, Stroke::new(1.0, t.border), StrokeKind::Inside);
-}
 
 /// Run `add` in a child ui confined (and clipped) to `rect`.
 pub(crate) fn child<R>(ui: &mut Ui, rect: Rect, add: impl FnOnce(&mut Ui) -> R) -> R {
@@ -170,13 +156,6 @@ pub(crate) fn child<R>(ui: &mut Ui, rect: Rect, add: impl FnOnce(&mut Ui) -> R) 
     add(&mut c)
 }
 
-/// Paint a card at `rect` and run `add` inside it with `pad` padding. Returns the inner rect too.
-pub(crate) fn card_ui<R>(ui: &mut Ui, rect: Rect, pad: f32, add: impl FnOnce(&mut Ui, Rect) -> R) -> R {
-    let t = Theme::of(ui);
-    card(ui.painter(), rect, &t);
-    let inner = rect.shrink(pad);
-    child(ui, inner, |ui| add(ui, inner))
-}
 
 /// A card with a title row (title, optional subtitle) and a body below. `add` receives the body rect.
 pub(crate) fn titled_card<R>(
@@ -273,34 +252,12 @@ pub(crate) fn split_x(rect: Rect, widths: &[f32], gap: f32) -> Vec<Rect> {
         .collect()
 }
 
-/// Split `rect` vertically: entries > 0 are fixed heights, 0 entries share the rest equally.
-pub(crate) fn split_y(rect: Rect, heights: &[f32], gap: f32) -> Vec<Rect> {
-    let fixed: f32 = heights.iter().sum();
-    let flex = heights.iter().filter(|h| **h <= 0.0).count().max(1) as f32;
-    let rest = (rect.height() - fixed - gap * (heights.len().saturating_sub(1)) as f32).max(0.0) / flex;
-    let mut y = rect.min.y;
-    heights
-        .iter()
-        .map(|h| {
-            let h = if *h > 0.0 { *h } else { rest };
-            let r = Rect::from_min_size(pos2(rect.min.x, y), vec2(rect.width(), h));
-            y += h + gap;
-            r
-        })
-        .collect()
-}
 
 /// `n` equal columns.
 pub(crate) fn cols(rect: Rect, n: usize, gap: f32) -> Vec<Rect> {
     split_x(rect, &vec![0.0; n.max(1)], gap)
 }
 
-/// Allocate the full available width at `height` (the template canvas).
-pub(crate) fn canvas(ui: &mut Ui, height: f32) -> Rect {
-    let h = height.min(ui.available_height().max(360.0));
-    let (rect, _) = ui.allocate_exact_size(vec2(ui.available_width(), h), Sense::hover());
-    rect
-}
 
 // ---------------------------------------------------------------------------------------------
 // interaction

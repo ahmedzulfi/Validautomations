@@ -974,6 +974,7 @@ impl<'a> AppShell<'a> {
         let mut x = area.min.x;
         let mut navigated = false;
         let mut active: Option<(f32, f32)> = None;
+        #[allow(clippy::type_complexity)]
         let items: Vec<(String, String, bool, Vec<(String, String)>)> = self
             .nav
             .iter()
@@ -1061,6 +1062,7 @@ impl<'a> AppShell<'a> {
         let p = ui.painter_at(r);
         p.rect_filled(r, egui::CornerRadius { sw: if self.rounded { self.corner.unwrap_or(t.radius) as u8 } else { 0 }, se: if self.rounded { self.corner.unwrap_or(t.radius) as u8 } else { 0 }, nw: 0, ne: 0 }, kit::chrome_bg(&t));
         p.line_segment([r.left_top(), r.right_top()], Stroke::new(1.0, t.border));
+        #[allow(clippy::type_complexity)]
         let items: Vec<(String, String, Option<AppIcon>, Option<String>, bool)> = self
             .nav
             .iter()

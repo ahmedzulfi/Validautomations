@@ -443,7 +443,8 @@ impl ComingSoonPage {
     pub fn show(self, ui: &mut Ui) -> SectionResponse {
         let id = section_id(ui, "coming_soon_page", &self.salt);
         page(ui, id, self.opts, |ui, p| {
-            let start: f64 = glowkit_core::state(ui, id.with("start"), || ui.input(|i| i.time));
+            let t_now = ui.input(|i| i.time);
+            let start: f64 = glowkit_core::state(ui, id.with("start"), || t_now);
             let left = (self.seconds - (ui.input(|i| i.time) - start)).max(0.0);
             centered_page(ui, p, id.with("body"), self.background, 760.0, |ui, sec| {
                 let t = sec.t.clone();

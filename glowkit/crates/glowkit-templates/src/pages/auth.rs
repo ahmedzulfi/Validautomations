@@ -634,7 +634,8 @@ impl OtpPage {
         page(ui, id, self.opts, |ui, p| {
             let t = p.t.clone();
             auth_shell(ui, p, id.with("shell"), &self.brand, AuthLayout::Centered, self.background, |ui, clicked, submitted| {
-                let mut st: OtpState = glowkit_core::state(ui, id.with("st"), || OtpState { sent_at: Some(now(ui)), ..Default::default() });
+                let t_now = now(ui);
+                let mut st: OtpState = glowkit_core::state(ui, id.with("st"), || OtpState { sent_at: Some(t_now), ..Default::default() });
                 if let Some(at) = st.ok_at {
                     success_badge(ui, at, UiIcon::Check, t.success);
                     auth_title(ui, "Email verified", "Thanks! Your account is ready to go.", &t);

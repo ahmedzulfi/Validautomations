@@ -42,4 +42,4 @@ pub fn demos() -> Vec<glowkit_core::demo::Demo> {
 }
 
 #[cfg(feature = "demos")]
-mod demos;
+pub(crate) mod demos;

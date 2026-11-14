@@ -398,13 +398,13 @@ impl SettingsApp {
             let (resp, _) = kit::row(ui, rr, ui.scope_id().with(("inv", k)), t.radius * 0.6);
             let p = ui.painter().clone();
             AppIcon::Receipt.paint(&p, Rect::from_center_size(pos2(rr.min.x + 18.0, rr.center().y), vec2(16.0, 16.0)), t.muted_foreground);
-            kit::text_at(&p, pos2(rr.min.x + 40.0, rr.center().y), Align2::LEFT_CENTER, &format!("Invoice #{}", 2026_11 - k as i32), 13.5, t.foreground, 200.0);
+            kit::text_at(&p, pos2(rr.min.x + 40.0, rr.center().y), Align2::LEFT_CENTER, &format!("Invoice #{}", 202_611 - k as i32), 13.5, t.foreground, 200.0);
             kit::text_at(&p, pos2(rr.min.x + w * 0.4, rr.center().y), Align2::LEFT_CENTER, date, 13.0, t.muted_foreground, 160.0);
             kit::status_pill(&p, pos2(rr.min.x + w * 0.62, rr.center().y), false, "Paid", t.success, &t);
             kit::text_at(&p, pos2(rr.max.x - 44.0, rr.center().y), Align2::RIGHT_CENTER, amount, 13.5, t.foreground, 100.0);
             UiIcon::Download.paint(&p, Rect::from_center_size(pos2(rr.max.x - 18.0, rr.center().y), vec2(15.0, 15.0)), t.muted_foreground);
             if resp.clicked() {
-                toast(ui.ctx(), Toast::success("Invoice downloaded").description(format!("invoice-{}.pdf", 2026_11 - k as i32)));
+                toast(ui.ctx(), Toast::success("Invoice downloaded").description(format!("invoice-{}.pdf", 202_611 - k as i32)));
             }
         }
     }
