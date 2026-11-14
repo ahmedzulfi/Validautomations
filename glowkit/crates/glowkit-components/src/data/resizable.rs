@@ -165,9 +165,11 @@ impl<'a> ResizablePanels<'a> {
             } else {
                 Rect::from_center_size(pos2(rect.center().x, rect.min.y + pos), vec2(rect.width(), 10.0))
             };
-            let hr = ui
-                .interact(hit, id.with(("handle", k)), Sense::click_and_drag())
-                .on_hover_cursor(if horiz { CursorIcon::ResizeColumn } else { CursorIcon::ResizeRow });
+            let hr = ui.interact(hit, id.with(("handle", k)), Sense::click_and_drag()).on_hover_cursor(if horiz {
+                CursorIcon::ResizeColumn
+            } else {
+                CursorIcon::ResizeRow
+            });
             let delta = if horiz { hr.drag_delta().x } else { hr.drag_delta().y } / total.max(1.0);
             let (a, b) = (k - 1, k);
             if hr.double_clicked() {

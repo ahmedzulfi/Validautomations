@@ -1,5 +1,6 @@
 use super::common::{
-    cover_uv, drive_loop, drive_scroll, in_convex, paint_warped, scroll_rail, view_progress, warp_card, PaintedScene, Persp,
+    cover_uv, drive_loop, drive_scroll, in_convex, paint_warped, scroll_rail, view_progress, warp_card, PaintedScene,
+    Persp,
 };
 use egui::emath::TSTransform;
 use egui::{
@@ -156,7 +157,11 @@ impl ScrollStack {
                 let mut child = ui.new_child(UiBuilder::new().max_rect(r.shrink(26.0)).id_salt(("stack_card", i)));
                 child.set_clip_rect(clip);
                 let p = ui.painter().with_clip_rect(clip);
-                let sc = if t.dark { Color32::from_black_alpha(150) } else { Color32::from_rgba_unmultiplied(30, 30, 70, 40) };
+                let sc = if t.dark {
+                    Color32::from_black_alpha(150)
+                } else {
+                    Color32::from_rgba_unmultiplied(30, 30, 70, 40)
+                };
                 paint::soft_shadow(&p, r, radius, 30.0, vec2(0.0, 12.0), sc);
                 match &self.colors {
                     Some(cols) if !cols.is_empty() => {
@@ -170,13 +175,23 @@ impl ScrollStack {
                         );
                     }
                     _ => {
-                        p.rect(r, CornerRadius::same(radius as u8), t.popover, Stroke::new(1.0, t.border), StrokeKind::Inside);
+                        p.rect(
+                            r,
+                            CornerRadius::same(radius as u8),
+                            t.popover,
+                            Stroke::new(1.0, t.border),
+                            StrokeKind::Inside,
+                        );
                     }
                 }
                 card(&mut child, i);
                 if k > 0.0 && self.dim > 0.0 {
                     let d = if t.dark { Color32::BLACK } else { Color32::from_rgb(20, 20, 40) };
-                    p.rect_filled(r, CornerRadius::same(radius as u8), with_alpha(d, k * self.dim * if t.dark { 1.0 } else { 0.5 }));
+                    p.rect_filled(
+                        r,
+                        CornerRadius::same(radius as u8),
+                        with_alpha(d, k * self.dim * if t.dark { 1.0 } else { 0.5 }),
+                    );
                 }
             }
             if scale < 0.9999 {
@@ -446,8 +461,12 @@ impl ContainerScroll {
         let t = Theme::of(ui);
         let head_h = if self.title.is_empty() { 0.0 } else { 74.0 + if self.subtitle.is_empty() { 0.0 } else { 22.0 } };
         let w = self.width.min(ui.available_width() - 8.0);
-        let (rect, response) = ui.allocate_exact_size(vec2(ui.available_width(), head_h + self.height + 30.0), Sense::hover());
-        let dev = Rect::from_center_size(pos2(rect.center().x, rect.min.y + head_h + 12.0 + self.height / 2.0), vec2(w, self.height));
+        let (rect, response) =
+            ui.allocate_exact_size(vec2(ui.available_width(), head_h + self.height + 30.0), Sense::hover());
+        let dev = Rect::from_center_size(
+            pos2(rect.center().x, rect.min.y + head_h + 12.0 + self.height / 2.0),
+            vec2(w, self.height),
+        );
         let raw = self.progress.unwrap_or_else(|| view_progress(ui, dev, 0.3));
         let e = ease(Easing::OutCubic, raw.clamp(0.0, 1.0));
         if self.progress.is_none() {
@@ -484,19 +503,35 @@ impl ContainerScroll {
         persp.scale = self.start_scale + (1.0 - self.start_scale) * e;
         persp.focal = 1100.0;
         persp.translate = vec2(0.0, -10.0 * e);
-        let frame = self.frame.unwrap_or(if t.dark { Color32::from_rgb(34, 34, 38) } else { Color32::from_rgb(38, 38, 44) });
+        let frame =
+            self.frame.unwrap_or(if t.dark { Color32::from_rgb(34, 34, 38) } else { Color32::from_rgb(38, 38, 44) });
         let screen_r = dev.shrink(12.0);
         let inner_clip = screen_r;
-        paint_warped(ui, |p| persp.apply(p), |ui| {
-            let p = ui.painter().with_clip_rect(dev.expand(60.0));
-            let sc = if t.dark { Color32::from_black_alpha(170) } else { Color32::from_rgba_unmultiplied(20, 20, 60, 60) };
-            paint::soft_shadow(&p, dev, 30.0, 40.0, vec2(0.0, 22.0), sc);
-            p.rect(dev, CornerRadius::same(30), frame, Stroke::new(3.0, Color32::from_gray(108)), StrokeKind::Inside);
-            p.rect_filled(screen_r, CornerRadius::same(18), t.background);
-            let mut child = ui.new_child(UiBuilder::new().max_rect(screen_r.shrink(14.0)).id_salt("container_scroll_screen"));
-            child.set_clip_rect(inner_clip);
-            screen(&mut child);
-        });
+        paint_warped(
+            ui,
+            |p| persp.apply(p),
+            |ui| {
+                let p = ui.painter().with_clip_rect(dev.expand(60.0));
+                let sc = if t.dark {
+                    Color32::from_black_alpha(170)
+                } else {
+                    Color32::from_rgba_unmultiplied(20, 20, 60, 60)
+                };
+                paint::soft_shadow(&p, dev, 30.0, 40.0, vec2(0.0, 22.0), sc);
+                p.rect(
+                    dev,
+                    CornerRadius::same(30),
+                    frame,
+                    Stroke::new(3.0, Color32::from_gray(108)),
+                    StrokeKind::Inside,
+                );
+                p.rect_filled(screen_r, CornerRadius::same(18), t.background);
+                let mut child =
+                    ui.new_child(UiBuilder::new().max_rect(screen_r.shrink(14.0)).id_salt("container_scroll_screen"));
+                child.set_clip_rect(inner_clip);
+                screen(&mut child);
+            },
+        );
         response
     }
 }
@@ -624,7 +659,12 @@ impl egui::Widget for HeroParallax<'_> {
             let g = painter.layout(self.title.clone(), FontId::proportional(40.0), t.foreground, rect.width() - 60.0);
             let h = g.size().y;
             painter.galley(pos2(x, y), g, t.foreground);
-            let b = painter.layout(self.body.clone(), FontId::proportional(15.5), t.muted_foreground, 520.0f32.min(rect.width() - 60.0));
+            let b = painter.layout(
+                self.body.clone(),
+                FontId::proportional(15.5),
+                t.muted_foreground,
+                520.0f32.min(rect.width() - 60.0),
+            );
             painter.galley(pos2(x, y + h + 12.0), b, t.muted_foreground);
         }
         let e = smoothstep(0.0, 0.55, p);
@@ -656,9 +696,11 @@ impl egui::Widget for HeroParallax<'_> {
                 }
                 let prod = &self.products[i];
                 let flat = Rect::from_min_size(pos2(base_x + k as f32 * (cw + gap), y), vec2(cw, chh));
-                let corners = [flat.left_top(), flat.right_top(), flat.right_bottom(), flat.left_bottom()].map(|q| persp.apply(q));
+                let corners = [flat.left_top(), flat.right_top(), flat.right_bottom(), flat.left_bottom()]
+                    .map(|q| persp.apply(q));
                 let hov = pointer.is_some_and(|q| in_convex(&corners, q));
-                let lift = glowkit_core::anim::spring(ui, id.with(("lift", i)), if hov { 1.0 } else { 0.0 }, 260.0, 20.0);
+                let lift =
+                    glowkit_core::anim::spring(ui, id.with(("lift", i)), if hov { 1.0 } else { 0.0 }, 260.0, 20.0);
                 let flat = flat.translate(vec2(0.0, -14.0 * lift));
                 if !clip.expand(200.0).intersects(Rect::from_points(&corners)) {
                     continue;
@@ -666,19 +708,43 @@ impl egui::Widget for HeroParallax<'_> {
                 let tex = prod.texture.unwrap_or(builtin[i % builtin.len()]);
                 let tuv = if prod.texture.is_some() { Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)) } else { uv };
                 let sh = if t.dark { Color32::BLACK } else { Color32::from_rgb(40, 40, 90) };
-                warp_card(&painter, flat.size(), 12.0, 1, None, Rect::ZERO, |l| persp.apply(flat.min + l + vec2(0.0, 8.0 + 8.0 * lift)), |_| {
-                    with_alpha(sh, (0.22 + 0.1 * lift) * alpha)
-                });
-                warp_card(&painter, flat.size(), 12.0, 3, Some(tex), tuv, |l| persp.apply(flat.min + l), |_| {
-                    Color32::WHITE.gamma_multiply(alpha)
-                });
+                warp_card(
+                    &painter,
+                    flat.size(),
+                    12.0,
+                    1,
+                    None,
+                    Rect::ZERO,
+                    |l| persp.apply(flat.min + l + vec2(0.0, 8.0 + 8.0 * lift)),
+                    |_| with_alpha(sh, (0.22 + 0.1 * lift) * alpha),
+                );
+                warp_card(
+                    &painter,
+                    flat.size(),
+                    12.0,
+                    3,
+                    Some(tex),
+                    tuv,
+                    |l| persp.apply(flat.min + l),
+                    |_| Color32::WHITE.gamma_multiply(alpha),
+                );
                 if lift > 0.02 {
-                    let fc = [flat.left_top(), flat.right_top(), flat.right_bottom(), flat.left_bottom()].map(|q| persp.apply(q));
+                    let fc = [flat.left_top(), flat.right_top(), flat.right_bottom(), flat.left_bottom()]
+                        .map(|q| persp.apply(q));
                     hover_title = Some((i, fc, lift));
-                    warp_card(&painter, flat.size(), 12.0, 3, None, Rect::ZERO, |l| persp.apply(flat.min + l), |l| {
-                        let k = (l.y / flat.height()).clamp(0.0, 1.0);
-                        with_alpha(Color32::BLACK, lift * (0.15 + 0.5 * k * k))
-                    });
+                    warp_card(
+                        &painter,
+                        flat.size(),
+                        12.0,
+                        3,
+                        None,
+                        Rect::ZERO,
+                        |l| persp.apply(flat.min + l),
+                        |l| {
+                            let k = (l.y / flat.height()).clamp(0.0, 1.0);
+                            with_alpha(Color32::BLACK, lift * (0.15 + 0.5 * k * k))
+                        },
+                    );
                 }
             }
         }

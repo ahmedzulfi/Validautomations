@@ -2,7 +2,9 @@
 
 use crate::common;
 use crate::media::{self, PillStyle};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Id, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Id, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
@@ -78,7 +80,8 @@ fn parse_tag(body: &str) -> Option<(String, Attrs, bool)> {
     };
     let chars: Vec<char> = body.chars().collect();
     let mut i = 0;
-    let name: String = chars.iter().take_while(|c| c.is_alphanumeric() || **c == '.' || **c == '-' || **c == '_').collect();
+    let name: String =
+        chars.iter().take_while(|c| c.is_alphanumeric() || **c == '.' || **c == '-' || **c == '_').collect();
     if name.is_empty() {
         return None;
     }
@@ -374,7 +377,12 @@ impl Renderer {
                         .fill(t.card)
                         .stroke(Stroke::new(1.0, t.border))
                         .corner_radius(t.corner())
-                        .shadow(egui::Shadow { offset: [0, 2], blur: 10, spread: 0, color: Color32::from_black_alpha(if t.dark { 40 } else { 10 }) })
+                        .shadow(egui::Shadow {
+                            offset: [0, 2],
+                            blur: 10,
+                            spread: 0,
+                            color: Color32::from_black_alpha(if t.dark { 40 } else { 10 }),
+                        })
                         .inner_margin(egui::Margin::same(18))
                         .show(ui, |ui| {
                             ui.set_width(w - 38.0);
@@ -392,12 +400,22 @@ impl Renderer {
                         "h3" => 15.0,
                         _ => 17.5,
                     };
-                    ui.add(egui::Label::new(egui::RichText::new(n.text().trim()).size(size).strong().color(t.foreground)).wrap());
+                    ui.add(
+                        egui::Label::new(egui::RichText::new(n.text().trim()).size(size).strong().color(t.foreground))
+                            .wrap(),
+                    );
                 }
                 "text" | "p" | "description" | "span" => {
                     let muted = lower == "description" || n.attr("muted").is_some();
                     let txt = n.text();
-                    ui.add(egui::Label::new(egui::RichText::new(txt.trim()).size(13.5).color(if muted { t.muted_foreground } else { t.foreground })).wrap());
+                    ui.add(
+                        egui::Label::new(egui::RichText::new(txt.trim()).size(13.5).color(if muted {
+                            t.muted_foreground
+                        } else {
+                            t.foreground
+                        }))
+                        .wrap(),
+                    );
                 }
                 "button" => {
                     let style = match variant_of(n) {
@@ -439,7 +457,12 @@ impl Renderer {
                 "item" | "li" => {
                     ui.horizontal(|ui| {
                         let (r, _) = ui.allocate_exact_size(vec2(14.0, 18.0), Sense::hover());
-                        crate::icons::paint_icon(ui.painter(), crate::Icon::Check, Rect::from_center_size(r.center(), vec2(12.0, 12.0)), t.success);
+                        crate::icons::paint_icon(
+                            ui.painter(),
+                            crate::Icon::Check,
+                            Rect::from_center_size(r.center(), vec2(12.0, 12.0)),
+                            t.success,
+                        );
                         self.children(ui, children, id, Ctx { horizontal: true });
                     });
                 }
@@ -448,7 +471,13 @@ impl Renderer {
                     let (r, resp) = ui.allocate_exact_size(vec2(w, 36.0), Sense::click());
                     let focus = common::anim_bool(ui, resp.id.with("f"), resp.hovered(), 0.12);
                     let p = ui.painter();
-                    p.rect(r, t.corner_scaled(0.8), if t.dark { with_alpha(t.input, 0.3) } else { t.background }, Stroke::new(1.0, t.input.lerp_to_gamma(t.ring, focus)), StrokeKind::Inside);
+                    p.rect(
+                        r,
+                        t.corner_scaled(0.8),
+                        if t.dark { with_alpha(t.input, 0.3) } else { t.background },
+                        Stroke::new(1.0, t.input.lerp_to_gamma(t.ring, focus)),
+                        StrokeKind::Inside,
+                    );
                     let ph = n.attr("placeholder").or(n.attr("value")).unwrap_or("");
                     let c = if n.attr("value").is_some() { t.foreground } else { t.muted_foreground };
                     common::text(p, pos2(r.min.x + 12.0, r.center().y), Align2::LEFT_CENTER, ph, 13.5, c);
@@ -458,13 +487,20 @@ impl Renderer {
                     ui.painter().line_segment([r.left_center(), r.right_center()], Stroke::new(1.0, t.border));
                 }
                 "progress" => {
-                    let v = n.attr("value").and_then(|v| v.trim_end_matches('%').parse::<f32>().ok()).unwrap_or(50.0) / 100.0;
+                    let v = n.attr("value").and_then(|v| v.trim_end_matches('%').parse::<f32>().ok()).unwrap_or(50.0)
+                        / 100.0;
                     let w = if ctx.horizontal { 160.0 } else { ui.available_width() };
                     let (r, _) = ui.allocate_exact_size(vec2(w, 8.0), Sense::hover());
                     let shown = v.clamp(0.0, 1.0) * k;
                     ui.painter().rect_filled(r, CornerRadius::same(4), with_alpha(t.muted_foreground, 0.18));
                     if shown > 0.0 {
-                        glowkit_core::paint::gradient_rect(ui.painter(), Rect::from_min_size(r.min, vec2(r.width() * shown, r.height())), 4.0, 0.0, &[t.gradient[0], t.gradient[1]]);
+                        glowkit_core::paint::gradient_rect(
+                            ui.painter(),
+                            Rect::from_min_size(r.min, vec2(r.width() * shown, r.height())),
+                            4.0,
+                            0.0,
+                            &[t.gradient[0], t.gradient[1]],
+                        );
                     }
                 }
                 "avatar" => {
@@ -481,8 +517,16 @@ impl Renderer {
                     ui.horizontal(|ui| {
                         let (r, _) = ui.allocate_exact_size(vec2(36.0, 20.0), Sense::hover());
                         let p = ui.painter();
-                        p.rect_filled(r, CornerRadius::same(10), if on { t.primary } else { with_alpha(t.muted_foreground, 0.3) });
-                        p.circle_filled(pos2(if on { r.max.x - 10.0 } else { r.min.x + 10.0 }, r.center().y), 8.0, if on { t.primary_foreground } else { Color32::WHITE });
+                        p.rect_filled(
+                            r,
+                            CornerRadius::same(10),
+                            if on { t.primary } else { with_alpha(t.muted_foreground, 0.3) },
+                        );
+                        p.circle_filled(
+                            pos2(if on { r.max.x - 10.0 } else { r.min.x + 10.0 }, r.center().y),
+                            8.0,
+                            if on { t.primary_foreground } else { Color32::WHITE },
+                        );
                         let label = n.text();
                         if !label.trim().is_empty() {
                             ui.label(egui::RichText::new(label.trim()).size(13.5).color(t.foreground));
@@ -499,17 +543,40 @@ impl Renderer {
                     let w = if ctx.horizontal { 160.0 } else { ui.available_width() };
                     let h = w / ratio.unwrap_or(16.0 / 9.0);
                     let (r, _) = ui.allocate_exact_size(vec2(w, h), Sense::hover());
-                    glowkit_core::paint::gradient_rect(ui.painter(), r, t.radius * 0.8, 135.0, &[with_alpha(t.gradient[0], 0.8), with_alpha(t.gradient[1], 0.7), with_alpha(t.gradient[2], 0.6)]);
+                    glowkit_core::paint::gradient_rect(
+                        ui.painter(),
+                        r,
+                        t.radius * 0.8,
+                        135.0,
+                        &[
+                            with_alpha(t.gradient[0], 0.8),
+                            with_alpha(t.gradient[1], 0.7),
+                            with_alpha(t.gradient[2], 0.6),
+                        ],
+                    );
                     if let Some(alt) = n.attr("alt") {
-                        ui.painter().text(r.center(), Align2::CENTER_CENTER, alt, FontId::proportional(13.0), Color32::WHITE);
+                        ui.painter().text(
+                            r.center(),
+                            Align2::CENTER_CENTER,
+                            alt,
+                            FontId::proportional(13.0),
+                            Color32::WHITE,
+                        );
                     }
                 }
                 "stat" => {
                     ui.vertical(|ui| {
                         ui.spacing_mut().item_spacing.y = 2.0;
-                        ui.label(egui::RichText::new(n.attr("label").unwrap_or("")).size(12.0).color(t.muted_foreground));
+                        ui.label(
+                            egui::RichText::new(n.attr("label").unwrap_or("")).size(12.0).color(t.muted_foreground),
+                        );
                         ui.horizontal(|ui| {
-                            ui.label(egui::RichText::new(n.attr("value").unwrap_or("–")).size(22.0).strong().color(t.foreground));
+                            ui.label(
+                                egui::RichText::new(n.attr("value").unwrap_or("–"))
+                                    .size(22.0)
+                                    .strong()
+                                    .color(t.foreground),
+                            );
                             if let Some(d) = n.attr("delta") {
                                 let c = if d.starts_with('-') { t.destructive } else { t.success };
                                 ui.label(egui::RichText::new(d).size(12.0).color(c));
@@ -521,13 +588,20 @@ impl Renderer {
                     // unknown component: dashed outline with its name
                     let inner = egui::Frame::new().inner_margin(egui::Margin::same(10)).show(ui, |ui| {
                         ui.spacing_mut().item_spacing.y = 6.0;
-                        ui.label(egui::RichText::new(format!("<{tag}>")).monospace().size(11.0).color(t.muted_foreground));
+                        ui.label(
+                            egui::RichText::new(format!("<{tag}>")).monospace().size(11.0).color(t.muted_foreground),
+                        );
                         self.children(ui, children, id, ctx);
                     });
                     let r = inner.response.rect;
                     let pts = [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom(), r.left_top()];
                     for w in pts.windows(2) {
-                        ui.painter().extend(egui::Shape::dashed_line(&[w[0], w[1]], Stroke::new(1.0, t.border), 4.0, 3.0));
+                        ui.painter().extend(egui::Shape::dashed_line(
+                            &[w[0], w[1]],
+                            Stroke::new(1.0, t.border),
+                            4.0,
+                            3.0,
+                        ));
                     }
                 }
             }
@@ -542,7 +616,11 @@ impl Renderer {
             let time = glowkit_core::time(ui);
             for i in 0..3 {
                 let a = ((time * 4.0 - i as f32 * 0.6).sin() * 0.5 + 0.5) * 0.8 + 0.2;
-                ui.painter().circle_filled(pos2(r.min.x + 4.0 + i as f32 * 10.0, r.center().y), 3.0, with_alpha(t.muted_foreground, a));
+                ui.painter().circle_filled(
+                    pos2(r.min.x + 4.0 + i as f32 * 10.0, r.center().y),
+                    3.0,
+                    with_alpha(t.muted_foreground, a),
+                );
             }
             glowkit_core::animate(ui);
         }
@@ -562,7 +640,9 @@ mod tests {
 
     #[test]
     fn complete_tree() {
-        let n = parse_markup("<Card>\n  <Title>Hello &amp; welcome</Title>\n  <Button variant=\"outline\">Go</Button>\n</Card>");
+        let n = parse_markup(
+            "<Card>\n  <Title>Hello &amp; welcome</Title>\n  <Button variant=\"outline\">Go</Button>\n</Card>",
+        );
         assert_eq!(n.len(), 1);
         let (tag, kids, closed) = el(&n[0]);
         assert_eq!(tag, "Card");

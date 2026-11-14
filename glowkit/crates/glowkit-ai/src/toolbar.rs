@@ -114,7 +114,11 @@ impl<'a> AiToolbar<'a> {
     /// Float the toolbar so its bottom-center (top-left-center when vertical) sits at `anchor`.
     pub fn show_at(self, ui: &mut Ui, anchor: Pos2) -> Option<usize> {
         let s = self.size();
-        let min = if self.vertical { pos2(anchor.x, anchor.y - s.y / 2.0) } else { pos2(anchor.x - s.x / 2.0, anchor.y - s.y) };
+        let min = if self.vertical {
+            pos2(anchor.x, anchor.y - s.y / 2.0)
+        } else {
+            pos2(anchor.x - s.x / 2.0, anchor.y - s.y)
+        };
         let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_size(min, s)));
         self.show(&mut child)
     }
@@ -127,7 +131,14 @@ impl<'a> AiToolbar<'a> {
         let id = self.id_salt.map(|s| ui.scope_id().with_salt(s)).unwrap_or(resp.id).with("ai_toolbar");
         let cr = CornerRadius::same(((self.button + 8.0) * 0.32) as u8);
         let p = ui.painter();
-        glowkit_core::paint::soft_shadow(p, rect, cr.nw as f32, 14.0, vec2(0.0, 6.0), Color32::from_black_alpha(if t.dark { 90 } else { 22 }));
+        glowkit_core::paint::soft_shadow(
+            p,
+            rect,
+            cr.nw as f32,
+            14.0,
+            vec2(0.0, 6.0),
+            Color32::from_black_alpha(if t.dark { 90 } else { 22 }),
+        );
         p.rect(rect, cr, t.popover, Stroke::new(1.0, t.border), StrokeKind::Inside);
         let mut cursor = if self.vertical { rect.min.y + 4.0 } else { rect.min.x + 4.0 };
         let mut clicked = None;
@@ -162,7 +173,12 @@ impl<'a> AiToolbar<'a> {
             let base = item.color.unwrap_or(if item.active { t.accent } else { t.muted_foreground });
             let col = if item.color.is_some() || item.active { base } else { base.lerp_to_gamma(t.foreground, h) };
             let press = if r.is_pointer_button_down_on() { 0.86 } else { 1.0 };
-            paint_icon(p, item.icon, Rect::from_center_size(br.center(), vec2(self.button * 0.5 * press, self.button * 0.5 * press)), col);
+            paint_icon(
+                p,
+                item.icon,
+                Rect::from_center_size(br.center(), vec2(self.button * 0.5 * press, self.button * 0.5 * press)),
+                col,
+            );
             if r.clicked() {
                 clicked = Some(i);
             }
@@ -176,7 +192,9 @@ impl<'a> AiToolbar<'a> {
             let item = &self.items[i];
             let tp = ui.ctx().layer_painter(egui::LayerId::new(egui::Order::Tooltip, id.with("tip_layer")));
             let g = tp.layout_no_wrap(item.tooltip.to_owned(), FontId::proportional(12.0), t.background);
-            let sg = item.shortcut.map(|s| tp.layout_no_wrap(s.to_owned(), FontId::proportional(11.0), with_alpha(t.background, 0.6)));
+            let sg = item
+                .shortcut
+                .map(|s| tp.layout_no_wrap(s.to_owned(), FontId::proportional(11.0), with_alpha(t.background, 0.6)));
             let w = g.size().x + 16.0 + sg.as_ref().map(|s| s.size().x + 8.0).unwrap_or(0.0);
             let hgt = 26.0;
             let off = (1.0 - k) * 4.0;
@@ -188,14 +206,32 @@ impl<'a> AiToolbar<'a> {
             let bg = with_alpha(t.foreground, k);
             tp.rect_filled(tr, CornerRadius::same(6), bg);
             let arrow = if self.vertical {
-                vec![pos2(tr.min.x, tr.center().y - 4.0), pos2(tr.min.x - 4.0, tr.center().y), pos2(tr.min.x, tr.center().y + 4.0)]
+                vec![
+                    pos2(tr.min.x, tr.center().y - 4.0),
+                    pos2(tr.min.x - 4.0, tr.center().y),
+                    pos2(tr.min.x, tr.center().y + 4.0),
+                ]
             } else {
-                vec![pos2(tr.center().x - 4.0, tr.max.y), pos2(tr.center().x + 4.0, tr.max.y), pos2(tr.center().x, tr.max.y + 4.0)]
+                vec![
+                    pos2(tr.center().x - 4.0, tr.max.y),
+                    pos2(tr.center().x + 4.0, tr.max.y),
+                    pos2(tr.center().x, tr.max.y + 4.0),
+                ]
             };
             tp.add(egui::Shape::convex_polygon(arrow, bg, Stroke::NONE));
-            tp.galley_with_override_text_color(pos2(tr.min.x + 8.0, tr.center().y - g.size().y / 2.0), g, t.background.gamma_multiply(k));
+            tp.galley_with_override_text_color(
+                pos2(tr.min.x + 8.0, tr.center().y - g.size().y / 2.0),
+                g,
+                t.background.gamma_multiply(k),
+            );
             if let Some(s) = item.shortcut {
-                tp.text(pos2(tr.max.x - 8.0, tr.center().y), Align2::RIGHT_CENTER, s, FontId::proportional(11.0), with_alpha(t.background, 0.6 * k));
+                tp.text(
+                    pos2(tr.max.x - 8.0, tr.center().y),
+                    Align2::RIGHT_CENTER,
+                    s,
+                    FontId::proportional(11.0),
+                    with_alpha(t.background, 0.6 * k),
+                );
             }
         }
         clicked

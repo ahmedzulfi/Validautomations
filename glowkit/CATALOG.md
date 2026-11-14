@@ -11,25 +11,25 @@ Some items are hard or impossible in an immediate-mode GPU painter without image
 
 | Library | Covered | % |
 |---|---|---|
-| [React Bits](https://reactbits.dev) | 82 / 114 | 72% |
-| [Magic UI](https://magicui.design) | 62 / 69 | 90% |
-| [Aceternity UI](https://ui.aceternity.com) | 68 / 79 | 86% |
-| [Motion Primitives](https://motion-primitives.com) | 32 / 33 | 97% |
-| [shadcn/ui](https://ui.shadcn.com) | 54 / 58 | 93% |
-| [Vercel AI Elements](https://ai-sdk.dev/elements) | 30 / 33 | 91% |
-| [prompt-kit](https://www.prompt-kit.com) | 18 / 19 | 95% |
-| [ElevenLabs UI](https://ui.elevenlabs.io) | 10 / 16 | 62% |
+| [React Bits](https://reactbits.dev) | 114 / 114 | 100% |
+| [Magic UI](https://magicui.design) | 69 / 69 | 100% |
+| [Aceternity UI](https://ui.aceternity.com) | 79 / 79 | 100% |
+| [Motion Primitives](https://motion-primitives.com) | 33 / 33 | 100% |
+| [shadcn/ui](https://ui.shadcn.com) | 58 / 58 | 100% |
+| [Vercel AI Elements](https://ai-sdk.dev/elements) | 33 / 33 | 100% |
+| [prompt-kit](https://www.prompt-kit.com) | 19 / 19 | 100% |
+| [ElevenLabs UI](https://ui.elevenlabs.io) | 16 / 16 | 100% |
 | [Evil Charts](https://evilcharts.com) | 6 / 6 | 100% |
 | [MVP Blocks](https://blocks.mvp-subha.me) | 25 / 25 | 100% |
 | [React Flow](https://reactflow.dev) | 12 / 12 | 100% |
 | [Tremor](https://tremor.so) | 12 / 12 | 100% |
-| **Total** | **411 / 476** | **86%** |
+| **Total** | **476 / 476** | **100%** |
 
-glowkit itself ships **396** gallery entries.
+glowkit itself ships **457** gallery entries.
 
 ## React Bits
 
-82 of 114 covered.
+114 of 114 covered.
 
 | Component | glowkit |
 |---|---|
@@ -40,38 +40,38 @@ glowkit itself ships **396** gallery entries.
 | Shuffle | ✅ `shuffle-text` |
 | Shiny Text | ✅ `shiny-text` |
 | Text Pressure | ✅ `proximity-text` |
-| Curved Loop | ⬜ open |
+| Curved Loop | ✅ `curved-loop` |
 | Fuzzy Text | ✅ `fuzzy-text` |
 | Gradient Text | ✅ `gradient-text` |
 | Falling Text | ✅ `falling-text` |
-| Text Cursor | ⬜ open |
+| Text Cursor | ✅ `text-cursor` |
 | Decrypted Text | ✅ `decrypted-text` |
 | True Focus | ✅ `true-focus` |
-| Scroll Float | ⬜ open |
+| Scroll Float | ✅ `scroll-float` |
 | Scroll Reveal | ✅ `scroll-reveal-text` |
-| ASCII Text | ⬜ open |
-| Scrambled Text | ⬜ open |
+| ASCII Text | ✅ `ascii-text` |
+| Scrambled Text | ✅ `scrambled-text` |
 | Rotating Text | ✅ `rotating-text` |
 | Glitch Text | ✅ `glitch-text` |
 | Scroll Velocity | ✅ `scroll-velocity` |
 | Variable Proximity | ✅ `proximity-text` |
 | Count Up | ✅ `count-up` |
-| Animated Content | ⬜ open |
-| Fade Content | ⬜ open |
+| Animated Content | ✅ `animated-content` |
+| Fade Content | ✅ `fade-content` |
 | Electric Border | ✅ `electric-border` |
-| Pixel Transition | ⬜ open |
+| Pixel Transition | ✅ `pixel-transition` |
 | Glare Hover | ✅ `glare-card` |
 | Logo Loop | ✅ `marquee` |
 | Target Cursor | ✅ `target-cursor` |
-| Magnet Lines | ⬜ open |
+| Magnet Lines | ✅ `magnet-lines` |
 | Click Spark | ✅ `click-spark` |
 | Magnet | ✅ `magnet` |
-| Sticker Peel | ⬜ open |
+| Sticker Peel | ✅ `sticker-peel` |
 | Pixel Trail | ✅ `pixel-trail` |
 | Cubes | ✅ `tilt-cubes` |
-| Metallic Paint | ⬜ open |
+| Metallic Paint | ✅ `metallic-paint` |
 | Noise | ✅ `grain-noise` |
-| Shape Blur | ⬜ open |
+| Shape Blur | ✅ `shape-blur` |
 | Crosshair | ✅ `crosshair` |
 | Image Trail | ✅ `card-trail` |
 | Ribbons | ✅ `ribbon-trail` |
@@ -79,43 +79,43 @@ glowkit itself ships **396** gallery entries.
 | Meta Balls | ✅ `meta-balls` |
 | Blob Cursor | ✅ `blob-cursor`, `spring-chain` |
 | Star Border | ✅ `star-border-button` |
-| Laser Flow | ⬜ open |
-| Gradual Blur | ⬜ open |
+| Laser Flow | ✅ `laser-flow` |
+| Gradual Blur | ✅ `gradual-blur` |
 | Animated List | ✅ `animated-list` |
-| Scroll Stack | ⬜ open |
-| Bubble Menu | ⬜ open |
-| Magic Bento | ⬜ open |
+| Scroll Stack | ✅ `scroll-stack` |
+| Bubble Menu | ✅ `bubble-menu` |
+| Magic Bento | ✅ `magic-bento` |
 | Circular Gallery | ✅ `card-carousel-3d`, `ring-carousel` |
-| Card Nav | ⬜ open |
+| Card Nav | ✅ `card-nav` |
 | Stack | ✅ `stack-cards` |
-| Fluid Glass | ⬜ open |
-| Pill Nav | ⬜ open |
+| Fluid Glass | ✅ `fluid-glass` |
+| Pill Nav | ✅ `pill-nav` |
 | Tilted Card | ✅ `flip-card-3d`, `tilt-card` |
 | Masonry | ✅ `masonry` |
-| Glass Surface | ⬜ open |
+| Glass Surface | ✅ `fluid-glass`, `glass-surface` |
 | Dome Gallery | ✅ `card-carousel-3d` |
-| Chroma Grid | ⬜ open |
+| Chroma Grid | ✅ `chroma-grid` |
 | Folder | ✅ `folder` |
-| Staggered Menu | ⬜ open |
+| Staggered Menu | ✅ `staggered-menu` |
 | Model Viewer | ✅ `model-viewer` |
 | Lanyard | ✅ `lanyard` |
-| Profile Card | ⬜ open |
+| Profile Card | ✅ `profile-card` |
 | Dock | ✅ `dock` |
 | Gooey Nav | ✅ `gooey-nav` |
 | Pixel Card | ✅ `pixel-card` |
 | Carousel | ✅ `carousel` |
 | Spotlight Card | ✅ `spotlight-card` |
-| Flying Posters | ⬜ open |
+| Flying Posters | ✅ `flying-posters` |
 | Card Swap | ✅ `card-swap` |
-| Glass Icons | ⬜ open |
-| Decay Card | ⬜ open |
+| Glass Icons | ✅ `glass-icons` |
+| Decay Card | ✅ `decay-card` |
 | Flowing Menu | ✅ `flowing-menu` |
 | Elastic Slider | ✅ `elastic-slider` |
 | Counter | ✅ `sliding-number` |
-| Infinite Menu | ⬜ open |
+| Infinite Menu | ✅ `infinite-menu` |
 | Stepper | ✅ `animated-stepper` |
 | Bounce Cards | ✅ `bounce-cards` |
-| Liquid Ether | ⬜ open |
+| Liquid Ether | ✅ `liquid-ether` |
 | Prism | ✅ `color-bends` |
 | Dark Veil | ✅ `dark-veil` |
 | Silk | ✅ `silk` |
@@ -127,10 +127,10 @@ glowkit itself ships **396** gallery entries.
 | Plasma | ✅ `plasma` |
 | Particles | ✅ `particle-morph`, `particles` |
 | Gradient Blinds | ✅ `gradient-blinds` |
-| Grid Scan | ⬜ open |
+| Grid Scan | ✅ `grid-scan` |
 | Beams | ✅ `light-beams` |
 | Lightning | ✅ `lightning` |
-| Prismatic Burst | ⬜ open |
+| Prismatic Burst | ✅ `prismatic-burst` |
 | Galaxy | ✅ `galaxy`, `galaxy-3d` |
 | Dither | ✅ `pixel-blast` |
 | Ripple Grid | ✅ `ripple-grid` |
@@ -143,19 +143,19 @@ glowkit itself ships **396** gallery entries.
 | Ballpit | ✅ `ball-pit` |
 | Orb | ✅ `orb` |
 | Letter Glitch | ✅ `letter-glitch` |
-| Grid Motion | ⬜ open |
+| Grid Motion | ✅ `grid-motion` |
 | Squares | ✅ `squares-grid` |
 | Liquid Chrome | ✅ `liquid-metal` |
 | Balatro | ✅ `swirl` |
 ## Magic UI
 
-62 of 69 covered.
+69 of 69 covered.
 
 | Component | glowkit |
 |---|---|
 | Marquee | ✅ `infinite-scroll`, `marquee`, `marquee-3d`, `scroll-velocity` |
 | Terminal | ✅ `terminal` |
-| Hero Video Dialog | ⬜ open |
+| Hero Video Dialog | ✅ `hero-video-dialog` |
 | Bento Grid | ✅ `features-bento`, `features-section` |
 | Animated List | ✅ `animated-list` |
 | Dock | ✅ `dock`, `floating-navbar` |
@@ -169,11 +169,11 @@ glowkit itself ships **396** gallery entries.
 | Code Comparison | ✅ `code-comparison` |
 | Script Copy Button | ✅ `code-block`, `script-copy` |
 | Scroll Progress | ✅ `scroll-linked` |
-| Lens | ⬜ open |
+| Lens | ✅ `lens` |
 | Pointer | ✅ `smooth-cursor` |
 | Smooth Cursor | ✅ `smooth-cursor` |
-| Progressive Blur | ⬜ open |
-| Dotted Map | ⬜ open |
+| Progressive Blur | ✅ `gradual-blur` |
+| Dotted Map | ✅ `dotted-map` |
 | Highlighter | ✅ `highlight-text` |
 | Magic Card | ✅ `magic-card` |
 | Neon Gradient Card | ✅ `neon-gradient-card` |
@@ -184,7 +184,7 @@ glowkit itself ships **396** gallery entries.
 | Particles | ✅ `particles` |
 | Cool Mode | ✅ `particle-burst-button` |
 | Scratch To Reveal | ✅ `scratch-to-reveal` |
-| Blur Fade | ✅ `blur-text`, `spring-presence` |
+| Blur Fade | ✅ `blur-text`, `fade-content`, `spring-presence` |
 | Animated Beam | ✅ `animated-beam`, `path-drawing` |
 | Number Ticker | ✅ `count-up`, `sliding-number` |
 | Animated Shiny Text | ✅ `shiny-text` |
@@ -192,7 +192,7 @@ glowkit itself ships **396** gallery entries.
 | Text Animate | ✅ `split-text`, `text-generate`, `wave-text` |
 | Line Shadow Text | ✅ `line-shadow-text` |
 | Aurora Text | ✅ `gradient-text` |
-| Video Text | ⬜ open |
+| Video Text | ✅ `video-text` |
 | Text Reveal | ✅ `scroll-reveal-text` |
 | Hyper Text | ✅ `decrypted-text`, `scramble-hover`, `shuffle-text` |
 | Word Rotate | ✅ `rotating-text` |
@@ -203,7 +203,7 @@ glowkit itself ships **396** gallery entries.
 | Sparkles Text | ✅ `sparkles-text` |
 | Morphing Text | ✅ `morphing-text` |
 | Spinning Text | ✅ `circular-text` |
-| Comic Text | ⬜ open |
+| Comic Text | ✅ `comic-text` |
 | Animated Subscribe Button | ✅ `subscribe-button` |
 | Rainbow Button | ✅ `rainbow-button` |
 | Shimmer Button | ✅ `shimmer-button` |
@@ -221,10 +221,10 @@ glowkit itself ships **396** gallery entries.
 | Interactive Grid Pattern | ✅ `grid-pattern`, `hex-grid` |
 | Light Rays | ✅ `spotlight` |
 | Animated Theme Toggler | ✅ `day-night-switch`, `theme-toggler` |
-| Pixel Image | ⬜ open |
+| Pixel Image | ✅ `pixel-image` |
 ## Aceternity UI
 
-68 of 79 covered.
+79 of 79 covered.
 
 | Component | glowkit |
 |---|---|
@@ -234,14 +234,14 @@ glowkit itself ships **396** gallery entries.
 | Animated Modal | ✅ `dialog` |
 | Animated Testimonials | ✅ `animated-testimonials`, `testimonials-section` |
 | Animated Tooltip | ✅ `animated-tooltip` |
-| Apple Cards Carousel | ⬜ open |
+| Apple Cards Carousel | ✅ `apple-cards-carousel` |
 | Aurora Background | ✅ `aurora` |
 | Background Beams | ✅ `background-beams` |
 | Background Beams With Collision | ✅ `background-beams` |
 | Background Boxes | ✅ `background-boxes` |
 | Background Gradient | ✅ `animated-gradient-border` |
 | Background Gradient Animation | ✅ `gradient-blobs` |
-| Background Lines | ⬜ open |
+| Background Lines | ✅ `background-lines` |
 | Bento Grid | ✅ `features-bento` |
 | Canvas Reveal Effect | ✅ `canvas-reveal` |
 | Card Hover Effect | ✅ `card-hover-effect` |
@@ -250,7 +250,7 @@ glowkit itself ships **396** gallery entries.
 | Carousel | ✅ `carousel` |
 | Colourful Text | ✅ `colorful-text` |
 | Compare | ✅ `compare-slider` |
-| Container Scroll Animation | ⬜ open |
+| Container Scroll Animation | ✅ `container-scroll` |
 | Cover | ✅ `cover` |
 | Codeblock | ✅ `code-block` |
 | Direction Aware Hover | ✅ `direction-aware-hover` |
@@ -269,14 +269,14 @@ glowkit itself ships **396** gallery entries.
 | Google Gemini Effect | ✅ `gemini-effect` |
 | Grid and Dot Backgrounds | ✅ `dot-grid`, `grid-pattern` |
 | Hero Highlight | ✅ `highlight-text` |
-| Hero Parallax | ⬜ open |
+| Hero Parallax | ✅ `hero-parallax` |
 | Hover Border Gradient | ✅ `hover-border-gradient` |
-| Images Slider | ⬜ open |
+| Images Slider | ✅ `images-slider` |
 | Infinite Moving Cards | ✅ `marquee` |
 | Lamp Effect | ✅ `lamp` |
 | Layout Grid | ✅ `gallery-section` |
-| Lens | ⬜ open |
-| Link Preview | ⬜ open |
+| Lens | ✅ `lens` |
+| Link Preview | ✅ `link-preview` |
 | Macbook Scroll | ✅ `laptop-mockup` |
 | Meteors | ✅ `meteors` |
 | Moving Border | ✅ `moving-border-button` |
@@ -292,24 +292,24 @@ glowkit itself ships **396** gallery entries.
 | Sparkles | ✅ `particle-morph`, `particles`, `sparkles-text` |
 | Spotlight | ✅ `spotlight` |
 | Sticky Banner | ✅ `sticky-banner` |
-| Sticky Scroll Reveal | ⬜ open |
-| SVG Mask Effect | ⬜ open |
+| Sticky Scroll Reveal | ✅ `sticky-scroll-reveal` |
+| SVG Mask Effect | ✅ `svg-mask-effect` |
 | Tabs | ✅ `animated-tabs` |
 | Text Generate Effect | ✅ `text-generate` |
 | Text Hover Effect | ✅ `text-hover-effect` |
-| Text Reveal Card | ⬜ open |
+| Text Reveal Card | ✅ `text-reveal-card` |
 | Timeline | ✅ `timeline` |
 | Tracing Beam | ✅ `tracing-beam` |
 | Typewriter Effect | ✅ `typewriter-text` |
 | Vortex | ✅ `vortex` |
 | Wavy Background | ✅ `wavy-background` |
 | Wobble Card | ✅ `wobble-card` |
-| World Map | ⬜ open |
+| World Map | ✅ `dotted-map` |
 | Stateful Button | ✅ `stateful-button` |
 | Gradient text | ✅ `gradient-text` |
 ## Motion Primitives
 
-32 of 33 covered.
+33 of 33 covered.
 
 | Component | glowkit |
 |---|---|
@@ -330,7 +330,7 @@ glowkit itself ships **396** gallery entries.
 | Magnetic | ✅ `magnet`, `magnetic-button` |
 | Morphing Dialog | ✅ `expandable-card`, `shared-element` |
 | Morphing Popover | ✅ `popover` |
-| Progressive Blur | ⬜ open |
+| Progressive Blur | ✅ `gradual-blur` |
 | Scroll Progress | ✅ `scroll-linked` |
 | Sliding Number | ✅ `sliding-number` |
 | Spinning Text | ✅ `circular-text` |
@@ -348,14 +348,14 @@ glowkit itself ships **396** gallery entries.
 | Transition Panel | ✅ `spring-presence` |
 ## shadcn/ui
 
-54 of 58 covered.
+58 of 58 covered.
 
 | Component | glowkit |
 |---|---|
 | Accordion | ✅ `accordion` |
 | Alert | ✅ `alert` |
 | Alert Dialog | ✅ `alert-dialog` |
-| Aspect Ratio | ⬜ open |
+| Aspect Ratio | ✅ `aspect-ratio` |
 | Avatar | ✅ `avatar` |
 | Badge | ✅ `badge` |
 | Breadcrumb | ✅ `breadcrumb` |
@@ -382,7 +382,7 @@ glowkit itself ships **396** gallery entries.
 | Input | ✅ `input` |
 | Input Group | ✅ `input` |
 | Input OTP | ✅ `otp-input` |
-| Item | ⬜ open |
+| Item | ✅ `item` |
 | Kbd | ✅ `kbd` |
 | Label | ✅ `form` |
 | Menubar | ✅ `menubar` |
@@ -391,8 +391,8 @@ glowkit itself ships **396** gallery entries.
 | Popover | ✅ `popover` |
 | Progress | ✅ `bar-list`, `progress` |
 | Radio Group | ✅ `radio-group` |
-| Resizable | ⬜ open |
-| Scroll Area | ⬜ open |
+| Resizable | ✅ `resizable` |
+| Scroll Area | ✅ `scroll-area` |
 | Select | ✅ `select` |
 | Separator | ✅ `kbd` |
 | Sheet | ✅ `sheet` |
@@ -412,7 +412,7 @@ glowkit itself ships **396** gallery entries.
 | Typography | ✅ `blog-post-page` |
 ## Vercel AI Elements
 
-30 of 33 covered.
+33 of 33 covered.
 
 | Component | glowkit |
 |---|---|
@@ -423,7 +423,7 @@ glowkit itself ships **396** gallery entries.
 | Chain of Thought | ✅ `ai-reasoning` |
 | Checkpoint | ✅ `ai-model-selector` |
 | Code Block | ✅ `ai-markdown` |
-| Confirmation | ⬜ open |
+| Confirmation | ✅ `ai-confirmation` |
 | Connection | ✅ `node-editor` |
 | Context | ✅ `ai-context-meter` |
 | Controls | ✅ `node-editor` |
@@ -435,7 +435,7 @@ glowkit itself ships **396** gallery entries.
 | Message | ✅ `ai-chat-message` |
 | Model Selector | ✅ `ai-model-selector` |
 | Node | ✅ `ai-workflow` |
-| Open In Chat | ⬜ open |
+| Open In Chat | ✅ `ai-open-in-chat` |
 | Panel | ✅ `node-editor` |
 | Plan | ✅ `ai-task-list` |
 | Prompt Input | ✅ `ai-prompt-input` |
@@ -447,11 +447,11 @@ glowkit itself ships **396** gallery entries.
 | Suggestion | ✅ `ai-suggestions` |
 | Task | ✅ `ai-task-list` |
 | Tool | ✅ `ai-tool-call` |
-| Toolbar | ⬜ open |
+| Toolbar | ✅ `ai-toolbar` |
 | Web Preview | ✅ `ai-web-preview` |
 ## prompt-kit
 
-18 of 19 covered.
+19 of 19 covered.
 
 | Component | glowkit |
 |---|---|
@@ -466,7 +466,7 @@ glowkit itself ships **396** gallery entries.
 | Response Stream | ✅ `ai-streaming-text` |
 | Reasoning | ✅ `ai-reasoning` |
 | File Upload | ✅ `ai-prompt-input` |
-| JSX Preview | ⬜ open |
+| JSX Preview | ✅ `ai-jsx-preview` |
 | Tool | ✅ `ai-tool-call` |
 | Source | ✅ `ai-sources` |
 | Steps | ✅ `ai-reasoning` |
@@ -476,7 +476,7 @@ glowkit itself ships **396** gallery entries.
 | Image | ✅ `ai-image-gen` |
 ## ElevenLabs UI
 
-10 of 16 covered.
+16 of 16 covered.
 
 | Component | glowkit |
 |---|---|
@@ -490,12 +490,12 @@ glowkit itself ships **396** gallery entries.
 | Message | ✅ `ai-chat-message` |
 | Response | ✅ `ai-streaming-text` |
 | Shimmering Text | ✅ `ai-loaders` |
-| Audio Player | ⬜ open |
-| Matrix | ⬜ open |
-| Mic Selector | ⬜ open |
-| Speech Input | ⬜ open |
-| Scrub Bar | ⬜ open |
-| Transcript Viewer | ⬜ open |
+| Audio Player | ✅ `ai-audio-player` |
+| Matrix | ✅ `ai-dot-matrix` |
+| Mic Selector | ✅ `ai-mic-selector` |
+| Speech Input | ✅ `ai-speech-input` |
+| Scrub Bar | ✅ `ai-scrub-bar` |
+| Transcript Viewer | ✅ `ai-transcript-viewer` |
 ## Evil Charts
 
 6 of 6 covered (chart families; each is covered by any glowkit style of that family).
@@ -548,7 +548,7 @@ glowkit itself ships **396** gallery entries.
 | Background | ✅ `infinite-canvas` |
 | Controls | ✅ `node-editor` |
 | MiniMap | ✅ `node-editor` |
-| Node Toolbar | ✅ `node-editor` |
+| Node Toolbar | ✅ `ai-toolbar`, `node-editor` |
 | Edge Label | ✅ `node-editor` |
 | Custom Nodes | ✅ `shader-graph` |
 | Custom Edges | ✅ `node-editor` |
@@ -629,6 +629,7 @@ glowkit itself ships **396** gallery entries.
 * **Mantine**: Stepper
 * **Material**: Bottom navigation, Chips, Navigation rail, Ripple
 * **Material 3**: Navigation Bar
+* **Media Chrome**: Time Range
 * **Medusa**: Admin dashboard
 * **Mercury**: Accounts home
 * **Mintlify**: Docs layout
@@ -639,12 +640,13 @@ glowkit itself ships **396** gallery entries.
 * **Nextra**: Docs theme, TOC
 * **Nivo**: Bar, Bar + Line, Calendar, Candlestick, Funnel, HeatMap, Line, Pie, Radar, Radial Bar, ScatterPlot, Stream, Swarm/Bubble, TimeRange, TreeMap
 * **Notion**: Timeline view
-* **Origin UI**: Accordion, Alert Dialog, Alerts, Avatar, Avatar group, Badges, Banner, Breadcrumb, Button groups, Buttons, Cards, Checkbox, Circular progress, Color picker, Command, Date range picker, Dialog, Drawer, Dropdown, Empty states, File upload, Form fields, Hover Card, Input with tags, Inputs, Kbd, Key-value, Link, Navbar, Navbar with dropdown, Number input, OTP input, Pagination, Password input, Password strength, Popover, Progress, Radio cards, Range slider, Rating, Search input, Segmented control, Select, Sidebar, Skeleton, Slider, Spinner, Stats, Stepper, Switch, Tab bar, Table, Tables, Tabs, Tags / Chips, Textarea, Textarea with character limit, Timeline, Toast, Tooltip, Tour, Tree
+* **Origin UI**: Accordion, Alert Dialog, Alerts, Avatar, Avatar group, Badges, Banner, Breadcrumb, Button groups, Buttons, Cards, Checkbox, Circular progress, Color picker, Command, Date range picker, Dialog, Drawer, Dropdown, Empty states, File upload, Form fields, Hover Card, Input with tags, Inputs, Kbd, Key-value, Link, List items, Navbar, Navbar with dropdown, Number input, OTP input, Pagination, Password input, Password strength, Popover, Progress, Radio cards, Range slider, Rating, Search input, Segmented control, Select, Sidebar, Skeleton, Slider, Spinner, Stats, Stepper, Switch, Tab bar, Table, Tables, Tabs, Tags / Chips, Textarea, Textarea with character limit, Timeline, Toast, Tooltip, Tour, Tree
 * **Paper Shaders**: Grain Gradient, Mesh Gradient
 * **Pipedrive**: Pipeline
 * **Plotly**: 3D bars
 * **Premiere Pro**: Timeline
 * **Radix**: Context Menu, Dialog, Dropdown Menu, Hover Card, Menubar, Navigation Menu, Popover, Tooltip
+* **Radix UI**: Aspect Ratio, Scroll Area
 * **React Spring**: useSpring
 * **Recharts**: AreaChart, BarChart, ComposedChart, LineChart, PieChart, RadarChart, RadialBarChart, ScatterChart, Tiny Line/Area/Bar, Treemap
 * **Remotion**: Timeline
@@ -673,9 +675,11 @@ glowkit itself ships **396** gallery entries.
 * **Unreal**: Material editor
 * **Vaul**: Drawer
 * **Vercel**: Empty states, Runtime logs, Team settings, Usage
+* **Vercel AI SDK**: Generative UI, Tool approval
+* **Vidstack**: Time Slider
 * **Whimsical**: Mind maps
 * **XMind**: Mind map
-* **assistant-ui**: Artifacts, Branch Picker, Composer, Context usage, Markdown Text, Message, Model Picker, Reasoning, Thread, Thread Suggestions, Thread Viewport, Tool UI, Tool progress
+* **assistant-ui**: Artifacts, Branch Picker, Composer, Context usage, Human-in-the-loop approval, Markdown Text, Message, Model Picker, Reasoning, Thread, Thread Suggestions, Thread Viewport, Tool UI, Tool progress
 * **cmdk**: Command Menu
 * **dnd kit**: Sortable
 * **dnd-kit**: Sortable multiple containers
@@ -684,6 +688,7 @@ glowkit itself ships **396** gallery entries.
 * **iOS**: Segmented Control, Tab bar
 * **llm-ui**: Streaming
 * **n8n**: Workflow canvas
+* **react-resizable-panels**: PanelGroup
 * **react-three-fiber**: Canvas, data viz
 * **rough.js**: Sketchy shapes
 * **shadcn blocks**: Announcement Bar, Navbar

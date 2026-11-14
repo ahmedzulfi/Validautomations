@@ -3,7 +3,9 @@
 use crate::common;
 use crate::icons::{paint_icon, Icon};
 use crate::media;
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, Order, Painter, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, Order, Painter, Rect, Response, Sense, Stroke, StrokeKind, Ui, Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
@@ -81,7 +83,10 @@ fn meter(p: &Painter, r: Rect, level: f32, n: usize, t: &Theme, vertical_bars: b
 impl Widget for MicSelector<'_> {
     fn ui(self, ui: &mut Ui) -> Response {
         let t = Theme::of(ui);
-        let id = self.id_salt.map(|s| ui.scope_id().with_salt(s)).unwrap_or_else(|| ui.scope_id().with("glowkit_mic_selector"));
+        let id = self
+            .id_salt
+            .map(|s| ui.scope_id().with_salt(s))
+            .unwrap_or_else(|| ui.scope_id().with("glowkit_mic_selector"));
         if !self.devices.is_empty() {
             *self.selected = (*self.selected).min(self.devices.len() - 1);
         }
@@ -122,7 +127,10 @@ impl Widget for MicSelector<'_> {
             }
             paint_icon(p, Icon::Mic, ir, t.foreground);
         }
-        p.line_segment([pos2(mr.max.x, rect.min.y + 1.0), pos2(mr.max.x, rect.max.y - 1.0)], Stroke::new(1.0, t.border));
+        p.line_segment(
+            [pos2(mr.max.x, rect.min.y + 1.0), pos2(mr.max.x, rect.max.y - 1.0)],
+            Stroke::new(1.0, t.border),
+        );
         // device half
         let dr = Rect::from_min_max(pos2(mr.max.x, rect.min.y), rect.max);
         let dresp = ui.interact(dr, id.with("dev"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
@@ -137,7 +145,11 @@ impl Widget for MicSelector<'_> {
         let dh = common::anim_bool(ui, id.with("dh"), dresp.hovered() || open, 0.1);
         let p = ui.painter();
         if dh > 0.0 {
-            p.rect_filled(dr.shrink(1.0), CornerRadius { nw: 0, sw: 0, ne: cr.ne, se: cr.se }, common::hover_fill(&t).gamma_multiply(dh));
+            p.rect_filled(
+                dr.shrink(1.0),
+                CornerRadius { nw: 0, sw: 0, ne: cr.ne, se: cr.se },
+                common::hover_fill(&t).gamma_multiply(dh),
+            );
         }
         let name = self.devices.get(*self.selected).copied().unwrap_or("No microphone");
         let meter_w = 26.0;
@@ -154,13 +166,23 @@ impl Widget for MicSelector<'_> {
                 }
             }
         }
-        common::text(p, pos2(dr.min.x + 12.0, dr.center().y), Align2::LEFT_CENTER, label, 13.0, if *self.muted { t.muted_foreground } else { t.foreground });
+        common::text(
+            p,
+            pos2(dr.min.x + 12.0, dr.center().y),
+            Align2::LEFT_CENTER,
+            label,
+            13.0,
+            if *self.muted { t.muted_foreground } else { t.foreground },
+        );
         let mrect = Rect::from_min_size(pos2(dr.max.x - 32.0 - meter_w, dr.center().y - 7.0), vec2(meter_w, 14.0));
         meter(p, mrect, level, 5, &t, true);
         let ot = common::anim_bool(ui, id.with("o"), open, 0.15);
         let cc = pos2(dr.max.x - 15.0, dr.center().y);
         let flip = 1.0 - 2.0 * ot;
-        p.add(egui::Shape::line(vec![cc + vec2(-4.0, -2.0 * flip), cc + vec2(0.0, 2.0 * flip), cc + vec2(4.0, -2.0 * flip)], Stroke::new(1.5, t.muted_foreground)));
+        p.add(egui::Shape::line(
+            vec![cc + vec2(-4.0, -2.0 * flip), cc + vec2(0.0, 2.0 * flip), cc + vec2(4.0, -2.0 * flip)],
+            Stroke::new(1.5, t.muted_foreground),
+        ));
 
         if open || ot > 0.01 {
             let width = self.width.max(300.0);
@@ -176,23 +198,43 @@ impl Widget for MicSelector<'_> {
                         ui.set_width(width);
                         ui.spacing_mut().item_spacing.y = 2.0;
                         let (hr, _) = ui.allocate_exact_size(vec2(width, 26.0), Sense::hover());
-                        common::text(ui.painter(), pos2(hr.min.x + 10.0, hr.center().y + 1.0), Align2::LEFT_CENTER, "Input device", 11.5, t.muted_foreground);
+                        common::text(
+                            ui.painter(),
+                            pos2(hr.min.x + 10.0, hr.center().y + 1.0),
+                            Align2::LEFT_CENTER,
+                            "Input device",
+                            11.5,
+                            t.muted_foreground,
+                        );
                         for (i, d) in self.devices.iter().enumerate() {
                             let sel = i == *self.selected;
                             let h = if sel { 52.0 } else { 36.0 };
                             let (r, _) = ui.allocate_exact_size(vec2(width, h), Sense::hover());
-                            let rr = ui.interact(r, id.with(("row", i)), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+                            let rr = ui
+                                .interact(r, id.with(("row", i)), Sense::click())
+                                .on_hover_cursor(egui::CursorIcon::PointingHand);
                             let hh = common::anim_bool(ui, id.with(("rh", i)), rr.hovered(), 0.08);
                             let p = ui.painter();
                             if hh > 0.0 {
                                 p.rect_filled(r, CornerRadius::same(8), common::hover_fill(&t).gamma_multiply(hh));
                             }
                             let cy = r.min.y + 18.0;
-                            paint_icon(p, Icon::Mic, Rect::from_center_size(pos2(r.min.x + 20.0, cy), vec2(15.0, 15.0)), if sel { t.foreground } else { t.muted_foreground });
+                            paint_icon(
+                                p,
+                                Icon::Mic,
+                                Rect::from_center_size(pos2(r.min.x + 20.0, cy), vec2(15.0, 15.0)),
+                                if sel { t.foreground } else { t.muted_foreground },
+                            );
                             common::text(p, pos2(r.min.x + 38.0, cy), Align2::LEFT_CENTER, *d, 13.0, t.foreground);
                             if sel {
-                                paint_icon(p, Icon::Check, Rect::from_center_size(pos2(r.max.x - 18.0, cy), vec2(14.0, 14.0)), t.foreground);
-                                let mr = Rect::from_min_size(pos2(r.min.x + 38.0, r.min.y + 32.0), vec2(width - 76.0, 6.0));
+                                paint_icon(
+                                    p,
+                                    Icon::Check,
+                                    Rect::from_center_size(pos2(r.max.x - 18.0, cy), vec2(14.0, 14.0)),
+                                    t.foreground,
+                                );
+                                let mr =
+                                    Rect::from_min_size(pos2(r.min.x + 38.0, r.min.y + 32.0), vec2(width - 76.0, 6.0));
                                 meter(p, mr, level, 24, &t, false);
                             }
                             if rr.clicked() {
@@ -202,20 +244,36 @@ impl Widget for MicSelector<'_> {
                             }
                         }
                         let (sr, _) = ui.allocate_exact_size(vec2(width, 9.0), Sense::hover());
-                        ui.painter().line_segment([pos2(sr.min.x - 6.0, sr.center().y), pos2(sr.max.x + 6.0, sr.center().y)], Stroke::new(1.0, t.border));
+                        ui.painter().line_segment(
+                            [pos2(sr.min.x - 6.0, sr.center().y), pos2(sr.max.x + 6.0, sr.center().y)],
+                            Stroke::new(1.0, t.border),
+                        );
                         // mute switch row
                         let (r, _) = ui.allocate_exact_size(vec2(width, 36.0), Sense::hover());
-                        let rr = ui.interact(r, id.with("mute_row"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+                        let rr = ui
+                            .interact(r, id.with("mute_row"), Sense::click())
+                            .on_hover_cursor(egui::CursorIcon::PointingHand);
                         let hh = common::anim_bool(ui, id.with("mrh"), rr.hovered(), 0.08);
                         let p = ui.painter();
                         if hh > 0.0 {
                             p.rect_filled(r, CornerRadius::same(8), common::hover_fill(&t).gamma_multiply(hh));
                         }
-                        common::text(p, pos2(r.min.x + 12.0, r.center().y), Align2::LEFT_CENTER, "Mute microphone", 13.0, t.foreground);
+                        common::text(
+                            p,
+                            pos2(r.min.x + 12.0, r.center().y),
+                            Align2::LEFT_CENTER,
+                            "Mute microphone",
+                            13.0,
+                            t.foreground,
+                        );
                         let on = common::anim_bool(ui, id.with("sw"), *self.muted, 0.16);
                         let sw = Rect::from_center_size(pos2(r.max.x - 28.0, r.center().y), vec2(32.0, 18.0));
                         let p = ui.painter();
-                        p.rect_filled(sw, CornerRadius::same(9), with_alpha(t.muted_foreground, 0.3).lerp_to_gamma(t.destructive, on));
+                        p.rect_filled(
+                            sw,
+                            CornerRadius::same(9),
+                            with_alpha(t.muted_foreground, 0.3).lerp_to_gamma(t.destructive, on),
+                        );
                         p.circle_filled(pos2(sw.min.x + 9.0 + 14.0 * on, sw.center().y), 7.0, Color32::WHITE);
                         if rr.clicked() {
                             *self.muted = !*self.muted;

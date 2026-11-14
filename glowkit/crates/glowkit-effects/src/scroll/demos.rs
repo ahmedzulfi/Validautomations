@@ -1,6 +1,8 @@
 use super::*;
 use egui::epaint::Mesh;
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, FontId, Painter, Rect, RichText, ScrollArea, Sense, Shape, Stroke, Ui};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Painter, Rect, RichText, ScrollArea, Sense, Shape, Stroke, Ui,
+};
 use glowkit_core::anim::Easing;
 use glowkit_core::color::{hex, shade, with_alpha};
 use glowkit_core::demo::{Category, Demo};
@@ -32,8 +34,13 @@ struct AutoScroll {
 fn auto_scroll(ui: &mut Ui, key: &str, height: f32, speed: f32, add: impl FnOnce(&mut Ui)) {
     let id = ui.scope_id().with(("auto_scroll", key));
     let dt = super::common::wall_dt(ui);
-    let mut st: AutoScroll = glowkit_core::state(ui, id, || AutoScroll { idle: 1.0, dir: 1.0, wait: 0.8, ..Default::default() });
-    let mut sa = ScrollArea::vertical().id_salt(("auto_scroll_area", key)).max_height(height).min_scrolled_height(height).auto_shrink([false, false]);
+    let mut st: AutoScroll =
+        glowkit_core::state(ui, id, || AutoScroll { idle: 1.0, dir: 1.0, wait: 0.8, ..Default::default() });
+    let mut sa = ScrollArea::vertical()
+        .id_salt(("auto_scroll_area", key))
+        .max_height(height)
+        .min_scrolled_height(height)
+        .auto_shrink([false, false]);
     if st.idle > 0.8 && st.max > 0.0 {
         if st.wait > 0.0 {
             st.wait -= dt;
@@ -127,7 +134,10 @@ fn video_scene(p: &Painter, r: Rect, secs: f32) {
     let s = secs + 4.0;
     let sky = [hex("#1E1B4B"), hex("#7C3AED"), hex("#F472B6"), hex("#FDBA74")];
     paint::shader_grid(p, r, 1, 10, |uv| glowkit_core::color::gradient(&sky, uv.y * 1.05 + 0.05 * (s * 0.2).sin()));
-    let sun = pos2(r.min.x + r.width() * (0.62 + 0.05 * (s * 0.15).sin()), r.min.y + r.height() * (0.5 + 0.04 * (s * 0.3).cos()));
+    let sun = pos2(
+        r.min.x + r.width() * (0.62 + 0.05 * (s * 0.15).sin()),
+        r.min.y + r.height() * (0.5 + 0.04 * (s * 0.3).cos()),
+    );
     paint::glow(p, sun, r.height() * 0.5, with_alpha(hex("#FDE68A"), 0.55));
     p.circle_filled(sun, r.height() * 0.09, hex("#FFF7ED"));
     let layers: [(f32, f32, f32, f32, &str); 3] =
@@ -140,7 +150,8 @@ fn video_scene(p: &Painter, r: Rect, secs: f32) {
             let u = i as f32 / n as f32;
             let x = r.min.x + u * r.width();
             let ph = u * freq + s * speed + k as f32 * 2.0;
-            let y = r.min.y + r.height() * (base - amp * (ph.sin() * 0.6 + (ph * 2.3).sin() * 0.3 + (ph * 5.1).sin() * 0.1));
+            let y = r.min.y
+                + r.height() * (base - amp * (ph.sin() * 0.6 + (ph * 2.3).sin() * 0.3 + (ph * 5.1).sin() * 0.1));
             m.colored_vertex(pos2(x, y), c);
             m.colored_vertex(pos2(x, r.max.y), shade(c, -0.25));
         }
@@ -195,11 +206,22 @@ fn star_chart(p: &Painter, r: Rect) {
             paint::glow(p, *q, 7.0 * s, with_alpha(hex("#BFDBFE"), 0.6));
             p.circle_filled(*q, 2.0 * s, Color32::WHITE);
             if k == 0 {
-                p.text(*q + vec2(6.0, 6.0) * s, Align2::LEFT_TOP, name, FontId::proportional(9.0 * s), with_alpha(hex("#BFDBFE"), 0.85));
+                p.text(
+                    *q + vec2(6.0, 6.0) * s,
+                    Align2::LEFT_TOP,
+                    name,
+                    FontId::proportional(9.0 * s),
+                    with_alpha(hex("#BFDBFE"), 0.85),
+                );
                 p.text(
                     *q + vec2(6.0, 17.0) * s,
                     Align2::LEFT_TOP,
-                    format!("RA {:02}h {:02}m · mag {:.1}", (k + 3) * 4 % 24, (name.len() * 7) % 60, 2.1 + name.len() as f32 * 0.1),
+                    format!(
+                        "RA {:02}h {:02}m · mag {:.1}",
+                        (k + 3) * 4 % 24,
+                        (name.len() * 7) % 60,
+                        2.1 + name.len() as f32 * 0.1
+                    ),
                     FontId::monospace(6.0 * s),
                     with_alpha(Color32::WHITE, 0.5),
                 );
@@ -213,7 +235,13 @@ fn star_chart(p: &Painter, r: Rect) {
     for (dx, dy, cr) in [(-8.0, -6.0, 5.0), (7.0, 5.0, 3.5), (2.0, -12.0, 2.5), (-4.0, 10.0, 3.0)] {
         p.circle_filled(m + vec2(dx, dy) * s, cr * s, with_alpha(hex("#94A3B8"), 0.5));
     }
-    p.text(r.max - vec2(12.0, 10.0) * s, Align2::RIGHT_BOTTOM, "NORTHERN SKY · WINTER", FontId::monospace(8.0 * s), with_alpha(Color32::WHITE, 0.45));
+    p.text(
+        r.max - vec2(12.0, 10.0) * s,
+        Align2::RIGHT_BOTTOM,
+        "NORTHERN SKY · WINTER",
+        FontId::monospace(8.0 * s),
+        with_alpha(Color32::WHITE, 0.45),
+    );
 }
 
 fn photo_scene(p: &Painter, r: Rect, tex: egui::TextureId) {
@@ -224,7 +252,13 @@ fn photo_scene(p: &Painter, r: Rect, tex: egui::TextureId) {
     // a tiny caption that rewards zooming
     let cap = Rect::from_min_size(r.left_bottom() + vec2(12.0, -34.0), vec2(150.0, 22.0));
     p.rect_filled(cap, CornerRadius::same(6), with_alpha(Color32::BLACK, 0.45));
-    p.text(cap.center(), Align2::CENTER_CENTER, "Nº 07 · Alpenglow ridge, 2,341 m", FontId::proportional(8.0 * r.width() / 330.0), Color32::WHITE);
+    p.text(
+        cap.center(),
+        Align2::CENTER_CENTER,
+        "Nº 07 · Alpenglow ridge, 2,341 m",
+        FontId::proportional(8.0 * r.width() / 330.0),
+        Color32::WHITE,
+    );
 }
 
 fn dashboard(ui: &mut Ui) {
@@ -234,7 +268,13 @@ fn dashboard(ui: &mut Ui) {
     p.text(r.min, Align2::LEFT_TOP, "Overview", FontId::proportional(18.0), t.foreground);
     let pill = Rect::from_min_size(pos2(r.max.x - 170.0, r.min.y - 2.0), vec2(170.0, 26.0));
     p.rect(pill, CornerRadius::same(99), t.muted, Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
-    p.text(pill.left_center() + vec2(12.0, 0.0), Align2::LEFT_CENTER, "⌕  Search…", FontId::proportional(12.0), t.muted_foreground);
+    p.text(
+        pill.left_center() + vec2(12.0, 0.0),
+        Align2::LEFT_CENTER,
+        "⌕  Search…",
+        FontId::proportional(12.0),
+        t.muted_foreground,
+    );
     let stats = [("Revenue", "$45,231", "+20.1%"), ("Subscriptions", "+2,350", "+180%"), ("Active now", "573", "+201")];
     let tw = (r.width() - 24.0) / 3.0;
     for (i, (label, value, delta)) in stats.iter().enumerate() {
@@ -251,13 +291,20 @@ fn dashboard(ui: &mut Ui) {
     let inner = Rect::from_min_max(chart.min + vec2(14.0, 34.0), chart.max - vec2(14.0, 12.0));
     let bw = inner.width() / bars.len() as f32;
     for (i, h) in bars.iter().enumerate() {
-        let b = Rect::from_min_max(pos2(inner.min.x + i as f32 * bw + 3.0, inner.max.y - inner.height() * h), pos2(inner.min.x + (i + 1) as f32 * bw - 3.0, inner.max.y));
+        let b = Rect::from_min_max(
+            pos2(inner.min.x + i as f32 * bw + 3.0, inner.max.y - inner.height() * h),
+            pos2(inner.min.x + (i + 1) as f32 * bw - 3.0, inner.max.y),
+        );
         paint::gradient_rect(p, b, 4.0, 90.0, &[t.gradient[0], t.gradient[2]]);
     }
     let list = Rect::from_min_max(pos2(chart.max.x + 12.0, chart.min.y), r.max);
     p.rect(list, CornerRadius::same(12), t.card, Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
     p.text(list.min + vec2(14.0, 10.0), Align2::LEFT_TOP, "Recent sales", FontId::proportional(12.5), t.foreground);
-    for (i, (n, a)) in [("Olivia M.", "+$1,999"), ("Jackson L.", "+$39"), ("Isabella N.", "+$299"), ("William K.", "+$99")].iter().enumerate() {
+    for (i, (n, a)) in
+        [("Olivia M.", "+$1,999"), ("Jackson L.", "+$39"), ("Isabella N.", "+$299"), ("William K.", "+$99")]
+            .iter()
+            .enumerate()
+    {
         let y = list.min.y + 42.0 + i as f32 * 26.0;
         if y > list.max.y - 10.0 {
             break;
@@ -752,4 +799,3 @@ ui.add(StickyScrollReveal::new(&sections));"##,
         },
     ]
 }
-

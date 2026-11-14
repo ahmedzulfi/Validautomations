@@ -259,13 +259,26 @@ impl Widget for DotMatrix<'_> {
             },
         );
         let p = ui.painter();
-        let screen = if t.dark { mix(t.background, Color32::BLACK, 0.5) } else { mix(t.foreground, Color32::BLACK, 0.4) };
+        let screen =
+            if t.dark { mix(t.background, Color32::BLACK, 0.5) } else { mix(t.foreground, Color32::BLACK, 0.4) };
         if self.bezel {
             let cr = CornerRadius::same((self.pitch * 1.1) as u8);
-            p.rect(rect, cr, screen, Stroke::new(1.0, if t.dark { t.border } else { mix(t.foreground, Color32::WHITE, 0.2) }), StrokeKind::Inside);
+            p.rect(
+                rect,
+                cr,
+                screen,
+                Stroke::new(1.0, if t.dark { t.border } else { mix(t.foreground, Color32::WHITE, 0.2) }),
+                StrokeKind::Inside,
+            );
             // glass sheen
             let sheen = Rect::from_min_max(rect.min + vec2(2.0, 2.0), pos2(rect.max.x - 2.0, rect.center().y));
-            glowkit_core::paint::gradient_rect(p, sheen, cr.nw as f32, 90.0, &[Color32::from_white_alpha(10), Color32::TRANSPARENT]);
+            glowkit_core::paint::gradient_rect(
+                p,
+                sheen,
+                cr.nw as f32,
+                90.0,
+                &[Color32::from_white_alpha(10), Color32::TRANSPARENT],
+            );
         }
         let on_base = self.color.unwrap_or(t.accent);
         let dark_screen = self.bezel || t.dark;
@@ -295,7 +308,11 @@ impl Widget for DotMatrix<'_> {
                     p.circle_filled(center, r, col);
                 }
                 if b > 0.6 && dark_screen {
-                    p.circle_filled(center - vec2(r * 0.25, r * 0.25), r * 0.35, with_alpha(Color32::WHITE, 0.35 * (b - 0.6) / 0.4));
+                    p.circle_filled(
+                        center - vec2(r * 0.25, r * 0.25),
+                        r * 0.35,
+                        with_alpha(Color32::WHITE, 0.35 * (b - 0.6) / 0.4),
+                    );
                 }
             }
         }

@@ -124,7 +124,8 @@ impl egui::Widget for AppleCardsCarousel<'_> {
         let t = Theme::of(ui);
         let n = self.cards.len();
         let (rect, _) = ui.allocate_exact_size(vec2(ui.available_width(), self.card.y + 64.0), Sense::hover());
-        let response = ui.interact(rect, ui.scope_id().with(("glowkit_apple_cards", self.salt)), Sense::click_and_drag());
+        let response =
+            ui.interact(rect, ui.scope_id().with(("glowkit_apple_cards", self.salt)), Sense::click_and_drag());
         let id = response.id;
         if n == 0 {
             return response;
@@ -147,9 +148,8 @@ impl egui::Widget for AppleCardsCarousel<'_> {
         if response.dragged() && st.open.is_none() {
             st.target -= response.drag_delta().x;
         }
-        let card_rect = |i: usize, off: f32| {
-            Rect::from_min_size(pos2(row.min.x + i as f32 * step - off, row.min.y), self.card)
-        };
+        let card_rect =
+            |i: usize, off: f32| Rect::from_min_size(pos2(row.min.x + i as f32 * step - off, row.min.y), self.card);
         if response.clicked() {
             if let Some(p) = response.interact_pointer_pos() {
                 if st.open.is_some() {
@@ -209,9 +209,11 @@ impl egui::Widget for AppleCardsCarousel<'_> {
             glowkit_core::animate(ui);
         }
         let painter = ui.painter_at(rect);
-        let builtin: Vec<TextureId> = (0..PaintedScene::COUNT).map(|i| PaintedScene::texture(ui.ctx(), i + 3)).collect();
+        let builtin: Vec<TextureId> =
+            (0..PaintedScene::COUNT).map(|i| PaintedScene::texture(ui.ctx(), i + 3)).collect();
         let radius = 22.0;
-        let row_clip = ui.painter_at(Rect::from_min_max(pos2(rect.min.x, rect.min.y), pos2(rect.max.x, row.max.y + 20.0)));
+        let row_clip =
+            ui.painter_at(Rect::from_min_max(pos2(rect.min.x, rect.min.y), pos2(rect.max.x, row.max.y + 20.0)));
         for (i, c) in self.cards.iter().enumerate() {
             let r = card_rect(i, off);
             if r.max.x < rect.min.x - 10.0 || r.min.x > rect.max.x + 10.0 {
@@ -225,14 +227,38 @@ impl egui::Widget for AppleCardsCarousel<'_> {
             let hov = pointer.is_some_and(|q| r.contains(q) && row.contains(q)) && st.open.is_none();
             let h = glowkit_core::anim::follow(ui, id.with(("h", i)), if hov { 1.0 } else { 0.0 }, 12.0);
             let r = Rect::from_center_size(r.center() + vec2(0.0, 30.0 * (1.0 - a)), r.size() * (1.0 + 0.02 * h));
-            draw_apple_card(&row_clip, &t, c, c.texture.unwrap_or(builtin[i % builtin.len()]), c.texture.is_none(), r, radius, a, 0.0);
+            draw_apple_card(
+                &row_clip,
+                &t,
+                c,
+                c.texture.unwrap_or(builtin[i % builtin.len()]),
+                c.texture.is_none(),
+                r,
+                radius,
+                a,
+                0.0,
+            );
         }
         // arrows
         for (b, glyph, enabled) in [(left_btn, "‹", off > 1.0), (right_btn, "›", off < max - 1.0)] {
             let hv = pointer.is_some_and(|q| b.contains(q));
-            let fill = if enabled { if hv { t.foreground } else { mix(t.muted, t.foreground, 0.12) } } else { with_alpha(t.muted, 0.6) };
+            let fill = if enabled {
+                if hv {
+                    t.foreground
+                } else {
+                    mix(t.muted, t.foreground, 0.12)
+                }
+            } else {
+                with_alpha(t.muted, 0.6)
+            };
             painter.circle_filled(b.center(), 18.0, fill);
-            let fg = if hv && enabled { t.background } else if enabled { t.foreground } else { t.muted_foreground };
+            let fg = if hv && enabled {
+                t.background
+            } else if enabled {
+                t.foreground
+            } else {
+                t.muted_foreground
+            };
             painter.text(b.center() - vec2(0.0, 2.0), Align2::CENTER_CENTER, glyph, FontId::proportional(26.0), fg);
         }
         // expanded dialog
@@ -245,25 +271,62 @@ impl egui::Widget for AppleCardsCarousel<'_> {
             let r = Rect::from_min_max(from.min.lerp(modal.min, p), from.max.lerp(modal.max, p));
             paint::soft_shadow(&painter, r, radius, 40.0, vec2(0.0, 18.0), shadow_color(&t));
             let face = if t.dark { mix(t.card, t.popover, 0.6) } else { Color32::WHITE };
-            painter.rect(r, rounded(radius), with_alpha(face, p.clamp(0.0, 1.0)), Stroke::new(1.0, with_alpha(t.border, p)), StrokeKind::Inside);
+            painter.rect(
+                r,
+                rounded(radius),
+                with_alpha(face, p.clamp(0.0, 1.0)),
+                Stroke::new(1.0, with_alpha(t.border, p)),
+                StrokeKind::Inside,
+            );
             // the cover shrinks from the whole card into the dialog's left panel
-            let img_target = Rect::from_min_size(modal.min + vec2(14.0, 14.0), vec2(modal.width() * 0.42, modal.height() - 28.0));
+            let img_target =
+                Rect::from_min_size(modal.min + vec2(14.0, 14.0), vec2(modal.width() * 0.42, modal.height() - 28.0));
             let img = Rect::from_min_max(from.min.lerp(img_target.min, p), from.max.lerp(img_target.max, p));
             let q = p.clamp(0.0, 1.0);
-            draw_apple_card(&painter, &t, c, c.texture.unwrap_or(builtin[i % builtin.len()]), c.texture.is_none(), img, radius - 6.0 * q, 1.0, q);
+            draw_apple_card(
+                &painter,
+                &t,
+                c,
+                c.texture.unwrap_or(builtin[i % builtin.len()]),
+                c.texture.is_none(),
+                img,
+                radius - 6.0 * q,
+                1.0,
+                q,
+            );
             let ta = smoothstep(0.55, 1.0, p);
             if ta > 0.0 {
                 let x = img_target.max.x + 22.0;
                 let wrap = modal.max.x - x - 30.0;
                 let y0 = modal.min.y + 30.0 + 10.0 * (1.0 - ta);
-                painter.text(pos2(x, y0), Align2::LEFT_TOP, &c.category, FontId::proportional(14.0), with_alpha(t.muted_foreground, ta));
-                let g = painter.layout(c.title.clone(), FontId::proportional(26.0), with_alpha(t.foreground, ta), wrap - 20.0);
+                painter.text(
+                    pos2(x, y0),
+                    Align2::LEFT_TOP,
+                    &c.category,
+                    FontId::proportional(14.0),
+                    with_alpha(t.muted_foreground, ta),
+                );
+                let g = painter.layout(
+                    c.title.clone(),
+                    FontId::proportional(26.0),
+                    with_alpha(t.foreground, ta),
+                    wrap - 20.0,
+                );
                 let gh = g.size().y;
                 painter.galley(pos2(x, y0 + 24.0), g, t.foreground);
-                let b = painter.layout(c.body.clone(), FontId::proportional(14.5), with_alpha(t.muted_foreground, ta), wrap);
+                let b = painter.layout(
+                    c.body.clone(),
+                    FontId::proportional(14.5),
+                    with_alpha(t.muted_foreground, ta),
+                    wrap,
+                );
                 painter.with_clip_rect(modal.shrink(10.0)).galley(pos2(x, y0 + 40.0 + gh), b, t.muted_foreground);
                 let hv = pointer.is_some_and(|q| close_btn.contains(q));
-                painter.circle_filled(close_btn.center(), 15.0, with_alpha(if hv { t.foreground } else { mix(t.muted, t.foreground, 0.15) }, ta));
+                painter.circle_filled(
+                    close_btn.center(),
+                    15.0,
+                    with_alpha(if hv { t.foreground } else { mix(t.muted, t.foreground, 0.15) }, ta),
+                );
                 painter.text(
                     close_btn.center(),
                     Align2::CENTER_CENTER,
@@ -278,12 +341,26 @@ impl egui::Widget for AppleCardsCarousel<'_> {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn draw_apple_card(painter: &Painter, t: &Theme, c: &AppleCard, tex: TextureId, builtin: bool, r: Rect, radius: f32, alpha: f32, text_fade: f32) {
+fn draw_apple_card(
+    painter: &Painter,
+    t: &Theme,
+    c: &AppleCard,
+    tex: TextureId,
+    builtin: bool,
+    r: Rect,
+    radius: f32,
+    alpha: f32,
+    text_fade: f32,
+) {
     if alpha <= 0.0 {
         return;
     }
     paint::soft_shadow(painter, r, radius, 22.0, vec2(0.0, 10.0), shadow_color(t).gamma_multiply(alpha));
-    let uv = if builtin { cover_uv(PaintedScene::ASPECT, r.width() / r.height().max(1.0)) } else { Rect::from_min_max(Pos2::ZERO, pos2(1.0, 1.0)) };
+    let uv = if builtin {
+        cover_uv(PaintedScene::ASPECT, r.width() / r.height().max(1.0))
+    } else {
+        Rect::from_min_max(Pos2::ZERO, pos2(1.0, 1.0))
+    };
     image_rect(painter, r, radius, tex, uv, Color32::WHITE.gamma_multiply(alpha));
     // scrim from the top so the white text reads on any image
     let top = Rect::from_min_size(r.min, vec2(r.width(), r.height() * 0.55));
@@ -301,7 +378,12 @@ fn draw_apple_card(painter: &Painter, t: &Theme, c: &AppleCard, tex: TextureId, 
             FontId::proportional(13.0),
             with_alpha(Color32::WHITE, 0.85 * a),
         );
-        let g = painter.layout(c.title.clone(), FontId::proportional(21.0), with_alpha(Color32::WHITE, a), r.width() - 36.0);
+        let g = painter.layout(
+            c.title.clone(),
+            FontId::proportional(21.0),
+            with_alpha(Color32::WHITE, a),
+            r.width() - 36.0,
+        );
         painter.galley(r.min + vec2(18.0, 40.0), g, Color32::WHITE);
     }
 }
@@ -414,7 +496,8 @@ impl egui::Widget for ImagesSlider<'_> {
         };
         let n = texs.len();
         let now = ui.input(|i| i.time);
-        let mut st: SliderState = glowkit_core::state(ui, id.with("st"), || SliderState { index: 0, prev: 0, changed: now - 5.0, dir: 1.0 });
+        let mut st: SliderState =
+            glowkit_core::state(ui, id.with("st"), || SliderState { index: 0, prev: 0, changed: now - 5.0, dir: 1.0 });
         let go = |st: &mut SliderState, d: i32| {
             st.prev = st.index;
             st.index = (st.index as i32 + d).rem_euclid(n as i32) as usize;
@@ -486,7 +569,8 @@ impl egui::Widget for ImagesSlider<'_> {
             let gr = Rect::from_min_size(pos, g.size());
             paint::galley_with(&painter, pos, &g, |q| with_alpha(paint::linear_fn(gr, 90.0, &stops)(q), ta));
             if has_btn {
-                let bw = 30.0 + painter.layout_no_wrap(self.action.clone(), FontId::proportional(15.0), Color32::WHITE).size().x;
+                let bw = 30.0
+                    + painter.layout_no_wrap(self.action.clone(), FontId::proportional(15.0), Color32::WHITE).size().x;
                 let b = Rect::from_center_size(pos2(rect.center().x, gr.max.y + 36.0), vec2(bw + 16.0, 40.0));
                 painter.rect(
                     b,
@@ -495,12 +579,22 @@ impl egui::Widget for ImagesSlider<'_> {
                     Stroke::new(1.0, with_alpha(Color32::WHITE, 0.45)),
                     StrokeKind::Inside,
                 );
-                painter.text(b.center(), Align2::CENTER_CENTER, format!("{} →", self.action), FontId::proportional(15.0), Color32::WHITE);
+                painter.text(
+                    b.center(),
+                    Align2::CENTER_CENTER,
+                    format!("{} →", self.action),
+                    FontId::proportional(15.0),
+                    Color32::WHITE,
+                );
                 // glow line under the pill
                 let gl = with_alpha(PaintedScene::accent(st.index), 0.9);
-                paint::gradient_polyline(&painter, &[pos2(b.min.x + 16.0, b.max.y), pos2(b.max.x - 16.0, b.max.y)], false, 1.5, |u| {
-                    with_alpha(gl, (1.0 - (u * 2.0 - 1.0).abs()) * 0.9)
-                });
+                paint::gradient_polyline(
+                    &painter,
+                    &[pos2(b.min.x + 16.0, b.max.y), pos2(b.max.x - 16.0, b.max.y)],
+                    false,
+                    1.5,
+                    |u| with_alpha(gl, (1.0 - (u * 2.0 - 1.0).abs()) * 0.9),
+                );
             }
         }
         // dots (laid out with their animated widths so the active pill never overlaps)
@@ -511,7 +605,11 @@ impl egui::Widget for ImagesSlider<'_> {
         let mut x = rect.center().x - total / 2.0;
         for (k, w) in widths.iter().enumerate() {
             let d = Rect::from_min_size(pos2(x, rect.max.y - 24.0), vec2(*w, 7.0));
-            painter.rect_filled(d, CornerRadius::same(99), with_alpha(Color32::WHITE, if k == st.index { 0.95 } else { 0.45 }));
+            painter.rect_filled(
+                d,
+                CornerRadius::same(99),
+                with_alpha(Color32::WHITE, if k == st.index { 0.95 } else { 0.45 }),
+            );
             x += w + 7.0;
         }
         response
@@ -623,7 +721,14 @@ impl egui::Widget for PixelImage {
         let uv = cover_uv(aspect, rect.width() / rect.height());
         let k = (e / self.duration).clamp(0.0, 1.0);
         let painter = ui.painter_at(rect.expand(30.0));
-        paint::soft_shadow(&painter, rect, self.radius, 22.0, vec2(0.0, 8.0), shadow_color(&t).gamma_multiply(smoothstep(0.0, 0.3, k)));
+        paint::soft_shadow(
+            &painter,
+            rect,
+            self.radius,
+            22.0,
+            vec2(0.0, 8.0),
+            shadow_color(&t).gamma_multiply(smoothstep(0.0, 0.3, k)),
+        );
         // levels: base grid, x2, x4 ... until tiles are tiny
         let (c0, r0) = self.grid;
         let mut levels = vec![(c0, r0)];
@@ -638,7 +743,11 @@ impl egui::Widget for PixelImage {
         let mut ui2 = ui.new_child(UiBuilder::new().max_rect(rect));
         ui2.set_clip_rect(ui.clip_rect());
         if k < full_start + 0.12 {
-            let lk = if k < pop_end { 0.0 } else { ((k - pop_end) / (full_start - pop_end)).clamp(0.0, 0.999) * levels.len() as f32 };
+            let lk = if k < pop_end {
+                0.0
+            } else {
+                ((k - pop_end) / (full_start - pop_end)).clamp(0.0, 0.999) * levels.len() as f32
+            };
             let li = (lk.floor() as usize).min(levels.len() - 1);
             let (cols, rows) = levels[li];
             let next = levels.get(li + 1).copied();
@@ -751,7 +860,13 @@ impl Default for HeroVideoDialog {
 impl HeroVideoDialog {
     /// A 16:9 thumbnail.
     pub fn new() -> Self {
-        Self { size: vec2(440.0, 248.0), animation: VideoDialogAnimation::FromThumbnail, length: 92.0, autoplay: false, salt: 0 }
+        Self {
+            size: vec2(440.0, 248.0),
+            animation: VideoDialogAnimation::FromThumbnail,
+            length: 92.0,
+            autoplay: false,
+            salt: 0,
+        }
     }
     /// Thumbnail size.
     pub fn size(mut self, s: egui::Vec2) -> Self {
@@ -866,13 +981,24 @@ impl HeroVideoDialog {
             let q = p.clamp(0.0, 1.0);
             painter.rect_filled(area.expand(20.0), rounded(t.radius), with_alpha(Color32::BLACK, 0.6 * q));
             let (r, alpha) = match self.animation {
-                VideoDialogAnimation::FromThumbnail => (Rect::from_min_max(thumb.min.lerp(dialog.min, p), thumb.max.lerp(dialog.max, p)), q.sqrt()),
-                VideoDialogAnimation::FromCenter => (Rect::from_center_size(dialog.center(), dialog.size() * (0.4 + 0.6 * p)), q),
+                VideoDialogAnimation::FromThumbnail => {
+                    (Rect::from_min_max(thumb.min.lerp(dialog.min, p), thumb.max.lerp(dialog.max, p)), q.sqrt())
+                }
+                VideoDialogAnimation::FromCenter => {
+                    (Rect::from_center_size(dialog.center(), dialog.size() * (0.4 + 0.6 * p)), q)
+                }
                 VideoDialogAnimation::FromBottom => (dialog.translate(vec2(0.0, (1.0 - p) * area.height() * 0.7)), q),
                 VideoDialogAnimation::FromTop => (dialog.translate(vec2(0.0, -(1.0 - p) * area.height() * 0.7)), q),
                 VideoDialogAnimation::Fade => (dialog, q),
             };
-            paint::soft_shadow(&painter, r, 16.0, 40.0, vec2(0.0, 18.0), Color32::from_black_alpha((180.0 * alpha) as u8));
+            paint::soft_shadow(
+                &painter,
+                r,
+                16.0,
+                40.0,
+                vec2(0.0, 18.0),
+                Color32::from_black_alpha((180.0 * alpha) as u8),
+            );
             let secs = ((now - st.opened_at) as f32).max(0.0);
             let outline = paint::rounded_rect_points(r, 16.0, 6);
             let mut ui3 = ui.new_child(UiBuilder::new().max_rect(r));
@@ -882,9 +1008,19 @@ impl HeroVideoDialog {
                 // controls bar
                 let bar = Rect::from_min_max(pos2(r.min.x, r.max.y - 44.0), r.max);
                 let pts = [bar.left_top(), bar.right_top(), bar.right_bottom(), bar.left_bottom()];
-                paint::quad(ui.painter(), pts, [Color32::TRANSPARENT, Color32::TRANSPARENT, with_alpha(Color32::BLACK, 0.6), with_alpha(Color32::BLACK, 0.6)]);
+                paint::quad(
+                    ui.painter(),
+                    pts,
+                    [
+                        Color32::TRANSPARENT,
+                        Color32::TRANSPARENT,
+                        with_alpha(Color32::BLACK, 0.6),
+                        with_alpha(Color32::BLACK, 0.6),
+                    ],
+                );
                 let frac = (secs % self.length) / self.length;
-                let track = Rect::from_min_max(pos2(r.min.x + 46.0, r.max.y - 20.0), pos2(r.max.x - 112.0, r.max.y - 16.0));
+                let track =
+                    Rect::from_min_max(pos2(r.min.x + 46.0, r.max.y - 20.0), pos2(r.max.x - 112.0, r.max.y - 16.0));
                 ui.painter().rect_filled(track, CornerRadius::same(99), with_alpha(Color32::WHITE, 0.3));
                 let fill = Rect::from_min_max(track.min, pos2(track.min.x + track.width() * frac, track.max.y));
                 ui.painter().rect_filled(fill, CornerRadius::same(99), Color32::WHITE);
@@ -928,7 +1064,10 @@ fn play_triangle(painter: &Painter, c: Pos2, r: f32, color: Color32) {
 
 fn play_pause(painter: &Painter, c: Pos2) {
     for dx in [-3.5, 3.5] {
-        painter.rect_filled(Rect::from_center_size(c + vec2(dx, 0.0), vec2(3.5, 13.0)), CornerRadius::same(1), Color32::WHITE);
+        painter.rect_filled(
+            Rect::from_center_size(c + vec2(dx, 0.0), vec2(3.5, 13.0)),
+            CornerRadius::same(1),
+            Color32::WHITE,
+        );
     }
 }
-

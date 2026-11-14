@@ -1,7 +1,10 @@
 use super::common::{bold_text, capture, clip_mesh, paint_avatar, pointer_or_auto, subdivide, Persp, VIVID};
 use crate::buttons::util::{self, clip_convex, outline};
 use crate::motion::common::{polygon_shadow, sd_round_rect};
-use egui::{pos2, vec2, Align2, Color32, CursorIcon, FontId, InnerResponse, Pos2, Rect, Response, Sense, Shape, Stroke, Ui, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align2, Color32, CursorIcon, FontId, InnerResponse, Pos2, Rect, Response, Sense, Shape, Stroke, Ui,
+    Vec2, Widget,
+};
 use glowkit_core::anim::{follow, smoothstep, spring, spring2};
 use glowkit_core::color::{hsv, mix, shade, with_alpha};
 use glowkit_core::{noise, paint, Theme};
@@ -25,7 +28,8 @@ fn screen(c: Color32, add: Color32, a: f32) -> Color32 {
 /// Smoothed pointer over `rect` in -1..1 coordinates plus an "active" fade.
 fn tracked(ui: &Ui, id: egui::Id, rect: Rect, autoplay: bool, seed: f32) -> (Vec2, f32, Option<(Pos2, bool)>) {
     let ptr = pointer_or_auto(ui, rect, autoplay, seed);
-    let target = ptr.map(|(p, _)| ((p - rect.center()) / (rect.size() / 2.0)).clamp(Vec2::splat(-1.0), Vec2::splat(1.0)));
+    let target =
+        ptr.map(|(p, _)| ((p - rect.center()) / (rect.size() / 2.0)).clamp(Vec2::splat(-1.0), Vec2::splat(1.0)));
     let rel = spring2(ui, id.with("rel"), target.unwrap_or(Vec2::ZERO), 150.0, 18.0);
     let k = follow(ui, id.with("k"), if ptr.is_some() { 1.0 } else { 0.0 }, 6.0);
     (rel, k, ptr)
@@ -139,7 +143,14 @@ impl ProfileCard {
         paint::glow_ellipse(painter, halo_c, card.size() * 0.75, with_alpha(c1, if t.dark { 0.35 } else { 0.22 }));
         let local_outline = outline(Rect::from_center_size(Pos2::ZERO, card.size()), radius, 10.0);
         let proj: Vec<Pos2> = local_outline.iter().map(|p| pr.apply(p.to_vec2())).collect();
-        polygon_shadow(painter, &proj, card.center(), vec2(-rel.x * 8.0, 14.0 - rel.y * 6.0), 18.0, Color32::BLACK.gamma_multiply(if t.dark { 0.8 } else { 0.35 }));
+        polygon_shadow(
+            painter,
+            &proj,
+            card.center(),
+            vec2(-rel.x * 8.0, 14.0 - rel.y * 6.0),
+            18.0,
+            Color32::BLACK.gamma_multiply(if t.dark { 0.8 } else { 0.35 }),
+        );
 
         // the card face, captured so it can be foil-shaded and projected as one surface
         let name = self.name.clone();
@@ -148,7 +159,8 @@ impl ProfileCard {
         let status = self.status.clone();
         let contact = self.contact.clone();
         let seed = self.seed;
-        let bar = Rect::from_min_max(pos2(card.min.x + 14.0, card.max.y - 78.0), pos2(card.max.x - 14.0, card.max.y - 14.0));
+        let bar =
+            Rect::from_min_max(pos2(card.min.x + 14.0, card.max.y - 78.0), pos2(card.max.x - 14.0, card.max.y - 14.0));
         let btn_g = ui.painter().layout_no_wrap(contact.clone(), FontId::proportional(13.0), Color32::WHITE);
         let btn = Rect::from_min_size(
             pos2(bar.max.x - 12.0 - btn_g.size().x - 26.0, bar.center().y - 16.0),
@@ -162,7 +174,12 @@ impl ProfileCard {
                 mix(base, shade(c0, -0.5), (v * 0.3 + u * 0.4).min(1.0) * 0.5)
             });
             // radial light behind the portrait
-            paint::glow(p, pos2(card.center().x, card.min.y + card.height() * 0.55), card.width() * 0.62, with_alpha(c1, 0.55));
+            paint::glow(
+                p,
+                pos2(card.center().x, card.min.y + card.height() * 0.55),
+                card.width() * 0.62,
+                with_alpha(c1, 0.55),
+            );
             let art = Rect::from_min_max(pos2(card.min.x, card.min.y + card.height() * 0.22), card.max);
             paint_avatar(p, art, 0.0, [mix(c1, Color32::WHITE, 0.2), c0], seed, false);
             bold_text(
@@ -181,12 +198,30 @@ impl ProfileCard {
                 with_alpha(Color32::WHITE, 0.88),
             );
             // frosted bar
-            p.rect(bar, util::cr(18.0), with_alpha(Color32::WHITE, 0.12), Stroke::new(1.0, with_alpha(Color32::WHITE, 0.22)), egui::StrokeKind::Inside);
+            p.rect(
+                bar,
+                util::cr(18.0),
+                with_alpha(Color32::WHITE, 0.12),
+                Stroke::new(1.0, with_alpha(Color32::WHITE, 0.22)),
+                egui::StrokeKind::Inside,
+            );
             let av = pos2(bar.min.x + 30.0, bar.center().y);
             paint::gradient_circle(p, av, 17.0, &[mix(c1, Color32::WHITE, 0.3), c0]);
             p.circle_stroke(av, 17.0, Stroke::new(1.0, with_alpha(Color32::WHITE, 0.4)));
-            p.text(av, Align2::CENTER_CENTER, name.chars().next().unwrap_or('?').to_string(), FontId::proportional(14.0), Color32::WHITE);
-            p.text(pos2(av.x + 26.0, bar.center().y - 9.0), Align2::LEFT_CENTER, &handle, FontId::proportional(13.5), Color32::WHITE);
+            p.text(
+                av,
+                Align2::CENTER_CENTER,
+                name.chars().next().unwrap_or('?').to_string(),
+                FontId::proportional(14.0),
+                Color32::WHITE,
+            );
+            p.text(
+                pos2(av.x + 26.0, bar.center().y - 9.0),
+                Align2::LEFT_CENTER,
+                &handle,
+                FontId::proportional(13.5),
+                Color32::WHITE,
+            );
             p.circle_filled(pos2(av.x + 30.0, bar.center().y + 10.0), 3.0, glowkit_core::hex("#4ADE80"));
             p.text(
                 pos2(av.x + 37.0, bar.center().y + 10.0),
@@ -196,7 +231,13 @@ impl ProfileCard {
                 with_alpha(Color32::WHITE, 0.7),
             );
             if !contact.is_empty() {
-                p.rect(btn, util::cr(16.0), with_alpha(Color32::WHITE, 0.1), Stroke::new(1.0, with_alpha(Color32::WHITE, 0.35)), egui::StrokeKind::Inside);
+                p.rect(
+                    btn,
+                    util::cr(16.0),
+                    with_alpha(Color32::WHITE, 0.1),
+                    Stroke::new(1.0, with_alpha(Color32::WHITE, 0.35)),
+                    egui::StrokeKind::Inside,
+                );
                 p.text(btn.center(), Align2::CENTER_CENTER, &contact, FontId::proportional(13.0), Color32::WHITE);
             }
         });
@@ -326,7 +367,9 @@ impl GlassIcons {
         for (i, item) in self.items.iter().enumerate() {
             let c = pos2(rect.min.x + cell.x * (i as f32 + 0.5), rect.min.y + s * 0.15 + s * 0.6);
             let tile = Rect::from_center_size(c, Vec2::splat(s));
-            let r = ui.interact(tile.expand(8.0), id.with(("t", i)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
+            let r = ui
+                .interact(tile.expand(8.0), id.with(("t", i)), Sense::click())
+                .on_hover_cursor(CursorIcon::PointingHand);
             if r.clicked() {
                 clicked = Some(i);
             }
@@ -337,9 +380,17 @@ impl GlassIcons {
             let bc = c + vec2(-0.08, -0.1) * s * h;
             let (sn, cs) = ang.sin_cos();
             let rot = |p: Vec2| bc + vec2(p.x * cs - p.y * sn, p.x * sn + p.y * cs);
-            let back: Vec<Pos2> = outline(Rect::from_center_size(Pos2::ZERO, Vec2::splat(s)), radius, 6.0).into_iter().map(|p| rot(p.to_vec2())).collect();
+            let back: Vec<Pos2> = outline(Rect::from_center_size(Pos2::ZERO, Vec2::splat(s)), radius, 6.0)
+                .into_iter()
+                .map(|p| rot(p.to_vec2()))
+                .collect();
             polygon_shadow(painter, &back, bc, vec2(0.0, 6.0), 8.0, with_alpha(b, if t.dark { 0.5 } else { 0.35 }));
-            paint::fill_convex_fn(painter, &back, 3, paint::linear_fn(Rect::from_center_size(bc, Vec2::splat(s)), 45.0, &[a, b]));
+            paint::fill_convex_fn(
+                painter,
+                &back,
+                3,
+                paint::linear_fn(Rect::from_center_size(bc, Vec2::splat(s)), 45.0, &[a, b]),
+            );
             // glass, lifted toward the viewer on hover
             let lift = 1.0 + 0.06 * h;
             let gc = c + vec2(0.06, 0.04) * s - vec2(0.0, 4.0) * h;
@@ -365,7 +416,12 @@ impl GlassIcons {
                 with_alpha(Color32::WHITE, 0.25 + 0.5 * (1.0 - (gq.x + gq.y) * 0.5).clamp(0.0, 1.0))
             });
             if !t.dark {
-                painter.rect_stroke(glass, util::cr(radius * lift), Stroke::new(1.0, with_alpha(b, 0.18)), egui::StrokeKind::Outside);
+                painter.rect_stroke(
+                    glass,
+                    util::cr(radius * lift),
+                    Stroke::new(1.0, with_alpha(b, 0.18)),
+                    egui::StrokeKind::Outside,
+                );
             }
             painter.text(
                 gc + vec2(0.0, 1.0),
@@ -464,17 +520,22 @@ impl DecayCard {
         let real = ptr.is_some_and(|p| p.1);
         let speed = if real { ui.input(|i| i.pointer.velocity().length()) } else { 0.0 };
         let auto = self.autoplay && !real;
-        let energy = glowkit_core::with_state(ui, id.with("energy"), || 0.0f32, |e| {
-            *e += speed * dt * 0.0035;
-            if auto {
-                let ph = (time / 3.6).fract();
-                if ph < 0.35 {
-                    *e += dt * 2.6;
+        let energy = glowkit_core::with_state(
+            ui,
+            id.with("energy"),
+            || 0.0f32,
+            |e| {
+                *e += speed * dt * 0.0035;
+                if auto {
+                    let ph = (time / 3.6).fract();
+                    if ph < 0.35 {
+                        *e += dt * 2.6;
+                    }
                 }
-            }
-            *e = (*e * (-dt * 1.4).exp()).clamp(0.0, 1.2);
-            *e
-        });
+                *e = (*e * (-dt * 1.4).exp()).clamp(0.0, 1.2);
+                *e
+            },
+        );
         if energy > 0.002 || auto || k > 0.001 {
             glowkit_core::animate(ui);
         }
@@ -636,7 +697,14 @@ impl Widget for StickerPeel {
         } else {
             rest
         };
-        let p = corner + spring2(ui, id.with("peel"), target - corner, if resp.dragged() { 400.0 } else { 160.0 }, if resp.dragged() { 32.0 } else { 14.0 });
+        let p = corner
+            + spring2(
+                ui,
+                id.with("peel"),
+                target - corner,
+                if resp.dragged() { 400.0 } else { 160.0 },
+                if resp.dragged() { 32.0 } else { 14.0 },
+            );
 
         let painter = ui.painter();
         let [a, b] = self.colors.unwrap_or([t.gradient[0], t.gradient[1]]);
@@ -656,7 +724,14 @@ impl Widget for StickerPeel {
             (shape.clone(), Vec::new(), vec2(1.0, 0.0), corner)
         };
         // shadow under the stuck part
-        polygon_shadow(painter, &stay, s.center(), vec2(0.0, 3.0), 3.0, Color32::BLACK.gamma_multiply(if t.dark { 0.6 } else { 0.25 }));
+        polygon_shadow(
+            painter,
+            &stay,
+            s.center(),
+            vec2(0.0, 3.0),
+            3.0,
+            Color32::BLACK.gamma_multiply(if t.dark { 0.6 } else { 0.25 }),
+        );
         // front artwork, clipped to what is still stuck down
         let icon = self.icon.clone();
         let text = self.text.clone();
@@ -666,7 +741,12 @@ impl Widget for StickerPeel {
             let inner = s.shrink(s.width().min(s.height()) * 0.06);
             let ir = (radius - s.width() * 0.06).max(2.0);
             paint::gradient_rect(pp, inner, ir, 135.0, &[a, b]);
-            paint::glow(pp, inner.left_top() + inner.size() * vec2(0.3, 0.25), inner.width() * 0.6, with_alpha(Color32::WHITE, 0.25));
+            paint::glow(
+                pp,
+                inner.left_top() + inner.size() * vec2(0.3, 0.25),
+                inner.width() * 0.6,
+                with_alpha(Color32::WHITE, 0.25),
+            );
             let has_text = !text.is_empty();
             let ic = inner.center() - vec2(0.0, if has_text { inner.height() * 0.1 } else { 0.0 });
             pp.text(ic, Align2::CENTER_CENTER, &icon, FontId::proportional(inner.height() * 0.4), Color32::WHITE);
@@ -690,7 +770,12 @@ impl Widget for StickerPeel {
             // curl shadow cast on the sticker beside the fold
             let reach = (len * 0.5).clamp(6.0, 30.0);
             if stay.len() >= 3 {
-                let strip = [m + n.rot90() * 4000.0, m - n.rot90() * 4000.0, m - n.rot90() * 4000.0 - n * reach, m + n.rot90() * 4000.0 - n * reach];
+                let strip = [
+                    m + n.rot90() * 4000.0,
+                    m - n.rot90() * 4000.0,
+                    m - n.rot90() * 4000.0 - n * reach,
+                    m + n.rot90() * 4000.0 - n * reach,
+                ];
                 let sp = clip_convex(&stay, &strip);
                 if sp.len() >= 3 {
                     paint::fill_convex_fn(painter, &sp, 3, |q| {
@@ -701,7 +786,14 @@ impl Widget for StickerPeel {
             }
             // flap shadow
             let fc = flipped.iter().fold(Vec2::ZERO, |acc, q| acc + q.to_vec2()) / flipped.len() as f32;
-            polygon_shadow(painter, &flipped, fc.to_pos2(), -n * 5.0 + vec2(0.0, 3.0), 6.0, Color32::BLACK.gamma_multiply(0.45));
+            polygon_shadow(
+                painter,
+                &flipped,
+                fc.to_pos2(),
+                -n * 5.0 + vec2(0.0, 3.0),
+                6.0,
+                Color32::BLACK.gamma_multiply(0.45),
+            );
             let half = (len / 2.0).max(1.0);
             paint::fill_convex_fn(painter, &flipped, 4, |q| {
                 let d = ((q - m).dot(-n) / half).clamp(0.0, 1.0);
@@ -712,7 +804,10 @@ impl Widget for StickerPeel {
             let mut along: Vec<Pos2> = flipped.iter().copied().filter(|q| (*q - m).dot(n).abs() < 0.8).collect();
             if along.len() >= 2 {
                 along.sort_by(|x, y| (*x - m).dot(n.rot90()).total_cmp(&(*y - m).dot(n.rot90())));
-                painter.line_segment([along[0], *along.last().unwrap()], Stroke::new(1.2, with_alpha(Color32::WHITE, 0.8)));
+                painter.line_segment(
+                    [along[0], *along.last().unwrap()],
+                    Stroke::new(1.2, with_alpha(Color32::WHITE, 0.8)),
+                );
             }
             let mut rim = flipped.clone();
             rim.push(rim[0]);

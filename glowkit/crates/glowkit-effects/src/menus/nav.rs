@@ -104,7 +104,8 @@ impl BubbleMenu {
         let bar = 54.0;
         let painter = ui.painter_at(rect.expand(30.0));
         let hovered = ui.rect_contains_pointer(rect);
-        let btn_rect = Rect::from_center_size(pos2(rect.max.x - pad - bar / 2.0, rect.min.y + pad + bar / 2.0), Vec2::splat(bar));
+        let btn_rect =
+            Rect::from_center_size(pos2(rect.max.x - pad - bar / 2.0, rect.min.y + pad + bar / 2.0), Vec2::splat(bar));
         let btn = ui.interact(btn_rect, id.with("btn"), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
         let (open, since) = toggle(ui, id, btn.clicked(), None, self.autoplay, hovered, 6.0, 1.8);
         let p_open = spring(ui, id.with("open"), if open { 1.0 } else { 0.0 }, 240.0, 22.0);
@@ -136,7 +137,12 @@ impl BubbleMenu {
         if p_open > 0.01 {
             let c = pos2(rect.center().x, top + grid_h / 2.0);
             let a = p_open.clamp(0.0, 1.0);
-            paint::glow_ellipse(&painter, c, vec2(rect.width() * 0.45, grid_h * 0.9 + 40.0), with_alpha(t.accent, 0.12 * a));
+            paint::glow_ellipse(
+                &painter,
+                c,
+                vec2(rect.width() * 0.45, grid_h * 0.9 + 40.0),
+                with_alpha(t.accent, 0.12 * a),
+            );
         }
 
         let mut clicked = None;
@@ -161,7 +167,10 @@ impl BubbleMenu {
             let c = centers[i];
             let pill_rect = Rect::from_center_size(c, vec2(pill_w, pill_h));
             let r = if open && s > 0.6 {
-                Some(ui.interact(pill_rect, id.with(("pill", i)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand))
+                Some(
+                    ui.interact(pill_rect, id.with(("pill", i)), Sense::click())
+                        .on_hover_cursor(CursorIcon::PointingHand),
+                )
             } else {
                 None
             };
@@ -170,7 +179,8 @@ impl BubbleMenu {
                 clicked = Some(i);
             }
             let h = follow(ui, id.with(("h", i)), if hov { 1.0 } else { 0.0 }, 14.0);
-            let col = if self.colors.is_empty() { t.chart[i % t.chart.len()] } else { self.colors[i % self.colors.len()] };
+            let col =
+                if self.colors.is_empty() { t.chart[i % t.chart.len()] } else { self.colors[i % self.colors.len()] };
             let angle = angles[i % angles.len()].to_radians() * (1.0 - h);
             let scale = s * (1.0 + 0.06 * h);
             let float = (time * 1.6 + i as f32 * 1.3).sin() * 2.0 * (1.0 - h);
@@ -207,14 +217,35 @@ impl BubbleMenu {
         // header bubbles
         let logo_g = painter.layout_no_wrap(self.logo.clone(), FontId::proportional(19.0), t.foreground);
         let logo_rect = Rect::from_min_size(rect.min + vec2(pad, pad), vec2(logo_g.size().x + 44.0, bar));
-        paint::soft_shadow(&painter, logo_rect, bar / 2.0, 18.0, vec2(0.0, 6.0), sc.gamma_multiply(if t.dark { 0.5 } else { 0.25 }));
+        paint::soft_shadow(
+            &painter,
+            logo_rect,
+            bar / 2.0,
+            18.0,
+            vec2(0.0, 6.0),
+            sc.gamma_multiply(if t.dark { 0.5 } else { 0.25 }),
+        );
         painter.rect(logo_rect, cr(bar / 2.0), surf, Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
-        bold_text(&painter, logo_rect.center(), Align2::CENTER_CENTER, &self.logo, FontId::proportional(19.0), t.foreground);
+        bold_text(
+            &painter,
+            logo_rect.center(),
+            Align2::CENTER_CENTER,
+            &self.logo,
+            FontId::proportional(19.0),
+            t.foreground,
+        );
 
         let bh = follow(ui, id.with("bh"), if btn.hovered() { 1.0 } else { 0.0 }, 14.0);
         let bs = 1.0 + 0.06 * bh;
         let btn_draw = Rect::from_center_size(btn_rect.center(), btn_rect.size() * bs);
-        paint::soft_shadow(&painter, btn_draw, bar / 2.0, 18.0, vec2(0.0, 6.0), sc.gamma_multiply(if t.dark { 0.5 } else { 0.25 }));
+        paint::soft_shadow(
+            &painter,
+            btn_draw,
+            bar / 2.0,
+            18.0,
+            vec2(0.0, 6.0),
+            sc.gamma_multiply(if t.dark { 0.5 } else { 0.25 }),
+        );
         let bfill = mix(surf, t.foreground, p_open.clamp(0.0, 1.0));
         painter.circle(btn_draw.center(), bar / 2.0 * bs, bfill, Stroke::new(1.0, t.border));
         let lines = mix(t.foreground, t.background, p_open.clamp(0.0, 1.0));
@@ -274,7 +305,14 @@ pub struct CardNav {
 impl CardNav {
     /// A card nav with these cards.
     pub fn new(items: Vec<CardNavItem>) -> Self {
-        Self { items, logo: "◆ glowkit".into(), cta: "Get Started".into(), width: None, body_height: 200.0, autoplay: false }
+        Self {
+            items,
+            logo: "◆ glowkit".into(),
+            cta: "Get Started".into(),
+            width: None,
+            body_height: 200.0,
+            autoplay: false,
+        }
     }
     /// Logo text in the middle of the bar.
     pub fn logo(mut self, logo: impl Into<String>) -> Self {
@@ -307,7 +345,8 @@ impl CardNav {
             return c;
         }
         let k = [0.12, 0.24, 0.38, 0.52][i % 4];
-        let bg = if t.dark { mix(shade(t.background, 0.04), t.accent, k) } else { mix(t.accent, Color32::WHITE, 0.86 - k) };
+        let bg =
+            if t.dark { mix(shade(t.background, 0.04), t.accent, k) } else { mix(t.accent, Color32::WHITE, 0.86 - k) };
         [bg, contrast_text(bg)]
     }
 
@@ -396,7 +435,9 @@ impl CardNav {
                 for (j, link) in item.links.iter().enumerate() {
                     let lr = Rect::from_min_size(pos2(card.min.x + 14.0, ly0 + j as f32 * lh), vec2(cw - 28.0, lh));
                     let hov = if open && q > 0.8 {
-                        let r = ui.interact(lr, id.with(("l", i, j)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
+                        let r = ui
+                            .interact(lr, id.with(("l", i, j)), Sense::click())
+                            .on_hover_cursor(CursorIcon::PointingHand);
                         if r.clicked() {
                             clicked = Some((i, j));
                         }
@@ -414,7 +455,13 @@ impl CardNav {
                     clip.line_segment([pos2(ax, ay + s), pos2(ax + 2.0 * s, ay - s)], st);
                     clip.line_segment([pos2(ax + 0.6 * s, ay - s), pos2(ax + 2.0 * s, ay - s)], st);
                     clip.line_segment([pos2(ax + 2.0 * s, ay - s), pos2(ax + 2.0 * s, ay + 0.4 * s)], st);
-                    let g = clip.text(pos2(ax + 2.0 * s + 9.0, ay), Align2::LEFT_CENTER, link, FontId::proportional(15.0), col);
+                    let g = clip.text(
+                        pos2(ax + 2.0 * s + 9.0, ay),
+                        Align2::LEFT_CENTER,
+                        link,
+                        FontId::proportional(15.0),
+                        col,
+                    );
                     if lhv > 0.01 {
                         clip.line_segment(
                             [pos2(g.min.x, g.max.y + 1.0), pos2(g.min.x + g.width() * lhv, g.max.y + 1.0)],
@@ -708,7 +755,10 @@ impl StaggeredMenu {
         painter.rect(rect, cr(radius), t.background, Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
         // page content
         let mut child = ui.new_child(
-            UiBuilder::new().id_salt(id.with("page")).max_rect(rect.shrink2(vec2(28.0, 0.0)).with_min_y(rect.min.y + 74.0)).layout(Layout::top_down(Align::Min)),
+            UiBuilder::new()
+                .id_salt(id.with("page"))
+                .max_rect(rect.shrink2(vec2(28.0, 0.0)).with_min_y(rect.min.y + 74.0))
+                .layout(Layout::top_down(Align::Min)),
         );
         child.set_clip_rect(rect.intersect(ui.clip_rect()));
         page(&mut child);
@@ -776,8 +826,20 @@ impl StaggeredMenu {
         let tclip = painter.with_clip_rect(toggle_rect);
         let roll = p * toggle_rect.height();
         let tx = toggle_rect.max.x - 30.0;
-        tclip.text(pos2(tx, toggle_rect.center().y - roll), Align2::RIGHT_CENTER, "Menu", FontId::proportional(17.0), tcol);
-        tclip.text(pos2(tx, toggle_rect.center().y + toggle_rect.height() - roll), Align2::RIGHT_CENTER, "Close", FontId::proportional(17.0), tcol);
+        tclip.text(
+            pos2(tx, toggle_rect.center().y - roll),
+            Align2::RIGHT_CENTER,
+            "Menu",
+            FontId::proportional(17.0),
+            tcol,
+        );
+        tclip.text(
+            pos2(tx, toggle_rect.center().y + toggle_rect.height() - roll),
+            Align2::RIGHT_CENTER,
+            "Close",
+            FontId::proportional(17.0),
+            tcol,
+        );
         let ic = pos2(toggle_rect.max.x - 14.0, toggle_rect.center().y);
         let ang = p * std::f32::consts::FRAC_PI_4 + th * 0.2;
         let st = Stroke::new(2.0, mix(tcol, accent, th));
@@ -795,10 +857,16 @@ impl StaggeredMenu {
             let x = panel_x + 34.0;
             let y0 = rect.min.y + 80.0;
             for (i, item) in self.items.iter().enumerate() {
-                let e = if open { ease(Easing::OutCubic, stagger(since - 0.28, i, 0.07, 0.6)) } else { 1.0 - (since * 4.0).min(1.0) };
+                let e = if open {
+                    ease(Easing::OutCubic, stagger(since - 0.28, i, 0.07, 0.6))
+                } else {
+                    1.0 - (since * 4.0).min(1.0)
+                };
                 let row = Rect::from_min_size(pos2(panel_x, y0 + i as f32 * line), vec2(pw, line));
                 let hov = if open && e > 0.9 {
-                    let r = ui.interact(row, id.with(("item", i)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
+                    let r = ui
+                        .interact(row, id.with(("item", i)), Sense::click())
+                        .on_hover_cursor(CursorIcon::PointingHand);
                     if r.clicked() {
                         clicked = Some(i);
                     }
@@ -811,7 +879,8 @@ impl StaggeredMenu {
                 let y = row.min.y + (1.0 - e) * line * 1.1;
                 let col = mix(panel_text, accent, hv);
                 let text = item.to_uppercase();
-                let g = bold_text(&rclip, pos2(x + 6.0 * hv, y), Align2::LEFT_TOP, &text, FontId::proportional(size), col);
+                let g =
+                    bold_text(&rclip, pos2(x + 6.0 * hv, y), Align2::LEFT_TOP, &text, FontId::proportional(size), col);
                 if self.numbered {
                     rclip.text(
                         pos2(g.max.x + 8.0, y + size * 0.12),
@@ -823,7 +892,11 @@ impl StaggeredMenu {
                 }
             }
             if !self.socials.is_empty() {
-                let e = if open { ease(Easing::OutCubic, stagger(since - 0.55, 0, 0.0, 0.5)) } else { 1.0 - (since * 4.0).min(1.0) };
+                let e = if open {
+                    ease(Easing::OutCubic, stagger(since - 0.55, 0, 0.0, 0.5))
+                } else {
+                    1.0 - (since * 4.0).min(1.0)
+                };
                 let sy = rect.max.y - 62.0 + (1.0 - e) * 14.0;
                 clip.text(pos2(x, sy), Align2::LEFT_TOP, "Socials", FontId::proportional(14.0), with_alpha(accent, e));
                 let mut sx = x;

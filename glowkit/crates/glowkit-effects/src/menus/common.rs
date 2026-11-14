@@ -230,7 +230,14 @@ impl Persp {
 
 /// A generated "portrait": gradient backdrop, soft light, and a stylized head-and-shoulders
 /// silhouette. Painted with ordinary shapes so it can be captured and recolored.
-pub(crate) fn paint_avatar(painter: &Painter, rect: Rect, radius: f32, colors: [Color32; 2], seed: u32, backdrop: bool) {
+pub(crate) fn paint_avatar(
+    painter: &Painter,
+    rect: Rect,
+    radius: f32,
+    colors: [Color32; 2],
+    seed: u32,
+    backdrop: bool,
+) {
     let [a, b] = colors;
     if backdrop {
         paint::gradient_rect(painter, rect, radius, 120.0, &[shade(a, 0.08), b]);
@@ -307,7 +314,8 @@ pub(crate) const VIVID: [[Color32; 2]; 8] = [
 /// The real pointer if it is over `rect`, otherwise (when `autoplay`) a slow Lissajous path.
 /// Returns `(point, real)`.
 pub(crate) fn pointer_or_auto(ui: &Ui, rect: Rect, autoplay: bool, seed: f32) -> Option<(Pos2, bool)> {
-    if let Some(p) = ui.input(|i| i.pointer.hover_pos()).filter(|p| rect.contains(*p) && ui.rect_contains_pointer(rect)) {
+    if let Some(p) = ui.input(|i| i.pointer.hover_pos()).filter(|p| rect.contains(*p) && ui.rect_contains_pointer(rect))
+    {
         return Some((p, true));
     }
     if autoplay {
@@ -319,7 +327,12 @@ pub(crate) fn pointer_or_auto(ui: &Ui, rect: Rect, autoplay: bool, seed: f32) ->
 }
 
 /// A closed, softly blurred ribbon: `width` is the solid core, `blur` the feather on each side.
-pub(crate) fn soft_ribbon(painter: &Painter, pts: &[Pos2], closed: bool, mut f: impl FnMut(Pos2) -> (f32, f32, Color32)) {
+pub(crate) fn soft_ribbon(
+    painter: &Painter,
+    pts: &[Pos2],
+    closed: bool,
+    mut f: impl FnMut(Pos2) -> (f32, f32, Color32),
+) {
     let n = pts.len();
     if n < 2 {
         return;

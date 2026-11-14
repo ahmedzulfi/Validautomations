@@ -4,7 +4,10 @@ use crate::code::CodeBlock;
 use crate::common;
 use crate::icons::{paint_icon, Icon};
 use crate::media::{self, PillStyle};
-use egui::{pos2, vec2, Align, Align2, Color32, CornerRadius, Layout, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui, UiBuilder, Widget};
+use egui::{
+    pos2, vec2, Align, Align2, Color32, CornerRadius, Layout, Rect, Response, Sense, Shape, Stroke, StrokeKind, Ui,
+    UiBuilder, Widget,
+};
 use glowkit_core::color::with_alpha;
 use glowkit_core::Theme;
 
@@ -134,7 +137,13 @@ impl Widget for Confirmation<'_> {
                 let (hr, _) = ui.allocate_exact_size(vec2(width, 36.0), Sense::hover());
                 let p = ui.painter();
                 let ib = Rect::from_min_size(pos2(hr.min.x + pad, hr.min.y + 2.0), vec2(32.0, 32.0));
-                p.rect(ib, CornerRadius::same(8), with_alpha(status_c, if t.dark { 0.14 } else { 0.1 }), Stroke::new(1.0, with_alpha(status_c, 0.3)), StrokeKind::Inside);
+                p.rect(
+                    ib,
+                    CornerRadius::same(8),
+                    with_alpha(status_c, if t.dark { 0.14 } else { 0.1 }),
+                    Stroke::new(1.0, with_alpha(status_c, 0.3)),
+                    StrokeKind::Inside,
+                );
                 let icon = match state {
                     ApprovalState::Pending => self.icon,
                     ApprovalState::Approved => Icon::Check,
@@ -142,16 +151,30 @@ impl Widget for Confirmation<'_> {
                 };
                 paint_icon(p, icon, ib.shrink(8.0), status_c);
                 let tx = ib.max.x + 12.0;
-                let title_r = common::text(p, pos2(tx, hr.min.y + 10.0), Align2::LEFT_CENTER, self.title, 14.5, t.foreground);
+                let title_r =
+                    common::text(p, pos2(tx, hr.min.y + 10.0), Align2::LEFT_CENTER, self.title, 14.5, t.foreground);
                 if let Some(d) = self.description {
-                    common::text(ui.painter(), pos2(tx, hr.min.y + 28.0), Align2::LEFT_CENTER, d, 12.5, t.muted_foreground);
+                    common::text(
+                        ui.painter(),
+                        pos2(tx, hr.min.y + 28.0),
+                        Align2::LEFT_CENTER,
+                        d,
+                        12.5,
+                        t.muted_foreground,
+                    );
                 }
                 // status badge
                 let g = common::galley(ui, status_label, 11.5, status_c);
                 let bw = g.size().x + 26.0;
                 let br = Rect::from_min_size(pos2(hr.max.x - pad - bw, hr.min.y + 1.0), vec2(bw, 22.0));
                 let p = ui.painter();
-                p.rect(br, CornerRadius::same(11), with_alpha(status_c, if t.dark { 0.12 } else { 0.09 }), Stroke::new(1.0, with_alpha(status_c, 0.25)), StrokeKind::Inside);
+                p.rect(
+                    br,
+                    CornerRadius::same(11),
+                    with_alpha(status_c, if t.dark { 0.12 } else { 0.09 }),
+                    Stroke::new(1.0, with_alpha(status_c, 0.25)),
+                    StrokeKind::Inside,
+                );
                 let dc = pos2(br.min.x + 11.0, br.center().y);
                 if state == ApprovalState::Pending {
                     let ph = (glowkit_core::time(ui) * 2.2).sin() * 0.5 + 0.5;
@@ -161,11 +184,23 @@ impl Widget for Confirmation<'_> {
                 p.circle_filled(dc, 3.0, status_c);
                 p.galley(pos2(br.min.x + 19.0, br.center().y - g.size().y / 2.0), g, status_c);
                 if let Some(tool) = self.tool {
-                    let g = ui.painter().layout_no_wrap(tool.to_owned(), egui::FontId::monospace(11.5), t.muted_foreground);
-                    let cr = Rect::from_min_size(pos2(title_r.max.x + 8.0, hr.min.y + 1.0), vec2(g.size().x + 12.0, 19.0));
+                    let g =
+                        ui.painter().layout_no_wrap(tool.to_owned(), egui::FontId::monospace(11.5), t.muted_foreground);
+                    let cr =
+                        Rect::from_min_size(pos2(title_r.max.x + 8.0, hr.min.y + 1.0), vec2(g.size().x + 12.0, 19.0));
                     if cr.max.x < br.min.x - 8.0 {
-                        ui.painter().rect(cr, CornerRadius::same(5), common::raised(&t), Stroke::new(1.0, t.border), StrokeKind::Inside);
-                        ui.painter().galley(pos2(cr.min.x + 6.0, cr.center().y - g.size().y / 2.0), g, t.muted_foreground);
+                        ui.painter().rect(
+                            cr,
+                            CornerRadius::same(5),
+                            common::raised(&t),
+                            Stroke::new(1.0, t.border),
+                            StrokeKind::Inside,
+                        );
+                        ui.painter().galley(
+                            pos2(cr.min.x + 6.0, cr.center().y - g.size().y / 2.0),
+                            g,
+                            t.muted_foreground,
+                        );
                     }
                 }
 
@@ -176,21 +211,41 @@ impl Widget for Confirmation<'_> {
                 ui.add_space(12.0);
                 common::reveal(ui, body_id, open.max(0.0), |ui| {
                     let r = ui.available_rect_before_wrap();
-                    let inner = Rect::from_min_max(pos2(r.min.x + pad, r.min.y), pos2(r.min.x + pad + inner_w, r.max.y));
+                    let inner =
+                        Rect::from_min_max(pos2(r.min.x + pad, r.min.y), pos2(r.min.x + pad + inner_w, r.max.y));
                     ui.scope_builder(UiBuilder::new().max_rect(inner), |ui| {
                         ui.spacing_mut().item_spacing.y = 8.0;
                         if !self.details.is_empty() {
                             let row_h = 26.0;
-                            let (dr, _) = ui.allocate_exact_size(vec2(inner_w, row_h * self.details.len() as f32 + 12.0), Sense::hover());
+                            let (dr, _) = ui.allocate_exact_size(
+                                vec2(inner_w, row_h * self.details.len() as f32 + 12.0),
+                                Sense::hover(),
+                            );
                             let p = ui.painter();
-                            p.rect(dr, t.corner_scaled(0.8), common::raised(&t), Stroke::new(1.0, t.border), StrokeKind::Inside);
+                            p.rect(
+                                dr,
+                                t.corner_scaled(0.8),
+                                common::raised(&t),
+                                Stroke::new(1.0, t.border),
+                                StrokeKind::Inside,
+                            );
                             for (i, (k, v)) in self.details.iter().enumerate() {
                                 let y = dr.min.y + 6.0 + row_h * (i as f32 + 0.5);
-                                common::text(p, pos2(dr.min.x + 12.0, y), Align2::LEFT_CENTER, *k, 12.5, t.muted_foreground);
+                                common::text(
+                                    p,
+                                    pos2(dr.min.x + 12.0, y),
+                                    Align2::LEFT_CENTER,
+                                    *k,
+                                    12.5,
+                                    t.muted_foreground,
+                                );
                                 common::text(p, pos2(dr.min.x + 130.0, y), Align2::LEFT_CENTER, *v, 12.5, t.foreground);
                                 if i + 1 < self.details.len() {
                                     let ly = y + row_h / 2.0;
-                                    p.line_segment([pos2(dr.min.x + 12.0, ly), pos2(dr.max.x - 12.0, ly)], Stroke::new(1.0, with_alpha(t.border, 0.7)));
+                                    p.line_segment(
+                                        [pos2(dr.min.x + 12.0, ly), pos2(dr.max.x - 12.0, ly)],
+                                        Stroke::new(1.0, with_alpha(t.border, 0.7)),
+                                    );
                                 }
                             }
                         }
@@ -203,21 +258,33 @@ impl Widget for Confirmation<'_> {
                 // footer
                 let line_y = ui.cursor().min.y;
                 if state == ApprovalState::Pending {
-                    ui.painter().line_segment([pos2(top.x + 1.0, line_y), pos2(top.x + width - 1.0, line_y)], Stroke::new(1.0, t.border));
+                    ui.painter().line_segment(
+                        [pos2(top.x + 1.0, line_y), pos2(top.x + width - 1.0, line_y)],
+                        Stroke::new(1.0, t.border),
+                    );
                     ui.add_space(12.0);
                     let fr = Rect::from_min_size(pos2(top.x + pad, ui.cursor().min.y), vec2(inner_w, 32.0));
-                    ui.scope_builder(UiBuilder::new().max_rect(fr).layout(Layout::right_to_left(Align::Center)), |ui| {
-                        ui.spacing_mut().item_spacing.x = 8.0;
-                        if media::pill_button(ui, self.approve, Some(Icon::Check), PillStyle::Primary, 32.0).clicked() {
-                            decided = Some(ApprovalState::Approved);
-                        }
-                        if media::pill_button(ui, self.deny, Some(Icon::X), PillStyle::Outline, 32.0).clicked() {
-                            decided = Some(ApprovalState::Denied);
-                        }
-                        ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-                            ui.label(egui::RichText::new("The agent is paused until you decide.").size(12.0).color(t.muted_foreground));
-                        });
-                    });
+                    ui.scope_builder(
+                        UiBuilder::new().max_rect(fr).layout(Layout::right_to_left(Align::Center)),
+                        |ui| {
+                            ui.spacing_mut().item_spacing.x = 8.0;
+                            if media::pill_button(ui, self.approve, Some(Icon::Check), PillStyle::Primary, 32.0)
+                                .clicked()
+                            {
+                                decided = Some(ApprovalState::Approved);
+                            }
+                            if media::pill_button(ui, self.deny, Some(Icon::X), PillStyle::Outline, 32.0).clicked() {
+                                decided = Some(ApprovalState::Denied);
+                            }
+                            ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
+                                ui.label(
+                                    egui::RichText::new("The agent is paused until you decide.")
+                                        .size(12.0)
+                                        .color(t.muted_foreground),
+                                );
+                            });
+                        },
+                    );
                     ui.add_space(pad);
                 } else {
                     let text = if state == ApprovalState::Approved { self.approved_text } else { self.denied_text };
@@ -225,15 +292,41 @@ impl Widget for Confirmation<'_> {
                     let p = ui.painter();
                     p.rect_filled(fr, t.corner_scaled(0.7), with_alpha(status_c, if t.dark { 0.08 } else { 0.06 }));
                     let ic = pos2(fr.min.x + 16.0, fr.center().y);
-                    paint_icon(p, if state == ApprovalState::Approved { Icon::Check } else { Icon::X }, Rect::from_center_size(ic, vec2(13.0, 13.0)), status_c);
-                    common::text(p, pos2(fr.min.x + 30.0, fr.center().y), Align2::LEFT_CENTER, text, 12.5, t.foreground);
+                    paint_icon(
+                        p,
+                        if state == ApprovalState::Approved { Icon::Check } else { Icon::X },
+                        Rect::from_center_size(ic, vec2(13.0, 13.0)),
+                        status_c,
+                    );
+                    common::text(
+                        p,
+                        pos2(fr.min.x + 30.0, fr.center().y),
+                        Align2::LEFT_CENTER,
+                        text,
+                        12.5,
+                        t.foreground,
+                    );
                     // undo
                     let ur = Rect::from_min_size(pos2(fr.max.x - 64.0, fr.min.y + 5.0), vec2(56.0, 24.0));
-                    let uresp = ui.interact(ur, cid.with("undo"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+                    let uresp = ui
+                        .interact(ur, cid.with("undo"), Sense::click())
+                        .on_hover_cursor(egui::CursorIcon::PointingHand);
                     let uh = common::anim_bool(ui, uresp.id.with("h"), uresp.hovered(), 0.1);
                     ui.painter().rect_filled(ur, CornerRadius::same(6), common::hover_fill(&t).gamma_multiply(uh));
-                    paint_icon(ui.painter(), Icon::History, Rect::from_center_size(pos2(ur.min.x + 13.0, ur.center().y), vec2(12.0, 12.0)), t.muted_foreground);
-                    common::text(ui.painter(), pos2(ur.min.x + 23.0, ur.center().y), Align2::LEFT_CENTER, "Undo", 12.0, t.muted_foreground);
+                    paint_icon(
+                        ui.painter(),
+                        Icon::History,
+                        Rect::from_center_size(pos2(ur.min.x + 13.0, ur.center().y), vec2(12.0, 12.0)),
+                        t.muted_foreground,
+                    );
+                    common::text(
+                        ui.painter(),
+                        pos2(ur.min.x + 23.0, ur.center().y),
+                        Align2::LEFT_CENTER,
+                        "Undo",
+                        12.0,
+                        t.muted_foreground,
+                    );
                     if uresp.clicked() {
                         decided = Some(ApprovalState::Pending);
                     }
@@ -245,7 +338,10 @@ impl Widget for Confirmation<'_> {
         let cr = t.corner_scaled(1.1);
         let mut shapes = Vec::new();
         if !t.dark {
-            shapes.push(Shape::from(egui::epaint::Shadow { offset: [0, 2], blur: 10, spread: 0, color: Color32::from_black_alpha(12) }.as_shape(rect, cr)));
+            shapes.push(Shape::from(
+                egui::epaint::Shadow { offset: [0, 2], blur: 10, spread: 0, color: Color32::from_black_alpha(12) }
+                    .as_shape(rect, cr),
+            ));
         }
         shapes.push(Shape::rect_filled(rect, cr, t.card));
         ui.painter().set(bg, Shape::Vec(shapes));

@@ -164,7 +164,13 @@ SpotlightCard::new().dots(true).show(ui, |ui| { /* ... */ });"##,
             category: C,
             description:
                 "The card tilts in 3D toward the pointer with real perspective, a moving glare and parallax content.",
-            covers: &["React Bits: Tilted Card", "Aceternity: 3D Card Effect", "Vanilla Tilt", "Motion Primitives: Tilt", "Aceternity UI: 3D Card"],
+            covers: &[
+                "React Bits: Tilted Card",
+                "Aceternity: 3D Card Effect",
+                "Vanilla Tilt",
+                "Motion Primitives: Tilt",
+                "Aceternity UI: 3D Card",
+            ],
             code: r##"TiltCard::new().size(vec2(260.0, 300.0)).show(ui, |ui| {
     ui.heading("Tilt");
 });"##,
@@ -527,7 +533,12 @@ CardHoverEffect::new(items.len()).columns(3).show(ui, |ui, i| {
             name: "Animated Gradient Border",
             category: C,
             description: "A conic gradient keeps rotating around the border, optionally with a matching glow.",
-            covers: &["Uiverse: Animated border card", "Magic UI: Animated gradient border", "CSS: conic border", "Aceternity UI: Background Gradient"],
+            covers: &[
+                "Uiverse: Animated border card",
+                "Magic UI: Animated gradient border",
+                "CSS: conic border",
+                "Aceternity UI: Background Gradient",
+            ],
             code: r##"AnimatedGradientBorder::new().glow(true).show(ui, |ui| { ui.heading("Gradient"); });"##,
             show: |ui| {
                 stage(ui, 200.0, |ui| {

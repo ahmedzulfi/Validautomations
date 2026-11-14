@@ -3,7 +3,7 @@
   {
    "name": "React Bits",
    "url": "https://reactbits.dev",
-   "have": 82,
+   "have": 114,
    "total": 114,
    "items": [
     {
@@ -50,7 +50,9 @@
     },
     {
      "name": "Curved Loop",
-     "glowkit": []
+     "glowkit": [
+      "curved-loop"
+     ]
     },
     {
      "name": "Fuzzy Text",
@@ -72,7 +74,9 @@
     },
     {
      "name": "Text Cursor",
-     "glowkit": []
+     "glowkit": [
+      "text-cursor"
+     ]
     },
     {
      "name": "Decrypted Text",
@@ -88,7 +92,9 @@
     },
     {
      "name": "Scroll Float",
-     "glowkit": []
+     "glowkit": [
+      "scroll-float"
+     ]
     },
     {
      "name": "Scroll Reveal",
@@ -98,11 +104,15 @@
     },
     {
      "name": "ASCII Text",
-     "glowkit": []
+     "glowkit": [
+      "ascii-text"
+     ]
     },
     {
      "name": "Scrambled Text",
-     "glowkit": []
+     "glowkit": [
+      "scrambled-text"
+     ]
     },
     {
      "name": "Rotating Text",
@@ -136,11 +146,15 @@
     },
     {
      "name": "Animated Content",
-     "glowkit": []
+     "glowkit": [
+      "animated-content"
+     ]
     },
     {
      "name": "Fade Content",
-     "glowkit": []
+     "glowkit": [
+      "fade-content"
+     ]
     },
     {
      "name": "Electric Border",
@@ -150,7 +164,9 @@
     },
     {
      "name": "Pixel Transition",
-     "glowkit": []
+     "glowkit": [
+      "pixel-transition"
+     ]
     },
     {
      "name": "Glare Hover",
@@ -172,7 +188,9 @@
     },
     {
      "name": "Magnet Lines",
-     "glowkit": []
+     "glowkit": [
+      "magnet-lines"
+     ]
     },
     {
      "name": "Click Spark",
@@ -188,7 +206,9 @@
     },
     {
      "name": "Sticker Peel",
-     "glowkit": []
+     "glowkit": [
+      "sticker-peel"
+     ]
     },
     {
      "name": "Pixel Trail",
@@ -204,7 +224,9 @@
     },
     {
      "name": "Metallic Paint",
-     "glowkit": []
+     "glowkit": [
+      "metallic-paint"
+     ]
     },
     {
      "name": "Noise",
@@ -214,7 +236,9 @@
     },
     {
      "name": "Shape Blur",
-     "glowkit": []
+     "glowkit": [
+      "shape-blur"
+     ]
     },
     {
      "name": "Crosshair",
@@ -261,11 +285,15 @@
     },
     {
      "name": "Laser Flow",
-     "glowkit": []
+     "glowkit": [
+      "laser-flow"
+     ]
     },
     {
      "name": "Gradual Blur",
-     "glowkit": []
+     "glowkit": [
+      "gradual-blur"
+     ]
     },
     {
      "name": "Animated List",
@@ -275,15 +303,21 @@
     },
     {
      "name": "Scroll Stack",
-     "glowkit": []
+     "glowkit": [
+      "scroll-stack"
+     ]
     },
     {
      "name": "Bubble Menu",
-     "glowkit": []
+     "glowkit": [
+      "bubble-menu"
+     ]
     },
     {
      "name": "Magic Bento",
-     "glowkit": []
+     "glowkit": [
+      "magic-bento"
+     ]
     },
     {
      "name": "Circular Gallery",
@@ -294,7 +328,9 @@
     },
     {
      "name": "Card Nav",
-     "glowkit": []
+     "glowkit": [
+      "card-nav"
+     ]
     },
     {
      "name": "Stack",
@@ -304,11 +340,15 @@
     },
     {
      "name": "Fluid Glass",
-     "glowkit": []
+     "glowkit": [
+      "fluid-glass"
+     ]
     },
     {
      "name": "Pill Nav",
-     "glowkit": []
+     "glowkit": [
+      "pill-nav"
+     ]
     },
     {
      "name": "Tilted Card",
@@ -325,7 +365,10 @@
     },
     {
      "name": "Glass Surface",
-     "glowkit": []
+     "glowkit": [
+      "glass-surface",
+      "fluid-glass"
+     ]
     },
     {
      "name": "Dome Gallery",
@@ -335,7 +378,9 @@
     },
     {
      "name": "Chroma Grid",
-     "glowkit": []
+     "glowkit": [
+      "chroma-grid"
+     ]
     },
     {
      "name": "Folder",
@@ -345,7 +390,9 @@
     },
     {
      "name": "Staggered Menu",
-     "glowkit": []
+     "glowkit": [
+      "staggered-menu"
+     ]
     },
     {
      "name": "Model Viewer",
@@ -361,7 +408,9 @@
     },
     {
      "name": "Profile Card",
-     "glowkit": []
+     "glowkit": [
+      "profile-card"
+     ]
     },
     {
      "name": "Dock",
@@ -395,7 +444,9 @@
     },
     {
      "name": "Flying Posters",
-     "glowkit": []
+     "glowkit": [
+      "flying-posters"
+     ]
     },
     {
      "name": "Card Swap",
@@ -405,11 +456,15 @@
     },
     {
      "name": "Glass Icons",
-     "glowkit": []
+     "glowkit": [
+      "glass-icons"
+     ]
     },
     {
      "name": "Decay Card",
-     "glowkit": []
+     "glowkit": [
+      "decay-card"
+     ]
     },
     {
      "name": "Flowing Menu",
@@ -431,7 +486,9 @@
     },
     {
      "name": "Infinite Menu",
-     "glowkit": []
+     "glowkit": [
+      "infinite-menu"
+     ]
     },
     {
      "name": "Stepper",
@@ -447,7 +504,9 @@
     },
     {
      "name": "Liquid Ether",
-     "glowkit": []
+     "glowkit": [
+      "liquid-ether"
+     ]
     },
     {
      "name": "Prism",
@@ -518,7 +577,9 @@
     },
     {
      "name": "Grid Scan",
-     "glowkit": []
+     "glowkit": [
+      "grid-scan"
+     ]
     },
     {
      "name": "Beams",
@@ -534,7 +595,9 @@
     },
     {
      "name": "Prismatic Burst",
-     "glowkit": []
+     "glowkit": [
+      "prismatic-burst"
+     ]
     },
     {
      "name": "Galaxy",
@@ -612,7 +675,9 @@
     },
     {
      "name": "Grid Motion",
-     "glowkit": []
+     "glowkit": [
+      "grid-motion"
+     ]
     },
     {
      "name": "Squares",
@@ -637,7 +702,7 @@
   {
    "name": "Magic UI",
    "url": "https://magicui.design",
-   "have": 62,
+   "have": 69,
    "total": 69,
    "items": [
     {
@@ -657,7 +722,9 @@
     },
     {
      "name": "Hero Video Dialog",
-     "glowkit": []
+     "glowkit": [
+      "hero-video-dialog"
+     ]
     },
     {
      "name": "Bento Grid",
@@ -745,7 +812,9 @@
     },
     {
      "name": "Lens",
-     "glowkit": []
+     "glowkit": [
+      "lens"
+     ]
     },
     {
      "name": "Pointer",
@@ -761,11 +830,15 @@
     },
     {
      "name": "Progressive Blur",
-     "glowkit": []
+     "glowkit": [
+      "gradual-blur"
+     ]
     },
     {
      "name": "Dotted Map",
-     "glowkit": []
+     "glowkit": [
+      "dotted-map"
+     ]
     },
     {
      "name": "Highlighter",
@@ -832,7 +905,8 @@
      "name": "Blur Fade",
      "glowkit": [
       "blur-text",
-      "spring-presence"
+      "spring-presence",
+      "fade-content"
      ]
     },
     {
@@ -883,7 +957,9 @@
     },
     {
      "name": "Video Text",
-     "glowkit": []
+     "glowkit": [
+      "video-text"
+     ]
     },
     {
      "name": "Text Reveal",
@@ -949,7 +1025,9 @@
     },
     {
      "name": "Comic Text",
-     "glowkit": []
+     "glowkit": [
+      "comic-text"
+     ]
     },
     {
      "name": "Animated Subscribe Button",
@@ -1059,14 +1137,16 @@
     },
     {
      "name": "Pixel Image",
-     "glowkit": []
+     "glowkit": [
+      "pixel-image"
+     ]
     }
    ]
   },
   {
    "name": "Aceternity UI",
    "url": "https://ui.aceternity.com",
-   "have": 68,
+   "have": 79,
    "total": 79,
    "items": [
     {
@@ -1108,7 +1188,9 @@
     },
     {
      "name": "Apple Cards Carousel",
-     "glowkit": []
+     "glowkit": [
+      "apple-cards-carousel"
+     ]
     },
     {
      "name": "Aurora Background",
@@ -1149,7 +1231,9 @@
     },
     {
      "name": "Background Lines",
-     "glowkit": []
+     "glowkit": [
+      "background-lines"
+     ]
     },
     {
      "name": "Bento Grid",
@@ -1201,7 +1285,9 @@
     },
     {
      "name": "Container Scroll Animation",
-     "glowkit": []
+     "glowkit": [
+      "container-scroll"
+     ]
     },
     {
      "name": "Cover",
@@ -1316,7 +1402,9 @@
     },
     {
      "name": "Hero Parallax",
-     "glowkit": []
+     "glowkit": [
+      "hero-parallax"
+     ]
     },
     {
      "name": "Hover Border Gradient",
@@ -1326,7 +1414,9 @@
     },
     {
      "name": "Images Slider",
-     "glowkit": []
+     "glowkit": [
+      "images-slider"
+     ]
     },
     {
      "name": "Infinite Moving Cards",
@@ -1348,11 +1438,15 @@
     },
     {
      "name": "Lens",
-     "glowkit": []
+     "glowkit": [
+      "lens"
+     ]
     },
     {
      "name": "Link Preview",
-     "glowkit": []
+     "glowkit": [
+      "link-preview"
+     ]
     },
     {
      "name": "Macbook Scroll",
@@ -1451,11 +1545,15 @@
     },
     {
      "name": "Sticky Scroll Reveal",
-     "glowkit": []
+     "glowkit": [
+      "sticky-scroll-reveal"
+     ]
     },
     {
      "name": "SVG Mask Effect",
-     "glowkit": []
+     "glowkit": [
+      "svg-mask-effect"
+     ]
     },
     {
      "name": "Tabs",
@@ -1477,7 +1575,9 @@
     },
     {
      "name": "Text Reveal Card",
-     "glowkit": []
+     "glowkit": [
+      "text-reveal-card"
+     ]
     },
     {
      "name": "Timeline",
@@ -1517,7 +1617,9 @@
     },
     {
      "name": "World Map",
-     "glowkit": []
+     "glowkit": [
+      "dotted-map"
+     ]
     },
     {
      "name": "Stateful Button",
@@ -1536,7 +1638,7 @@
   {
    "name": "Motion Primitives",
    "url": "https://motion-primitives.com",
-   "have": 32,
+   "have": 33,
    "total": 33,
    "items": [
     {
@@ -1647,7 +1749,9 @@
     },
     {
      "name": "Progressive Blur",
-     "glowkit": []
+     "glowkit": [
+      "gradual-blur"
+     ]
     },
     {
      "name": "Scroll Progress",
@@ -1746,7 +1850,7 @@
   {
    "name": "shadcn/ui",
    "url": "https://ui.shadcn.com",
-   "have": 54,
+   "have": 58,
    "total": 58,
    "items": [
     {
@@ -1769,7 +1873,9 @@
     },
     {
      "name": "Aspect Ratio",
-     "glowkit": []
+     "glowkit": [
+      "aspect-ratio"
+     ]
     },
     {
      "name": "Avatar",
@@ -1931,7 +2037,9 @@
     },
     {
      "name": "Item",
-     "glowkit": []
+     "glowkit": [
+      "item"
+     ]
     },
     {
      "name": "Kbd",
@@ -1984,11 +2092,15 @@
     },
     {
      "name": "Resizable",
-     "glowkit": []
+     "glowkit": [
+      "resizable"
+     ]
     },
     {
      "name": "Scroll Area",
-     "glowkit": []
+     "glowkit": [
+      "scroll-area"
+     ]
     },
     {
      "name": "Select",
@@ -2100,7 +2212,7 @@
   {
    "name": "Vercel AI Elements",
    "url": "https://ai-sdk.dev/elements",
-   "have": 30,
+   "have": 33,
    "total": 33,
    "items": [
     {
@@ -2147,7 +2259,9 @@
     },
     {
      "name": "Confirmation",
-     "glowkit": []
+     "glowkit": [
+      "ai-confirmation"
+     ]
     },
     {
      "name": "Connection",
@@ -2217,7 +2331,9 @@
     },
     {
      "name": "Open In Chat",
-     "glowkit": []
+     "glowkit": [
+      "ai-open-in-chat"
+     ]
     },
     {
      "name": "Panel",
@@ -2288,7 +2404,9 @@
     },
     {
      "name": "Toolbar",
-     "glowkit": []
+     "glowkit": [
+      "ai-toolbar"
+     ]
     },
     {
      "name": "Web Preview",
@@ -2301,7 +2419,7 @@
   {
    "name": "prompt-kit",
    "url": "https://www.prompt-kit.com",
-   "have": 18,
+   "have": 19,
    "total": 19,
    "items": [
     {
@@ -2372,7 +2490,9 @@
     },
     {
      "name": "JSX Preview",
-     "glowkit": []
+     "glowkit": [
+      "ai-jsx-preview"
+     ]
     },
     {
      "name": "Tool",
@@ -2421,7 +2541,7 @@
   {
    "name": "ElevenLabs UI",
    "url": "https://ui.elevenlabs.io",
-   "have": 10,
+   "have": 16,
    "total": 16,
    "items": [
     {
@@ -2486,27 +2606,39 @@
     },
     {
      "name": "Audio Player",
-     "glowkit": []
+     "glowkit": [
+      "ai-audio-player"
+     ]
     },
     {
      "name": "Matrix",
-     "glowkit": []
+     "glowkit": [
+      "ai-dot-matrix"
+     ]
     },
     {
      "name": "Mic Selector",
-     "glowkit": []
+     "glowkit": [
+      "ai-mic-selector"
+     ]
     },
     {
      "name": "Speech Input",
-     "glowkit": []
+     "glowkit": [
+      "ai-speech-input"
+     ]
     },
     {
      "name": "Scrub Bar",
-     "glowkit": []
+     "glowkit": [
+      "ai-scrub-bar"
+     ]
     },
     {
      "name": "Transcript Viewer",
-     "glowkit": []
+     "glowkit": [
+      "ai-transcript-viewer"
+     ]
     }
    ]
   },
@@ -2740,6 +2872,7 @@
     {
      "name": "Node Toolbar",
      "glowkit": [
+      "ai-toolbar",
       "node-editor"
      ]
     },
@@ -3224,6 +3357,86 @@
    "code": "ui.add(BoxReveal::new(\"Magic UI.\").size(64.0));\nui.add(BoxReveal::new(\"UI library for egui\").delay(0.2).size(24.0));"
   },
   {
+   "id": "curved-loop",
+   "name": "Curved Loop",
+   "category": "Text Animations",
+   "description": "A text marquee flowing endlessly along a curved path. Drag it to scrub; throw it and it keeps running that way.",
+   "covers": [
+    "React Bits: Curved Loop"
+   ],
+   "code": "ui.add(CurvedLoopText::new(\"Welcome to glowkit\")\n    .curve(80.0)\n    .speed(80.0));\nui.add(CurvedLoopText::new(\"Bend it like Rust\")\n    .curve(-40.0)\n    .gradient(&palettes::MAGIC)\n    .reverse(true));"
+  },
+  {
+   "id": "text-cursor",
+   "name": "Text Cursor",
+   "category": "Text Animations",
+   "description": "A trail of little text or emoji stamps pops out behind the pointer, wobbling and drifting as it fades. A ghost pointer draws loops when you are away.",
+   "covers": [
+    "React Bits: Text Cursor"
+   ],
+   "code": "ui.add(TextCursor::new(\"\u2726\").size(28.0));\n// or over your own content:\nTextCursor::new(\"\u2764\").colors(&[hex(\"#F472B6\")]).paint(ui, rect);"
+  },
+  {
+   "id": "scroll-float",
+   "name": "Scroll Float",
+   "category": "Text Animations",
+   "description": "Letters float up out of the line, tall and squeezed at first, settling into shape one after another as the progress grows. Driven by time, a progress value or a scroll area.",
+   "covers": [
+    "React Bits: Scroll Float"
+   ],
+   "code": "ui.add(ScrollFloat::new(\"Scroll. Float. Repeat.\").size(56.0));\n// tie it to the enclosing ScrollArea:\nui.add(ScrollFloat::new(\"Floats in as you scroll\").scroll_linked());\n// or drive it yourself:\nui.add(ScrollFloat::new(\"Manual\").progress(progress));"
+  },
+  {
+   "id": "ascii-text",
+   "name": "ASCII Text",
+   "category": "Text Animations",
+   "description": "Big lettering redrawn as animated ASCII art: denser symbols where there is more ink, rippled by a flowing wave and tinted with a drifting gradient. The pointer bends it like a lens.",
+   "covers": [
+    "React Bits: ASCII Text"
+   ],
+   "code": "ui.add(AsciiText::new(\"ASCII\").size(170.0));\nui.add(AsciiText::new(\"RUST\").cell(7.0).colors(&palettes::NEON));"
+  },
+  {
+   "id": "scrambled-text",
+   "name": "Scrambled Text",
+   "category": "Text Animations",
+   "description": "A paragraph whose letters dissolve into flickering symbols near the pointer and settle back into place after a moment.",
+   "covers": [
+    "React Bits: Scrambled Text"
+   ],
+   "code": "ui.add(ScrambledText::new(\"Once upon a time, in a world woven from bits and bytes...\")\n    .radius(100.0)\n    .max_width(640.0));"
+  },
+  {
+   "id": "comic-text",
+   "name": "Comic Text",
+   "category": "Text Animations",
+   "description": "Chunky comic-book lettering with a thick ink outline, a hard drop shadow and a halftone dot pattern, popping in with a springy twist.",
+   "covers": [
+    "Magic UI: Comic Text"
+   ],
+   "code": "ui.add(ComicText::new(\"BOOM!\").size(110.0));\nui.add(ComicText::new(\"POW!\")\n    .fill(hex(\"#38BDF8\"))\n    .dots(hex(\"#1D4ED8\"))\n    .trigger(Trigger::OnClick));"
+  },
+  {
+   "id": "video-text",
+   "name": "Video Text",
+   "category": "Text Animations",
+   "description": "Huge letters that act as a window onto a moving scene (aurora, ocean, lava or plasma) flowing continuously across the whole word.",
+   "covers": [
+    "Magic UI: Video Text"
+   ],
+   "code": "ui.add(VideoText::new(\"AURORA\").size(170.0));\nui.add(VideoText::new(\"OCEAN\").scene(VideoScene::Ocean));\nui.add(VideoText::new(\"LAVA\").scene(VideoScene::Lava));"
+  },
+  {
+   "id": "text-reveal-card",
+   "name": "Text Reveal Card",
+   "category": "Text Animations",
+   "description": "Drag or hover across the card: left of a glowing divider, a hidden line of text shows through with twinkling stars.",
+   "covers": [
+    "Aceternity UI: Text Reveal Card"
+   ],
+   "code": "ui.add(\n    TextRevealCard::new(\"Hover to look closer\", \"Painted, not styled\")\n        .title(\"Sometimes, you just need to see it.\")\n        .description(\"Drag across the card to reveal the hidden line.\"),\n);"
+  },
+  {
    "id": "text-hover-effect",
    "name": "Text Hover Effect",
    "category": "Text Animations",
@@ -3627,6 +3840,87 @@
    "code": "ui.add(HexGrid::new().radius(24.0));"
   },
   {
+   "id": "liquid-ether",
+   "name": "Liquid Ether",
+   "category": "Backgrounds",
+   "description": "A real-time fluid simulation: moving the pointer stirs glowing eddies of color that curl, mix and slowly fade. A ghost pointer keeps it alive.",
+   "covers": [
+    "React Bits: Liquid Ether"
+   ],
+   "code": "ui.add(LiquidEther::new());\nui.add(LiquidEther::new().colors(&[hex(\"#5227FF\"), hex(\"#FF9FFC\"), hex(\"#B19EEF\")]).force(1.4));"
+  },
+  {
+   "id": "grid-scan",
+   "name": "Grid Scan",
+   "category": "Backgrounds",
+   "description": "A wireframe grid tunnel receding into the distance, swept by a glowing scan frame that lights up the lines it passes. The view leans toward the pointer.",
+   "covers": [
+    "React Bits: Grid Scan"
+   ],
+   "code": "ui.add(GridScan::new().scan_color(hex(\"#FF9FFC\")));"
+  },
+  {
+   "id": "prismatic-burst",
+   "name": "Prismatic Burst",
+   "category": "Backgrounds",
+   "description": "Rays of rainbow light bursting from the center, rotating, flickering and breathing, with shock rings rippling outward.",
+   "covers": [
+    "React Bits: Prismatic Burst"
+   ],
+   "code": "ui.add(PrismaticBurst::new());\nui.add(PrismaticBurst::new().colors(&palettes::MAGIC).rays(64));"
+  },
+  {
+   "id": "grid-motion",
+   "name": "Grid Motion",
+   "category": "Backgrounds",
+   "description": "A tilted wall of tiles whose rows slide in opposite directions as the pointer moves, each with its own lag, for a deep parallax feel.",
+   "covers": [
+    "React Bits: Grid Motion"
+   ],
+   "code": "ui.add(GridMotion::new().items([\"Rust\", \"egui\", \"wasm\", \"60 fps\"]));"
+  },
+  {
+   "id": "laser-flow",
+   "name": "Laser Flow",
+   "category": "Backgrounds",
+   "description": "A laser beam falls from the top and splashes across a surface, wrapped in luminous fog that curls outward and up.",
+   "covers": [
+    "React Bits: Laser Flow"
+   ],
+   "code": "ui.add(LaserFlow::new());\nui.add(LaserFlow::new().color(hex(\"#FF79C6\")).fog(1.4));"
+  },
+  {
+   "id": "metallic-paint",
+   "name": "Metallic Paint",
+   "category": "Backgrounds",
+   "description": "A shape or logo filled with flowing liquid metal: rippling chrome bands, a bevelled rim and a highlight that follows the pointer.",
+   "covers": [
+    "React Bits: Metallic Paint"
+   ],
+   "code": "ui.add(MetallicPaint::new());\nui.add(MetallicPaint::new().shape(MetalShape::Heart).tint(hex(\"#F9A8D4\")));"
+  },
+  {
+   "id": "background-lines",
+   "name": "Background Lines",
+   "category": "Backgrounds",
+   "description": "Long flowing curves sweep across the area, drawing themselves in, lingering and erasing again, each on its own rhythm and in its own color.",
+   "covers": [
+    "Aceternity UI: Background Lines"
+   ],
+   "code": "ui.add(BackgroundLines::new().count(24));"
+  },
+  {
+   "id": "dotted-map",
+   "name": "Dotted Map",
+   "category": "Backgrounds",
+   "description": "A world map drawn as a grid of dots, with glowing arcs flying between cities one after another and markers rippling where they land.",
+   "covers": [
+    "Magic UI: Dotted Map",
+    "Aceternity UI: World Map"
+   ],
+   "code": "ui.add(DottedMap::new());\nui.add(DottedMap::new().connections(&[\n    (cities::LONDON, cities::NEW_YORK),\n    (cities::LONDON, cities::TOKYO),\n]));"
+  },
+  {
    "id": "meta-balls",
    "name": "Meta Balls",
    "category": "Backgrounds",
@@ -3946,6 +4240,16 @@
    "code": "ui.add(ArrowSlideButton::new(\"Continue\"));"
   },
   {
+   "id": "glass-icons",
+   "name": "Glass Icons",
+   "category": "Buttons",
+   "description": "Frosted glass tiles floating over tilted, vividly colored backplates; hover swings the plate and lifts the glass.",
+   "covers": [
+    "React Bits: Glass Icons"
+   ],
+   "code": "let r = GlassIcons::new(vec![\n    GlassIcon::new(\"\ud83d\udcc1\", \"Files\").colors(hex(\"#3B82F6\"), hex(\"#6366F1\")),\n    GlassIcon::new(\"\ud83d\udcd6\", \"Books\"),\n    GlassIcon::new(\"\u2665\", \"Health\"),\n]).show(ui);"
+  },
+  {
    "id": "script-copy",
    "name": "Script Copy Button",
    "category": "Buttons",
@@ -4165,6 +4469,77 @@
    "code": "DashedMarchingBorder::new().show(ui, |ui| { ui.label(\"Drop files here\"); });"
   },
   {
+   "id": "magic-bento",
+   "name": "Magic Bento",
+   "category": "Cards & Borders",
+   "description": "A bento grid where a spotlight follows the pointer and lights card borders; the hovered card tilts and sparkles with particles.",
+   "covers": [
+    "React Bits: Magic Bento"
+   ],
+   "code": "let items = vec![\n    BentoItem::new(\"Insights\", \"Analytics\", \"Track user behavior\"),\n    // ... six items use the classic bento layout\n];\nMagicBento::new(items).glow_color(hex(\"#8400FF\")).show(ui);"
+  },
+  {
+   "id": "chroma-grid",
+   "name": "Chroma Grid",
+   "category": "Cards & Borders",
+   "description": "Profile tiles rendered in grayscale, with a circle of full color that follows the pointer across the grid.",
+   "covers": [
+    "React Bits: Chroma Grid"
+   ],
+   "code": "ChromaGrid::new(vec![\n    ChromaItem::new(\"Ada Park\", \"Frontend Engineer\", \"@ada\"),\n    ChromaItem::new(\"Leo Diaz\", \"Product Designer\", \"@leo\"),\n])\n.spotlight_radius(200.0)\n.show(ui);"
+  },
+  {
+   "id": "profile-card",
+   "name": "Profile Card",
+   "category": "Cards & Borders",
+   "description": "A holographic trading-card profile that tilts toward the pointer while rainbow foil and a glare slide across it.",
+   "covers": [
+    "React Bits: Profile Card"
+   ],
+   "code": "let r = ProfileCard::new(\"Ada Park\", \"Software Engineer\")\n    .handle(\"adapark\")\n    .status(\"Online\")\n    .show(ui);\nif r.inner { /* contact clicked */ }"
+  },
+  {
+   "id": "glass-surface",
+   "name": "Glass Surface",
+   "category": "Cards & Borders",
+   "description": "A refracting glass panel: the backdrop bends and compresses toward its rim with color fringes and specular edges.",
+   "covers": [
+    "React Bits: Glass Surface"
+   ],
+   "code": "GlassSurface::new()\n    .size(vec2(360.0, 180.0))\n    .refraction(24.0)\n    .show(ui, |painter, rect| { /* paint your backdrop */ }, |ui| {\n        ui.heading(\"Glass Surface\");\n    });"
+  },
+  {
+   "id": "fluid-glass",
+   "name": "Fluid Glass",
+   "category": "Cards & Borders",
+   "description": "A liquid glass lens that glides after the pointer, magnifying and bending everything beneath it with rainbow edges.",
+   "covers": [
+    "React Bits: Fluid Glass",
+    "React Bits: Glass Surface"
+   ],
+   "code": "GlassSurface::new()\n    .size(vec2(180.0, 180.0))\n    .lens(true)\n    .refraction(40.0)\n    .magnify(1.15)\n    .wobble(1.0)\n    .follow_pointer(true)\n    .show(ui, |painter, rect| { /* backdrop */ }, |_| {});"
+  },
+  {
+   "id": "decay-card",
+   "name": "Decay Card",
+   "category": "Cards & Borders",
+   "description": "A poster card whose picture tears and ripples with turbulence as the pointer moves over it, then slowly heals.",
+   "covers": [
+    "React Bits: Decay Card"
+   ],
+   "code": "DecayCard::new().title(\"Decay\").show(ui, |painter, rect| {\n    // paint the picture\n});"
+  },
+  {
+   "id": "pixel-transition",
+   "name": "Pixel Transition",
+   "category": "Cards & Borders",
+   "description": "A card that swaps to its second face through a pixel dissolve: squares pop in at random, then away again.",
+   "covers": [
+    "React Bits: Pixel Transition"
+   ],
+   "code": "PixelTransition::new().grid(10).show(\n    ui,\n    |ui| { /* first content */ },\n    |ui| { /* shown on hover */ },\n);"
+  },
+  {
    "id": "direction-aware-hover",
    "name": "Direction Aware Hover",
    "category": "Cards & Borders",
@@ -4357,6 +4732,57 @@
     "tsParticles: Fireworks"
    ],
    "code": "Fireworks::new().interval(0.8).show(ui, rect);"
+  },
+  {
+   "id": "sticker-peel",
+   "name": "Sticker Peel",
+   "category": "Cursor & Interaction",
+   "description": "A die-cut sticker you drag to peel: the corner folds back along a crease, showing its paper back and a curl shadow.",
+   "covers": [
+    "React Bits: Sticker Peel"
+   ],
+   "code": "ui.add(StickerPeel::new(\"\ud83e\udd80\", \"Rust\").size(vec2(180.0, 180.0)));"
+  },
+  {
+   "id": "magnet-lines",
+   "name": "Magnet Lines",
+   "category": "Cursor & Interaction",
+   "description": "A grid of short lines that all swivel to point at the pointer, glowing in the accent color nearby.",
+   "covers": [
+    "React Bits: Magnet Lines"
+   ],
+   "code": "ui.add(MagnetLines::new(9, 9).size(vec2(320.0, 320.0)));"
+  },
+  {
+   "id": "shape-blur",
+   "name": "Shape Blur",
+   "category": "Cursor & Interaction",
+   "description": "Soft, out-of-focus outlines that snap into crisp focus wherever the pointer gets close.",
+   "covers": [
+    "React Bits: Shape Blur"
+   ],
+   "code": "ui.add(ShapeBlur::new(ShapeBlurKind::RoundedRect).size(vec2(240.0, 240.0)).blur(18.0));\nui.add(ShapeBlur::new(ShapeBlurKind::Circle).rings(3).colors(hex(\"#A855F7\"), hex(\"#22D3EE\")));"
+  },
+  {
+   "id": "lens",
+   "name": "Lens",
+   "category": "Cursor & Interaction",
+   "description": "A magnifying glass over any painted scene: the content is re-painted larger inside a glassy circular lens.",
+   "covers": [
+    "Magic UI: Lens",
+    "Aceternity UI: Lens"
+   ],
+   "code": "Lens::new().zoom(2.4).radius(70.0).show(ui, vec2(520.0, 320.0), |painter, rect| {\n    paint_my_scene(painter, rect);\n});"
+  },
+  {
+   "id": "svg-mask-effect",
+   "name": "Mask Reveal",
+   "category": "Cursor & Interaction",
+   "description": "A circular mask follows the pointer and reveals an alternate version of the content underneath; it swells on hover.",
+   "covers": [
+    "Aceternity UI: SVG Mask Effect"
+   ],
+   "code": "SvgMaskEffect::new().hover_radius(140.0).show(\n    ui,\n    |ui, rect| { /* paint the normal content */ },\n    |ui, rect| { /* paint the hidden version, including its background */ },\n);"
   },
   {
    "id": "animated-tooltip",
@@ -4617,6 +5043,109 @@
    "code": "SpringPresence::new(open).effect(PresenceEffect::Pop).show(ui, |ui| {\n    ui.label(\"Hello!\");\n});\nTransitionPanel::new(tab).show(ui, |ui, i| { ui.label(format!(\"Panel {i}\")); });"
   },
   {
+   "id": "animated-content",
+   "name": "Animated Content",
+   "category": "Motion & Layout",
+   "description": "Wrap anything and it slides, scales and fades into place as it scrolls into view.",
+   "covers": [
+    "React Bits: Animated Content"
+   ],
+   "code": "AnimatedContent::new()\n    .from(SlideFrom::Below)\n    .distance(80.0)\n    .scale(0.92)\n    .easing(Easing::OutBack)\n    .show(ui, |ui| {\n        ui.heading(\"Hello there\");\n    });"
+  },
+  {
+   "id": "fade-content",
+   "name": "Fade Content",
+   "category": "Motion & Layout",
+   "description": "Content starts soft, ghosted and transparent, then sharpens into focus when it scrolls into view.",
+   "covers": [
+    "React Bits: Fade Content",
+    "Magic UI: Blur Fade"
+   ],
+   "code": "FadeContent::new().blur(8.0).rise(16.0).duration(1.0).show(ui, |ui| {\n    ui.label(\"Soft focus, then crisp.\");\n});"
+  },
+  {
+   "id": "scroll-stack",
+   "name": "Scroll Stack",
+   "category": "Motion & Layout",
+   "description": "Cards pin near the top as you scroll and pile into a stack, each one shrinking back under the next.",
+   "covers": [
+    "React Bits: Scroll Stack"
+   ],
+   "code": "ScrollStack::new(5)\n    .card_size(vec2(600.0, 220.0))\n    .base_scale(0.86)\n    .autoplay(80.0)\n    .show(ui, |ui, i| {\n        ui.heading(format!(\"Card {}\", i + 1));\n    });"
+  },
+  {
+   "id": "gradual-blur",
+   "name": "Gradual Blur",
+   "category": "Motion & Layout",
+   "description": "A progressive blur at the edge of a scroller: content softens and fades in steps as it leaves.",
+   "covers": [
+    "React Bits: Gradual Blur",
+    "Magic UI: Progressive Blur",
+    "Motion Primitives: Progressive Blur"
+   ],
+   "code": "GradualBlur::new().edge(BlurEdge::Bottom).height(110.0).strength(5.0).show(ui, |ui| {\n    egui::ScrollArea::vertical().max_height(340.0).show(ui, |ui| {\n        for i in 0..40 { ui.label(format!(\"Row {i}\")); }\n    });\n});"
+  },
+  {
+   "id": "apple-cards-carousel",
+   "name": "Apple Cards Carousel",
+   "category": "Motion & Layout",
+   "description": "Tall full-bleed image cards in a scrolling row; clicking one morphs it into a large detail dialog.",
+   "covers": [
+    "Aceternity UI: Apple Cards Carousel"
+   ],
+   "code": "let cards = [\n    AppleCard::new(\"Productivity\", \"Enhance your productivity.\").body(\"\u2026\"),\n    AppleCard::new(\"Travel\", \"Maps that fit in your pocket.\").texture(my_texture),\n];\nui.add(AppleCardsCarousel::new(&cards));"
+  },
+  {
+   "id": "container-scroll",
+   "name": "Container Scroll",
+   "category": "Motion & Layout",
+   "description": "A device mockup tilted back like an opening laptop lid rotates flat as it scrolls into view.",
+   "covers": [
+    "Aceternity UI: Container Scroll Animation"
+   ],
+   "code": "egui::ScrollArea::vertical().show(ui, |ui| {\n    ContainerScroll::new()\n        .subtitle(\"Unleash the power of\")\n        .title(\"Scroll Animations\")\n        .show(ui, |ui| dashboard(ui));\n});"
+  },
+  {
+   "id": "hero-parallax",
+   "name": "Hero Parallax",
+   "category": "Motion & Layout",
+   "description": "Rows of product tiles start tilted and faded in 3D, then rotate flat and slide in opposite directions as you scroll.",
+   "covers": [
+    "Aceternity UI: Hero Parallax"
+   ],
+   "code": "let products: Vec<_> = names.iter().map(|n| ParallaxProduct::new(*n)).collect();\nui.add(HeroParallax::new(&products).title(\"The Ultimate\\ndevelopment studio\"));"
+  },
+  {
+   "id": "images-slider",
+   "name": "Images Slider",
+   "category": "Motion & Layout",
+   "description": "Full-bleed slides cross-fade with a zoom-in entrance and a slow Ken Burns push, under a headline and call to action.",
+   "covers": [
+    "Aceternity UI: Images Slider"
+   ],
+   "code": "ui.add(\n    ImagesSlider::new()\n        .textures(&slides)\n        .interval(4.0)\n        .title(\"The hero section slideshow\\nnobody asked for\")\n        .action(\"Join now\"),\n);"
+  },
+  {
+   "id": "sticky-scroll-reveal",
+   "name": "Sticky Scroll Reveal",
+   "category": "Motion & Layout",
+   "description": "Text sections scroll past a sticky panel that swaps its content and tints the backdrop for each one.",
+   "covers": [
+    "Aceternity UI: Sticky Scroll Reveal"
+   ],
+   "code": "let sections = [\n    StickySection::new(\"Collaborative editing\", \"Work together in real time\u2026\").icon(\"\ud83d\udcac\"),\n    StickySection::new(\"Version control\", \"Never lose a change\u2026\").icon(\"\u2699\"),\n];\nui.add(StickyScrollReveal::new(&sections));"
+  },
+  {
+   "id": "pixel-image",
+   "name": "Pixel Image",
+   "category": "Motion & Layout",
+   "description": "An image resolves from a few big pixels to full detail: tiles pop in, then the mosaic sharpens step by step.",
+   "covers": [
+    "Magic UI: Pixel Image"
+   ],
+   "code": "ui.add(\n    PixelImage::new()\n        .texture(my_texture, 1.5)\n        .grid(6, 4)\n        .trigger(Trigger::Loop { pause_ms: 1500 }),\n);"
+  },
+  {
    "id": "gemini-effect",
    "name": "Gemini Effect",
    "category": "Motion & Layout",
@@ -4865,6 +5394,16 @@
     "Codrops: elastic trails"
    ],
    "code": "let mut chain = SpringChain::new(20, start).stiffness(900.0).damping(58.0).falloff(0.96);\nchain.update(pointer, dt);\nfor (i, p) in chain.points().iter().enumerate() { painter.circle_filled(*p, 14.0 - i as f32 * 0.6, color); }"
+  },
+  {
+   "id": "flying-posters",
+   "name": "Flying Posters",
+   "category": "3D",
+   "description": "Posters ride a curved 3D drum: they swell as they pass the middle and tilt away over the top. Scroll or drag to fly.",
+   "covers": [
+    "React Bits: Flying Posters"
+   ],
+   "code": "ui.add(FlyingPosters::new().textures(&my_textures).columns(3).speed(40.0));"
   },
   {
    "id": "viewport-3d",
@@ -5445,6 +5984,56 @@
    "code": "ui.add(DayNightSwitch::new(&mut night).width(96.0));"
   },
   {
+   "id": "bubble-menu",
+   "name": "Bubble Menu",
+   "category": "Navigation",
+   "description": "A round menu button that bursts into tilted pill links on bouncy springs; hovered pills straighten and flood with color.",
+   "covers": [
+    "React Bits: Bubble Menu"
+   ],
+   "code": "let r = BubbleMenu::new(&[\"Home\", \"About\", \"Projects\", \"Blog\", \"Contact\"])\n    .logo(\"\u25c9 glowkit\")\n    .show(ui);\nif let Some(i) = r.inner { /* navigate to item i */ }"
+  },
+  {
+   "id": "card-nav",
+   "name": "Card Nav",
+   "category": "Navigation",
+   "description": "A rounded navbar whose hamburger expands it downward into a row of colored link cards that slide up one by one.",
+   "covers": [
+    "React Bits: Card Nav"
+   ],
+   "code": "let r = CardNav::new(vec![\n    CardNavItem::new(\"About\", &[\"Company\", \"Careers\"]),\n    CardNavItem::new(\"Projects\", &[\"Featured\", \"Case Studies\"]),\n    CardNavItem::new(\"Contact\", &[\"Email\", \"Twitter\", \"LinkedIn\"]),\n])\n.logo(\"\u25c6 glowkit\")\n.cta(\"Get Started\")\n.show(ui);\nif let Some((card, link)) = r.inner { /* ... */ }"
+  },
+  {
+   "id": "pill-nav",
+   "name": "Pill Nav",
+   "category": "Navigation",
+   "description": "A capsule of pill links: hovering raises a circle from below that floods the pill while its label rolls over.",
+   "covers": [
+    "React Bits: Pill Nav"
+   ],
+   "code": "ui.add(PillNav::new(&mut active, &[\"Home\", \"About\", \"Services\", \"Contact\"]));\nui.add(PillNav::new(&mut active, &items).base_color(hex(\"#7C3AED\")).logo(\"\u25c6\"));"
+  },
+  {
+   "id": "staggered-menu",
+   "name": "Staggered Menu",
+   "category": "Navigation",
+   "description": "A full-height side menu: colored layers sweep in, staggered, followed by a panel of huge numbered links rising into place.",
+   "covers": [
+    "React Bits: Staggered Menu"
+   ],
+   "code": "let r = StaggeredMenu::new(&[\"Home\", \"About\", \"Services\", \"Contact\"])\n    .socials(&[\"Twitter\", \"GitHub\", \"LinkedIn\"])\n    .show(ui, |ui| { ui.heading(\"Your page\"); });\nif let Some(i) = r.inner { /* ... */ }"
+  },
+  {
+   "id": "infinite-menu",
+   "name": "Infinite Menu",
+   "category": "Navigation",
+   "description": "A sphere of round tiles you drag to spin; it coasts, snaps the nearest tile to the front and shows its title and action.",
+   "covers": [
+    "React Bits: Infinite Menu"
+   ],
+   "code": "let items = vec![CardFace::new(\"\ud83c\udf0a\", \"Ocean\").subtitle(\"Deep blue calm\"), /* ... */];\nlet r = InfiniteMenu::new(items).show(ui);\nif let Some(i) = r.inner { /* open item i */ }"
+  },
+  {
    "id": "tabs",
    "name": "Tabs",
    "category": "Navigation",
@@ -5621,6 +6210,26 @@
     "Origin UI: Tab bar"
    ],
    "code": "ui.add(BottomNav::new(&mut tab, &[\n    (LineIcon::Home, \"Home\"),\n    (LineIcon::Search, \"Search\"),\n    (LineIcon::Bell, \"Alerts\"),\n    (LineIcon::User, \"Profile\"),\n]));"
+  },
+  {
+   "id": "link-preview",
+   "name": "Link Preview",
+   "category": "Overlays & Feedback",
+   "description": "Hovering a link springs a preview card up from the text; it leans toward the pointer.",
+   "covers": [
+    "Aceternity UI: Link Preview"
+   ],
+   "code": "ui.horizontal_wrapped(|ui| {\n    ui.label(\"Build it in\");\n    ui.add(LinkPreview::new(\"Rust\", \"https://www.rust-lang.org\").texture(screenshot, 1.6));\n});"
+  },
+  {
+   "id": "hero-video-dialog",
+   "name": "Hero Video Dialog",
+   "category": "Overlays & Feedback",
+   "description": "A video thumbnail with a pulsing glass play button that opens an animated player dialog.",
+   "covers": [
+    "Magic UI: Hero Video Dialog"
+   ],
+   "code": "HeroVideoDialog::new()\n    .animation(VideoDialogAnimation::FromThumbnail)\n    .show(ui, |painter, rect, seconds| {\n        paint_video_frame(painter, rect, seconds);\n    });"
   },
   {
    "id": "dialog",
@@ -6001,6 +6610,50 @@
     "Kibo UI: Description List"
    ],
    "code": "ui.add(DescriptionList::new(&[\n    (\"Full name\", \"Ada Lovelace\"),\n    (\"Role\", \"Lead engineer\"),\n    (\"Email\", \"ada@analytical.io\"),\n]));"
+  },
+  {
+   "id": "aspect-ratio",
+   "name": "Aspect Ratio",
+   "category": "Data Display",
+   "description": "A container that locks content to a ratio (16:9, 1:1, 4:3) and clips it to rounded corners, for media, maps and embeds.",
+   "covers": [
+    "shadcn/ui: Aspect Ratio",
+    "Radix UI: Aspect Ratio"
+   ],
+   "code": "AspectRatio::new(16.0 / 9.0).max_width(420.0).show(ui, |ui| {\n    let r = ui.max_rect();\n    // paint an image, video frame or map into r\n});"
+  },
+  {
+   "id": "item",
+   "name": "Item",
+   "category": "Data Display",
+   "description": "Flexible list rows with an icon, avatar or thumbnail, a title and description, and trailing actions, in default, outline and muted styles.",
+   "covers": [
+    "shadcn/ui: Item",
+    "Origin UI: List items"
+   ],
+   "code": "Item::new(\"Two-factor authentication\")\n    .description(\"Verify via email or phone number.\")\n    .icon(UiIcon::Lock)\n    .variant(ItemVariant::Outline)\n    .actions(|ui| { ui.add(Button::new(\"Enable\").small()); })\n    .show(ui);"
+  },
+  {
+   "id": "resizable",
+   "name": "Resizable",
+   "category": "Data Display",
+   "description": "Horizontal and vertical split panels with draggable grip handles, min/max sizes and nested groups. Double-click a handle to even it out.",
+   "covers": [
+    "shadcn/ui: Resizable",
+    "react-resizable-panels: PanelGroup"
+   ],
+   "code": "ResizablePanels::horizontal(&mut sizes).height(300.0).min(0.15).show(ui, |ui, i| {\n    if i == 1 {\n        ResizablePanels::vertical(&mut inner).frame(false).show(ui, |ui, j| { /* ... */ });\n    }\n});"
+  },
+  {
+   "id": "scroll-area",
+   "name": "Scroll Area",
+   "category": "Data Display",
+   "description": "A themed scroll container with a thin overlay scrollbar that fades in on hover or scroll, widens under the pointer and can be dragged.",
+   "covers": [
+    "shadcn/ui: Scroll Area",
+    "Radix UI: Scroll Area"
+   ],
+   "code": "StyledScrollArea::vertical().max_height(280.0).show(ui, |ui| {\n    for tag in &tags {\n        ui.label(tag);\n    }\n});"
   },
   {
    "id": "code-comparison",
@@ -6556,6 +7209,114 @@
     "v0: Preview panel"
    ],
    "code": "WebPreview::new(&mut url).height(280.0).show(ui, |ui| {\n    // paint the page\n});"
+  },
+  {
+   "id": "ai-confirmation",
+   "name": "Confirmation",
+   "category": "AI",
+   "description": "A tool-approval card: the agent pauses and shows exactly what it wants to run, with Deny / Approve and compact resolved states.",
+   "covers": [
+    "Vercel AI Elements: Confirmation",
+    "assistant-ui: Human-in-the-loop approval",
+    "Vercel AI SDK: Tool approval"
+   ],
+   "code": "ui.add(Confirmation::new(&mut state, \"Run shell command?\")\n    .tool(\"bash\")\n    .detail(\"Directory\", \"~/projects/storefront\")\n    .code(\"rm -rf node_modules && npm install\"));"
+  },
+  {
+   "id": "ai-open-in-chat",
+   "name": "Open In Chat",
+   "category": "AI",
+   "description": "A dropdown button that hands the current prompt to another chat app, with provider badges, hints and a copy row.",
+   "covers": [
+    "Vercel AI Elements: Open In Chat"
+   ],
+   "code": "let providers = [ChatProvider::new(\"Lumen Chat\", \"lumen.chat\"), ChatProvider::new(\"Orbit\", \"orbit.ai\")];\nif let Some(i) = OpenInChat::new(prompt, &providers).show(ui) {\n    // open providers[i] with the prompt\n}"
+  },
+  {
+   "id": "ai-toolbar",
+   "name": "Toolbar",
+   "category": "AI",
+   "description": "A floating icon toolbar for canvases and nodes, with dividers, toggled states, and quick tooltips with shortcut hints.",
+   "covers": [
+    "Vercel AI Elements: Toolbar",
+    "React Flow: NodeToolbar"
+   ],
+   "code": "let items = [\n    ToolbarItem::new(Icon::Sparkle, \"Ask AI\").shortcut(\"\u2318K\"),\n    ToolbarItem::new(Icon::Pencil, \"Edit\"),\n    ToolbarItem::new(Icon::Copy, \"Duplicate\").shortcut(\"\u2318D\"),\n];\nif let Some(i) = AiToolbar::new(&items).show_at(ui, node_rect.center_top() - vec2(0.0, 10.0)) {\n    // handle items[i]\n}"
+  },
+  {
+   "id": "ai-jsx-preview",
+   "name": "JSX Preview",
+   "category": "AI",
+   "description": "Generative UI: streamed JSX-like markup is parsed on every frame (half-written tags and all) and rendered into real themed widgets that fade in.",
+   "covers": [
+    "prompt-kit: JSX Preview",
+    "Vercel AI Elements: JSX Preview",
+    "Vercel AI SDK: Generative UI"
+   ],
+   "code": "// `markup` grows as the model streams\nui.add(JsxPreview::new(&markup));\n\n// or just parse it\nlet tree = parse_markup(\"<Card><Title>Hi</Title><Button>Go\");"
+  },
+  {
+   "id": "ai-audio-player",
+   "name": "Audio Player",
+   "category": "AI",
+   "description": "An audio player card with a scrubbable waveform, play / pause, elapsed time and a speed pill, plus a compact scrub-bar variant.",
+   "covers": [
+    "ElevenLabs UI: Audio Player"
+   ],
+   "code": "let mut state = AudioPlayerState::new(184.0);\nui.add(AudioPlayer::new(&mut state)\n    .title(\"Welcome message\")\n    .subtitle(\"Aria \u00b7 Narration\"));"
+  },
+  {
+   "id": "ai-dot-matrix",
+   "name": "Dot Matrix",
+   "category": "AI",
+   "description": "An LED dot-matrix display with glowing dots and phosphor afterglow: scrolling pixel text, live level bars and animated patterns.",
+   "covers": [
+    "ElevenLabs UI: Matrix"
+   ],
+   "code": "ui.add(DotMatrix::new(64, 9).content(MatrixContent::Text(\"HELLO WORLD\")).gradient(true));\nui.add(DotMatrix::new(24, 10).content(MatrixContent::Levels(&levels)));\nui.add(DotMatrix::new(15, 15).content(MatrixContent::Pattern(MatrixPattern::Ripple)));"
+  },
+  {
+   "id": "ai-mic-selector",
+   "name": "Mic Selector",
+   "category": "AI",
+   "description": "A microphone picker with a live level meter, a device dropdown with a full segmented meter, and a mute toggle.",
+   "covers": [
+    "ElevenLabs UI: Mic Selector"
+   ],
+   "code": "let devices = [\"MacBook Pro Microphone\", \"Studio USB Mic\", \"AirPods Pro\"];\nui.add(MicSelector::new(&devices, &mut selected, &mut muted).level(mic_level));"
+  },
+  {
+   "id": "ai-speech-input",
+   "name": "Speech Input",
+   "category": "AI",
+   "description": "A dictate button that springs open into a live waveform with a timer and streaming interim transcript, then shows the final text.",
+   "covers": [
+    "ElevenLabs UI: Speech Input",
+    "Vercel AI Elements: Speech Input"
+   ],
+   "code": "ui.add(SpeechInput::new(&mut phase)\n    .level(mic_level)\n    .transcript(&interim_text));\n// when the recognizer finishes: phase = SpeechPhase::Done"
+  },
+  {
+   "id": "ai-scrub-bar",
+   "name": "Scrub Bar",
+   "category": "AI",
+   "description": "A media timeline scrubber with buffered and played ranges, a hover time tooltip, chapter markers and a thumb that grows on hover.",
+   "covers": [
+    "ElevenLabs UI: Scrub Bar",
+    "Media Chrome: Time Range",
+    "Vidstack: Time Slider"
+   ],
+   "code": "let markers = [ScrubMarker::new(42.0, \"Intro\"), ScrubMarker::new(118.0, \"Demo\")];\nui.add(ScrubBar::new(&mut position, duration)\n    .buffered(position + 30.0)\n    .markers(&markers)\n    .show_times(true));"
+  },
+  {
+   "id": "ai-transcript-viewer",
+   "name": "Transcript Viewer",
+   "category": "AI",
+   "description": "A transcript synced to playback: the current word rides an accent pill that glides along, spoken words brighten, and clicking any word seeks.",
+   "covers": [
+    "ElevenLabs UI: Transcript Viewer"
+   ],
+   "code": "let words = TranscriptWord::timeline(&[(\"Agent\", \"Hi! How can I help?\")], 0.0, 2.6);\nif let Some(seek) = TranscriptViewer::new(&words, position).height(220.0).show(ui) {\n    position = seek;\n}"
   },
   {
    "id": "animated-testimonials",
@@ -7586,6 +8347,6 @@
    "code": "let mut app = AuthGateApp::default();\napp.signed_in = true;\napp.route = \"reports\".into(); // \"reports\" | \"admin\" | \"projects\"\napp.show(ui);"
   }
  ],
- "total_have": 411,
+ "total_have": 476,
  "total_all": 476
 }

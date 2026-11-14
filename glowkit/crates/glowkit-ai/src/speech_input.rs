@@ -126,8 +126,9 @@ impl Widget for SpeechInput<'_> {
         let idle_w = common::galley(ui, self.label, 13.5, t.foreground).size().x + 62.0;
         let pad = 14.0;
         let text_w = full_w - pad * 2.0;
-        let final_g = (phase == SpeechPhase::Done && !self.transcript.is_empty())
-            .then(|| ui.painter().layout(self.transcript.to_owned(), FontId::proportional(14.0), t.foreground, text_w - 40.0));
+        let final_g = (phase == SpeechPhase::Done && !self.transcript.is_empty()).then(|| {
+            ui.painter().layout(self.transcript.to_owned(), FontId::proportional(14.0), t.foreground, text_w - 40.0)
+        });
         let (tw, th) = match phase {
             SpeechPhase::Idle => (idle_w, 44.0),
             SpeechPhase::Recording | SpeechPhase::Processing => (full_w, 112.0),
@@ -142,7 +143,14 @@ impl Widget for SpeechInput<'_> {
         let p = ui.painter();
         let recording = phase == SpeechPhase::Recording;
         let border = if recording { with_alpha(rec_c, 0.5) } else { common::border_strong(&t) };
-        glowkit_core::paint::soft_shadow(p, rect, cr.nw as f32, 10.0, vec2(0.0, 3.0), Color32::from_black_alpha(if t.dark { 60 } else { 14 }));
+        glowkit_core::paint::soft_shadow(
+            p,
+            rect,
+            cr.nw as f32,
+            10.0,
+            vec2(0.0, 3.0),
+            Color32::from_black_alpha(if t.dark { 60 } else { 14 }),
+        );
         p.rect(rect, cr, t.card, Stroke::new(1.0, border), StrokeKind::Inside);
         let clip = ui.painter().with_clip_rect(rect.intersect(ui.clip_rect()));
         let mut new_phase = None;
@@ -176,7 +184,13 @@ impl Widget for SpeechInput<'_> {
             SpeechPhase::Idle => {
                 clip.circle_filled(bc, 15.0, t.primary.lerp_to_gamma(t.primary_foreground, 0.1 * bh));
                 paint_icon(&clip, Icon::Mic, Rect::from_center_size(bc, vec2(15.0, 15.0)), t.primary_foreground);
-                clip.text(pos2(bc.x + 26.0, bc.y), Align2::LEFT_CENTER, self.label, FontId::proportional(13.5), t.foreground);
+                clip.text(
+                    pos2(bc.x + 26.0, bc.y),
+                    Align2::LEFT_CENTER,
+                    self.label,
+                    FontId::proportional(13.5),
+                    t.foreground,
+                );
             }
         }
         if bresp.clicked() {
@@ -195,9 +209,20 @@ impl Widget for SpeechInput<'_> {
                     // live waveform between the button and the timer
                     let timer_x = rect.max.x - pad;
                     let elapsed = if recording { now - st.started } else { st.stopped - st.started };
-                    let tr = common::mono(&clip, pos2(timer_x, bc.y), Align2::RIGHT_CENTER, fmt_clock(elapsed as f32), 12.0, if recording { rec_c.gamma_multiply(fade) } else { t.muted_foreground.gamma_multiply(fade) });
+                    let tr = common::mono(
+                        &clip,
+                        pos2(timer_x, bc.y),
+                        Align2::RIGHT_CENTER,
+                        fmt_clock(elapsed as f32),
+                        12.0,
+                        if recording { rec_c.gamma_multiply(fade) } else { t.muted_foreground.gamma_multiply(fade) },
+                    );
                     if recording {
-                        clip.circle_filled(pos2(tr.min.x - 9.0, bc.y), 3.5, rec_c.gamma_multiply(fade * (0.5 + 0.5 * (glowkit_core::time(ui) * 4.0).sin().abs())));
+                        clip.circle_filled(
+                            pos2(tr.min.x - 9.0, bc.y),
+                            3.5,
+                            rec_c.gamma_multiply(fade * (0.5 + 0.5 * (glowkit_core::time(ui) * 4.0).sin().abs())),
+                        );
                     }
                     let wr = Rect::from_min_max(pos2(header_x, bc.y - 14.0), pos2(tr.min.x - 22.0, bc.y + 14.0));
                     let n = BARS;
@@ -211,14 +236,25 @@ impl Widget for SpeechInput<'_> {
                         let bh = (v.powf(0.7) * wr.height()).max(2.5);
                         let age = i as f32 / n as f32;
                         let c = with_alpha(col, (0.25 + 0.75 * age) * fade * if recording { 1.0 } else { 0.6 });
-                        clip.rect_filled(Rect::from_center_size(pos2(x + bw / 2.0, wr.center().y), vec2(bw, bh)), CornerRadius::same(1), c);
+                        clip.rect_filled(
+                            Rect::from_center_size(pos2(x + bw / 2.0, wr.center().y), vec2(bw, bh)),
+                            CornerRadius::same(1),
+                            c,
+                        );
                     }
                     // transcript area
-                    let ta = Rect::from_min_max(pos2(rect.min.x + pad, rect.min.y + 52.0), pos2(rect.max.x - pad, rect.max.y - 10.0));
-                    clip.line_segment([pos2(rect.min.x + 1.0, ta.min.y - 6.0), pos2(rect.max.x - 1.0, ta.min.y - 6.0)], Stroke::new(1.0, with_alpha(t.border, fade)));
+                    let ta = Rect::from_min_max(
+                        pos2(rect.min.x + pad, rect.min.y + 52.0),
+                        pos2(rect.max.x - pad, rect.max.y - 10.0),
+                    );
+                    clip.line_segment(
+                        [pos2(rect.min.x + 1.0, ta.min.y - 6.0), pos2(rect.max.x - 1.0, ta.min.y - 6.0)],
+                        Stroke::new(1.0, with_alpha(t.border, fade)),
+                    );
                     if recording {
                         let shown = if self.transcript.is_empty() { "Listening…" } else { self.transcript };
-                        let g = ui.painter().layout(shown.to_owned(), FontId::proportional(14.0), t.foreground, ta.width());
+                        let g =
+                            ui.painter().layout(shown.to_owned(), FontId::proportional(14.0), t.foreground, ta.width());
                         // keep the newest line visible
                         let y = ta.min.y + 6.0 - (g.size().y - (ta.height() - 6.0)).max(0.0);
                         let c = if self.transcript.is_empty() { t.muted_foreground } else { t.foreground };
@@ -228,29 +264,69 @@ impl Widget for SpeechInput<'_> {
                         let end = common::galley_end(&g);
                         let blink = ((glowkit_core::time(ui) * 2.0) % 1.0 < 0.55) as u8 as f32;
                         let cp = pos2(ta.min.x + end.min.x + 2.0, y + end.min.y);
-                        tclip.rect_filled(Rect::from_min_size(cp, vec2(2.0, end.height().max(16.0))), CornerRadius::ZERO, with_alpha(t.accent, blink * fade));
+                        tclip.rect_filled(
+                            Rect::from_min_size(cp, vec2(2.0, end.height().max(16.0))),
+                            CornerRadius::ZERO,
+                            with_alpha(t.accent, blink * fade),
+                        );
                     } else {
-                        let mut child = ui.new_child(egui::UiBuilder::new().max_rect(Rect::from_min_size(pos2(ta.min.x, ta.min.y + 6.0), vec2(ta.width(), 22.0))));
+                        let mut child = ui.new_child(
+                            egui::UiBuilder::new()
+                                .max_rect(Rect::from_min_size(pos2(ta.min.x, ta.min.y + 6.0), vec2(ta.width(), 22.0))),
+                        );
                         child.set_clip_rect(ta);
                         child.add(crate::ShimmerText::new("Transcribing your recording…").size(14.0));
                     }
                 }
                 SpeechPhase::Done => {
-                    common::text(&clip, pos2(header_x, bc.y), Align2::LEFT_CENTER, "Transcript ready", 13.0, t.muted_foreground.gamma_multiply(fade));
+                    common::text(
+                        &clip,
+                        pos2(header_x, bc.y),
+                        Align2::LEFT_CENTER,
+                        "Transcript ready",
+                        13.0,
+                        t.muted_foreground.gamma_multiply(fade),
+                    );
                     // record again
                     let rr = Rect::from_min_size(pos2(rect.max.x - pad - 92.0, bc.y - 14.0), vec2(92.0, 28.0));
-                    let rresp = ui.interact(rr, id.with("again"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+                    let rresp = ui
+                        .interact(rr, id.with("again"), Sense::click())
+                        .on_hover_cursor(egui::CursorIcon::PointingHand);
                     let rh = common::anim_bool(ui, id.with("rh"), rresp.hovered(), 0.1);
-                    clip.rect(rr, CornerRadius::same(14), common::hover_fill(&t).gamma_multiply(0.6 + rh), Stroke::new(1.0, with_alpha(t.border, fade)), StrokeKind::Inside);
-                    paint_icon(&clip, Icon::Mic, Rect::from_center_size(pos2(rr.min.x + 16.0, rr.center().y), vec2(13.0, 13.0)), t.foreground.gamma_multiply(fade));
-                    clip.text(pos2(rr.min.x + 28.0, rr.center().y), Align2::LEFT_CENTER, "Re-record", FontId::proportional(12.0), t.foreground.gamma_multiply(fade));
+                    clip.rect(
+                        rr,
+                        CornerRadius::same(14),
+                        common::hover_fill(&t).gamma_multiply(0.6 + rh),
+                        Stroke::new(1.0, with_alpha(t.border, fade)),
+                        StrokeKind::Inside,
+                    );
+                    paint_icon(
+                        &clip,
+                        Icon::Mic,
+                        Rect::from_center_size(pos2(rr.min.x + 16.0, rr.center().y), vec2(13.0, 13.0)),
+                        t.foreground.gamma_multiply(fade),
+                    );
+                    clip.text(
+                        pos2(rr.min.x + 28.0, rr.center().y),
+                        Align2::LEFT_CENTER,
+                        "Re-record",
+                        FontId::proportional(12.0),
+                        t.foreground.gamma_multiply(fade),
+                    );
                     if rresp.clicked() {
                         new_phase = Some(SpeechPhase::Recording);
                     }
                     if let Some(g) = final_g {
                         let y = rect.min.y + 50.0;
-                        clip.line_segment([pos2(rect.min.x + 1.0, y - 4.0), pos2(rect.max.x - 1.0, y - 4.0)], Stroke::new(1.0, with_alpha(t.border, fade)));
-                        clip.galley_with_override_text_color(pos2(rect.min.x + pad, y + 4.0), g, t.foreground.gamma_multiply(fade));
+                        clip.line_segment(
+                            [pos2(rect.min.x + 1.0, y - 4.0), pos2(rect.max.x - 1.0, y - 4.0)],
+                            Stroke::new(1.0, with_alpha(t.border, fade)),
+                        );
+                        clip.galley_with_override_text_color(
+                            pos2(rect.min.x + pad, y + 4.0),
+                            g,
+                            t.foreground.gamma_multiply(fade),
+                        );
                     }
                 }
                 SpeechPhase::Idle => {}

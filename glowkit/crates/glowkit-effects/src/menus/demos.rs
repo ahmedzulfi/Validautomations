@@ -55,7 +55,11 @@ fn glass_backdrop(dark: bool, time: f32) -> impl Fn(&Painter, Rect) {
         let tc = if dark { Color32::WHITE } else { hex("#1E1B4B") };
         for y in 0..((r.height() / 40.0) as i32 + 1) {
             for x in 0..((r.width() / 40.0) as i32 + 1) {
-                p.circle_filled(r.min + vec2(20.0 + x as f32 * 40.0, 20.0 + y as f32 * 40.0), 1.6, with_alpha(tc, 0.35));
+                p.circle_filled(
+                    r.min + vec2(20.0 + x as f32 * 40.0, 20.0 + y as f32 * 40.0),
+                    1.6,
+                    with_alpha(tc, 0.35),
+                );
             }
         }
         // type
@@ -93,7 +97,10 @@ fn poster(p: &Painter, r: Rect, palette: [Color32; 3], seed: u32) {
     paint::area_fill(p, &pts, r.max.y, palette[0], palette[0]);
     for k in 0..3 {
         let y = r.min.y + 26.0 + k as f32 * 12.0;
-        p.line_segment([pos2(r.min.x + 18.0, y), pos2(r.min.x + 18.0 + 40.0 - k as f32 * 10.0, y)], egui::Stroke::new(2.0, with_alpha(Color32::WHITE, 0.7)));
+        p.line_segment(
+            [pos2(r.min.x + 18.0, y), pos2(r.min.x + 18.0 + 40.0 - k as f32 * 10.0, y)],
+            egui::Stroke::new(2.0, with_alpha(Color32::WHITE, 0.7)),
+        );
     }
 }
 

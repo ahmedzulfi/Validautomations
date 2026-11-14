@@ -112,7 +112,8 @@ impl Widget for ScrubBar<'_> {
         let h = 22.0 + if self.show_times { 18.0 } else { 0.0 };
         let (rect, mut resp) = ui.allocate_exact_size(vec2(w, h), Sense::click_and_drag());
         let resp_h = resp.hovered() || resp.dragged();
-        let track = Rect::from_min_max(pos2(rect.min.x + 6.0, rect.min.y + 4.0), pos2(rect.max.x - 6.0, rect.min.y + 18.0));
+        let track =
+            Rect::from_min_max(pos2(rect.min.x + 6.0, rect.min.y + 4.0), pos2(rect.max.x - 6.0, rect.min.y + 18.0));
         let to_x = |s: f32| track.min.x + (s / self.duration).clamp(0.0, 1.0) * track.width();
         let from_x = |x: f32| ((x - track.min.x) / track.width()).clamp(0.0, 1.0) * self.duration;
         if resp.is_pointer_button_down_on() || resp.dragged() {
@@ -201,7 +202,14 @@ impl Widget for ScrubBar<'_> {
         if self.show_times {
             let y = rect.max.y - 8.0;
             let p = ui.painter();
-            common::mono(p, pos2(track.min.x, y), Align2::LEFT_CENTER, fmt_clock(*self.position), 11.0, t.muted_foreground);
+            common::mono(
+                p,
+                pos2(track.min.x, y),
+                Align2::LEFT_CENTER,
+                fmt_clock(*self.position),
+                11.0,
+                t.muted_foreground,
+            );
             common::mono(
                 p,
                 pos2(track.max.x, y),

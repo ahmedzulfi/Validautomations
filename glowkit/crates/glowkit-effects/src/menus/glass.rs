@@ -240,7 +240,8 @@ impl GlassSurface {
         let tinted = |mut mesh: Mesh, alpha: f32| -> Mesh {
             for v in &mut mesh.vertices {
                 let lift = smoothstep(-e, 0.0, sd_round_rect(v.pos, glass, wr)) * 0.06;
-                v.color = mix(v.color, tint_rgb.gamma_multiply(v.color.a() as f32 / 255.0), ta + lift).gamma_multiply(alpha);
+                v.color =
+                    mix(v.color, tint_rgb.gamma_multiply(v.color.a() as f32 / 255.0), ta + lift).gamma_multiply(alpha);
             }
             mesh
         };
@@ -281,7 +282,14 @@ impl GlassSurface {
             }
         }
         // a whisper of frost so plain areas still read as glass
-        util::inner_glow(&painter, glass, radius, glass.left_top() + glass.size() * vec2(0.2, 0.0), short * 1.4, with_alpha(Color32::WHITE, if t.dark { 0.06 } else { 0.12 }));
+        util::inner_glow(
+            &painter,
+            glass,
+            radius,
+            glass.left_top() + glass.size() * vec2(0.2, 0.0),
+            short * 1.4,
+            with_alpha(Color32::WHITE, if t.dark { 0.06 } else { 0.12 }),
+        );
         // specular rim: bright where the edge faces the light (top-left)
         let light = vec2(-0.6, -0.8);
         util::inner_border_fn(&painter, glass, radius, 1.4, |q, _| {

@@ -1,6 +1,8 @@
 use super::common::{pointer_or_auto, soft_ribbon};
 use crate::buttons::util::{self, cr, outline};
-use egui::{pos2, vec2, Align, Color32, CursorIcon, Layout, Pos2, Rect, Response, Sense, Stroke, Ui, UiBuilder, Vec2, Widget};
+use egui::{
+    pos2, vec2, Align, Color32, CursorIcon, Layout, Pos2, Rect, Response, Sense, Stroke, Ui, UiBuilder, Vec2, Widget,
+};
 use glowkit_core::anim::{follow, smoothstep, spring2};
 use glowkit_core::color::{gradient, mix, with_alpha};
 use glowkit_core::rng::hash01;
@@ -9,7 +11,9 @@ use glowkit_core::{paint, Theme};
 /// Smoothed pointer position inside `rect` (real or autoplay) plus an "active" 0..1 fade.
 fn smooth_pointer(ui: &Ui, id: egui::Id, rect: Rect, autoplay: bool, seed: f32, stiffness: f32) -> (Pos2, f32, bool) {
     let ptr = pointer_or_auto(ui, rect, autoplay, seed);
-    let last: Vec2 = glowkit_core::state(ui, id.with("last"), || rect.center() - rect.min + vec2(rect.width() * 0.25, -rect.height() * 0.2));
+    let last: Vec2 = glowkit_core::state(ui, id.with("last"), || {
+        rect.center() - rect.min + vec2(rect.width() * 0.25, -rect.height() * 0.2)
+    });
     let target = ptr.map(|p| p.0 - rect.min).unwrap_or(last);
     glowkit_core::set_state(ui, id.with("last"), target);
     let p = rect.min + spring2(ui, id.with("ptr"), target, stiffness, stiffness.sqrt() * 2.0);
@@ -113,7 +117,8 @@ impl Widget for MagnetLines {
                 let d = p - center;
                 let aim = d.y.atan2(d.x);
                 // blend from the resting angle toward the pointer as it becomes active
-                let delta = (aim - rest + std::f32::consts::PI).rem_euclid(std::f32::consts::TAU) - std::f32::consts::PI;
+                let delta =
+                    (aim - rest + std::f32::consts::PI).rem_euclid(std::f32::consts::TAU) - std::f32::consts::PI;
                 let ang = rest + delta * k;
                 let dir = vec2(ang.cos(), ang.sin()) * len / 2.0;
                 let prox = (1.0 - d.length() / reach).clamp(0.0, 1.0) * k;
@@ -318,7 +323,8 @@ impl PixelTransition {
                     if !on {
                         continue;
                     }
-                    let cell = Rect::from_min_size(rect.min + vec2(x as f32 * cw, y as f32 * ch), vec2(cw, ch)).expand(0.4);
+                    let cell =
+                        Rect::from_min_size(rect.min + vec2(x as f32 * cw, y as f32 * ch), vec2(cw, ch)).expand(0.4);
                     let poly = util::clip_convex(&outline(cell, 0.0, 1000.0), &shape);
                     if poly.len() >= 3 {
                         util::fill_poly(&clip, &poly, color);

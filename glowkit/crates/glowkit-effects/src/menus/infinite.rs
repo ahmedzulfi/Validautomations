@@ -189,7 +189,11 @@ impl InfiniteMenu {
         tiles.sort_by(|a, b| a.1[2].total_cmp(&b.1[2]));
         let front = tiles.last().map(|x| x.0).unwrap_or(0);
         let front_z = tiles.last().map(|x| x.1[2]).unwrap_or(1.0);
-        let settled_raw = if dragging { 0.0 } else { ((front_z - 0.96) / 0.035).clamp(0.0, 1.0) * (1.0 - vel.length() / 1.2).clamp(0.0, 1.0) };
+        let settled_raw = if dragging {
+            0.0
+        } else {
+            ((front_z - 0.96) / 0.035).clamp(0.0, 1.0) * (1.0 - vel.length() / 1.2).clamp(0.0, 1.0)
+        };
         let settled = follow(ui, id.with("settled"), settled_raw, 9.0);
         let move_k = spring(ui, id.with("move"), if dragging || vel.length() > 0.9 { 1.0 } else { 0.0 }, 220.0, 24.0);
         let painter = ui.painter_at(rect);
@@ -284,11 +288,8 @@ impl InfiniteMenu {
         let btn_c = pos2(center.x, rect.max.y - 28.0);
         let bs = spring(ui, id.with("btn"), if settled > 0.6 { 1.0 } else { 0.0 }, 280.0, 16.0).max(0.0);
         if bs > 0.02 {
-            let br = ui.interact(
-                egui::Rect::from_center_size(btn_c, Vec2::splat(52.0)),
-                id.with("action"),
-                Sense::click(),
-            );
+            let br =
+                ui.interact(egui::Rect::from_center_size(btn_c, Vec2::splat(52.0)), id.with("action"), Sense::click());
             let br = br.on_hover_cursor(CursorIcon::PointingHand);
             if br.clicked() {
                 clicked = Some(front % n_items);

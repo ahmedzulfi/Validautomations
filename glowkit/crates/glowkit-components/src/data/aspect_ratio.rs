@@ -127,9 +127,8 @@ impl AspectRatio {
             ui.painter().rect_filled(rect, cr, fill);
         }
         let inner_rect = rect.shrink(self.padding);
-        let mut child = ui.new_child(
-            UiBuilder::new().max_rect(inner_rect).layout(egui::Layout::top_down(egui::Align::Min)),
-        );
+        let mut child =
+            ui.new_child(UiBuilder::new().max_rect(inner_rect).layout(egui::Layout::top_down(egui::Align::Min)));
         child.set_clip_rect(inner_rect.intersect(ui.clip_rect()));
         let inner = content(&mut child);
         if ui.is_rect_visible(rect) {

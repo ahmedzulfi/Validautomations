@@ -1,6 +1,10 @@
-use super::common::{bold_text, capture, clip_mesh, desaturate, paint_avatar, pointer_or_auto, subdivide, Persp, VIVID};
+use super::common::{
+    bold_text, capture, clip_mesh, desaturate, paint_avatar, pointer_or_auto, subdivide, Persp, VIVID,
+};
 use crate::buttons::util::{self, cr, outline};
-use egui::{pos2, vec2, Align2, Color32, CursorIcon, FontId, InnerResponse, Pos2, Rect, Sense, Shape, Stroke, Ui, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, CursorIcon, FontId, InnerResponse, Pos2, Rect, Sense, Shape, Stroke, Ui, Vec2,
+};
 use glowkit_core::anim::{follow, smoothstep, spring2};
 use glowkit_core::color::{mix, shade, with_alpha};
 use glowkit_core::rng::hash01;
@@ -117,7 +121,14 @@ impl MagicBento {
                     vec2(w as f32 * cw + (w - 1) as f32 * gap, h as f32 * ch + (h - 1) as f32 * gap),
                 )
             };
-            return vec![cell(0, 0, 1, 1), cell(1, 0, 1, 1), cell(2, 0, 2, 2), cell(0, 1, 2, 2), cell(2, 2, 1, 1), cell(3, 2, 1, 1)];
+            return vec![
+                cell(0, 0, 1, 1),
+                cell(1, 0, 1, 1),
+                cell(2, 0, 2, 2),
+                cell(0, 1, 2, 2),
+                cell(2, 2, 1, 1),
+                cell(3, 2, 1, 1),
+            ];
         }
         let cols = n.clamp(1, 3);
         let rows = n.div_ceil(cols).max(1);
@@ -185,7 +196,14 @@ impl MagicBento {
             let pts: Vec<Pos2> = local.iter().map(|p| pr.apply(p.to_vec2())).collect();
             let center = pr.apply(Vec2::ZERO);
             if t.dark {
-                crate::motion::common::polygon_shadow(&painter, &pts, center, vec2(0.0, 6.0), 6.0 + 8.0 * h, Color32::BLACK.gamma_multiply(0.6));
+                crate::motion::common::polygon_shadow(
+                    &painter,
+                    &pts,
+                    center,
+                    vec2(0.0, 6.0),
+                    6.0 + 8.0 * h,
+                    Color32::BLACK.gamma_multiply(0.6),
+                );
             } else {
                 crate::motion::common::polygon_shadow(
                     &painter,
@@ -239,7 +257,10 @@ impl MagicBento {
                     let v = hash01(seed + 5);
                     let sp_ = 0.4 + hash01(seed + 9) * 0.6;
                     let ph = hash01(seed + 11) * std::f32::consts::TAU;
-                    let base = pos2(card.min.x + 12.0 + u * (card.width() - 24.0), card.min.y + 12.0 + v * (card.height() - 24.0));
+                    let base = pos2(
+                        card.min.x + 12.0 + u * (card.width() - 24.0),
+                        card.min.y + 12.0 + v * (card.height() - 24.0),
+                    );
                     let p = base + vec2((time * sp_ + ph).sin() * 22.0, (time * sp_ * 0.8 + ph * 1.7).cos() * 18.0);
                     let p = pr.apply(p - card.center());
                     let tw = 0.5 + 0.5 * (time * 2.4 + ph * 3.0).sin();
@@ -400,8 +421,20 @@ impl ChromaGrid {
                 });
                 let y = img.max.y + 12.0;
                 bold_text(p, pos2(tile.min.x + 14.0, y), Align2::LEFT_TOP, &item.name, FontId::proportional(15.0), fg);
-                p.text(pos2(tile.min.x + 14.0, y + 22.0), Align2::LEFT_TOP, &item.role, FontId::proportional(12.5), muted);
-                p.text(pos2(tile.max.x - 14.0, y + 2.0), Align2::RIGHT_TOP, &item.handle, FontId::proportional(12.0), muted);
+                p.text(
+                    pos2(tile.min.x + 14.0, y + 22.0),
+                    Align2::LEFT_TOP,
+                    &item.role,
+                    FontId::proportional(12.5),
+                    muted,
+                );
+                p.text(
+                    pos2(tile.max.x - 14.0, y + 2.0),
+                    Align2::RIGHT_TOP,
+                    &item.handle,
+                    FontId::proportional(12.0),
+                    muted,
+                );
             });
             let mut mesh = subdivide(&mesh, 14.0, tile.expand(2.0));
             let avatar = capture(ui, |p| paint_avatar(p, img, 11.0, colors, i as u32, true));
@@ -416,7 +449,14 @@ impl ChromaGrid {
             if t.dark {
                 paint::soft_shadow(painter, tile, radius, 18.0, vec2(0.0, 6.0), Color32::from_black_alpha(120));
             } else {
-                paint::soft_shadow(painter, tile, radius, 18.0, vec2(0.0, 6.0), Color32::from_rgba_unmultiplied(30, 30, 70, 26));
+                paint::soft_shadow(
+                    painter,
+                    tile,
+                    radius,
+                    18.0,
+                    vec2(0.0, 6.0),
+                    Color32::from_rgba_unmultiplied(30, 30, 70, 26),
+                );
             }
             painter.add(Shape::mesh(mesh));
             // inner spotlight + colored border on the hovered tile

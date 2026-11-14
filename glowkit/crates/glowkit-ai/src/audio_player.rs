@@ -149,13 +149,21 @@ impl Widget for AudioPlayer<'_> {
         {
             let p = ui.painter();
             if !t.dark {
-                glowkit_core::paint::soft_shadow(p, rect, cr.nw as f32, 10.0, vec2(0.0, 4.0), Color32::from_black_alpha(14));
+                glowkit_core::paint::soft_shadow(
+                    p,
+                    rect,
+                    cr.nw as f32,
+                    10.0,
+                    vec2(0.0, 4.0),
+                    Color32::from_black_alpha(14),
+                );
             }
             p.rect(rect, cr, t.card, Stroke::new(1.0, t.border), StrokeKind::Inside);
         }
         let inner = rect.shrink(pad);
         // header: play button, titles, speed pill
-        let mut child = ui.new_child(egui::UiBuilder::new().max_rect(inner).layout(egui::Layout::left_to_right(egui::Align::Min)));
+        let mut child =
+            ui.new_child(egui::UiBuilder::new().max_rect(inner).layout(egui::Layout::left_to_right(egui::Align::Min)));
         let pb = media::play_button(&mut child, st.playing, 44.0, col);
         if pb.clicked() {
             if !st.playing && st.position >= st.duration - 0.01 {
@@ -169,12 +177,21 @@ impl Widget for AudioPlayer<'_> {
             p.text(pos2(tx, inner.min.y + 13.0), Align2::LEFT_CENTER, ti, FontId::proportional(14.5), t.foreground);
         }
         if let Some(s) = self.subtitle {
-            p.text(pos2(tx, inner.min.y + 32.0), Align2::LEFT_CENTER, s, FontId::proportional(12.5), t.muted_foreground);
+            p.text(
+                pos2(tx, inner.min.y + 32.0),
+                Align2::LEFT_CENTER,
+                s,
+                FontId::proportional(12.5),
+                t.muted_foreground,
+            );
         }
         // speed pill
         let label = format!("{}x", trim(st.speed));
         let g = common::galley(ui, label.clone(), 12.0, t.foreground);
-        let sr = Rect::from_min_size(pos2(inner.max.x - g.size().x - 20.0, inner.min.y + 10.0), vec2(g.size().x + 20.0, 24.0));
+        let sr = Rect::from_min_size(
+            pos2(inner.max.x - g.size().x - 20.0, inner.min.y + 10.0),
+            vec2(g.size().x + 20.0, 24.0),
+        );
         let sresp = ui.interact(sr, resp.id.with("speed"), Sense::click()).on_hover_text("Playback speed");
         let sh = common::anim_bool(ui, sresp.id.with("h"), sresp.hovered(), 0.12);
         if sresp.clicked() {
@@ -228,7 +245,10 @@ impl Widget for AudioPlayer<'_> {
             }
             // playhead
             let px = wr.min.x + prog * wr.width();
-            p.line_segment([pos2(px, wr.min.y - 2.0), pos2(px, wr.max.y + 2.0)], Stroke::new(1.5, with_alpha(t.foreground, 0.7)));
+            p.line_segment(
+                [pos2(px, wr.min.y - 2.0), pos2(px, wr.max.y + 2.0)],
+                Stroke::new(1.5, with_alpha(t.foreground, 0.7)),
+            );
         } else {
             let mut child = ui.new_child(egui::UiBuilder::new().max_rect(wr));
             let mut pos = st.position;

@@ -39,7 +39,13 @@ impl TranscriptWord {
             for w in text.split_whitespace() {
                 // longer words take a little longer
                 let d = step * (0.7 + w.chars().count() as f32 * 0.06).min(1.6);
-                let pause = if w.ends_with(['.', '?', '!']) { step * 0.6 } else if w.ends_with(',') { step * 0.3 } else { 0.0 };
+                let pause = if w.ends_with(['.', '?', '!']) {
+                    step * 0.6
+                } else if w.ends_with(',') {
+                    step * 0.3
+                } else {
+                    0.0
+                };
                 out.push(Self::new(w, t, t + d).speaker(*speaker));
                 t += d + pause;
             }
@@ -127,9 +133,11 @@ impl<'a> TranscriptViewer<'a> {
         glowkit_core::set_state(ui, id.with("last"), cur);
         let font = FontId::proportional(self.size);
         let line_h = self.size * 1.65;
-        egui::ScrollArea::vertical().id_salt(id.with("scroll")).max_height(self.height).auto_shrink([false, true]).show(
-            ui,
-            |ui| {
+        egui::ScrollArea::vertical()
+            .id_salt(id.with("scroll"))
+            .max_height(self.height)
+            .auto_shrink([false, true])
+            .show(ui, |ui| {
                 let w = ui.available_width() - 8.0;
                 let origin = ui.cursor().min;
                 let pill_slot = ui.painter().add(Shape::Noop);
@@ -151,9 +159,22 @@ impl<'a> TranscriptViewer<'a> {
                             let sc = glowkit_core::hsv(hue as f32, 0.55, if t.dark { 0.9 } else { 0.6 });
                             let c = origin + vec2(8.0, y + 9.0);
                             p.circle_filled(c, 8.0, with_alpha(sc, 0.2));
-                            p.text(c, Align2::CENTER_CENTER, s.chars().next().unwrap_or('?').to_string(), FontId::proportional(9.5), sc);
+                            p.text(
+                                c,
+                                Align2::CENTER_CENTER,
+                                s.chars().next().unwrap_or('?').to_string(),
+                                FontId::proportional(9.5),
+                                sc,
+                            );
                             let r = common::text(p, c + vec2(14.0, 0.0), Align2::LEFT_CENTER, s, 12.5, t.foreground);
-                            common::mono(p, pos2(r.max.x + 8.0, c.y), Align2::LEFT_CENTER, fmt_clock(word.start), 11.0, t.muted_foreground);
+                            common::mono(
+                                p,
+                                pos2(r.max.x + 8.0, c.y),
+                                Align2::LEFT_CENTER,
+                                fmt_clock(word.start),
+                                11.0,
+                                t.muted_foreground,
+                            );
                             y += 26.0;
                         }
                         x = 0.0;
@@ -178,15 +199,24 @@ impl<'a> TranscriptViewer<'a> {
                     if is_cur {
                         cur_rect = Some(r);
                     }
-                    ui.painter().galley_with_override_text_color(pos2(r.min.x, r.center().y - g.size().y / 2.0), g, color);
+                    ui.painter().galley_with_override_text_color(
+                        pos2(r.min.x, r.center().y - g.size().y / 2.0),
+                        g,
+                        color,
+                    );
                     x += ww + space_w + 1.5;
                 }
                 let total = vec2(w, y + line_h + 4.0);
                 let (area, resp) = ui.allocate_exact_size(total, Sense::click());
                 // hover + click on words
                 if let Some(hp) = resp.hover_pos() {
-                    if let Some((r, i)) = placed.iter().find(|(r, _)| r.expand2(vec2(space_w / 2.0, 0.0)).contains(hp)) {
-                        ui.painter().rect_filled(r.expand2(vec2(3.0, -2.0)), CornerRadius::same(5), common::hover_fill(&t));
+                    if let Some((r, i)) = placed.iter().find(|(r, _)| r.expand2(vec2(space_w / 2.0, 0.0)).contains(hp))
+                    {
+                        ui.painter().rect_filled(
+                            r.expand2(vec2(3.0, -2.0)),
+                            CornerRadius::same(5),
+                            common::hover_fill(&t),
+                        );
                         ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
                         if resp.clicked() {
                             seek = Some(self.words[*i].start);
@@ -213,8 +243,7 @@ impl<'a> TranscriptViewer<'a> {
                         ui.scroll_to_rect(r.expand(line_h), None);
                     }
                 }
-            },
-        );
+            });
         seek
     }
 }

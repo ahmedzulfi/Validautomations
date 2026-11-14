@@ -91,7 +91,13 @@ impl<'a> OpenInChat<'a> {
         if !t.dark {
             glowkit_core::paint::soft_shadow(p, rect, cr.nw as f32, 2.0, vec2(0.0, 1.0), Color32::from_black_alpha(10));
         }
-        p.rect(rect, cr, t.card, Stroke::new(1.0, common::border_strong(&t).lerp_to_gamma(t.muted_foreground, 0.2 * h)), StrokeKind::Inside);
+        p.rect(
+            rect,
+            cr,
+            t.card,
+            Stroke::new(1.0, common::border_strong(&t).lerp_to_gamma(t.muted_foreground, 0.2 * h)),
+            StrokeKind::Inside,
+        );
         if h > 0.0 {
             p.rect_filled(rect, cr, common::hover_fill(&t).gamma_multiply(h));
         }
@@ -103,7 +109,10 @@ impl<'a> OpenInChat<'a> {
         let ot = common::anim_bool(ui, id.with("o"), open, 0.15);
         let cc = pos2(rect.max.x - 15.0, rect.center().y);
         let flip = 1.0 - 2.0 * ot;
-        p.add(egui::Shape::line(vec![cc + vec2(-4.0, -2.0 * flip), cc + vec2(0.0, 2.0 * flip), cc + vec2(4.0, -2.0 * flip)], Stroke::new(1.5, t.muted_foreground)));
+        p.add(egui::Shape::line(
+            vec![cc + vec2(-4.0, -2.0 * flip), cc + vec2(0.0, 2.0 * flip), cc + vec2(4.0, -2.0 * flip)],
+            Stroke::new(1.5, t.muted_foreground),
+        ));
 
         let mut picked = None;
         if open || ot > 0.01 {
@@ -121,18 +130,46 @@ impl<'a> OpenInChat<'a> {
                         ui.spacing_mut().item_spacing.y = 2.0;
                         // prompt preview
                         let (pr, _) = ui.allocate_exact_size(vec2(width, 44.0), Sense::hover());
-                        common::text(ui.painter(), pos2(pr.min.x + 10.0, pr.min.y + 12.0), Align2::LEFT_CENTER, "PROMPT", 10.5, t.muted_foreground);
+                        common::text(
+                            ui.painter(),
+                            pos2(pr.min.x + 10.0, pr.min.y + 12.0),
+                            Align2::LEFT_CENTER,
+                            "PROMPT",
+                            10.5,
+                            t.muted_foreground,
+                        );
                         let mut s: String = self.prompt.chars().take(38).collect();
                         if self.prompt.chars().count() > 38 {
                             s.push('…');
                         }
-                        common::text(ui.painter(), pos2(pr.min.x + 10.0, pr.min.y + 31.0), Align2::LEFT_CENTER, format!("“{s}”"), 12.5, t.foreground);
+                        common::text(
+                            ui.painter(),
+                            pos2(pr.min.x + 10.0, pr.min.y + 31.0),
+                            Align2::LEFT_CENTER,
+                            format!("“{s}”"),
+                            12.5,
+                            t.foreground,
+                        );
                         separator(ui, width, &t);
                         for (i, prov) in self.providers.iter().enumerate() {
                             if row(ui, id.with(("row", i)), width, &t, true, |p, r| {
                                 provider_badge(p, pos2(r.min.x + 20.0, r.center().y), 24.0, prov.name, &t);
-                                common::text(p, pos2(r.min.x + 42.0, r.min.y + 13.0), Align2::LEFT_CENTER, format!("Open in {}", prov.name), 13.0, t.foreground);
-                                common::text(p, pos2(r.min.x + 42.0, r.min.y + 30.0), Align2::LEFT_CENTER, prov.hint, 11.5, t.muted_foreground);
+                                common::text(
+                                    p,
+                                    pos2(r.min.x + 42.0, r.min.y + 13.0),
+                                    Align2::LEFT_CENTER,
+                                    format!("Open in {}", prov.name),
+                                    13.0,
+                                    t.foreground,
+                                );
+                                common::text(
+                                    p,
+                                    pos2(r.min.x + 42.0, r.min.y + 30.0),
+                                    Align2::LEFT_CENTER,
+                                    prov.hint,
+                                    11.5,
+                                    t.muted_foreground,
+                                );
                             }) {
                                 picked = Some(i);
                             }
@@ -141,7 +178,14 @@ impl<'a> OpenInChat<'a> {
                         if row(ui, id.with("copy"), width, &t, false, |p, r| {
                             let ir = Rect::from_center_size(pos2(r.min.x + 20.0, r.center().y), vec2(15.0, 15.0));
                             paint_icon(p, Icon::Copy, ir, t.muted_foreground);
-                            common::text(p, pos2(r.min.x + 42.0, r.center().y), Align2::LEFT_CENTER, "Copy prompt", 13.0, t.foreground);
+                            common::text(
+                                p,
+                                pos2(r.min.x + 42.0, r.center().y),
+                                Align2::LEFT_CENTER,
+                                "Copy prompt",
+                                13.0,
+                                t.foreground,
+                            );
                         }) {
                             ui.ctx().copy_text(self.prompt.to_owned());
                             picked = Some(self.providers.len());
@@ -162,7 +206,10 @@ impl<'a> OpenInChat<'a> {
 
 fn separator(ui: &mut Ui, width: f32, t: &Theme) {
     let (r, _) = ui.allocate_exact_size(vec2(width, 7.0), Sense::hover());
-    ui.painter().line_segment([pos2(r.min.x - 6.0, r.center().y), pos2(r.max.x + 6.0, r.center().y)], Stroke::new(1.0, t.border));
+    ui.painter().line_segment(
+        [pos2(r.min.x - 6.0, r.center().y), pos2(r.max.x + 6.0, r.center().y)],
+        Stroke::new(1.0, t.border),
+    );
 }
 
 fn row(ui: &mut Ui, id: egui::Id, width: f32, t: &Theme, ext: bool, paint: impl FnOnce(&egui::Painter, Rect)) -> bool {
@@ -178,6 +225,11 @@ fn row(ui: &mut Ui, id: egui::Id, width: f32, t: &Theme, ext: bool, paint: impl 
         return rr.clicked();
     }
     let ec = pos2(r.max.x - 18.0 + 2.0 * hh, r.center().y);
-    paint_icon(p, Icon::External, Rect::from_center_size(ec, vec2(13.0, 13.0)), t.muted_foreground.lerp_to_gamma(t.foreground, hh).gamma_multiply(0.4 + 0.6 * hh));
+    paint_icon(
+        p,
+        Icon::External,
+        Rect::from_center_size(ec, vec2(13.0, 13.0)),
+        t.muted_foreground.lerp_to_gamma(t.foreground, hh).gamma_multiply(0.4 + 0.6 * hh),
+    );
     rr.clicked()
 }

@@ -61,7 +61,9 @@ pub(crate) fn pill_button(ui: &mut Ui, label: &str, icon: Option<Icon>, style: P
         let p = ui.painter();
         let (fill, fg, stroke) = match style {
             PillStyle::Primary => (mix(t.primary, t.primary_foreground, 0.1 * h), t.primary_foreground, Stroke::NONE),
-            PillStyle::Solid(c) => (mix(c, Color32::WHITE, 0.1 * h), glowkit_core::color::contrast_text(c), Stroke::NONE),
+            PillStyle::Solid(c) => {
+                (mix(c, Color32::WHITE, 0.1 * h), glowkit_core::color::contrast_text(c), Stroke::NONE)
+            }
             PillStyle::Outline => (
                 mix(t.card, t.foreground, if t.dark { 0.06 } else { 0.04 } * h),
                 t.foreground,

@@ -11,8 +11,8 @@ mod sticky;
 
 pub use common::PaintedScene;
 pub use gallery::{AppleCard, AppleCardsCarousel, HeroVideoDialog, ImagesSlider, PixelImage, VideoDialogAnimation};
-pub use reveal::{AnimatedContent, BlurEdge, FadeContent, GradualBlur, SlideFrom};
 pub use pointer::{Lens, LinkPreview, SvgMaskEffect, TextRevealCard};
+pub use reveal::{AnimatedContent, BlurEdge, FadeContent, GradualBlur, SlideFrom};
 pub use stack::{ContainerScroll, FlyingPosters, HeroParallax, ParallaxProduct, ScrollStack};
 pub use sticky::{StickyScrollReveal, StickySection};
 

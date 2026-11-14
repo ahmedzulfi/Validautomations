@@ -178,7 +178,8 @@ impl StyledScrollArea {
             if !self.dirs[axis] || self.mode == ScrollbarMode::Hidden {
                 continue;
             }
-            let (view_len, content_len) = if axis == 1 { (view.height(), content.y) } else { (view.width(), content.x) };
+            let (view_len, content_len) =
+                if axis == 1 { (view.height(), content.y) } else { (view.width(), content.x) };
             if content_len <= view_len + 0.5 {
                 continue;
             }
@@ -187,9 +188,15 @@ impl StyledScrollArea {
             let margin = 3.0;
             let grow = self.thickness * 1.6;
             let track = if axis == 1 {
-                Rect::from_min_max(pos2(view.max.x - grow - margin, view.min.y + margin), pos2(view.max.x - margin, view.max.y - margin))
+                Rect::from_min_max(
+                    pos2(view.max.x - grow - margin, view.min.y + margin),
+                    pos2(view.max.x - margin, view.max.y - margin),
+                )
             } else {
-                Rect::from_min_max(pos2(view.min.x + margin, view.max.y - grow - margin), pos2(view.max.x - margin, view.max.y - margin))
+                Rect::from_min_max(
+                    pos2(view.min.x + margin, view.max.y - grow - margin),
+                    pos2(view.max.x - margin, view.max.y - margin),
+                )
             };
             let track_len = if axis == 1 { track.height() } else { track.width() };
             let thumb_len = (view_len / content_len * track_len).clamp(24.0, track_len);

@@ -20,14 +20,19 @@ fn wander(rect: Rect, t: f32, salt: f32) -> Pos2 {
 fn pointer_or_wander(ui: &Ui, id: Id, rect: Rect, response: &Response, autoplay: bool) -> (Pos2, bool, f32) {
     let hover = response.hover_pos();
     let dt = super::common::wall_dt(ui);
-    let idle = glowkit_core::with_state(ui, id.with("idle"), || 10.0f32, |s| {
-        if hover.is_some() {
-            *s = 0.0;
-        } else {
-            *s += dt;
-        }
-        *s
-    });
+    let idle = glowkit_core::with_state(
+        ui,
+        id.with("idle"),
+        || 10.0f32,
+        |s| {
+            if hover.is_some() {
+                *s = 0.0;
+            } else {
+                *s += dt;
+            }
+            *s
+        },
+    );
     let time = glowkit_core::time(ui);
     let (target, active) = match hover {
         Some(p) => (p, true),
@@ -277,9 +282,16 @@ impl egui::Widget for LinkPreview {
             let a = q.min(1.0);
             paint::soft_shadow(&layer, r, 14.0, 26.0, vec2(0.0, 12.0), Color32::from_black_alpha((110.0 * a) as u8));
             let frame_c = if t.dark { t.popover } else { Color32::WHITE };
-            layer.rect(r, CornerRadius::same(14), with_alpha(frame_c, a), Stroke::new(1.0, with_alpha(t.border, a)), StrokeKind::Inside);
+            layer.rect(
+                r,
+                CornerRadius::same(14),
+                with_alpha(frame_c, a),
+                Stroke::new(1.0, with_alpha(t.border, a)),
+                StrokeKind::Inside,
+            );
             let img = r.shrink(5.0 * s);
-            let (tex, aspect) = self.texture.unwrap_or((PaintedScene::texture(ui.ctx(), self.scene), PaintedScene::ASPECT));
+            let (tex, aspect) =
+                self.texture.unwrap_or((PaintedScene::texture(ui.ctx(), self.scene), PaintedScene::ASPECT));
             let uv = cover_uv(aspect, img.width() / img.height().max(1.0));
             image_rect(&layer, img, 10.0, tex, uv, Color32::WHITE.gamma_multiply(a));
             // fake browser chrome + url chip
@@ -287,7 +299,11 @@ impl egui::Widget for LinkPreview {
             let pts = paint::rounded_rect_points(bar, 9.0 * s, 4);
             paint::fill_convex_fn(&layer, &pts, 2, |_| with_alpha(Color32::BLACK, 0.32 * a));
             for (i, c) in ["#FF5F57", "#FEBC2E", "#28C840"].iter().enumerate() {
-                layer.circle_filled(bar.left_center() + vec2(10.0 * s + i as f32 * 9.0 * s, 0.0), 2.6 * s, with_alpha(glowkit_core::hex(c), a));
+                layer.circle_filled(
+                    bar.left_center() + vec2(10.0 * s + i as f32 * 9.0 * s, 0.0),
+                    2.6 * s,
+                    with_alpha(glowkit_core::hex(c), a),
+                );
             }
             let domain = self.url.trim_start_matches("https://").trim_start_matches("http://").trim_end_matches('/');
             layer.text(
@@ -488,16 +504,22 @@ impl egui::Widget for TextRevealCard {
         let dt = super::common::wall_dt(ui);
         let time = glowkit_core::time(ui);
         let pad = 30.0;
-        let text_area = Rect::from_min_max(pos2(rect.min.x + pad, rect.min.y + 96.0), pos2(rect.max.x - pad, rect.max.y - 26.0));
+        let text_area =
+            Rect::from_min_max(pos2(rect.min.x + pad, rect.min.y + 96.0), pos2(rect.max.x - pad, rect.max.y - 26.0));
         let hover = response.hover_pos();
-        let idle = glowkit_core::with_state(ui, id.with("idle"), || 10.0f32, |s| {
-            if hover.is_some() {
-                *s = 0.0;
-            } else {
-                *s += dt;
-            }
-            *s
-        });
+        let idle = glowkit_core::with_state(
+            ui,
+            id.with("idle"),
+            || 10.0f32,
+            |s| {
+                if hover.is_some() {
+                    *s = 0.0;
+                } else {
+                    *s += dt;
+                }
+                *s
+            },
+        );
         let target = match hover {
             Some(p) => ((p.x - text_area.min.x) / text_area.width()).clamp(0.0, 1.0),
             None if self.autoplay && idle > 0.6 => {
@@ -529,10 +551,22 @@ impl egui::Widget for TextRevealCard {
         paint::soft_shadow(&painter, rect, 18.0, 30.0, vec2(0.0, 12.0), sc);
         painter.rect(rect, CornerRadius::same(18), face, Stroke::new(1.0, t.border), StrokeKind::Inside);
         if !self.title.is_empty() {
-            painter.text(rect.min + vec2(pad, 30.0), Align2::LEFT_TOP, &self.title, FontId::proportional(17.0), t.foreground);
+            painter.text(
+                rect.min + vec2(pad, 30.0),
+                Align2::LEFT_TOP,
+                &self.title,
+                FontId::proportional(17.0),
+                t.foreground,
+            );
         }
         if !self.description.is_empty() {
-            painter.text(rect.min + vec2(pad, 56.0), Align2::LEFT_TOP, &self.description, FontId::proportional(13.5), t.muted_foreground);
+            painter.text(
+                rect.min + vec2(pad, 56.0),
+                Align2::LEFT_TOP,
+                &self.description,
+                FontId::proportional(13.5),
+                t.muted_foreground,
+            );
         }
         let font = FontId::proportional(self.font_size.min(text_area.height() * 0.8));
         let base_c = if t.dark { Color32::from_gray(64) } else { Color32::from_gray(205) };
@@ -552,7 +586,12 @@ impl egui::Widget for TextRevealCard {
             [t.foreground, mix(t.foreground, t.gradient[1], 0.7)]
         };
         let rr = Rect::from_min_size(pos_r, gr.size());
-        paint::glow_ellipse(&lp, rr.center(), rr.size() * vec2(0.6, 0.9), with_alpha(t.gradient[1], if t.dark { 0.16 } else { 0.1 }));
+        paint::glow_ellipse(
+            &lp,
+            rr.center(),
+            rr.size() * vec2(0.6, 0.9),
+            with_alpha(t.gradient[1], if t.dark { 0.16 } else { 0.1 }),
+        );
         paint::galley_with(&lp, pos_r, &gr, |q| paint::linear_fn(rr, 90.0, &stops)(q));
         // stars over the revealed part
         for i in 0..44u64 {
@@ -560,7 +599,8 @@ impl egui::Widget for TextRevealCard {
             let sy = hash01(i * 7 + 2);
             let sp = 0.6 + hash01(i * 11 + 3);
             let px = text_area.min.x + text_area.width() * ((sx + time * 0.012 * sp).rem_euclid(1.0));
-            let py = text_area.min.y - 10.0 + (text_area.height() + 20.0) * ((sy + (time * 0.4 * sp + i as f32).sin() * 0.03).rem_euclid(1.0));
+            let py = text_area.min.y - 10.0
+                + (text_area.height() + 20.0) * ((sy + (time * 0.4 * sp + i as f32).sin() * 0.03).rem_euclid(1.0));
             if px > split {
                 continue;
             }
@@ -573,7 +613,12 @@ impl egui::Widget for TextRevealCard {
             let top = text_area.min.y - 18.0;
             let bot = text_area.max.y + 10.0;
             let g = [t.gradient[0], t.gradient[1], t.gradient[2]];
-            paint::glow_ellipse(&painter, pos2(split, (top + bot) / 2.0), vec2(14.0, (bot - top) * 0.55), with_alpha(t.gradient[1], 0.35));
+            paint::glow_ellipse(
+                &painter,
+                pos2(split, (top + bot) / 2.0),
+                vec2(14.0, (bot - top) * 0.55),
+                with_alpha(t.gradient[1], 0.35),
+            );
             paint::gradient_polyline(&painter, &[pos2(split, top), pos2(split, bot)], false, 2.0, |u| {
                 let a = (1.0 - (u * 2.0 - 1.0).abs()).powf(0.6);
                 with_alpha(glowkit_core::color::gradient(&g, u), a)

@@ -5,7 +5,9 @@
 use egui::emath::TSTransform;
 use egui::epaint::{ClippedShape, Mesh, Tessellator, Vertex, WHITE_UV};
 use egui::layers::ShapeIdx;
-use egui::{pos2, vec2, Color32, ColorImage, Context, Id, Pos2, Rect, Response, Shape, TextureHandle, TextureId, Ui, Vec2};
+use egui::{
+    pos2, vec2, Color32, ColorImage, Context, Id, Pos2, Rect, Response, Shape, TextureHandle, TextureId, Ui, Vec2,
+};
 use glowkit_core::noise::noise2;
 
 // ---------------------------------------------------------------------------------------------
@@ -614,7 +616,9 @@ fn scene_image(index: usize, w: usize, h: usize) -> ColorImage {
         .iter()
         .enumerate()
         .map(|(k, (base, amp, freq, _, sharp))| {
-            (0..w).map(|x| base - amp * ridge((x as f32 + 0.5) / w as f32, 3.7 * k as f32 + 1.3, *freq, *sharp)).collect()
+            (0..w)
+                .map(|x| base - amp * ridge((x as f32 + 0.5) / w as f32, 3.7 * k as f32 + 1.3, *freq, *sharp))
+                .collect()
         })
         .collect();
     for y in 0..h {

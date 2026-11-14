@@ -164,8 +164,8 @@ impl<'a> Item<'a> {
         let pad_x = pad;
         let pad_y = if self.size == ItemSize::Sm { 9.0 } else { pad - 2.0 };
         let has_media = self.media.is_some();
-        let trailing = if self.actions.is_some() { self.actions_width } else { 0.0 }
-            + if self.chevron { 24.0 } else { 0.0 };
+        let trailing =
+            if self.actions.is_some() { self.actions_width } else { 0.0 } + if self.chevron { 24.0 } else { 0.0 };
         let text_x = pad_x + if has_media { media_s + gap } else { 0.0 };
         let text_w = (w - text_x - pad_x - trailing - if trailing > 0.0 { 10.0 } else { 0.0 }).max(40.0);
         let title_g = ui.painter().layout(self.title.clone(), FontId::proportional(title_s), t.foreground, text_w);
@@ -203,7 +203,10 @@ impl<'a> Item<'a> {
             }
             // media
             if let Some(m) = &self.media {
-                let mr = Rect::from_min_size(pos2(rect.min.x + pad_x, rect.center().y - media_s / 2.0), vec2(media_s, media_s));
+                let mr = Rect::from_min_size(
+                    pos2(rect.min.x + pad_x, rect.center().y - media_s / 2.0),
+                    vec2(media_s, media_s),
+                );
                 paint_media(ui, m, mr, &t, self.variant);
             }
             // text block, vertically centered
@@ -225,8 +228,7 @@ impl<'a> Item<'a> {
         if let Some(actions) = self.actions {
             let right = rect.max.x - pad_x - if self.chevron { 24.0 } else { 0.0 };
             let ar = Rect::from_min_max(pos2(right - self.actions_width, rect.min.y), pos2(right, rect.max.y));
-            let mut child =
-                ui.new_child(UiBuilder::new().max_rect(ar).layout(Layout::right_to_left(Align::Center)));
+            let mut child = ui.new_child(UiBuilder::new().max_rect(ar).layout(Layout::right_to_left(Align::Center)));
             child.spacing_mut().item_spacing.x = 6.0;
             actions(&mut child);
         }

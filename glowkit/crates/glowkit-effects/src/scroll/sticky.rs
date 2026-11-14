@@ -1,5 +1,8 @@
 use super::common::{drive_scroll, scroll_rail};
-use egui::{pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder};
+use egui::{
+    pos2, vec2, Align2, Color32, CornerRadius, CursorIcon, FontId, Rect, Response, Sense, Stroke, StrokeKind, Ui,
+    UiBuilder,
+};
 use glowkit_core::color::{mix, shade, with_alpha};
 use glowkit_core::{paint, Theme};
 
@@ -173,7 +176,10 @@ impl<'a> StickyScrollReveal<'a> {
         let radius = (t.radius * 1.6).round();
         painter.rect(rect, CornerRadius::same(radius as u8), bg, Stroke::new(1.0, t.border), StrokeKind::Inside);
         // text column
-        let text_clip = Rect::from_min_max(pos2(rect.min.x + radius, rect.min.y + 1.0), pos2(text_x + text_w + 10.0, rect.max.y - 1.0));
+        let text_clip = Rect::from_min_max(
+            pos2(rect.min.x + radius, rect.min.y + 1.0),
+            pos2(text_x + text_w + 10.0, rect.max.y - 1.0),
+        );
         let tp = painter.with_clip_rect(text_clip.intersect(ui.clip_rect()));
         for (i, (g, b)) in galleys.iter().enumerate() {
             let y = rect.min.y + tops[i] - s;
@@ -182,7 +188,11 @@ impl<'a> StickyScrollReveal<'a> {
             }
             let a = 0.28 + 0.72 * weights[i];
             tp.galley(pos2(text_x, y), g.clone(), with_alpha(t.foreground, a));
-            tp.galley_with_override_text_color(pos2(text_x, y + g.size().y + 12.0), b.clone(), with_alpha(t.muted_foreground, a));
+            tp.galley_with_override_text_color(
+                pos2(text_x, y + g.size().y + 12.0),
+                b.clone(),
+                with_alpha(t.muted_foreground, a),
+            );
             // accent tick next to the active title
             let [c0, _] = self.colors(&t, i);
             let tick = Rect::from_min_size(pos2(text_x - 16.0, y + 4.0), vec2(3.0, g.size().y - 8.0));
@@ -190,7 +200,8 @@ impl<'a> StickyScrollReveal<'a> {
         }
         paint::fade_edges_vertical(&tp, text_clip.shrink2(vec2(0.0, 1.0)), 40.0, bg);
         // sticky panel
-        let panel_rect = Rect::from_center_size(pos2(rect.max.x - pad - panel_w / 2.0, rect.center().y), vec2(panel_w, panel_h));
+        let panel_rect =
+            Rect::from_center_size(pos2(rect.max.x - pad - panel_w / 2.0, rect.center().y), vec2(panel_w, panel_h));
         let sc = if t.dark { Color32::from_black_alpha(150) } else { Color32::from_rgba_unmultiplied(30, 30, 70, 40) };
         paint::soft_shadow(&painter, panel_rect, 16.0, 26.0, vec2(0.0, 10.0), sc);
         for (i, w) in weights.iter().enumerate() {
@@ -218,7 +229,12 @@ impl egui::Widget for StickyScrollReveal<'_> {
             let a = ui.opacity();
             let stops = [cols[i][0], cols[i][1]];
             paint::gradient_rect(p, r, 16.0, 45.0, &stops);
-            p.rect_stroke(r, CornerRadius::same(16), Stroke::new(1.0, with_alpha(Color32::WHITE, 0.2 * a)), StrokeKind::Inside);
+            p.rect_stroke(
+                r,
+                CornerRadius::same(16),
+                Stroke::new(1.0, with_alpha(Color32::WHITE, 0.2 * a)),
+                StrokeKind::Inside,
+            );
             // faint grid texture
             let grid = with_alpha(Color32::WHITE, 0.07);
             let mut x = r.min.x + 20.0;
@@ -233,7 +249,13 @@ impl egui::Widget for StickyScrollReveal<'_> {
             }
             let s = &sections[i];
             if !s.icon.is_empty() {
-                p.text(r.center() - vec2(0.0, 14.0), Align2::CENTER_CENTER, &s.icon, FontId::proportional(r.height() * 0.3), Color32::WHITE);
+                p.text(
+                    r.center() - vec2(0.0, 14.0),
+                    Align2::CENTER_CENTER,
+                    &s.icon,
+                    FontId::proportional(r.height() * 0.3),
+                    Color32::WHITE,
+                );
             }
             p.text(
                 pos2(r.center().x, r.max.y - 30.0),
