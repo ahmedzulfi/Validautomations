@@ -33,7 +33,7 @@ Some items are hard or impossible in an immediate-mode GPU painter without image
 | [Tremor](https://tremor.so) | 12 / 12 | 100% |
 | **Total** | **679 / 704** | **96%** |
 
-glowkit ships **621** components; the gallery showcases **603** of them (plain primitives are kept as building blocks but not showcased).
+glowkit ships **700** components; the gallery showcases **682** of them (plain primitives are kept as building blocks but not showcased).
 
 ## React Bits
 
@@ -880,6 +880,9 @@ glowkit ships **621** components; the gallery showcases **603** of them (plain p
 * **Clerk**: Sign-in
 * **CodePen**: Liquid button, Matrix Digital Rain, Neon button
 * **Codrops**: Image Trail, elastic trails
+* **CopilotKit**: Agentic plan, Copilot Textarea, CopilotPopup, CopilotSidebar, CopilotTextarea, Generative UI, Human-in-the-loop, Suggestions, Voice
+* **Creance**: AgentHandoffBanner, AgentRunLayout, ApprovalPrompt, BudgetMeter, DiffLine, DiffReview, ErrorCard, KillSwitch, NeedsYouInbox, PlanEditor, QuestionCard, RiskLabel, RunTimeline, StatusBadge, ToolCallCard
+* **Creative Tim**: Multi-step Agent, Tool Use, Workflow Status
 * **Cult UI**: Animated Link, Animated link, Dynamic Island, Floating Nav, Glitch Text, Text Roll, Text Scramble, Text Wave
 * **DaVinci Resolve**: Edit page
 * **Datadog**: Live tail
@@ -929,6 +932,7 @@ glowkit ships **621** components; the gallery showcases **603** of them (plain p
 * **Plotly**: 3D bars
 * **Premiere Pro**: Timeline
 * **Radix**: Dialog, Dropdown Menu, Tooltip
+* **ReUI**: Action Approval Inbox, Agent Eval Report, Agent Fleet Overview, Agent Memory, Agent Run Queue, Failed Run Triage, Playbook Builder, Run Step Trace, Tool Access Matrix
 * **React Spring**: useSpring
 * **Recharts**: AreaChart, BarChart, ComposedChart, LineChart, PieChart, RadarChart, RadialBarChart, ScatterChart, Tiny Line/Area/Bar, Treemap
 * **Remotion**: Timeline
@@ -949,6 +953,7 @@ glowkit ships **621** components; the gallery showcases **603** of them (plain p
 * **Tailark**: About, Announcement, Blog, Call to Action, Contact, FAQs, Features, Footer, Header, Hero Section, Hero with Image, Integrations, Landing, Login, Logo Cloud, Newsletter, Not Found, Pricing, Sign Up, Stats, Steps, Team, Testimonials
 * **Tailwind UI**: Billing settings, CRM, Calendars, Chat, Ecommerce admin, Empty states, File grid, Finance dashboard, Kanban, Mobile app shell, Product lists, Project list, Settings screens, Sidebar layout, Sign-in forms, Stacked layout, Stats + charts dashboard, Sticky header
 * **TanStack Table**: Virtualized
+* **Tool UI**: Chart, Code Block, Data Table, Form, Image Gallery, Link Preview, Map, Option List, Plan, Progress Tracker, Weather Widget
 * **TradingView Lightweight Charts**: Candlestick
 * **Trello**: Board
 * **Twenty**: People table
@@ -961,7 +966,8 @@ glowkit ships **621** components; the gallery showcases **603** of them (plain p
 * **Vidstack**: Time Slider
 * **Whimsical**: Mind maps
 * **XMind**: Mind map
-* **assistant-ui**: Artifacts, Branch Picker, Composer, Context usage, Human-in-the-loop approval, Markdown Text, Message, Model Picker, Reasoning, Thread, Thread Suggestions, Thread Viewport, Tool UI, Tool progress
+* **affectUI**: Agent Crew, Agent Fleet, Agent Handoff, Agent Inbox, Agent Plan, Agent Trail, Agent Tree, Approval Card, Approval Gates, Context Map, Context Window, Cost Waterfall, Decision Card, Fallback Chain, Fan-out Grid, Inline Diff, Memory Panel, Review Center, Run Controls, Running Now, Scheduled Runs, Tool Access Map, Trace Waterfall
+* **assistant-ui**: Agent plan, Artifacts, Assistant modal, Assistant sidebar, Attachments, Branch Picker, Chart, Code runner, Composer, Composer mode, Composer trigger popover, Context, Context usage, Current weather, Data table, Edit Composer, Empty state, Geo map, Human-in-the-loop approval, Image, Inline citation, Job progress, Launcher, Link preview, Markdown Text, Mentions, Message, Model Picker, Model selector, Option list, Quota banner, Quote, Reasoning, Selection Toolbar, Slash commands, Sources, Table reservation, Thread, Thread List, Thread Suggestions, Thread Viewport, Thread Welcome, Thread search, Tool UI, Tool progress, Voice conversation
 * **cmdk**: Command Menu
 * **dnd kit**: Sortable
 * **dnd-kit**: Sortable multiple containers
@@ -970,6 +976,7 @@ glowkit ships **621** components; the gallery showcases **603** of them (plain p
 * **iOS**: Segmented Control, Tab bar
 * **llm-ui**: Streaming
 * **n8n**: Workflow canvas
+* **nextui (agent)**: Agent Steps, Autocomplete, Chat History, Citations, Code Execution, Conversation, File Upload, Mode Selector, Model Selector, Prompt Composer, Usage Limit, Voice Mode, Welcome Screen
 * **react-resizable-panels**: PanelGroup
 * **react-three-fiber**: Canvas, data viz
 * **rough.js**: Sketchy shapes

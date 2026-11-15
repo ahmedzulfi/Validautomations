@@ -74,7 +74,6 @@ pub(super) fn ghost(ui: &Ui, key: &str, target: Pos2, visible: bool, pressed: bo
     p
 }
 
-
 // ---------------------------------------------------------------------------------------------
 
 const R_SUMMARY: &str = "Here's a tighter version:\n\n**Q3 in one line:** revenue grew **18%** on the back of self-serve, while churn fell to **2.1%**.\n\n- Expansion revenue doubled in EMEA\n- Support tickets dropped 30% after the onboarding revamp\n- Next: price the team plan before Q4";
@@ -197,7 +196,11 @@ fn demo_thread(ui: &mut Ui) {
         set_mem(ui, "draft", text);
         ui.add_space(6.0);
         ui.horizontal(|ui| {
-            ui.add(glowkit_effects::ControlSlider::new("Stream speed", &mut speed, 20.0..=240.0).suffix(" ch/s").width(260.0));
+            ui.add(
+                glowkit_effects::ControlSlider::new("Stream speed", &mut speed, 20.0..=240.0)
+                    .suffix(" ch/s")
+                    .width(260.0),
+            );
         });
         d.area(ui, Rect::from_min_max(top, ui.cursor().min + vec2(720.0, 0.0)));
         let _ = t;

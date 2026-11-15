@@ -20,6 +20,8 @@ pub use glowkit_core::{anim, color, egui, noise, paint, rng, Theme};
 
 #[cfg(feature = "three-d")]
 pub use glowkit_3d as three_d;
+#[cfg(feature = "agents")]
+pub use glowkit_agents as agents;
 #[cfg(feature = "ai")]
 pub use glowkit_ai as ai;
 #[cfg(feature = "backgrounds")]
@@ -36,8 +38,6 @@ pub use glowkit_components as components;
 pub use glowkit_effects as effects;
 #[cfg(feature = "interactions")]
 pub use glowkit_interactions as interactions;
-#[cfg(feature = "agents")]
-pub use glowkit_agents as agents;
 #[cfg(feature = "motion")]
 pub use glowkit_motion as motion;
 #[cfg(feature = "templates")]

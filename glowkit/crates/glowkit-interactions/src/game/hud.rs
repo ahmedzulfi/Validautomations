@@ -224,7 +224,14 @@ impl egui::Widget for GameMinimap<'_> {
             mix(col, fogged, f)
         };
         // drop shadow / frame back
-        paint::soft_shadow(painter, Rect::from_center_size(c, Vec2::splat(self.size)), if self.round { r } else { 10.0 }, 18.0, vec2(0.0, 6.0), Color32::from_black_alpha(150));
+        paint::soft_shadow(
+            painter,
+            Rect::from_center_size(c, Vec2::splat(self.size)),
+            if self.round { r } else { 10.0 },
+            18.0,
+            vec2(0.0, 6.0),
+            Color32::from_black_alpha(150),
+        );
         if self.round {
             let rings = 16;
             let segs = 56;
@@ -254,9 +261,12 @@ impl egui::Widget for GameMinimap<'_> {
             painter.add(Shape::mesh(m));
         } else {
             let mr = Rect::from_center_size(c, Vec2::splat(self.size));
-            paint::shader_grid(painter, mr, 30, 30, |uv| shade_px(pos2(mr.min.x + uv.x * mr.width(), mr.min.y + uv.y * mr.height())));
+            paint::shader_grid(painter, mr, 30, 30, |uv| {
+                shade_px(pos2(mr.min.x + uv.x * mr.width(), mr.min.y + uv.y * mr.height()))
+            });
         }
-        let inside = |p: Vec2| if self.round { p.length() <= r - 7.0 } else { p.x.abs() <= r - 7.0 && p.y.abs() <= r - 7.0 };
+        let inside =
+            |p: Vec2| if self.round { p.length() <= r - 7.0 } else { p.x.abs() <= r - 7.0 && p.y.abs() <= r - 7.0 };
         let clamp_edge = |p: Vec2| {
             if self.round {
                 p.normalized() * (r - 8.0)
@@ -286,7 +296,10 @@ impl egui::Widget for GameMinimap<'_> {
             let n = 20;
             for i in 0..=n {
                 let aa = a - 0.9 * i as f32 / n as f32;
-                m.colored_vertex(c + vec2(aa.cos(), aa.sin()) * (r - 1.0), with_alpha(pal.accent, 0.28 * (1.0 - i as f32 / n as f32)));
+                m.colored_vertex(
+                    c + vec2(aa.cos(), aa.sin()) * (r - 1.0),
+                    with_alpha(pal.accent, 0.28 * (1.0 - i as f32 / n as f32)),
+                );
             }
             for i in 0..n as u32 {
                 m.add_triangle(0, 1 + i, 2 + i);
@@ -332,7 +345,11 @@ impl egui::Widget for GameMinimap<'_> {
                         let dir = d.normalized();
                         let tip = q + dir * 9.0;
                         let perp = vec2(-dir.y, dir.x);
-                        painter.add(Shape::convex_polygon(vec![tip, q + dir * 4.0 + perp * 4.0, q + dir * 4.0 - perp * 4.0], hex("#FFC94A"), Stroke::NONE));
+                        painter.add(Shape::convex_polygon(
+                            vec![tip, q + dir * 4.0 + perp * 4.0, q + dir * 4.0 - perp * 4.0],
+                            hex("#FFC94A"),
+                            Stroke::NONE,
+                        ));
                     }
                 }
                 GameMarkerKind::Ping => {
@@ -394,7 +411,10 @@ impl egui::Widget for GameMinimap<'_> {
                         let a = k as f32 / 72.0 * TAU + rot;
                         let l = if k % 6 == 0 { 6.0 } else { 3.0 };
                         let d = vec2(a.cos(), a.sin());
-                        painter.line_segment([c + d * (r + 3.0), c + d * (r + 3.0 + l)], Stroke::new(1.0, with_alpha(edge_c, 0.6)));
+                        painter.line_segment(
+                            [c + d * (r + 3.0), c + d * (r + 3.0 + l)],
+                            Stroke::new(1.0, with_alpha(edge_c, 0.6)),
+                        );
                     }
                 }
                 GameStyle::Minimal => {
@@ -463,7 +483,17 @@ pub struct GameAmmoCounter<'a> {
 impl<'a> GameAmmoCounter<'a> {
     /// `mag` rounds loaded out of `mag_size`, `reserve` spare rounds.
     pub fn new(mag: u32, mag_size: u32, reserve: u32) -> Self {
-        Self { mag, mag_size: mag_size.max(1), reserve, reload: None, weapon: "", icon: GameIcon::Rifle, style: GameStyle::SciFi, palette: None, cues: None }
+        Self {
+            mag,
+            mag_size: mag_size.max(1),
+            reserve,
+            reload: None,
+            weapon: "",
+            icon: GameIcon::Rifle,
+            style: GameStyle::SciFi,
+            palette: None,
+            cues: None,
+        }
     }
     /// Reload progress 0..1 while reloading (`None` when not reloading).
     pub fn reloading(mut self, p: Option<f32>) -> Self {
@@ -526,8 +556,19 @@ impl egui::Widget for GameAmmoCounter<'_> {
         frame(painter, rect, self.style, &pal, 0.0);
         let text_c = if matches!(self.style, GameStyle::Fantasy) { pal.text } else { pal.hud };
         // weapon line
-        self.icon.paint(painter, pos2(rect.min.x + 30.0, rect.min.y + 24.0), 34.0, if self.style == GameStyle::Fantasy { hex("#4A3A2A") } else { self.icon.tint() });
-        painter.text(pos2(rect.min.x + 54.0, rect.min.y + 24.0), Align2::LEFT_CENTER, self.weapon.to_uppercase(), FontId::proportional(11.0), pal.dim);
+        self.icon.paint(
+            painter,
+            pos2(rect.min.x + 30.0, rect.min.y + 24.0),
+            34.0,
+            if self.style == GameStyle::Fantasy { hex("#4A3A2A") } else { self.icon.tint() },
+        );
+        painter.text(
+            pos2(rect.min.x + 54.0, rect.min.y + 24.0),
+            Align2::LEFT_CENTER,
+            self.weapon.to_uppercase(),
+            FontId::proportional(11.0),
+            pal.dim,
+        );
         // count
         let kick = if shot { (1.0 - since / 0.18).max(0.0) } else { 0.0 };
         let mag_c = if self.mag == 0 {
@@ -545,11 +586,18 @@ impl egui::Widget for GameAmmoCounter<'_> {
             blur(painter, gr.min, &g, with_alpha(if low { pal.warn } else { pal.accent }, 0.5), 5.0);
         }
         painter.galley(gr.min, g, mag_c);
-        painter.text(pos2(rect.max.x - 84.0, rect.min.y + 70.0), Align2::LEFT_CENTER, format!("/ {}", self.reserve), small, with_alpha(text_c, 0.65));
+        painter.text(
+            pos2(rect.max.x - 84.0, rect.min.y + 70.0),
+            Align2::LEFT_CENTER,
+            format!("/ {}", self.reserve),
+            small,
+            with_alpha(text_c, 0.65),
+        );
         // bullets row
         let n = self.mag_size.min(40) as usize;
         let shown_loaded = ((self.mag as f32 / self.mag_size as f32) * n as f32).round() as usize;
-        let row = Rect::from_min_max(pos2(rect.min.x + 16.0, rect.max.y - 24.0), pos2(rect.max.x - 16.0, rect.max.y - 12.0));
+        let row =
+            Rect::from_min_max(pos2(rect.min.x + 16.0, rect.max.y - 24.0), pos2(rect.max.x - 16.0, rect.max.y - 12.0));
         let bw = (row.width() / n as f32).min(9.0);
         let reload_p = self.reload.unwrap_or(0.0).clamp(0.0, 1.0);
         for i in 0..n {
@@ -558,7 +606,11 @@ impl egui::Widget for GameAmmoCounter<'_> {
             let refill = self.reload.is_some() && (i as f32) < reload_p * n as f32;
             let b = Rect::from_center_size(pos2(x, row.center().y), vec2((bw * 0.55).max(2.0), row.height()));
             let col = if loaded {
-                if low { pal.warn } else { hex("#E9C46A") }
+                if low {
+                    pal.warn
+                } else {
+                    hex("#E9C46A")
+                }
             } else if refill {
                 with_alpha(pal.accent, 0.8)
             } else {
@@ -577,15 +629,31 @@ impl egui::Widget for GameAmmoCounter<'_> {
             let ang = since * 22.0;
             let d = vec2(ang.cos(), ang.sin()) * 4.0;
             paint::line(painter, p - d, p + d, 3.0, with_alpha(hex("#E9C46A"), 1.0 - since / 0.6));
-            paint::glow(painter, pos2(row.max.x + 4.0, row.center().y), 16.0 * (1.0 - since / 0.2).max(0.0), with_alpha(hex("#FFD27A"), 0.6));
+            paint::glow(
+                painter,
+                pos2(row.max.x + 4.0, row.center().y),
+                16.0 * (1.0 - since / 0.2).max(0.0),
+                with_alpha(hex("#FFD27A"), 0.6),
+            );
         }
         if reloaded {
-            paint::soft_shadow(painter, rect, 6.0, 20.0, vec2(0.0, 0.0), with_alpha(pal.accent, 0.4 * (1.0 - since / 0.6)));
+            paint::soft_shadow(
+                painter,
+                rect,
+                6.0,
+                20.0,
+                vec2(0.0, 0.0),
+                with_alpha(pal.accent, 0.4 * (1.0 - since / 0.6)),
+            );
         }
         // status line
         let status = if let Some(p) = self.reload {
             let w = row.width();
-            painter.rect_filled(Rect::from_min_size(pos2(row.min.x, row.min.y - 6.0), vec2(w * p, 2.0)), 0.0, pal.accent);
+            painter.rect_filled(
+                Rect::from_min_size(pos2(row.min.x, row.min.y - 6.0), vec2(w * p, 2.0)),
+                0.0,
+                pal.accent,
+            );
             Some(("RELOADING", pal.accent))
         } else if self.mag == 0 {
             Some(("RELOAD", pal.bad))
@@ -596,7 +664,13 @@ impl egui::Widget for GameAmmoCounter<'_> {
         };
         if let Some((s, c)) = status {
             let a = if self.reload.is_some() { 1.0 } else { 0.55 + 0.45 * (time * 8.0).sin() };
-            painter.text(pos2(rect.min.x + 16.0, rect.min.y + 58.0), Align2::LEFT_CENTER, s, FontId::monospace(12.0), with_alpha(c, a));
+            painter.text(
+                pos2(rect.min.x + 16.0, rect.min.y + 58.0),
+                Align2::LEFT_CENTER,
+                s,
+                FontId::monospace(12.0),
+                with_alpha(c, a),
+            );
         }
         resp
     }
@@ -632,7 +706,19 @@ pub struct GameCooldownIcon<'a> {
 impl<'a> GameCooldownIcon<'a> {
     /// An ability with `remaining` of `total` seconds of cooldown left.
     pub fn new(icon: GameIcon, remaining: f32, total: f32) -> Self {
-        Self { icon, remaining, total: total.max(0.01), key: "", charges: None, disabled: false, size: 64.0, color: None, style: GameStyle::SciFi, palette: None, cues: None }
+        Self {
+            icon,
+            remaining,
+            total: total.max(0.01),
+            key: "",
+            charges: None,
+            disabled: false,
+            size: 64.0,
+            color: None,
+            style: GameStyle::SciFi,
+            palette: None,
+            cues: None,
+        }
     }
     /// Keybind label.
     pub fn key(mut self, k: &'a str) -> Self {
@@ -726,13 +812,25 @@ impl egui::Widget for GameCooldownIcon<'_> {
         let painter = ui.painter();
         let c = rect.center();
         let sr = Rect::from_center_size(c, Vec2::splat(s * scale));
-        let lit = if hover { 0.8 } else if became_ready { (1.0 - since).max(0.0) } else { 0.0 };
+        let lit = if hover {
+            0.8
+        } else if became_ready {
+            (1.0 - since).max(0.0)
+        } else {
+            0.0
+        };
         if ready && !self.disabled {
             paint::glow(painter, c, s * 0.75, with_alpha(pal.accent, 0.12 + 0.2 * lit));
         }
         slot(painter, sr, self.style, &pal, None, lit);
         let ic = self.color.unwrap_or_else(|| self.icon.tint());
-        let ic = if self.disabled { mix(ic, hex("#3A4A80"), 0.6) } else if !ready { mix(ic, hex("#808080"), 0.45) } else { ic };
+        let ic = if self.disabled {
+            mix(ic, hex("#3A4A80"), 0.6)
+        } else if !ready {
+            mix(ic, hex("#808080"), 0.45)
+        } else {
+            ic
+        };
         self.icon.paint(painter, c, s * 0.62 * scale, ic);
         if !ready {
             let frac = (self.remaining / self.total).clamp(0.0, 1.0);
@@ -743,8 +841,20 @@ impl egui::Widget for GameCooldownIcon<'_> {
             let k = half / d.x.abs().max(d.y.abs()).max(1e-4);
             painter.line_segment([c, c + d * k], Stroke::new(2.0, with_alpha(pal.accent, 0.9)));
             paint::glow(painter, c + d * k, 8.0, with_alpha(pal.accent, 0.6));
-            let txt = if self.remaining < 3.0 { format!("{:.1}", self.remaining) } else { format!("{}", self.remaining.ceil() as i64) };
-            outlined(painter, c, Align2::CENTER_CENTER, &txt, FontId::proportional(s * 0.32), Color32::WHITE, Color32::from_black_alpha(230));
+            let txt = if self.remaining < 3.0 {
+                format!("{:.1}", self.remaining)
+            } else {
+                format!("{}", self.remaining.ceil() as i64)
+            };
+            outlined(
+                painter,
+                c,
+                Align2::CENTER_CENTER,
+                &txt,
+                FontId::proportional(s * 0.32),
+                Color32::WHITE,
+                Color32::from_black_alpha(230),
+            );
         }
         if self.disabled {
             painter.rect_filled(sr.shrink(2.0), 4.0, with_alpha(hex("#1E3A8A"), 0.35));
@@ -765,7 +875,15 @@ impl egui::Widget for GameCooldownIcon<'_> {
             painter.text(kr.center(), Align2::CENTER_CENTER, self.key, FontId::monospace(10.0), Color32::WHITE);
         }
         if let Some(n) = self.charges {
-            outlined(painter, sr.max - vec2(4.0, 2.0), Align2::RIGHT_BOTTOM, &n.to_string(), FontId::proportional(s * 0.26), Color32::WHITE, Color32::BLACK);
+            outlined(
+                painter,
+                sr.max - vec2(4.0, 2.0),
+                Align2::RIGHT_BOTTOM,
+                &n.to_string(),
+                FontId::proportional(s * 0.26),
+                Color32::WHITE,
+                Color32::BLACK,
+            );
         }
         resp
     }
@@ -898,7 +1016,8 @@ impl egui::Widget for GameCrosshair {
             }
             GameCrosshairShape::Chevron => {
                 let o = gap * 0.6;
-                let pts = [c + vec2(-9.0 * unit, 6.0 * unit + o), c + vec2(0.0, o), c + vec2(9.0 * unit, 6.0 * unit + o)];
+                let pts =
+                    [c + vec2(-9.0 * unit, 6.0 * unit + o), c + vec2(0.0, o), c + vec2(9.0 * unit, 6.0 * unit + o)];
                 ol_line(painter, pts[0], pts[1], w, col);
                 ol_line(painter, pts[1], pts[2], w, col);
                 painter.circle_filled(c - vec2(0.0, 2.0), w, col);
@@ -917,7 +1036,12 @@ impl egui::Widget for GameCrosshair {
                 let r = self.size * 0.46;
                 painter.circle_stroke(c, r, Stroke::new(4.0, Color32::from_black_alpha(140)));
                 painter.circle_stroke(c, r, Stroke::new(1.5, with_alpha(col, 0.8)));
-                for (a, b) in [(c - vec2(r, 0.0), c - vec2(gap, 0.0)), (c + vec2(gap, 0.0), c + vec2(r, 0.0)), (c + vec2(0.0, gap), c + vec2(0.0, r)), (c - vec2(0.0, r), c - vec2(0.0, gap))] {
+                for (a, b) in [
+                    (c - vec2(r, 0.0), c - vec2(gap, 0.0)),
+                    (c + vec2(gap, 0.0), c + vec2(r, 0.0)),
+                    (c + vec2(0.0, gap), c + vec2(0.0, r)),
+                    (c - vec2(0.0, r), c - vec2(0.0, gap)),
+                ] {
                     ol_line(painter, a, b, 1.0, col);
                 }
                 for k in 1..5 {

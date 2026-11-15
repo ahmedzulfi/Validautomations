@@ -75,7 +75,8 @@ impl egui::Widget for AgentModeSwitcher<'_> {
         let seg = self.seg_width;
         let w = seg * n as f32 + 8.0;
         let h = if self.describe { 40.0 + 30.0 } else { 40.0 };
-        let (rect, resp) = ui.allocate_exact_size(vec2(w.max(if self.describe { 300.0 } else { 0.0 }), h), Sense::hover());
+        let (rect, resp) =
+            ui.allocate_exact_size(vec2(w.max(if self.describe { 300.0 } else { 0.0 }), h), Sense::hover());
         let track = Rect::from_min_size(pos2(rect.center().x - w / 2.0, rect.min.y), vec2(w, 40.0));
         *self.selected = (*self.selected).min(n - 1);
         let x = glowkit_core::anim::spring(ui, id.with("x"), *self.selected as f32, 300.0, 24.0);
@@ -96,7 +97,8 @@ impl egui::Widget for AgentModeSwitcher<'_> {
             let on = (1.0 - (x - i as f32).abs()).clamp(0.0, 1.0);
             let hk = toggle(ui, id.with(("h", i)), b.hovered());
             let e = since_change(ui, id.with(("sel", i)), (*self.selected == i) as u64);
-            let jump = if *self.selected == i && e < 0.45 { (e / 0.45 * std::f32::consts::PI).sin() * 3.0 } else { 0.0 };
+            let jump =
+                if *self.selected == i && e < 0.45 { (e / 0.45 * std::f32::consts::PI).sin() * 3.0 } else { 0.0 };
             keep_alive(ui, e, 0.45);
             let col = mix(mix(t.muted_foreground, t.foreground, hk * 0.6), m.color, on);
             let tw = text_w(ui, &m.name, 13.0);
@@ -104,9 +106,23 @@ impl egui::Widget for AgentModeSwitcher<'_> {
             let p = ui.painter();
             icon(p, m.icon, pos2(x0 + 7.0, sr.center().y - jump), 14.0, col);
             if on > 0.5 {
-                text_bold(p, pos2(x0 + 20.0, sr.center().y), Align2::LEFT_CENTER, &m.name, 13.0, mix(t.muted_foreground, t.foreground, on));
+                text_bold(
+                    p,
+                    pos2(x0 + 20.0, sr.center().y),
+                    Align2::LEFT_CENTER,
+                    &m.name,
+                    13.0,
+                    mix(t.muted_foreground, t.foreground, on),
+                );
             } else {
-                text(p, pos2(x0 + 20.0, sr.center().y), Align2::LEFT_CENTER, &m.name, 13.0, mix(t.muted_foreground, t.foreground, on.max(hk * 0.6)));
+                text(
+                    p,
+                    pos2(x0 + 20.0, sr.center().y),
+                    Align2::LEFT_CENTER,
+                    &m.name,
+                    13.0,
+                    mix(t.muted_foreground, t.foreground, on.max(hk * 0.6)),
+                );
             }
             if b.clicked() {
                 changed = Some(i);
@@ -118,7 +134,14 @@ impl egui::Widget for AgentModeSwitcher<'_> {
                 let d = x - i as f32;
                 let a = (1.0 - d.abs() * 1.6).clamp(0.0, 1.0);
                 if a > 0.01 {
-                    text(p, pos2(rect.center().x - d * 30.0, track.max.y + 18.0), Align2::CENTER_CENTER, &m.description, 12.5, with_alpha(t.muted_foreground, a));
+                    text(
+                        p,
+                        pos2(rect.center().x - d * 30.0, track.max.y + 18.0),
+                        Align2::CENTER_CENTER,
+                        &m.description,
+                        12.5,
+                        with_alpha(t.muted_foreground, a),
+                    );
                 }
             }
         }
@@ -155,7 +178,16 @@ pub struct ModelSpec {
 impl ModelSpec {
     /// A model entry.
     pub fn new(name: impl Into<String>, provider: impl Into<String>, color: Color32) -> Self {
-        Self { name: name.into(), provider: provider.into(), description: String::new(), speed: 2, cost: 2, context: "128K".into(), tags: Vec::new(), color }
+        Self {
+            name: name.into(),
+            provider: provider.into(),
+            description: String::new(),
+            speed: 2,
+            cost: 2,
+            context: "128K".into(),
+            tags: Vec::new(),
+            color,
+        }
     }
     /// Description line.
     pub fn description(mut self, d: impl Into<String>) -> Self {
@@ -267,7 +299,13 @@ impl<'a> ModelPickerRich<'a> {
         let mut rows = Vec::new();
         if ok > 0.01 {
             let q = st.query.to_lowercase();
-            let items: Vec<usize> = (0..n).filter(|&i| q.is_empty() || self.models[i].name.to_lowercase().contains(&q) || self.models[i].provider.to_lowercase().contains(&q)).collect();
+            let items: Vec<usize> = (0..n)
+                .filter(|&i| {
+                    q.is_empty()
+                        || self.models[i].name.to_lowercase().contains(&q)
+                        || self.models[i].provider.to_lowercase().contains(&q)
+                })
+                .collect();
             let row_h = 58.0;
             let ph = 52.0 + items.len().max(1) as f32 * row_h + 10.0;
             let pos = pos2(tr.min.x, tr.max.y + 8.0 - (1.0 - ok) * 8.0);
@@ -287,10 +325,22 @@ impl<'a> ModelPickerRich<'a> {
                 p.rect_filled(sr, cr(10.0), well(&t));
                 icon(p, Icon::Search, pos2(sr.min.x + 16.0, sr.center().y), 13.0, t.muted_foreground);
                 let te = Rect::from_min_max(pos2(sr.min.x + 30.0, sr.min.y), sr.max - vec2(10.0, 0.0));
-                ui.put(te, egui::TextEdit::singleline(&mut st.query).frame(egui::Frame::NONE).margin(egui::Margin::ZERO).font(FontId::proportional(13.0)).align(Align2::LEFT_CENTER).hint_text("Search models").desired_width(te.width()));
+                ui.put(
+                    te,
+                    egui::TextEdit::singleline(&mut st.query)
+                        .frame(egui::Frame::NONE)
+                        .margin(egui::Margin::ZERO)
+                        .font(FontId::proportional(13.0))
+                        .align(Align2::LEFT_CENTER)
+                        .hint_text("Search models")
+                        .desired_width(te.width()),
+                );
                 let list_top = sr.max.y + 6.0;
                 for (k, &i) in items.iter().enumerate() {
-                    let rr = Rect::from_min_size(pos2(r.min.x + 6.0, list_top + k as f32 * row_h), vec2(pw - 12.0, row_h - 2.0));
+                    let rr = Rect::from_min_size(
+                        pos2(r.min.x + 6.0, list_top + k as f32 * row_h),
+                        vec2(pw - 12.0, row_h - 2.0),
+                    );
                     rows.push(rr);
                     let b = ui.interact(rr, id.with(("row", i)), Sense::click());
                     if b.hovered() {
@@ -304,7 +354,8 @@ impl<'a> ModelPickerRich<'a> {
                 let hv = force_hover.unwrap_or(st.hover).min(items.len().saturating_sub(1));
                 let hy = glowkit_core::anim::spring(ui, id.with("hy"), hv as f32, 480.0, 34.0);
                 if !items.is_empty() {
-                    let hr = Rect::from_min_size(pos2(r.min.x + 6.0, list_top + hy * row_h), vec2(pw - 12.0, row_h - 2.0));
+                    let hr =
+                        Rect::from_min_size(pos2(r.min.x + 6.0, list_top + hy * row_h), vec2(pw - 12.0, row_h - 2.0));
                     ui.painter().rect_filled(hr, cr(11.0), well(&t));
                 }
                 for (k, &i) in items.iter().enumerate() {
@@ -316,7 +367,15 @@ impl<'a> ModelPickerRich<'a> {
                     let nr = text_bold(p, pos2(tx, rr.min.y + 19.0), Align2::LEFT_CENTER, &m.name, 13.5, t.foreground);
                     let mut x = nr.max.x + 8.0;
                     for tag in &m.tags {
-                        let r = chip(p, &t, ui, pos2(x, rr.min.y + 11.0), tag, 10.0, Some(if tag == "Reasoning" { t.accent } else { t.info }));
+                        let r = chip(
+                            p,
+                            &t,
+                            ui,
+                            pos2(x, rr.min.y + 11.0),
+                            tag,
+                            10.0,
+                            Some(if tag == "Reasoning" { t.accent } else { t.info }),
+                        );
                         x = r.max.x + 4.0;
                     }
                     text(p, pos2(tx, rr.min.y + 39.0), Align2::LEFT_CENTER, &m.description, 11.5, t.muted_foreground);
@@ -333,7 +392,14 @@ impl<'a> ModelPickerRich<'a> {
                     }
                     for b in 0..3 {
                         let on = b < m.cost as usize;
-                        text(p, pos2(rx - 64.0 + b as f32 * 7.0, rr.min.y + 40.0), Align2::CENTER_CENTER, "$", 11.0, if on { t.foreground } else { with_alpha(t.muted_foreground, 0.3) });
+                        text(
+                            p,
+                            pos2(rx - 64.0 + b as f32 * 7.0, rr.min.y + 40.0),
+                            Align2::CENTER_CENTER,
+                            "$",
+                            11.0,
+                            if on { t.foreground } else { with_alpha(t.muted_foreground, 0.3) },
+                        );
                     }
                     if i == *selected {
                         check_disc(p, pos2(rr.max.x - 16.0, rr.center().y), 8.0, t.primary, t.primary_foreground, 1.0);
@@ -356,7 +422,14 @@ fn provider_mark(p: &egui::Painter, c: egui::Pos2, r: f32, m: &ModelSpec) {
 }
 
 fn bolt(p: &egui::Painter, c: egui::Pos2, s: f32, col: Color32) {
-    let pts = [c + vec2(0.3, -1.2) * s, c + vec2(-0.6, 0.15) * s, c + vec2(0.0, 0.15) * s, c + vec2(-0.3, 1.2) * s, c + vec2(0.6, -0.15) * s, c + vec2(0.0, -0.15) * s];
+    let pts = [
+        c + vec2(0.3, -1.2) * s,
+        c + vec2(-0.6, 0.15) * s,
+        c + vec2(0.0, 0.15) * s,
+        c + vec2(-0.3, 1.2) * s,
+        c + vec2(0.6, -0.15) * s,
+        c + vec2(0.0, -0.15) * s,
+    ];
     p.add(egui::Shape::convex_polygon(vec![pts[0], pts[1], pts[2]], col, Stroke::NONE));
     p.add(egui::Shape::convex_polygon(vec![pts[2], pts[5], pts[0]], col, Stroke::NONE));
     p.add(egui::Shape::convex_polygon(vec![pts[3], pts[4], pts[5]], col, Stroke::NONE));

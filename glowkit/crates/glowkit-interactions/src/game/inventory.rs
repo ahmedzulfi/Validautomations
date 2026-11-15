@@ -1,7 +1,9 @@
 //! Hotbar, inventory grid with drag and drop, and the item tooltip card.
 
 use super::common::*;
-use egui::{pos2, vec2, Align2, Color32, FontId, LayerId, Order, Painter, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, FontId, LayerId, Order, Painter, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2,
+};
 use glowkit_core::anim::spring;
 use glowkit_core::color::{hex, mix, shade, with_alpha};
 use glowkit_core::paint;
@@ -12,11 +14,24 @@ fn paint_item(painter: &Painter, cell: Rect, item: &GameItem, scale: f32, time: 
     if item.rarity == GameRarity::Legendary {
         let head = (time * 0.35).fract();
         paint::gradient_border(painter, cell.shrink(1.0), 4.0, 2.0, paint::comet_fn(head, 0.45, hex("#FFD27A")));
-        paint::glow(painter, c, cell.width() * 0.55, with_alpha(GameRarity::Legendary.color(), 0.18 + 0.08 * (time * 3.0).sin()));
+        paint::glow(
+            painter,
+            c,
+            cell.width() * 0.55,
+            with_alpha(GameRarity::Legendary.color(), 0.18 + 0.08 * (time * 3.0).sin()),
+        );
     }
     item.icon.paint(painter, c, cell.width() * 0.64 * scale, item.tint());
     if item.count > 1 {
-        outlined(painter, cell.max - vec2(4.0, 2.0), Align2::RIGHT_BOTTOM, &item.count.to_string(), FontId::proportional(12.0), Color32::WHITE, Color32::BLACK);
+        outlined(
+            painter,
+            cell.max - vec2(4.0, 2.0),
+            Align2::RIGHT_BOTTOM,
+            &item.count.to_string(),
+            FontId::proportional(12.0),
+            Color32::WHITE,
+            Color32::BLACK,
+        );
     }
 }
 
@@ -30,33 +45,72 @@ fn rarity_text(style: GameStyle, r: GameRarity) -> Color32 {
 
 /// Paint a tooltip card for `item` at `pos` (its top-left), comparing with `cmp`. Returns its rect.
 #[allow(clippy::too_many_arguments)]
-fn paint_tooltip(painter: &Painter, pos: Pos2, item: &GameItem, cmp: Option<&GameItem>, style: GameStyle, pal: &GamePalette, title: &FontId, alpha: f32) -> Rect {
+fn paint_tooltip(
+    painter: &Painter,
+    pos: Pos2,
+    item: &GameItem,
+    cmp: Option<&GameItem>,
+    style: GameStyle,
+    pal: &GamePalette,
+    title: &FontId,
+    alpha: f32,
+) -> Rect {
     let w = 250.0;
-    let flavor_g = (!item.flavor.is_empty()).then(|| {
-        painter.layout(item.flavor.clone(), FontId::proportional(11.5), with_alpha(pal.dim, alpha), w - 32.0)
-    });
-    let h = 66.0 + item.stats.len() as f32 * 21.0 + flavor_g.as_ref().map(|g| g.size().y + 14.0).unwrap_or(0.0) + if cmp.is_some() { 24.0 } else { 6.0 } + 8.0;
+    let flavor_g = (!item.flavor.is_empty())
+        .then(|| painter.layout(item.flavor.clone(), FontId::proportional(11.5), with_alpha(pal.dim, alpha), w - 32.0));
+    let h = 66.0
+        + item.stats.len() as f32 * 21.0
+        + flavor_g.as_ref().map(|g| g.size().y + 14.0).unwrap_or(0.0)
+        + if cmp.is_some() { 24.0 } else { 6.0 }
+        + 8.0;
     let rect = Rect::from_min_size(pos, vec2(w, h));
     let rc = item.rarity.color();
     // panel
     frame(painter, rect, style, pal, 0.0);
     let band = Rect::from_min_max(rect.min + vec2(2.0, 2.0), pos2(rect.max.x - 2.0, rect.min.y + 58.0));
     paint::gradient_rect(painter, band, 4.0, 0.0, &[with_alpha(rc, 0.35 * alpha), with_alpha(rc, 0.0)]);
-    painter.line_segment([pos2(rect.min.x + 12.0, band.max.y), pos2(rect.max.x - 12.0, band.max.y)], Stroke::new(1.0, with_alpha(rc, 0.6 * alpha)));
+    painter.line_segment(
+        [pos2(rect.min.x + 12.0, band.max.y), pos2(rect.max.x - 12.0, band.max.y)],
+        Stroke::new(1.0, with_alpha(rc, 0.6 * alpha)),
+    );
     let tc = rarity_text(style, item.rarity);
-    painter.text(pos2(rect.min.x + 16.0, rect.min.y + 22.0), Align2::LEFT_CENTER, &item.name, title.clone(), with_alpha(tc, alpha));
-    let sub = if item.kind.is_empty() { item.rarity.label().to_string() } else { format!("{} {}", item.rarity.label(), item.kind) };
-    painter.text(pos2(rect.min.x + 16.0, rect.min.y + 42.0), Align2::LEFT_CENTER, sub, FontId::proportional(11.5), with_alpha(pal.dim, alpha));
+    painter.text(
+        pos2(rect.min.x + 16.0, rect.min.y + 22.0),
+        Align2::LEFT_CENTER,
+        &item.name,
+        title.clone(),
+        with_alpha(tc, alpha),
+    );
+    let sub = if item.kind.is_empty() {
+        item.rarity.label().to_string()
+    } else {
+        format!("{} {}", item.rarity.label(), item.kind)
+    };
+    painter.text(
+        pos2(rect.min.x + 16.0, rect.min.y + 42.0),
+        Align2::LEFT_CENTER,
+        sub,
+        FontId::proportional(11.5),
+        with_alpha(pal.dim, alpha),
+    );
     let ic = Rect::from_center_size(pos2(rect.max.x - 32.0, rect.min.y + 30.0), Vec2::splat(40.0));
     slot(painter, ic, style, pal, Some(item.rarity), 0.0);
     item.icon.paint(painter, ic.center(), 26.0, item.tint());
     let mut y = rect.min.y + 76.0;
     for (name, v) in &item.stats {
-        painter.text(pos2(rect.min.x + 16.0, y), Align2::LEFT_CENTER, name, FontId::proportional(12.5), with_alpha(pal.dim, alpha));
+        painter.text(
+            pos2(rect.min.x + 16.0, y),
+            Align2::LEFT_CENTER,
+            name,
+            FontId::proportional(12.5),
+            with_alpha(pal.dim, alpha),
+        );
         let vs = if v.fract().abs() < 1e-3 { format!("{}", *v as i64) } else { format!("{v:.1}") };
         let vx = rect.max.x - 72.0;
         painter.text(pos2(vx, y), Align2::RIGHT_CENTER, vs, FontId::monospace(13.0), with_alpha(pal.text, alpha));
-        if let Some(other) = cmp.and_then(|c| c.stats.iter().find(|(n, _)| n == name)).map(|(_, v)| *v).or(cmp.map(|_| 0.0)) {
+        if let Some(other) =
+            cmp.and_then(|c| c.stats.iter().find(|(n, _)| n == name)).map(|(_, v)| *v).or(cmp.map(|_| 0.0))
+        {
             let d = v - other;
             if d.abs() > 1e-3 {
                 let (col, up) = if d > 0.0 { (pal.good, true) } else { (pal.bad, false) };
@@ -69,20 +123,35 @@ fn paint_tooltip(painter: &Painter, pos: Pos2, item: &GameItem, cmp: Option<&Gam
                 };
                 painter.add(egui::Shape::convex_polygon(tri, with_alpha(col, alpha), Stroke::NONE));
                 let ds = if d.fract().abs() < 1e-3 { format!("{:+}", d as i64) } else { format!("{d:+.1}") };
-                painter.text(pos2(ax + 9.0, y), Align2::LEFT_CENTER, ds, FontId::monospace(11.5), with_alpha(col, alpha));
+                painter.text(
+                    pos2(ax + 9.0, y),
+                    Align2::LEFT_CENTER,
+                    ds,
+                    FontId::monospace(11.5),
+                    with_alpha(col, alpha),
+                );
             }
         }
         y += 21.0;
     }
     if let Some(g) = flavor_g {
         y += 2.0;
-        painter.line_segment([pos2(rect.min.x + 16.0, y - 6.0), pos2(rect.max.x - 16.0, y - 6.0)], Stroke::new(1.0, with_alpha(pal.dim, 0.3 * alpha)));
+        painter.line_segment(
+            [pos2(rect.min.x + 16.0, y - 6.0), pos2(rect.max.x - 16.0, y - 6.0)],
+            Stroke::new(1.0, with_alpha(pal.dim, 0.3 * alpha)),
+        );
         let gh = g.size().y;
         painter.galley(pos2(rect.min.x + 16.0, y), g, pal.dim);
         y += gh + 10.0;
     }
     if let Some(c) = cmp {
-        painter.text(pos2(rect.min.x + 16.0, y + 4.0), Align2::LEFT_CENTER, format!("Compared to equipped: {}", c.name), FontId::proportional(10.5), with_alpha(pal.dim, 0.85 * alpha));
+        painter.text(
+            pos2(rect.min.x + 16.0, y + 4.0),
+            Align2::LEFT_CENTER,
+            format!("Compared to equipped: {}", c.name),
+            FontId::proportional(10.5),
+            with_alpha(pal.dim, 0.85 * alpha),
+        );
     }
     rect
 }
@@ -128,7 +197,16 @@ impl egui::Widget for GameItemTooltip<'_> {
     fn ui(self, ui: &mut Ui) -> Response {
         let pal = self.palette.unwrap_or_else(|| self.style.palette());
         let title = display_font(ui, 16.0);
-        let probe = paint_tooltip(&ui.painter().with_clip_rect(Rect::NOTHING), Pos2::ZERO, self.item, self.cmp, self.style, &pal, &title, 1.0);
+        let probe = paint_tooltip(
+            &ui.painter().with_clip_rect(Rect::NOTHING),
+            Pos2::ZERO,
+            self.item,
+            self.cmp,
+            self.style,
+            &pal,
+            &title,
+            1.0,
+        );
         let (rect, resp) = ui.allocate_exact_size(probe.size(), Sense::hover());
         paint_tooltip(ui.painter(), rect.min, self.item, self.cmp, self.style, &pal, &title, 1.0);
         resp
@@ -203,14 +281,19 @@ impl egui::Widget for GameHotbar<'_> {
         // input
         if resp.hovered() {
             let scroll = ui.input(|i| i.smooth_scroll_delta.y + i.smooth_scroll_delta.x);
-            let acc = glowkit_core::with_state(ui, id.with("scroll"), || 0.0f32, |a| {
-                *a += scroll;
-                let r = *a;
-                if r.abs() > 40.0 {
-                    *a = 0.0;
-                }
-                r
-            });
+            let acc = glowkit_core::with_state(
+                ui,
+                id.with("scroll"),
+                || 0.0f32,
+                |a| {
+                    *a += scroll;
+                    let r = *a;
+                    if r.abs() > 40.0 {
+                        *a = 0.0;
+                    }
+                    r
+                },
+            );
             if acc > 40.0 {
                 sel = (sel + n - 1) % n;
             } else if acc < -40.0 {
@@ -218,7 +301,17 @@ impl egui::Widget for GameHotbar<'_> {
             }
         }
         if self.keyboard {
-            let keys = [egui::Key::Num1, egui::Key::Num2, egui::Key::Num3, egui::Key::Num4, egui::Key::Num5, egui::Key::Num6, egui::Key::Num7, egui::Key::Num8, egui::Key::Num9];
+            let keys = [
+                egui::Key::Num1,
+                egui::Key::Num2,
+                egui::Key::Num3,
+                egui::Key::Num4,
+                egui::Key::Num5,
+                egui::Key::Num6,
+                egui::Key::Num7,
+                egui::Key::Num8,
+                egui::Key::Num9,
+            ];
             for (i, k) in keys.iter().enumerate().take(n) {
                 if ui.input(|inp| inp.key_pressed(*k)) {
                     sel = i;
@@ -227,7 +320,8 @@ impl egui::Widget for GameHotbar<'_> {
         }
         let bottom = rect.max.y - 10.0;
         let x0 = rect.center().x - w / 2.0;
-        let cells: Vec<Rect> = (0..n).map(|i| Rect::from_min_size(pos2(x0 + i as f32 * (s + gap), bottom - s), Vec2::splat(s))).collect();
+        let cells: Vec<Rect> =
+            (0..n).map(|i| Rect::from_min_size(pos2(x0 + i as f32 * (s + gap), bottom - s), Vec2::splat(s))).collect();
         for (i, c) in cells.iter().enumerate() {
             let r = ui.interact(*c, id.with(("slot", i)), Sense::click());
             if r.clicked() {
@@ -251,7 +345,11 @@ impl egui::Widget for GameHotbar<'_> {
             }
             GameStyle::SciFi => {
                 let pts = chamfer_points(back, 10.0);
-                painter.add(egui::Shape::convex_polygon(pts, hex("#030A14B0"), Stroke::new(1.0, with_alpha(pal.edge, 0.35))));
+                painter.add(egui::Shape::convex_polygon(
+                    pts,
+                    hex("#030A14B0"),
+                    Stroke::new(1.0, with_alpha(pal.edge, 0.35)),
+                ));
             }
             GameStyle::Minimal => {
                 painter.rect_filled(back, 14.0, hex("#0C0D11B8"));
@@ -261,17 +359,31 @@ impl egui::Widget for GameHotbar<'_> {
         for (i, cell) in cells.iter().enumerate() {
             let on = i == sel;
             let lift = spring(ui, id.with(("lift", i)), if on { 1.0 } else { 0.0 }, 520.0, 14.0);
-            let r = Rect::from_center_size(cell.center() - vec2(0.0, 10.0 * lift), Vec2::splat(s * (1.0 + 0.16 * lift)));
+            let r =
+                Rect::from_center_size(cell.center() - vec2(0.0, 10.0 * lift), Vec2::splat(s * (1.0 + 0.16 * lift)));
             if on {
                 sel_rect = r;
-                paint::glow_ellipse(painter, pos2(cell.center().x, bottom + 2.0), vec2(s * 0.7, 9.0), with_alpha(pal.accent, 0.55));
+                paint::glow_ellipse(
+                    painter,
+                    pos2(cell.center().x, bottom + 2.0),
+                    vec2(s * 0.7, 9.0),
+                    with_alpha(pal.accent, 0.55),
+                );
             }
             let item = self.slots.get(i).and_then(|o| o.as_ref());
             slot(painter, r, self.style, &pal, item.map(|it| it.rarity), lift);
             if let Some(it) = item {
                 paint_item(painter, r, it, 1.0 + 0.08 * lift, time);
             }
-            outlined(painter, r.min + vec2(5.0, 3.0), Align2::LEFT_TOP, &(i + 1).to_string(), FontId::monospace(10.0), with_alpha(Color32::WHITE, 0.75), Color32::from_black_alpha(200));
+            outlined(
+                painter,
+                r.min + vec2(5.0, 3.0),
+                Align2::LEFT_TOP,
+                &(i + 1).to_string(),
+                FontId::monospace(10.0),
+                with_alpha(Color32::WHITE, 0.75),
+                Color32::from_black_alpha(200),
+            );
         }
         // selection frame
         let sc = pal.accent;
@@ -289,7 +401,15 @@ impl egui::Widget for GameHotbar<'_> {
                 let p = pop((since / 0.3).min(1.0));
                 let pos = pos2(sel_rect.center().x, sel_rect.min.y - 14.0 - 6.0 * p);
                 let f = FontId::proportional(13.0 * (0.7 + 0.3 * p));
-                outlined(painter, pos, Align2::CENTER_BOTTOM, &it.name, f, with_alpha(it.rarity.color(), a), Color32::from_black_alpha((220.0 * a) as u8));
+                outlined(
+                    painter,
+                    pos,
+                    Align2::CENTER_BOTTOM,
+                    &it.name,
+                    f,
+                    with_alpha(it.rarity.color(), a),
+                    Color32::from_black_alpha((220.0 * a) as u8),
+                );
             }
         }
         resp
@@ -333,7 +453,17 @@ pub struct GameInventoryGrid<'a> {
 impl<'a> GameInventoryGrid<'a> {
     /// A grid over `items` with `cols` columns (empty slots are `None`).
     pub fn new(items: &'a mut Vec<Option<GameItem>>, cols: usize) -> Self {
-        Self { items, cols: cols.max(1), cell: 54.0, title: "", equipped: &[], style: GameStyle::SciFi, palette: None, autoplay: false, cues: None }
+        Self {
+            items,
+            cols: cols.max(1),
+            cell: 54.0,
+            title: "",
+            equipped: &[],
+            style: GameStyle::SciFi,
+            palette: None,
+            autoplay: false,
+            cues: None,
+        }
     }
     /// Cell size in points.
     pub fn cell_size(mut self, s: f32) -> Self {
@@ -390,7 +520,12 @@ impl egui::Widget for GameInventoryGrid<'_> {
         let now = ui.input(|i| i.time);
         let time = now as f32;
         let origin = rect.min + vec2(pad, pad + head);
-        let cell_at = |i: usize| Rect::from_min_size(origin + vec2((i % self.cols) as f32 * (s + gap), (i / self.cols) as f32 * (s + gap)), Vec2::splat(s));
+        let cell_at = |i: usize| {
+            Rect::from_min_size(
+                origin + vec2((i % self.cols) as f32 * (s + gap), (i / self.cols) as f32 * (s + gap)),
+                Vec2::splat(s),
+            )
+        };
         let ptr = ui.input(|i| i.pointer.hover_pos());
         let mut st: InvState = glowkit_core::state(ui, id.with("inv"), InvState::default);
         // real interaction
@@ -426,11 +561,20 @@ impl egui::Widget for GameInventoryGrid<'_> {
             let filled: Vec<usize> = (0..n).filter(|i| self.items[*i].is_some()).collect();
             let empty: Vec<usize> = (0..n).filter(|i| self.items[*i].is_none()).collect();
             if !filled.is_empty() {
-                let best = *filled.iter().max_by_key(|i| self.items[**i].as_ref().map(|it| it.rarity).unwrap_or_default()).unwrap();
+                let best = *filled
+                    .iter()
+                    .max_by_key(|i| self.items[**i].as_ref().map(|it| it.rarity).unwrap_or_default())
+                    .unwrap();
                 let src = filled[(k as usize * 3 + 1) % filled.len()];
-                let dst = if empty.is_empty() { filled[(k as usize * 5 + 2) % filled.len()] } else { empty[(k as usize * 7) % empty.len()] };
+                let dst = if empty.is_empty() {
+                    filled[(k as usize * 5 + 2) % filled.len()]
+                } else {
+                    empty[(k as usize * 7) % empty.len()]
+                };
                 let rest = pos2(rect.max.x - 30.0, rect.max.y - 20.0);
-                let lerp = |a: Pos2, b: Pos2, t: f32| a + (b - a) * glowkit_core::ease(glowkit_core::Easing::InOutCubic, t.clamp(0.0, 1.0));
+                let lerp = |a: Pos2, b: Pos2, t: f32| {
+                    a + (b - a) * glowkit_core::ease(glowkit_core::Easing::InOutCubic, t.clamp(0.0, 1.0))
+                };
                 let (p, pressed) = if ph < 0.8 {
                     (lerp(rest, cell_at(best).center(), ph / 0.8), false)
                 } else if ph < 3.0 {
@@ -481,17 +625,39 @@ impl egui::Widget for GameInventoryGrid<'_> {
         frame(painter, rect, self.style, &pal, 0.0);
         if !self.title.is_empty() {
             let tc = pal.text;
-            painter.text(pos2(rect.min.x + pad, rect.min.y + 24.0), Align2::LEFT_CENTER, self.title.to_uppercase(), title_f, tc);
+            painter.text(
+                pos2(rect.min.x + pad, rect.min.y + 24.0),
+                Align2::LEFT_CENTER,
+                self.title.to_uppercase(),
+                title_f,
+                tc,
+            );
             let used = self.items.iter().filter(|i| i.is_some()).count();
-            painter.text(pos2(rect.max.x - pad, rect.min.y + 24.0), Align2::RIGHT_CENTER, format!("{used} / {n}"), FontId::monospace(12.0), pal.dim);
-            painter.line_segment([pos2(rect.min.x + pad, rect.min.y + 40.0), pos2(rect.max.x - pad, rect.min.y + 40.0)], Stroke::new(1.0, with_alpha(pal.dim, 0.3)));
+            painter.text(
+                pos2(rect.max.x - pad, rect.min.y + 24.0),
+                Align2::RIGHT_CENTER,
+                format!("{used} / {n}"),
+                FontId::monospace(12.0),
+                pal.dim,
+            );
+            painter.line_segment(
+                [pos2(rect.min.x + pad, rect.min.y + 40.0), pos2(rect.max.x - pad, rect.min.y + 40.0)],
+                Stroke::new(1.0, with_alpha(pal.dim, 0.3)),
+            );
         }
-        let drop_target = st.drag.and(drag_pos).and_then(|p| (0..n).find(|j| cell_at(*j).expand(gap / 2.0).contains(p)));
+        let drop_target =
+            st.drag.and(drag_pos).and_then(|p| (0..n).find(|j| cell_at(*j).expand(gap / 2.0).contains(p)));
         for i in 0..n {
             let cell = cell_at(i);
             let item = self.items[i].as_ref();
             let is_src = st.drag == Some(i);
-            let lit = if drop_target == Some(i) && !is_src { 1.0 } else if hovered == Some(i) && st.drag.is_none() { 0.6 } else { 0.0 };
+            let lit = if drop_target == Some(i) && !is_src {
+                1.0
+            } else if hovered == Some(i) && st.drag.is_none() {
+                0.6
+            } else {
+                0.0
+            };
             slot(painter, cell, self.style, &pal, item.filter(|_| !is_src).map(|it| it.rarity), lit);
             if let Some(it) = item {
                 if is_src {
@@ -514,12 +680,30 @@ impl egui::Widget for GameInventoryGrid<'_> {
         if let Some(src) = st.drag {
             if let Some(it) = self.items.get(src).and_then(|o| o.as_ref()) {
                 let r = Rect::from_center_size(fpos, Vec2::splat(s * 1.12));
-                paint::soft_shadow(&fg, r.translate(vec2(0.0, 10.0)), 8.0, 18.0, Vec2::ZERO, Color32::from_black_alpha(140));
+                paint::soft_shadow(
+                    &fg,
+                    r.translate(vec2(0.0, 10.0)),
+                    8.0,
+                    18.0,
+                    Vec2::ZERO,
+                    Color32::from_black_alpha(140),
+                );
                 paint::glow(&fg, r.center(), s, with_alpha(it.rarity.color(), 0.35));
                 let (sn, cs) = tilt.sin_cos();
-                let rot = |p: Pos2| r.center() + vec2((p.x - r.center().x) * cs - (p.y - r.center().y) * sn, (p.x - r.center().x) * sn + (p.y - r.center().y) * cs);
-                let pts: Vec<Pos2> = [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()].into_iter().map(rot).collect();
-                fg.add(egui::Shape::convex_polygon(pts.clone(), with_alpha(mix(hex("#0E1220"), it.rarity.color(), 0.25), 0.95), Stroke::new(2.0, it.rarity.color())));
+                let rot = |p: Pos2| {
+                    r.center()
+                        + vec2(
+                            (p.x - r.center().x) * cs - (p.y - r.center().y) * sn,
+                            (p.x - r.center().x) * sn + (p.y - r.center().y) * cs,
+                        )
+                };
+                let pts: Vec<Pos2> =
+                    [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()].into_iter().map(rot).collect();
+                fg.add(egui::Shape::convex_polygon(
+                    pts.clone(),
+                    with_alpha(mix(hex("#0E1220"), it.rarity.color(), 0.25), 0.95),
+                    Stroke::new(2.0, it.rarity.color()),
+                ));
                 it.icon.paint(&fg, r.center(), s * 0.74, it.tint());
             }
         }

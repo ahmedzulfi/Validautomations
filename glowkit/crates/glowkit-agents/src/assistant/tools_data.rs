@@ -110,7 +110,12 @@ impl Widget for DataTableResult<'_> {
             ui.ctx().request_repaint();
         }
         let status = format!("{} rows", self.rows.len());
-        let head = ToolHead { icon: Icon::Search, title: self.tool, subtitle: self.subtitle, status: Some((&status, t.success)) };
+        let head = ToolHead {
+            icon: Icon::Search,
+            title: self.tool,
+            subtitle: self.subtitle,
+            status: Some((&status, t.success)),
+        };
         let cols = self.cols;
         let rows = self.rows;
         let max_rows = self.max_rows;
@@ -135,7 +140,14 @@ impl Widget for DataTableResult<'_> {
                 let col = mix(t.muted_foreground, t.foreground, if active { 1.0 } else { hk });
                 let right = *kind != ColumnKind::Text;
                 let tx = if right { cell.max.x - 26.0 } else { cell.min.x + 10.0 };
-                let lr = text(&p, pos2(tx, cell.center().y), if right { Align2::RIGHT_CENTER } else { Align2::LEFT_CENTER }, name, 11.5, col);
+                let lr = text(
+                    &p,
+                    pos2(tx, cell.center().y),
+                    if right { Align2::RIGHT_CENTER } else { Align2::LEFT_CENTER },
+                    name,
+                    11.5,
+                    col,
+                );
                 if active || hk > 0.05 {
                     let ic = if active && sort.desc { Icon::ChevronDown } else { Icon::ChevronUp };
                     let a = if active { 1.0 } else { hk * 0.6 };
@@ -177,7 +189,14 @@ impl Widget for DataTableResult<'_> {
                             }
                         }
                         ColumnKind::Number => {
-                            mono(&p, pos2(cell.max.x - 26.0, cell.center().y), Align2::RIGHT_CENTER, s, 12.0, with_alpha(t.foreground, a));
+                            mono(
+                                &p,
+                                pos2(cell.max.x - 26.0, cell.center().y),
+                                Align2::RIGHT_CENTER,
+                                s,
+                                12.0,
+                                with_alpha(t.foreground, a),
+                            );
                         }
                         ColumnKind::Delta => {
                             let up = !s.starts_with('-');
@@ -325,7 +344,13 @@ impl Widget for ChartResult<'_> {
                 let tw = text_w(ui, ch, 11.5);
                 let pill = Rect::from_min_size(pos2(vr.max.x + 10.0, vr.center().y - 10.0), vec2(tw + 26.0, 20.0));
                 p.rect_filled(pill, cr(10.0), with_alpha(c, if t.dark { 0.16 } else { 0.09 }));
-                icon(p, if up { Icon::ArrowUp } else { Icon::ArrowDown }, pos2(pill.min.x + 10.0, pill.center().y), 10.0, c);
+                icon(
+                    p,
+                    if up { Icon::ArrowUp } else { Icon::ArrowDown },
+                    pos2(pill.min.x + 10.0, pill.center().y),
+                    10.0,
+                    c,
+                );
                 text(p, pos2(pill.min.x + 18.0, pill.center().y), Align2::LEFT_CENTER, ch, 11.5, c);
                 if let Some(cap) = self.caption {
                     text(p, pos2(r.min.x, r.max.y - 4.0), Align2::LEFT_CENTER, cap, 11.5, t.muted_foreground);

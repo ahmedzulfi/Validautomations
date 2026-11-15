@@ -92,13 +92,32 @@ impl<'a> WelcomeScreen<'a> {
         let r = 18.0 * (0.6 + 0.4 * ka);
         let pts = paint::circle_points(c, r, 40);
         let rot = time * 0.4;
-        paint::fill_convex_fn(p, &pts, 3, paint::conic_fn(c, rot, &[t.gradient[0], t.gradient[1], t.gradient[2], t.gradient[0]]));
+        paint::fill_convex_fn(
+            p,
+            &pts,
+            3,
+            paint::conic_fn(c, rot, &[t.gradient[0], t.gradient[1], t.gradient[2], t.gradient[0]]),
+        );
         paint::sparkle(p, c, r * 0.95, (time * 0.7).sin() * 0.2, Color32::WHITE);
         let k1 = ((e - 0.15) * 3.0).clamp(0.0, 1.0);
-        text(p, pos2(hr.center().x, hr.min.y + 76.0 + (1.0 - k1) * 10.0), Align2::CENTER_CENTER, self.greeting, 26.0, with_alpha(t.foreground, k1));
+        text(
+            p,
+            pos2(hr.center().x, hr.min.y + 76.0 + (1.0 - k1) * 10.0),
+            Align2::CENTER_CENTER,
+            self.greeting,
+            26.0,
+            with_alpha(t.foreground, k1),
+        );
         if let Some(s) = self.subtitle {
             let k2 = ((e - 0.3) * 3.0).clamp(0.0, 1.0);
-            text(p, pos2(hr.center().x, hr.min.y + 106.0 + (1.0 - k2) * 8.0), Align2::CENTER_CENTER, s, 13.5, with_alpha(t.muted_foreground, k2));
+            text(
+                p,
+                pos2(hr.center().x, hr.min.y + 106.0 + (1.0 - k2) * 8.0),
+                Align2::CENTER_CENTER,
+                s,
+                13.5,
+                with_alpha(t.muted_foreground, k2),
+            );
         }
         ui.add_space(14.0);
         let cols = 2;
@@ -115,15 +134,42 @@ impl<'a> WelcomeScreen<'a> {
                 let ki = egui::emath::easing::cubic_out(ki);
                 let r = r.translate(vec2(0.0, (1.0 - ki) * 12.0 - hk * 2.0));
                 let p = ui.painter();
-                paint::soft_shadow(p, r, 14.0, 8.0 + 10.0 * hk, vec2(0.0, 2.0 + 3.0 * hk), shadow(&t, (0.4 + 0.8 * hk) * ki));
+                paint::soft_shadow(
+                    p,
+                    r,
+                    14.0,
+                    8.0 + 10.0 * hk,
+                    vec2(0.0, 2.0 + 3.0 * hk),
+                    shadow(&t, (0.4 + 0.8 * hk) * ki),
+                );
                 p.rect_filled(r, cr(14.0), with_alpha(surface(&t), ki));
                 p.rect_stroke(r, cr(14.0), Stroke::new(1.0, hairline(&t).color.gamma_multiply(ki)), StrokeKind::Inside);
                 let ib = Rect::from_min_size(r.min + vec2(12.0, 14.0), Vec2::splat(34.0));
                 p.rect_filled(ib, cr(10.0), with_alpha(mix(well(&t), t.accent, 0.12 * hk), ki));
                 icon(p, s.icon, ib.center(), 16.0, with_alpha(mix(t.muted_foreground, t.accent, hk), ki));
-                text_bold(p, pos2(ib.max.x + 12.0, r.min.y + 23.0), Align2::LEFT_CENTER, &s.title, 13.0, with_alpha(t.foreground, ki));
-                text(p, pos2(ib.max.x + 12.0, r.min.y + 41.0), Align2::LEFT_CENTER, &s.detail, 12.0, with_alpha(t.muted_foreground, ki));
-                icon(p, Icon::ArrowRight, pos2(r.max.x - 18.0 - (1.0 - hk) * 4.0, r.center().y), 13.0, with_alpha(t.foreground, hk * ki));
+                text_bold(
+                    p,
+                    pos2(ib.max.x + 12.0, r.min.y + 23.0),
+                    Align2::LEFT_CENTER,
+                    &s.title,
+                    13.0,
+                    with_alpha(t.foreground, ki),
+                );
+                text(
+                    p,
+                    pos2(ib.max.x + 12.0, r.min.y + 41.0),
+                    Align2::LEFT_CENTER,
+                    &s.detail,
+                    12.0,
+                    with_alpha(t.muted_foreground, ki),
+                );
+                icon(
+                    p,
+                    Icon::ArrowRight,
+                    pos2(r.max.x - 18.0 - (1.0 - hk) * 4.0, r.center().y),
+                    13.0,
+                    with_alpha(t.foreground, hk * ki),
+                );
                 if resp.clicked() {
                     clicked = Some(i);
                 }
@@ -205,7 +251,8 @@ impl<'a> CopilotSidebar<'a> {
         p.rect_filled(rect, cr(16.0), stage(&t));
         p.rect_stroke(rect, cr(16.0), hairline(&t), StrokeKind::Inside);
         let app_r = Rect::from_min_max(rect.min, pos2(rect.max.x - shift, rect.max.y));
-        let mut child = ui.new_child(UiBuilder::new().max_rect(app_r.shrink(16.0)).layout(egui::Layout::top_down(egui::Align::Min)));
+        let mut child = ui
+            .new_child(UiBuilder::new().max_rect(app_r.shrink(16.0)).layout(egui::Layout::top_down(egui::Align::Min)));
         child.set_clip_rect(app_r.intersect(ui.clip_rect()));
         app(&mut child);
         // launcher
@@ -217,7 +264,14 @@ impl<'a> CopilotSidebar<'a> {
             let hk = toggle(ui, id.with("lh"), lresp.hovered());
             let p = ui.painter();
             let rad = 22.0 * lk * (1.0 + 0.06 * hk);
-            paint::soft_shadow(p, Rect::from_center_size(lc, Vec2::splat(rad * 2.0)), rad, 14.0, vec2(0.0, 4.0), shadow(&t, 1.2 * lk));
+            paint::soft_shadow(
+                p,
+                Rect::from_center_size(lc, Vec2::splat(rad * 2.0)),
+                rad,
+                14.0,
+                vec2(0.0, 4.0),
+                shadow(&t, 1.2 * lk),
+            );
             p.circle_filled(lc, rad, t.primary);
             paint::sparkle(p, lc, rad * 0.75, 0.0, t.primary_foreground);
         }
@@ -240,7 +294,11 @@ impl<'a> CopilotSidebar<'a> {
             text_bold(&p, pos2(hr.min.x + 46.0, hr.center().y), Align2::LEFT_CENTER, self.title, 13.5, t.foreground);
             p.line_segment([pos2(pr.min.x, hr.max.y), pos2(pr.max.x, hr.max.y)], hairline(&t));
             let xr = Rect::from_center_size(pos2(hr.max.x - 26.0, hr.center().y), Vec2::splat(28.0));
-            let mut body = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_max(pos2(pr.min.x + 12.0, hr.max.y + 10.0), pr.max - vec2(12.0, 12.0))).layout(egui::Layout::top_down(egui::Align::Min)));
+            let mut body = ui.new_child(
+                UiBuilder::new()
+                    .max_rect(Rect::from_min_max(pos2(pr.min.x + 12.0, hr.max.y + 10.0), pr.max - vec2(12.0, 12.0)))
+                    .layout(egui::Layout::top_down(egui::Align::Min)),
+            );
             body.set_clip_rect(Rect::from_min_max(pos2(pr.min.x, hr.max.y), pr.max).intersect(clip));
             body.multiply_opacity(((k - 0.3) / 0.7).clamp(0.0, 1.0));
             panel(&mut body);
@@ -306,7 +364,8 @@ impl<'a> CopilotPopup<'a> {
         let p = ui.painter();
         p.rect_filled(rect, cr(16.0), stage(&t));
         p.rect_stroke(rect, cr(16.0), hairline(&t), StrokeKind::Inside);
-        let mut child = ui.new_child(UiBuilder::new().max_rect(rect.shrink(16.0)).layout(egui::Layout::top_down(egui::Align::Min)));
+        let mut child =
+            ui.new_child(UiBuilder::new().max_rect(rect.shrink(16.0)).layout(egui::Layout::top_down(egui::Align::Min)));
         child.set_clip_rect(rect.intersect(ui.clip_rect()));
         app(&mut child);
         let lc = pos2(rect.max.x - 36.0, rect.max.y - 36.0);
@@ -316,21 +375,52 @@ impl<'a> CopilotPopup<'a> {
             let wr = Rect::from_min_size(pos2(rect.max.x - 16.0 - ws.x, lc.y - 34.0 - ws.y), ws);
             let pivot = pos2(wr.max.x - 10.0, wr.max.y);
             let s = 0.2 + 0.8 * k;
-            let tr = TSTransform::from_translation(pivot.to_vec2()) * TSTransform::from_scaling(s) * TSTransform::from_translation(-pivot.to_vec2());
+            let tr = TSTransform::from_translation(pivot.to_vec2())
+                * TSTransform::from_scaling(s)
+                * TSTransform::from_translation(-pivot.to_vec2());
             let cut = Rect::from_min_max(pos2(wr.min.x, wr.min.y), pos2(wr.max.x, wr.max.y));
             ui.with_visual_transform(tr, |ui| {
                 let p = ui.painter();
                 let a = k.clamp(0.0, 1.0);
                 paint::soft_shadow(p, cut, 18.0, 30.0, vec2(0.0, 10.0), shadow(&t, 1.6 * a));
                 p.rect_filled(cut, cr(18.0), surface(&t).gamma_multiply(a));
-                p.rect_stroke(cut, cr(18.0), Stroke::new(1.0, hairline(&t).color.gamma_multiply(a)), StrokeKind::Inside);
+                p.rect_stroke(
+                    cut,
+                    cr(18.0),
+                    Stroke::new(1.0, hairline(&t).color.gamma_multiply(a)),
+                    StrokeKind::Inside,
+                );
                 let hr = Rect::from_min_size(cut.min, vec2(cut.width(), 50.0));
                 bot_avatar(p, &t, pos2(hr.min.x + 24.0, hr.center().y), 12.0);
-                text_bold(p, pos2(hr.min.x + 44.0, hr.center().y - 6.0), Align2::LEFT_CENTER, self.title, 13.5, t.foreground.gamma_multiply(a));
+                text_bold(
+                    p,
+                    pos2(hr.min.x + 44.0, hr.center().y - 6.0),
+                    Align2::LEFT_CENTER,
+                    self.title,
+                    13.5,
+                    t.foreground.gamma_multiply(a),
+                );
                 p.circle_filled(pos2(hr.min.x + 47.0, hr.center().y + 9.0), 3.0, t.success.gamma_multiply(a));
-                text(p, pos2(hr.min.x + 54.0, hr.center().y + 9.0), Align2::LEFT_CENTER, "Online", 11.0, t.muted_foreground.gamma_multiply(a));
-                p.line_segment([pos2(cut.min.x, hr.max.y), pos2(cut.max.x, hr.max.y)], Stroke::new(1.0, hairline(&t).color.gamma_multiply(a)));
-                let mut body = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_max(pos2(cut.min.x + 12.0, hr.max.y + 10.0), cut.max - vec2(12.0, 12.0))).layout(egui::Layout::top_down(egui::Align::Min)));
+                text(
+                    p,
+                    pos2(hr.min.x + 54.0, hr.center().y + 9.0),
+                    Align2::LEFT_CENTER,
+                    "Online",
+                    11.0,
+                    t.muted_foreground.gamma_multiply(a),
+                );
+                p.line_segment(
+                    [pos2(cut.min.x, hr.max.y), pos2(cut.max.x, hr.max.y)],
+                    Stroke::new(1.0, hairline(&t).color.gamma_multiply(a)),
+                );
+                let mut body = ui.new_child(
+                    UiBuilder::new()
+                        .max_rect(Rect::from_min_max(
+                            pos2(cut.min.x + 12.0, hr.max.y + 10.0),
+                            cut.max - vec2(12.0, 12.0),
+                        ))
+                        .layout(egui::Layout::top_down(egui::Align::Min)),
+                );
                 body.set_clip_rect(Rect::from_min_max(pos2(cut.min.x, hr.max.y), cut.max));
                 body.multiply_opacity(((k - 0.35) / 0.65).clamp(0.0, 1.0));
                 chat(&mut body);
@@ -342,7 +432,14 @@ impl<'a> CopilotPopup<'a> {
         let hk = toggle(ui, id.with("lh"), resp.hovered());
         let p = ui.painter();
         let rad = 24.0 * (1.0 + 0.06 * hk);
-        paint::soft_shadow(p, Rect::from_center_size(lc, Vec2::splat(rad * 2.0)), rad, 16.0, vec2(0.0, 5.0), shadow(&t, 1.3));
+        paint::soft_shadow(
+            p,
+            Rect::from_center_size(lc, Vec2::splat(rad * 2.0)),
+            rad,
+            16.0,
+            vec2(0.0, 5.0),
+            shadow(&t, 1.3),
+        );
         p.circle_filled(lc, rad, t.primary);
         let kk = k.clamp(0.0, 1.0);
         if kk < 0.98 {

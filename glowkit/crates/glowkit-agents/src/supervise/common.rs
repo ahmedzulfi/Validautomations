@@ -162,7 +162,8 @@ pub(crate) fn mono(size: f32) -> FontId {
 /// Lay out `text` on one row, elided with "…" past `max_w`.
 pub(crate) fn galley1(painter: &Painter, text: &str, font: FontId, color: Color32, max_w: f32) -> Arc<Galley> {
     let mut job = LayoutJob::single_section(text.to_owned(), TextFormat::simple(font, color));
-    job.wrap = TextWrapping { max_width: max_w.max(4.0), max_rows: 1, break_anywhere: true, overflow_character: Some('…') };
+    job.wrap =
+        TextWrapping { max_width: max_w.max(4.0), max_rows: 1, break_anywhere: true, overflow_character: Some('…') };
     painter.layout_job(job)
 }
 
@@ -193,7 +194,12 @@ pub(crate) fn para(
     rows: usize,
 ) -> Rect {
     let mut job = LayoutJob::single_section(s.to_owned(), TextFormat::simple(font, color));
-    job.wrap = TextWrapping { max_width: width.max(4.0), max_rows: rows, break_anywhere: false, overflow_character: Some('…') };
+    job.wrap = TextWrapping {
+        max_width: width.max(4.0),
+        max_rows: rows,
+        break_anywhere: false,
+        overflow_character: Some('…'),
+    };
     let g = painter.layout_job(job);
     let r = Rect::from_min_size(pos, g.size());
     painter.galley(pos, g, color);
@@ -210,7 +216,15 @@ pub(crate) fn text_w(painter: &Painter, s: &str, font: FontId) -> f32 {
 
 /// A soft rounded badge of color `c` (tinted fill, colored text, optional leading dot). Anchored
 /// at `pos` with `align`; returns its rect.
-pub(crate) fn badge(painter: &Painter, t: &Theme, pos: Pos2, align: Align2, label: &str, c: Color32, dot: bool) -> Rect {
+pub(crate) fn badge(
+    painter: &Painter,
+    t: &Theme,
+    pos: Pos2,
+    align: Align2,
+    label: &str,
+    c: Color32,
+    dot: bool,
+) -> Rect {
     let f = font(11.0);
     let tw = text_w(painter, label, f.clone());
     let pad = 7.0;
@@ -274,7 +288,10 @@ pub(crate) fn state_icon(painter: &Painter, t: &Theme, c: Pos2, r: f32, s: RunSt
             let p = 0.5 + 0.5 * (now * 3.0).sin();
             painter.circle_filled(c, r + 2.0 * p, with_alpha(col, 0.18 * p));
             painter.circle_filled(c, r, col);
-            painter.line_segment([c - vec2(0.0, r * 0.45), c + vec2(0.0, r * 0.1)], Stroke::new(w.max(1.5), Color32::WHITE));
+            painter.line_segment(
+                [c - vec2(0.0, r * 0.45), c + vec2(0.0, r * 0.1)],
+                Stroke::new(w.max(1.5), Color32::WHITE),
+            );
             painter.circle_filled(c + vec2(0.0, r * 0.45), w * 0.6, Color32::WHITE);
         }
         RunState::Paused => {
@@ -389,7 +406,14 @@ pub(crate) fn switch(ui: &Ui, rect: Rect, id: Id, on: &mut bool, accent: Color32
     p.rect_filled(rect, cr(rect.height() / 2.0), fill);
     let kr = rect.height() / 2.0 - 2.0;
     let x = egui::lerp(rect.min.x + kr + 2.0..=rect.max.x - kr - 2.0, k);
-    paint::soft_shadow(p, Rect::from_center_size(pos2(x, rect.center().y), vec2(kr * 2.0, kr * 2.0)), kr, 4.0, vec2(0.0, 1.0), Color32::from_black_alpha(40));
+    paint::soft_shadow(
+        p,
+        Rect::from_center_size(pos2(x, rect.center().y), vec2(kr * 2.0, kr * 2.0)),
+        kr,
+        4.0,
+        vec2(0.0, 1.0),
+        Color32::from_black_alpha(40),
+    );
     p.circle_filled(pos2(x, rect.center().y), kr, Color32::WHITE);
     resp
 }

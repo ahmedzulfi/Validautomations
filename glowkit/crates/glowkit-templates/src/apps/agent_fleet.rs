@@ -268,7 +268,11 @@ fn tile_color(name: &str, t: &Theme) -> Color32 {
 impl AgentFleetApp {
     fn rebuild_nav(&mut self) {
         let count = |k: FleetKind| self.items.iter().filter(|i| i.kind == k && i.installed).count().to_string();
-        let down = self.items.iter().filter(|i| i.kind == FleetKind::Mcp && i.installed && i.enabled && i.health != McpHealth::Healthy).count();
+        let down = self
+            .items
+            .iter()
+            .filter(|i| i.kind == FleetKind::Mcp && i.installed && i.enabled && i.health != McpHealth::Healthy)
+            .count();
         let mut mcp = NavItem::new("mcp", "MCP servers").icon(AppIcon::Server);
         mcp = if down > 0 { mcp.badge(format!("{down} ⚠")) } else { mcp.badge(count(FleetKind::Mcp)) };
         self.nav = vec![
@@ -326,7 +330,11 @@ impl AgentFleetApp {
                     it.install_started = None;
                     it.installed = true;
                     it.enabled = true;
-                    toast(ctx, Toast::success(format!("{} installed", it.name)).description(format!("v{} is enabled for all projects.", it.version)));
+                    toast(
+                        ctx,
+                        Toast::success(format!("{} installed", it.name))
+                            .description(format!("v{} is enabled for all projects.", it.version)),
+                    );
                 }
             }
         }
@@ -395,9 +403,14 @@ impl AgentFleetApp {
         let top = page_header(ui, inner, title, sub, |ui| {
             let b = ui.add(Button::new("Add from URL").icon(UiIcon::Plus).size(ControlSize::Sm));
             if b.clicked() {
-                toast(ui.ctx(), Toast::new("Paste a registry URL").description("git, https or a local path are supported."));
+                toast(
+                    ui.ctx(),
+                    Toast::new("Paste a registry URL").description("git, https or a local path are supported."),
+                );
             }
-            sync = ui.add(Button::new("Sync").icon(UiIcon::Download).variant(ButtonVariant::Outline).size(ControlSize::Sm)).clicked();
+            sync = ui
+                .add(Button::new("Sync").icon(UiIcon::Download).variant(ButtonVariant::Outline).size(ControlSize::Sm))
+                .clicked();
         });
         if sync {
             toast(ui.ctx(), Toast::success("Fleet synced").description("3 devices · 2 updates available"));
@@ -410,7 +423,15 @@ impl AgentFleetApp {
         pk::mini_tabs(ui, tr, id.with("filter"), &FILTERS, &mut self.filter);
         let vis = self.visible(kind);
         let p = ui.painter().clone();
-        kit::text_at(&p, pos2(inner.max.x, ty + 16.0), Align2::RIGHT_CENTER, &format!("{} shown", vis.len()), 12.0, t.muted_foreground, 120.0);
+        kit::text_at(
+            &p,
+            pos2(inner.max.x, ty + 16.0),
+            Align2::RIGHT_CENTER,
+            &format!("{} shown", vis.len()),
+            12.0,
+            t.muted_foreground,
+            120.0,
+        );
         kit::hline(&p, inner.min.x, inner.max.x, ty + 32.0, &t);
         // keyboard
         if self.open.is_some() && ui.input(|i| i.key_pressed(Key::Escape)) {
@@ -419,35 +440,51 @@ impl AgentFleetApp {
         let gr = Rect::from_min_max(pos2(rect.min.x, ty + 44.0), rect.max);
         let mut clicked = None;
         kit::child(ui, gr, |ui| {
-            egui::ScrollArea::vertical().id_salt(("fleet_grid", kind as u8)).auto_shrink([false, false]).show(ui, |ui| {
-                let w = ui.available_width();
-                let cw = w - 48.0;
-                let ncol = if cw > 820.0 { 3 } else if cw > 520.0 { 2 } else { 1 };
-                let card_h = match kind {
-                    FleetKind::Mcp => 214.0,
-                    FleetKind::Project => 172.0,
-                    _ => 176.0,
-                };
-                if vis.is_empty() {
-                    let (er, _) = ui.allocate_exact_size(vec2(w, 200.0), Sense::hover());
-                    let er = Rect::from_center_size(er.center(), vec2(360.0, 160.0));
-                    kit::child(ui, er, |ui| {
-                        ui.add(glowkit_components::EmptyState::new(UiIcon::Search, "Nothing matches").description("Try another search or filter.").width(360.0));
-                    });
-                    return;
-                }
-                for chunk in vis.chunks(ncol) {
-                    let (row, _) = ui.allocate_exact_size(vec2(w, card_h + 14.0), Sense::hover());
-                    let row = Rect::from_min_max(pos2(row.min.x + 24.0, row.min.y + 2.0), pos2(row.max.x - 24.0, row.max.y - 12.0));
-                    let cells = kit::cols(row, ncol, 14.0);
-                    for (k, &i) in chunk.iter().enumerate() {
-                        if self.card(ui, cells[k], id.with(("card", i)), i, now) {
-                            clicked = Some(i);
+            egui::ScrollArea::vertical().id_salt(("fleet_grid", kind as u8)).auto_shrink([false, false]).show(
+                ui,
+                |ui| {
+                    let w = ui.available_width();
+                    let cw = w - 48.0;
+                    let ncol = if cw > 820.0 {
+                        3
+                    } else if cw > 520.0 {
+                        2
+                    } else {
+                        1
+                    };
+                    let card_h = match kind {
+                        FleetKind::Mcp => 214.0,
+                        FleetKind::Project => 172.0,
+                        _ => 176.0,
+                    };
+                    if vis.is_empty() {
+                        let (er, _) = ui.allocate_exact_size(vec2(w, 200.0), Sense::hover());
+                        let er = Rect::from_center_size(er.center(), vec2(360.0, 160.0));
+                        kit::child(ui, er, |ui| {
+                            ui.add(
+                                glowkit_components::EmptyState::new(UiIcon::Search, "Nothing matches")
+                                    .description("Try another search or filter.")
+                                    .width(360.0),
+                            );
+                        });
+                        return;
+                    }
+                    for chunk in vis.chunks(ncol) {
+                        let (row, _) = ui.allocate_exact_size(vec2(w, card_h + 14.0), Sense::hover());
+                        let row = Rect::from_min_max(
+                            pos2(row.min.x + 24.0, row.min.y + 2.0),
+                            pos2(row.max.x - 24.0, row.max.y - 12.0),
+                        );
+                        let cells = kit::cols(row, ncol, 14.0);
+                        for (k, &i) in chunk.iter().enumerate() {
+                            if self.card(ui, cells[k], id.with(("card", i)), i, now) {
+                                clicked = Some(i);
+                            }
                         }
                     }
-                }
-                ui.add_space(12.0);
-            });
+                    ui.add_space(12.0);
+                },
+            );
         });
         if let Some(i) = clicked {
             self.open = Some(i);
@@ -467,7 +504,14 @@ impl AgentFleetApp {
         let lift = hv * 2.0;
         let r = r.translate(vec2(0.0, -lift));
         if hv > 0.01 {
-            paint::soft_shadow(&p, r, t.radius, 14.0 * hv, vec2(0.0, 4.0 * hv), with_alpha(Color32::BLACK, if t.dark { 0.4 } else { 0.08 } * hv));
+            paint::soft_shadow(
+                &p,
+                r,
+                t.radius,
+                14.0 * hv,
+                vec2(0.0, 4.0 * hv),
+                with_alpha(Color32::BLACK, if t.dark { 0.4 } else { 0.08 } * hv),
+            );
         }
         p.rect_filled(r, t.radius, t.card);
         let border = if open { t.ring } else { t.border.lerp_to_gamma(mix(t.border, t.foreground, 0.25), hv) };
@@ -494,7 +538,15 @@ impl AgentFleetApp {
         if it.install_started.is_some() {
             ctrl_w = 70.0;
             let e = ((now - it.install_started.unwrap_or(now)) / 2.4).clamp(0.0, 1.0) as f32;
-            kit::text_at(&p, pos2(ctrl_x, cy), Align2::RIGHT_CENTER, &format!("{:.0}%", e * 100.0), 11.5, t.muted_foreground, 60.0);
+            kit::text_at(
+                &p,
+                pos2(ctrl_x, cy),
+                Align2::RIGHT_CENTER,
+                &format!("{:.0}%", e * 100.0),
+                11.5,
+                t.muted_foreground,
+                60.0,
+            );
         } else if it.installed {
             ctrl_w = 40.0;
             let sw = Rect::from_min_size(pos2(ctrl_x - 36.0, cy - 10.0), vec2(36.0, 20.0));
@@ -508,7 +560,17 @@ impl AgentFleetApp {
         } else if it.kind != FleetKind::Project {
             ctrl_w = 76.0;
             let br = Rect::from_min_max(pos2(ctrl_x - 72.0, cy - 13.0), pos2(ctrl_x, cy + 13.0));
-            if pk::small_btn(ui, br, id.with("install"), "Install", Some(UiIcon::Download.into()), Some(t.primary), None).clicked() {
+            if pk::small_btn(
+                ui,
+                br,
+                id.with("install"),
+                "Install",
+                Some(UiIcon::Download.into()),
+                Some(t.primary),
+                None,
+            )
+            .clicked()
+            {
                 self.items[i].install_started = Some(now);
             }
         }
@@ -517,7 +579,13 @@ impl AgentFleetApp {
         let nr = kit::text_at(&p, pos2(tx, r.min.y + 24.0), Align2::LEFT_CENTER, &it.name, 14.0, t.foreground, tw);
         if it.kind == FleetKind::Mcp && it.installed {
             let hc = if it.enabled { health_color(it.health, &t) } else { t.muted_foreground };
-            pk::dot(&p, pos2(nr.max.x + 9.0, nr.center().y), 3.5, hc, (it.enabled && it.health != McpHealth::Healthy).then_some(now));
+            pk::dot(
+                &p,
+                pos2(nr.max.x + 9.0, nr.center().y),
+                3.5,
+                hc,
+                (it.enabled && it.health != McpHealth::Healthy).then_some(now),
+            );
         }
         let meta = match it.kind {
             FleetKind::Project => it.transport.clone(),
@@ -538,13 +606,37 @@ impl AgentFleetApp {
                 let band = Rect::from_min_max(pos2(x0, y), pos2(x1, y + 40.0));
                 p.rect_filled(band, 7.0, mix(t.card, t.foreground, if t.dark { 0.04 } else { 0.025 }));
                 if !it.installed {
-                    kit::text_at(&p, band.center(), Align2::CENTER_CENTER, "Not installed", 11.5, t.muted_foreground, band.width());
+                    kit::text_at(
+                        &p,
+                        band.center(),
+                        Align2::CENTER_CENTER,
+                        "Not installed",
+                        11.5,
+                        t.muted_foreground,
+                        band.width(),
+                    );
                 } else if !it.enabled {
-                    kit::text_at(&p, band.center(), Align2::CENTER_CENTER, "Stopped", 11.5, t.muted_foreground, band.width());
+                    kit::text_at(
+                        &p,
+                        band.center(),
+                        Align2::CENTER_CENTER,
+                        "Stopped",
+                        11.5,
+                        t.muted_foreground,
+                        band.width(),
+                    );
                 } else if it.health == McpHealth::Down {
                     let left = 12 - ((now / 0.8) as u64 % 12);
                     pk::dot(&p, pos2(band.min.x + 14.0, band.center().y), 3.0, t.destructive, Some(now));
-                    kit::text_at(&p, pos2(band.min.x + 26.0, band.center().y), Align2::LEFT_CENTER, &format!("Connection refused · retrying in {left}s"), 11.5, pk::tone_fg(&t, t.destructive), band.width() - 36.0);
+                    kit::text_at(
+                        &p,
+                        pos2(band.min.x + 26.0, band.center().y),
+                        Align2::LEFT_CENTER,
+                        &format!("Connection refused · retrying in {left}s"),
+                        11.5,
+                        pk::tone_fg(&t, t.destructive),
+                        band.width() - 36.0,
+                    );
                 } else {
                     let last = *it.latency.last().unwrap_or(&0.0);
                     let p50 = {
@@ -552,9 +644,28 @@ impl AgentFleetApp {
                         v.sort_by(|a, b| a.total_cmp(b));
                         v[v.len() / 2]
                     };
-                    let lr = kit::text_at(&p, pos2(band.min.x + 10.0, band.min.y + 13.0), Align2::LEFT_CENTER, &format!("{last:.0} ms"), 12.5, t.foreground, 80.0);
-                    kit::text_at(&p, pos2(band.min.x + 10.0, band.min.y + 29.0), Align2::LEFT_CENTER, &format!("p50 {p50:.0} ms"), 10.5, t.muted_foreground, 80.0);
-                    let sr = Rect::from_min_max(pos2(lr.min.x + 84.0, band.min.y + 8.0), pos2(band.max.x - 10.0, band.max.y - 8.0));
+                    let lr = kit::text_at(
+                        &p,
+                        pos2(band.min.x + 10.0, band.min.y + 13.0),
+                        Align2::LEFT_CENTER,
+                        &format!("{last:.0} ms"),
+                        12.5,
+                        t.foreground,
+                        80.0,
+                    );
+                    kit::text_at(
+                        &p,
+                        pos2(band.min.x + 10.0, band.min.y + 29.0),
+                        Align2::LEFT_CENTER,
+                        &format!("p50 {p50:.0} ms"),
+                        10.5,
+                        t.muted_foreground,
+                        80.0,
+                    );
+                    let sr = Rect::from_min_max(
+                        pos2(lr.min.x + 84.0, band.min.y + 8.0),
+                        pos2(band.max.x - 10.0, band.max.y - 8.0),
+                    );
                     pk::spark(&p, sr, &it.latency, health_color(it.health, &t), true);
                 }
                 y += 50.0;
@@ -593,14 +704,54 @@ impl AgentFleetApp {
                 let agents = it.downloads as usize;
                 let col = if agents > 0 { t.success } else { t.muted_foreground };
                 pk::dot(&p, pos2(x0 + 4.0, fy), 3.5, col, (agents > 0).then_some(now));
-                kit::text_at(&p, pos2(x0 + 14.0, fy), Align2::LEFT_CENTER, &format!("{agents} agent{} running", if agents == 1 { "" } else { "s" }), 11.5, t.muted_foreground, 140.0);
-                kit::text_at(&p, pos2(x1, fy), Align2::RIGHT_CENTER, if it.enabled { "Agents allowed" } else { "Paused" }, 11.5, t.muted_foreground, 120.0);
+                kit::text_at(
+                    &p,
+                    pos2(x0 + 14.0, fy),
+                    Align2::LEFT_CENTER,
+                    &format!("{agents} agent{} running", if agents == 1 { "" } else { "s" }),
+                    11.5,
+                    t.muted_foreground,
+                    140.0,
+                );
+                kit::text_at(
+                    &p,
+                    pos2(x1, fy),
+                    Align2::RIGHT_CENTER,
+                    if it.enabled { "Agents allowed" } else { "Paused" },
+                    11.5,
+                    t.muted_foreground,
+                    120.0,
+                );
             }
             _ => {
-                AppIcon::Ui(UiIcon::Download).paint(&p, Rect::from_center_size(pos2(x0 + 6.0, fy), vec2(12.0, 12.0)), t.muted_foreground);
-                let dr = kit::text_at(&p, pos2(x0 + 16.0, fy), Align2::LEFT_CENTER, &glowkit_charts::format_compact(it.downloads), 11.5, t.muted_foreground, 60.0);
-                AppIcon::Ui(UiIcon::Star).paint(&p, Rect::from_center_size(pos2(dr.max.x + 18.0, fy), vec2(12.0, 12.0)), t.warning);
-                kit::text_at(&p, pos2(dr.max.x + 28.0, fy), Align2::LEFT_CENTER, &format!("{:.1}", it.rating), 11.5, t.muted_foreground, 40.0);
+                AppIcon::Ui(UiIcon::Download).paint(
+                    &p,
+                    Rect::from_center_size(pos2(x0 + 6.0, fy), vec2(12.0, 12.0)),
+                    t.muted_foreground,
+                );
+                let dr = kit::text_at(
+                    &p,
+                    pos2(x0 + 16.0, fy),
+                    Align2::LEFT_CENTER,
+                    &glowkit_charts::format_compact(it.downloads),
+                    11.5,
+                    t.muted_foreground,
+                    60.0,
+                );
+                AppIcon::Ui(UiIcon::Star).paint(
+                    &p,
+                    Rect::from_center_size(pos2(dr.max.x + 18.0, fy), vec2(12.0, 12.0)),
+                    t.warning,
+                );
+                kit::text_at(
+                    &p,
+                    pos2(dr.max.x + 28.0, fy),
+                    Align2::LEFT_CENTER,
+                    &format!("{:.1}", it.rating),
+                    11.5,
+                    t.muted_foreground,
+                    40.0,
+                );
                 let right = if it.kind == FleetKind::Mcp {
                     format!("{} · {} tools", it.transport, it.provides.len())
                 } else {
@@ -632,7 +783,8 @@ impl AgentFleetApp {
         let x = rect.max.x - w * k.min(1.0);
         let r = Rect::from_min_max(pos2(x, rect.min.y), pos2(x + w, rect.max.y));
         p.rect_filled(rect, 0.0, with_alpha(Color32::BLACK, if t.dark { 0.35 } else { 0.1 } * k.clamp(0.0, 1.0)));
-        let scrim = ui.interact(Rect::from_min_max(rect.min, pos2(r.min.x, rect.max.y)), id.with("scrim"), Sense::click());
+        let scrim =
+            ui.interact(Rect::from_min_max(rect.min, pos2(r.min.x, rect.max.y)), id.with("scrim"), Sense::click());
         if scrim.clicked() {
             self.open = None;
         }
@@ -658,19 +810,52 @@ impl AgentFleetApp {
             FleetKind::Project => LineIcon::Folder.into(),
         };
         icon.paint(&p, tile.shrink(11.0), pk::tone_fg(&t, tc));
-        let close = pk::icon_btn(ui, Rect::from_min_size(pos2(x1 - 28.0, r.min.y + 18.0), vec2(28.0, 28.0)), id.with("close"), LineIcon::X.into(), "Close", Some("Esc"));
+        let close = pk::icon_btn(
+            ui,
+            Rect::from_min_size(pos2(x1 - 28.0, r.min.y + 18.0), vec2(28.0, 28.0)),
+            id.with("close"),
+            LineIcon::X.into(),
+            "Close",
+            Some("Esc"),
+        );
         if close.clicked() {
             self.open = None;
         }
-        kit::text_at(&p, pos2(tile.max.x + 14.0, tile.min.y + 13.0), Align2::LEFT_CENTER, &it.name, 17.0, t.foreground, x1 - tile.max.x - 50.0);
-        let meta = if it.kind == FleetKind::Project { it.transport.clone() } else { format!("{} · v{}", it.author, it.version) };
-        kit::text_at(&p, pos2(tile.max.x + 14.0, tile.min.y + 34.0), Align2::LEFT_CENTER, &meta, 12.0, t.muted_foreground, x1 - tile.max.x - 20.0);
+        kit::text_at(
+            &p,
+            pos2(tile.max.x + 14.0, tile.min.y + 13.0),
+            Align2::LEFT_CENTER,
+            &it.name,
+            17.0,
+            t.foreground,
+            x1 - tile.max.x - 50.0,
+        );
+        let meta = if it.kind == FleetKind::Project {
+            it.transport.clone()
+        } else {
+            format!("{} · v{}", it.author, it.version)
+        };
+        kit::text_at(
+            &p,
+            pos2(tile.max.x + 14.0, tile.min.y + 34.0),
+            Align2::LEFT_CENTER,
+            &meta,
+            12.0,
+            t.muted_foreground,
+            x1 - tile.max.x - 20.0,
+        );
         let mut y = tile.max.y + 20.0;
         // actions
         if it.installed {
             let sw = Rect::from_min_size(pos2(x0, y), vec2(150.0, 22.0));
             let mut on = it.enabled;
-            kit::child(ui, sw, |ui| ui.add(Switch::new(&mut on).label(if it.kind == FleetKind::Project { "Agents allowed" } else { "Enabled" })));
+            kit::child(ui, sw, |ui| {
+                ui.add(Switch::new(&mut on).label(if it.kind == FleetKind::Project {
+                    "Agents allowed"
+                } else {
+                    "Enabled"
+                }))
+            });
             if on != it.enabled {
                 self.items[i].enabled = on;
             }
@@ -700,7 +885,17 @@ impl AgentFleetApp {
             }
         } else if self.items[i].install_started.is_none() {
             let br = Rect::from_min_max(pos2(x0, y - 4.0), pos2(x1, y + 28.0));
-            if pk::small_btn(ui, br, id.with("inst"), &format!("Install {}", it.name), Some(UiIcon::Download.into()), Some(t.primary), None).clicked() {
+            if pk::small_btn(
+                ui,
+                br,
+                id.with("inst"),
+                &format!("Install {}", it.name),
+                Some(UiIcon::Download.into()),
+                Some(t.primary),
+                None,
+            )
+            .clicked()
+            {
                 self.items[i].install_started = Some(now);
             }
         } else {
@@ -719,11 +914,18 @@ impl AgentFleetApp {
         if it.kind == FleetKind::Mcp && it.installed {
             pk::label(&p, pos2(x0, y), "Health", &t, 120.0);
             let hc = health_color(it.health, &t);
-            kit::status_pill(&p, pos2(x1, y), true, match it.health {
-                McpHealth::Healthy => "Healthy",
-                McpHealth::Degraded => "Degraded",
-                McpHealth::Down => "Down",
-            }, hc, &t);
+            kit::status_pill(
+                &p,
+                pos2(x1, y),
+                true,
+                match it.health {
+                    McpHealth::Healthy => "Healthy",
+                    McpHealth::Degraded => "Degraded",
+                    McpHealth::Down => "Down",
+                },
+                hc,
+                &t,
+            );
             y += 18.0;
             let sr = Rect::from_min_max(pos2(x0, y), pos2(x1, y + 48.0));
             pk::spark(&p, sr, &it.latency, hc, true);
@@ -744,7 +946,13 @@ impl AgentFleetApp {
             FleetKind::Project => "Uses",
             _ => "Provides",
         };
-        section(&p, &mut y, prov_title, &it.provides, if it.kind == FleetKind::Mcp { AppIcon::Ui(UiIcon::Terminal) } else { AppIcon::Ui(UiIcon::Check) });
+        section(
+            &p,
+            &mut y,
+            prov_title,
+            &it.provides,
+            if it.kind == FleetKind::Mcp { AppIcon::Ui(UiIcon::Terminal) } else { AppIcon::Ui(UiIcon::Check) },
+        );
         if !it.permissions.is_empty() {
             section(&p, &mut y, "Permissions", &it.permissions, AppIcon::Shield);
         }
@@ -757,9 +965,33 @@ impl AgentFleetApp {
                 "stdio" => format!("command  quill-mcp-{}", it.name),
                 _ => format!("url      https://mcp.internal/{}", it.name),
             };
-            pk::mono(&p, pos2(cr.min.x + 10.0, cr.min.y + 16.0), Align2::LEFT_CENTER, &format!("transport {}", it.transport), 11.5, t.foreground, cr.width() - 20.0);
-            pk::mono(&p, pos2(cr.min.x + 10.0, cr.min.y + 32.0), Align2::LEFT_CENTER, &cmd, 11.5, t.foreground, cr.width() - 20.0);
-            pk::mono(&p, pos2(cr.min.x + 10.0, cr.min.y + 48.0), Align2::LEFT_CENTER, "env      API_TOKEN=••••••••3f2a", 11.5, t.muted_foreground, cr.width() - 20.0);
+            pk::mono(
+                &p,
+                pos2(cr.min.x + 10.0, cr.min.y + 16.0),
+                Align2::LEFT_CENTER,
+                &format!("transport {}", it.transport),
+                11.5,
+                t.foreground,
+                cr.width() - 20.0,
+            );
+            pk::mono(
+                &p,
+                pos2(cr.min.x + 10.0, cr.min.y + 32.0),
+                Align2::LEFT_CENTER,
+                &cmd,
+                11.5,
+                t.foreground,
+                cr.width() - 20.0,
+            );
+            pk::mono(
+                &p,
+                pos2(cr.min.x + 10.0, cr.min.y + 48.0),
+                Align2::LEFT_CENTER,
+                "env      API_TOKEN=••••••••3f2a",
+                11.5,
+                t.muted_foreground,
+                cr.width() - 20.0,
+            );
         }
         let _ = FontId::default();
     }

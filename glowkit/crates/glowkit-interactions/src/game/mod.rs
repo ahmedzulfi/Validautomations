@@ -78,8 +78,12 @@ mod skill_tree;
 pub use bars::{GameBossBar, GameResourceBar, GameResourceKind};
 pub use common::{GameBackdrop, GameCue, GameIcon, GameItem, GamePalette, GameRarity, GameStyle};
 pub use dialogue::{GameDialogueBox, GameDialogueLine, GamePortrait};
-pub use feed::{GameDamageFeed, GameDamageKind, GameDamageNumbers, GameKillEntry, GameKillFeed, GameScoreRow, GameScoreboard};
-pub use hud::{GameAmmoCounter, GameCooldownIcon, GameCrosshair, GameCrosshairShape, GameMapMarker, GameMarkerKind, GameMinimap};
+pub use feed::{
+    GameDamageFeed, GameDamageKind, GameDamageNumbers, GameKillEntry, GameKillFeed, GameScoreRow, GameScoreboard,
+};
+pub use hud::{
+    GameAmmoCounter, GameCooldownIcon, GameCrosshair, GameCrosshairShape, GameMapMarker, GameMarkerKind, GameMinimap,
+};
 pub use inventory::{GameHotbar, GameInventoryGrid, GameItemTooltip};
 pub use menus::{GameMainMenu, GamePauseMenu, GameSettings, GameSettingsPanel};
 pub use popups::{GameAchievementToast, GameLootPopup};

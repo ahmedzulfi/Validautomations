@@ -30,7 +30,16 @@ pub struct GameQuest {
 impl GameQuest {
     /// A quest titled `title`.
     pub fn new(title: impl Into<String>) -> Self {
-        Self { title: title.into(), desc: String::new(), giver: String::new(), main: false, objectives: Vec::new(), xp: 0, gold: 0, items: Vec::new() }
+        Self {
+            title: title.into(),
+            desc: String::new(),
+            giver: String::new(),
+            main: false,
+            objectives: Vec::new(),
+            xp: 0,
+            gold: 0,
+            items: Vec::new(),
+        }
     }
     /// Description.
     pub fn desc(mut self, d: impl Into<String>) -> Self {
@@ -67,12 +76,23 @@ impl GameQuest {
 
 fn quest_mark(painter: &Painter, c: Pos2, main: bool, s: f32) {
     let col = if main { hex("#FFC94A") } else { hex("#C9D3E0") };
-    painter.add(Shape::convex_polygon(vec![c + vec2(0.0, -s), c + vec2(s * 0.7, 0.0), c + vec2(0.0, s), c + vec2(-s * 0.7, 0.0)], col, Stroke::new(1.0, Color32::from_black_alpha(200))));
-    painter.add(Shape::convex_polygon(vec![c + vec2(0.0, -s), c + vec2(s * 0.7, 0.0), c], with_alpha(Color32::WHITE, 0.45), Stroke::NONE));
+    painter.add(Shape::convex_polygon(
+        vec![c + vec2(0.0, -s), c + vec2(s * 0.7, 0.0), c + vec2(0.0, s), c + vec2(-s * 0.7, 0.0)],
+        col,
+        Stroke::new(1.0, Color32::from_black_alpha(200)),
+    ));
+    painter.add(Shape::convex_polygon(
+        vec![c + vec2(0.0, -s), c + vec2(s * 0.7, 0.0), c],
+        with_alpha(Color32::WHITE, 0.45),
+        Stroke::NONE,
+    ));
 }
 
 fn check_box(painter: &Painter, c: Pos2, done: bool, k: f32, accent: Color32, line: Color32) {
-    let r = Rect::from_center_size(c, Vec2::splat(12.0 * (1.0 + 0.4 * (k * std::f32::consts::PI).sin() * (k < 1.0) as i32 as f32)));
+    let r = Rect::from_center_size(
+        c,
+        Vec2::splat(12.0 * (1.0 + 0.4 * (k * std::f32::consts::PI).sin() * (k < 1.0) as i32 as f32)),
+    );
     painter.rect_stroke(r, 2.0, Stroke::new(1.5, line), egui::StrokeKind::Inside);
     if done {
         painter.rect_filled(r.shrink(1.0), 2.0, accent);
@@ -135,7 +155,8 @@ impl egui::Widget for GameQuestTracker<'_> {
         let title_f = display_font(ui, 14.0);
         let obj_f = semi_font(ui, 12.5);
         let line_h = 22.0;
-        let total_h: f32 = self.quests.iter().map(|q| 30.0 + q.objectives.len() as f32 * line_h + 12.0).sum::<f32>() + 30.0;
+        let total_h: f32 =
+            self.quests.iter().map(|q| 30.0 + q.objectives.len() as f32 * line_h + 12.0).sum::<f32>() + 30.0;
         let (rect, resp) = ui.allocate_exact_size(vec2(self.width, total_h), Sense::hover());
         if !ui.is_rect_visible(rect) {
             return resp;
@@ -145,8 +166,19 @@ impl egui::Widget for GameQuestTracker<'_> {
         let painter = ui.painter();
         let hud = pal.hud;
         let shadow = Color32::from_black_alpha(190);
-        outlined(painter, pos2(rect.max.x, rect.min.y + 10.0), Align2::RIGHT_CENTER, "QUESTS", FontId::monospace(11.0), with_alpha(hud, 0.7), shadow);
-        painter.line_segment([pos2(rect.max.x - 120.0, rect.min.y + 20.0), pos2(rect.max.x, rect.min.y + 20.0)], Stroke::new(1.0, with_alpha(hud, 0.3)));
+        outlined(
+            painter,
+            pos2(rect.max.x, rect.min.y + 10.0),
+            Align2::RIGHT_CENTER,
+            "QUESTS",
+            FontId::monospace(11.0),
+            with_alpha(hud, 0.7),
+            shadow,
+        );
+        painter.line_segment(
+            [pos2(rect.max.x - 120.0, rect.min.y + 20.0), pos2(rect.max.x, rect.min.y + 20.0)],
+            Stroke::new(1.0, with_alpha(hud, 0.3)),
+        );
         let mut y = rect.min.y + 30.0;
         let mut animating = false;
         for q in self.quests {
@@ -167,16 +199,44 @@ impl egui::Widget for GameQuestTracker<'_> {
                 animating = true;
             }
             // backing gradient
-            paint::gradient_rect(painter, block.translate(vec2(x_off, 0.0)), 6.0, 0.0, &[Color32::TRANSPARENT, with_alpha(Color32::BLACK, 0.45 * a)]);
+            paint::gradient_rect(
+                painter,
+                block.translate(vec2(x_off, 0.0)),
+                6.0,
+                0.0,
+                &[Color32::TRANSPARENT, with_alpha(Color32::BLACK, 0.45 * a)],
+            );
             if age < 1.2 {
                 let f = 1.0 - age / 1.2;
-                paint::gradient_rect(painter, block.translate(vec2(x_off, 0.0)), 6.0, 0.0, &[Color32::TRANSPARENT, with_alpha(pal.accent, 0.5 * f)]);
-                outlined(painter, pos2(block.min.x + x_off + 6.0, y + 8.0), Align2::LEFT_CENTER, "NEW", FontId::monospace(10.0), with_alpha(pal.warn, f.min(1.0) * a), shadow);
+                paint::gradient_rect(
+                    painter,
+                    block.translate(vec2(x_off, 0.0)),
+                    6.0,
+                    0.0,
+                    &[Color32::TRANSPARENT, with_alpha(pal.accent, 0.5 * f)],
+                );
+                outlined(
+                    painter,
+                    pos2(block.min.x + x_off + 6.0, y + 8.0),
+                    Align2::LEFT_CENTER,
+                    "NEW",
+                    FontId::monospace(10.0),
+                    with_alpha(pal.warn, f.min(1.0) * a),
+                    shadow,
+                );
             }
             let tx = rect.max.x - 10.0 + x_off;
             quest_mark(painter, pos2(tx - 2.0, y + 8.0), q.main, 7.0);
             let tc = if q.main { hex("#FFD87A") } else { hud };
-            outlined(painter, pos2(tx - 16.0, y + 8.0), Align2::RIGHT_CENTER, &q.title, title_f.clone(), with_alpha(tc, a), with_alpha(shadow, a));
+            outlined(
+                painter,
+                pos2(tx - 16.0, y + 8.0),
+                Align2::RIGHT_CENTER,
+                &q.title,
+                title_f.clone(),
+                with_alpha(tc, a),
+                with_alpha(shadow, a),
+            );
             let mut oy = y + 30.0;
             for (oi, (text, cur, target)) in q.objectives.iter().enumerate() {
                 let oid = qid.with(("obj", oi));
@@ -191,13 +251,33 @@ impl egui::Widget for GameQuestTracker<'_> {
                 let cnt = format!("{}/{}", cur.min(target), target);
                 let pop_k = if since < 0.35 && *cur as f32 > prev { 1.0 - since / 0.35 } else { 0.0 };
                 let cf = FontId::monospace(12.0 * (1.0 + 0.45 * pop_k));
-                let cw = outlined(painter, pos2(tx, oy), Align2::RIGHT_CENTER, &cnt, cf, mix(col, pal.warn, pop_k), with_alpha(shadow, a)).width();
-                let txt_r = outlined(painter, pos2(tx - cw - 10.0, oy), Align2::RIGHT_CENTER, text, obj_f.clone(), col, with_alpha(shadow, a));
+                let cw = outlined(
+                    painter,
+                    pos2(tx, oy),
+                    Align2::RIGHT_CENTER,
+                    &cnt,
+                    cf,
+                    mix(col, pal.warn, pop_k),
+                    with_alpha(shadow, a),
+                )
+                .width();
+                let txt_r = outlined(
+                    painter,
+                    pos2(tx - cw - 10.0, oy),
+                    Align2::RIGHT_CENTER,
+                    text,
+                    obj_f.clone(),
+                    col,
+                    with_alpha(shadow, a),
+                );
                 let cb = pos2(txt_r.min.x - 12.0, oy);
                 check_box(painter, cb, done, ck.min(1.0), pal.good, with_alpha(hud, 0.8 * a));
                 if done {
                     let sk = if just_done { ((since - 0.15) / 0.35).clamp(0.0, 1.0) } else { 1.0 };
-                    painter.line_segment([pos2(txt_r.min.x - 2.0, oy), pos2(txt_r.min.x - 2.0 + (txt_r.width() + 4.0) * sk, oy)], Stroke::new(1.5, with_alpha(hud, 0.6 * a)));
+                    painter.line_segment(
+                        [pos2(txt_r.min.x - 2.0, oy), pos2(txt_r.min.x - 2.0 + (txt_r.width() + 4.0) * sk, oy)],
+                        Stroke::new(1.5, with_alpha(hud, 0.6 * a)),
+                    );
                 }
                 if just_done {
                     burst(painter, cb, since, 10, oi as u64 + 3, 140.0, 40.0, pal.good, 2.2);
@@ -208,7 +288,11 @@ impl egui::Widget for GameQuestTracker<'_> {
                     let pr = Rect::from_min_size(pos2(tx - pw, oy + 8.0), vec2(pw, 2.0));
                     let fill = follow(ui, oid.with("fill"), *cur as f32 / *target as f32, 6.0);
                     painter.rect_filled(pr, 1.0, with_alpha(hud, 0.18 * a));
-                    painter.rect_filled(Rect::from_min_size(pr.min, vec2(pw * fill, 2.0)), 1.0, with_alpha(pal.accent, a));
+                    painter.rect_filled(
+                        Rect::from_min_size(pr.min, vec2(pw * fill, 2.0)),
+                        1.0,
+                        with_alpha(pal.accent, a),
+                    );
                 }
                 oy += line_h;
             }
@@ -218,7 +302,17 @@ impl egui::Widget for GameQuestTracker<'_> {
                 let c = block.center() + vec2(x_off, 0.0);
                 let banner = Rect::from_center_size(c, vec2(block.width() * 0.9 * s, 26.0));
                 paint::glow_ellipse(painter, c, vec2(block.width() * 0.6, 30.0), with_alpha(hex("#FFC94A"), 0.4 * f));
-                paint::gradient_rect(painter, banner, 3.0, 0.0, &[with_alpha(hex("#FFC94A"), 0.0), with_alpha(hex("#FFC94A"), 0.95 * f), with_alpha(hex("#FFC94A"), 0.0)]);
+                paint::gradient_rect(
+                    painter,
+                    banner,
+                    3.0,
+                    0.0,
+                    &[
+                        with_alpha(hex("#FFC94A"), 0.0),
+                        with_alpha(hex("#FFC94A"), 0.95 * f),
+                        with_alpha(hex("#FFC94A"), 0.0),
+                    ],
+                );
                 let tf = FontId::new(13.0 * s.max(0.1), title_f.family.clone());
                 painter.text(c, Align2::CENTER_CENTER, "QUEST COMPLETE", tf, with_alpha(hex("#2A1800"), f));
                 burst(painter, c, since_c, 24, 99, 300.0, 80.0, hex("#FFC94A"), 2.8);
@@ -345,22 +439,49 @@ impl egui::Widget for GameQuestLog<'_> {
         }
         let painter = ui.painter();
         frame(painter, rect, self.style, &pal, 0.0);
-        painter.text(pos2(rect.min.x + 22.0, rect.min.y + 26.0), Align2::LEFT_CENTER, "JOURNAL", head_f.clone(), pal.text);
+        painter.text(
+            pos2(rect.min.x + 22.0, rect.min.y + 26.0),
+            Align2::LEFT_CENTER,
+            "JOURNAL",
+            head_f.clone(),
+            pal.text,
+        );
         let done_n = self.quests.iter().filter(|q| q.complete()).count();
-        painter.text(pos2(rect.max.x - 22.0, rect.min.y + 26.0), Align2::RIGHT_CENTER, format!("{done_n} / {n} COMPLETE"), FontId::monospace(11.0), pal.dim);
+        painter.text(
+            pos2(rect.max.x - 22.0, rect.min.y + 26.0),
+            Align2::RIGHT_CENTER,
+            format!("{done_n} / {n} COMPLETE"),
+            FontId::monospace(11.0),
+            pal.dim,
+        );
         for (hy, label) in headers {
             painter.text(pos2(list.min.x + 4.0, hy + 9.0), Align2::LEFT_CENTER, label, sec_f.clone(), pal.dim);
-            painter.line_segment([pos2(list.min.x + 44.0, hy + 9.0), pos2(list.max.x, hy + 9.0)], Stroke::new(1.0, with_alpha(pal.dim, 0.3)));
+            painter.line_segment(
+                [pos2(list.min.x + 44.0, hy + 9.0), pos2(list.max.x, hy + 9.0)],
+                Stroke::new(1.0, with_alpha(pal.dim, 0.3)),
+            );
         }
         let sel_y = row_y.iter().find(|(q, _)| *q == sel).map(|(_, y)| *y).unwrap_or(list.min.y);
         let hy = spring(ui, id.with("hy"), sel_y, 360.0, 26.0);
         let hl = Rect::from_min_size(pos2(list.min.x, hy), vec2(list_w, row_h - 2.0));
         match self.style {
             GameStyle::Fantasy => {
-                paint::gradient_rect(painter, hl, 3.0, 0.0, &[with_alpha(hex("#8E2F25"), 0.9), with_alpha(hex("#8E2F25"), 0.25)]);
+                paint::gradient_rect(
+                    painter,
+                    hl,
+                    3.0,
+                    0.0,
+                    &[with_alpha(hex("#8E2F25"), 0.9), with_alpha(hex("#8E2F25"), 0.25)],
+                );
             }
             _ => {
-                paint::gradient_rect(painter, hl, 3.0, 0.0, &[with_alpha(pal.accent, 0.35), with_alpha(pal.accent, 0.05)]);
+                paint::gradient_rect(
+                    painter,
+                    hl,
+                    3.0,
+                    0.0,
+                    &[with_alpha(pal.accent, 0.35), with_alpha(pal.accent, 0.05)],
+                );
                 painter.rect_filled(Rect::from_min_size(hl.min, vec2(3.0, hl.height())), 0.0, pal.accent);
             }
         }
@@ -369,11 +490,25 @@ impl egui::Widget for GameQuestLog<'_> {
             let on = *qi == sel;
             let c = pos2(list.min.x + 14.0, ry + row_h / 2.0 - 1.0);
             quest_mark(painter, c, q.main, 6.0);
-            let tc = if on { if self.style == GameStyle::Fantasy { hex("#FBEFD2") } else { pal.text } } else { pal.text };
+            let tc = if on {
+                if self.style == GameStyle::Fantasy {
+                    hex("#FBEFD2")
+                } else {
+                    pal.text
+                }
+            } else {
+                pal.text
+            };
             let tc = if q.complete() && !on { with_alpha(tc, 0.45) } else { tc };
             painter.text(pos2(list.min.x + 28.0, c.y), Align2::LEFT_CENTER, &q.title, item_f.clone(), tc);
             if q.complete() {
-                painter.text(pos2(list.max.x - 8.0, c.y), Align2::RIGHT_CENTER, "✔", FontId::proportional(12.0), if self.style == GameStyle::Fantasy { shade(pal.good, -0.3) } else { pal.good });
+                painter.text(
+                    pos2(list.max.x - 8.0, c.y),
+                    Align2::RIGHT_CENTER,
+                    "✔",
+                    FontId::proportional(12.0),
+                    if self.style == GameStyle::Fantasy { shade(pal.good, -0.3) } else { pal.good },
+                );
             }
         }
         // divider
@@ -390,7 +525,13 @@ impl egui::Widget for GameQuestLog<'_> {
         p2.text(pos2(dx0, y + 10.0), Align2::LEFT_CENTER, &q.title, head_f, pal.text);
         y += 28.0;
         if !q.giver.is_empty() {
-            p2.text(pos2(dx0, y), Align2::LEFT_CENTER, format!("Given by {}", q.giver), FontId::proportional(11.5), pal.dim);
+            p2.text(
+                pos2(dx0, y),
+                Align2::LEFT_CENTER,
+                format!("Given by {}", q.giver),
+                FontId::proportional(11.5),
+                pal.dim,
+            );
             y += 18.0;
         }
         let g = p2.layout(q.desc.clone(), FontId::proportional(12.5), pal.text, dw);
@@ -401,14 +542,37 @@ impl egui::Widget for GameQuestLog<'_> {
         y += 18.0;
         for (oi, (text, cur, target)) in q.objectives.iter().enumerate() {
             let done = cur >= target;
-            check_box(&p2, pos2(dx0 + 6.0, y), done, 1.0, if self.style == GameStyle::Fantasy { shade(pal.good, -0.2) } else { pal.good }, with_alpha(pal.text, 0.7));
-            p2.text(pos2(dx0 + 20.0, y), Align2::LEFT_CENTER, text, item_f.clone(), if done { with_alpha(pal.text, 0.5) } else { pal.text });
-            p2.text(pos2(dx0 + dw, y), Align2::RIGHT_CENTER, format!("{}/{}", cur.min(target), target), FontId::monospace(11.5), pal.dim);
+            check_box(
+                &p2,
+                pos2(dx0 + 6.0, y),
+                done,
+                1.0,
+                if self.style == GameStyle::Fantasy { shade(pal.good, -0.2) } else { pal.good },
+                with_alpha(pal.text, 0.7),
+            );
+            p2.text(
+                pos2(dx0 + 20.0, y),
+                Align2::LEFT_CENTER,
+                text,
+                item_f.clone(),
+                if done { with_alpha(pal.text, 0.5) } else { pal.text },
+            );
+            p2.text(
+                pos2(dx0 + dw, y),
+                Align2::RIGHT_CENTER,
+                format!("{}/{}", cur.min(target), target),
+                FontId::monospace(11.5),
+                pal.dim,
+            );
             let bar = Rect::from_min_size(pos2(dx0 + 20.0, y + 9.0), vec2(dw - 20.0, 3.0));
             let k = glowkit_core::anim::stagger(since, oi, 0.08, 0.5);
             let f = (*cur as f32 / *target as f32).min(1.0) * glowkit_core::ease(glowkit_core::Easing::OutCubic, k);
             p2.rect_filled(bar, 1.5, with_alpha(pal.dim, 0.2));
-            p2.rect_filled(Rect::from_min_size(bar.min, vec2(bar.width() * f, 3.0)), 1.5, if done { pal.good } else { pal.accent });
+            p2.rect_filled(
+                Rect::from_min_size(bar.min, vec2(bar.width() * f, 3.0)),
+                1.5,
+                if done { pal.good } else { pal.accent },
+            );
             y += 26.0;
         }
         // rewards
@@ -416,7 +580,9 @@ impl egui::Widget for GameQuestLog<'_> {
         p2.text(pos2(dx0, ry), Align2::LEFT_CENTER, "REWARDS", sec_f, pal.dim);
         let mut x = dx0;
         let cy = ry + 28.0;
-        for (icon, label) in [(GameIcon::Star, format!("{} XP", thousands(q.xp as i64))), (GameIcon::Coin, thousands(q.gold as i64))] {
+        for (icon, label) in
+            [(GameIcon::Star, format!("{} XP", thousands(q.xp as i64))), (GameIcon::Coin, thousands(q.gold as i64))]
+        {
             icon.paint(&p2, pos2(x + 10.0, cy), 18.0, icon.tint());
             p2.text(pos2(x + 24.0, cy), Align2::LEFT_CENTER, &label, FontId::proportional(12.5), pal.text);
             x += 34.0 + text_w(&p2, &label, &FontId::proportional(12.5));

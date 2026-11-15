@@ -2,7 +2,9 @@
 //! [`SessionDetailHeader`] (the control bar of one session).
 
 use super::common::*;
-use egui::{pos2, vec2, Align2, Color32, CursorIcon, Painter, Pos2, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder};
+use egui::{
+    pos2, vec2, Align2, Color32, CursorIcon, Painter, Pos2, Rect, Response, Sense, Stroke, StrokeKind, Ui, UiBuilder,
+};
 use glowkit_ai::Icon;
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{paint, Theme};
@@ -29,7 +31,10 @@ fn device_glyph(p: &Painter, d: Device, c: Pos2, s: f32, col: Color32) {
         Device::Laptop => {
             let scr = Rect::from_center_size(c - vec2(0.0, s * 0.08), vec2(s * 0.72, s * 0.48));
             p.rect_stroke(scr, cr(1.5), st, StrokeKind::Inside);
-            p.line_segment([pos2(c.x - s * 0.48, scr.max.y + s * 0.12), pos2(c.x + s * 0.48, scr.max.y + s * 0.12)], st);
+            p.line_segment(
+                [pos2(c.x - s * 0.48, scr.max.y + s * 0.12), pos2(c.x + s * 0.48, scr.max.y + s * 0.12)],
+                st,
+            );
         }
         Device::Phone => {
             let r = Rect::from_center_size(c, vec2(s * 0.44, s * 0.74));
@@ -193,8 +198,17 @@ impl egui::Widget for AgentSessionList<'_> {
         let sr = Rect::from_min_size(rect.min + vec2(pad, pad), vec2(rect.width() - pad * 2.0, 32.0));
         p.rect(sr, cr(9.0), well(&t), Stroke::new(1.0, hair(&t)), StrokeKind::Inside);
         icon(&p, Icon::Search, pos2(sr.min.x + 15.0, sr.center().y), 13.0, faint(&t));
-        let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_max(pos2(sr.min.x + 28.0, sr.min.y + 7.0), pos2(sr.max.x - 40.0, sr.max.y - 4.0))));
-        child.add(egui::TextEdit::singleline(&mut query).frame(egui::Frame::NONE).hint_text("Search sessions").font(font(12.5)).desired_width(sr.width() - 70.0));
+        let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_max(
+            pos2(sr.min.x + 28.0, sr.min.y + 7.0),
+            pos2(sr.max.x - 40.0, sr.max.y - 4.0),
+        )));
+        child.add(
+            egui::TextEdit::singleline(&mut query)
+                .frame(egui::Frame::NONE)
+                .hint_text("Search sessions")
+                .font(font(12.5))
+                .desired_width(sr.width() - 70.0),
+        );
         let kb = Rect::from_center_size(pos2(sr.max.x - 20.0, sr.center().y), vec2(24.0, 18.0));
         p.rect(kb, cr(4.0), surface(&t), Stroke::new(1.0, hair(&t)), StrokeKind::Inside);
         p.text(kb.center(), Align2::CENTER_CENTER, "⌘K", font(9.5), faint(&t));
@@ -223,7 +237,13 @@ impl egui::Widget for AgentSessionList<'_> {
             if on {
                 p.rect_filled(r, cr(8.0), track(&t));
             }
-            p.text(pos2(r.min.x + 10.0, r.center().y), Align2::LEFT_CENTER, *label, font(12.0), if on { t.foreground } else { dim(&t) });
+            p.text(
+                pos2(r.min.x + 10.0, r.center().y),
+                Align2::LEFT_CENTER,
+                *label,
+                font(12.0),
+                if on { t.foreground } else { dim(&t) },
+            );
             let c = if k == 1 && counts[1] > 0 { ink(&t, t.warning) } else { faint(&t) };
             p.text(pos2(r.max.x - 10.0, r.center().y), Align2::RIGHT_CENTER, counts[k].to_string(), mono(10.5), c);
             x = r.max.x + 4.0;
@@ -261,7 +281,15 @@ impl egui::Widget for AgentSessionList<'_> {
             };
             if last_sec != Some(sec) {
                 let name = ["Needs you", "Live", "Recent"][sec as usize];
-                text(&pc, pos2(rect.min.x + pad + 4.0, y + sec_h / 2.0 + 2.0), Align2::LEFT_CENTER, name, font(10.5), faint(&t), 120.0);
+                text(
+                    &pc,
+                    pos2(rect.min.x + pad + 4.0, y + sec_h / 2.0 + 2.0),
+                    Align2::LEFT_CENTER,
+                    name,
+                    font(10.5),
+                    faint(&t),
+                    120.0,
+                );
                 y += sec_h;
                 last_sec = Some(sec);
             }
@@ -282,7 +310,13 @@ impl egui::Widget for AgentSessionList<'_> {
             let sel = *self.selected == Some(s.id);
             let hk = glowkit_core::anim::follow(ui, rid.with("h"), if hit.hovered() { 1.0 } else { 0.0 }, 14.0);
             if sel {
-                pc.rect(rr, cr(11.0), mix(surface(&t), t.foreground, if t.dark { 0.07 } else { 0.045 }), Stroke::new(1.0, hair(&t)), StrokeKind::Inside);
+                pc.rect(
+                    rr,
+                    cr(11.0),
+                    mix(surface(&t), t.foreground, if t.dark { 0.07 } else { 0.045 }),
+                    Stroke::new(1.0, hair(&t)),
+                    StrokeKind::Inside,
+                );
             } else if hk > 0.01 {
                 pc.rect_filled(rr, cr(11.0), with_alpha(t.foreground, 0.03 * hk));
             }
@@ -298,13 +332,30 @@ impl egui::Widget for AgentSessionList<'_> {
                 let k = 0.5 + 0.5 * (now * 2.6 + s.id as f32).sin();
                 pc.circle_filled(dc, 3.6 + 2.5 * k, with_alpha(col, 0.25 * (1.0 - k)));
             }
-            pc.circle_filled(dc, 3.6, if s.state == RunState::Idle || s.state == RunState::Done { mix(t.muted_foreground, surface(&t), 0.3) } else { col });
+            pc.circle_filled(
+                dc,
+                3.6,
+                if s.state == RunState::Idle || s.state == RunState::Done {
+                    mix(t.muted_foreground, surface(&t), 0.3)
+                } else {
+                    col
+                },
+            );
             let tx = dt.max.x + 10.0;
             let right = rr.max.x - 10.0;
-            let age = text(&pc, pos2(right, rr.min.y + 18.0), Align2::RIGHT_CENTER, &fmt_ago(s.age), font(10.5), faint(&t), 70.0);
+            let age = text(
+                &pc,
+                pos2(right, rr.min.y + 18.0),
+                Align2::RIGHT_CENTER,
+                &fmt_ago(s.age),
+                font(10.5),
+                faint(&t),
+                70.0,
+            );
             let mut tmax = age.min.x - 8.0;
             if s.state == RunState::NeedsInput {
-                let b = badge(&pc, &t, pos2(tmax, rr.min.y + 18.0), Align2::RIGHT_CENTER, "Needs input", t.warning, true);
+                let b =
+                    badge(&pc, &t, pos2(tmax, rr.min.y + 18.0), Align2::RIGHT_CENTER, "Needs input", t.warning, true);
                 tmax = b.min.x - 6.0;
             }
             let title_c = if s.unread > 0 || sel { t.foreground } else { mix(t.foreground, dim(&t), 0.25) };
@@ -339,7 +390,8 @@ impl egui::Widget for AgentSessionList<'_> {
             *self.selected = Some(c);
         }
         // bottom fade
-        let fade = Rect::from_min_max(pos2(rect.min.x + 1.0, rect.max.y - 24.0), pos2(rect.max.x - 1.0, rect.max.y - 2.0));
+        let fade =
+            Rect::from_min_max(pos2(rect.min.x + 1.0, rect.max.y - 24.0), pos2(rect.max.x - 1.0, rect.max.y - 2.0));
         grad_rect(&p, fade, Color32::TRANSPARENT, surface(&t), true);
         glowkit_core::animate(ui);
         resp
@@ -467,13 +519,34 @@ impl SessionDetailHeader {
         let ac = pos2(rect.min.x + pad + 20.0, ty);
         if self.state == RunState::Running {
             let k = (now * 0.9).fract();
-            p.rect_stroke(Rect::from_center_size(ac, vec2(40.0 + 10.0 * k, 40.0 + 10.0 * k)), cr(12.0 + 3.0 * k), Stroke::new(1.0, with_alpha(t.info, 0.4 * (1.0 - k))), StrokeKind::Outside);
+            p.rect_stroke(
+                Rect::from_center_size(ac, vec2(40.0 + 10.0 * k, 40.0 + 10.0 * k)),
+                cr(12.0 + 3.0 * k),
+                Stroke::new(1.0, with_alpha(t.info, 0.4 * (1.0 - k))),
+                StrokeKind::Outside,
+            );
         }
         avatar(&p, &t, ac, 40.0, &init, t.chart[0]);
         let tx = ac.x + 30.0;
-        let tr = text(&p, pos2(tx, ty - 9.0), Align2::LEFT_CENTER, &self.title, font(15.0), t.foreground, rect.width() * 0.42);
+        let tr = text(
+            &p,
+            pos2(tx, ty - 9.0),
+            Align2::LEFT_CENTER,
+            &self.title,
+            font(15.0),
+            t.foreground,
+            rect.width() * 0.42,
+        );
         let sb = state_badge(&p, &t, pos2(tr.max.x + 10.0, ty - 9.0), Align2::LEFT_CENTER, self.state, now);
-        text(&p, pos2(sb.max.x + 8.0, ty - 9.0), Align2::LEFT_CENTER, &fmt_secs(self.elapsed), mono(11.5), dim(&t), 80.0);
+        text(
+            &p,
+            pos2(sb.max.x + 8.0, ty - 9.0),
+            Align2::LEFT_CENTER,
+            &fmt_secs(self.elapsed),
+            mono(11.5),
+            dim(&t),
+            80.0,
+        );
         // meta row
         let mut mx = tx;
         let my = ty + 11.0;
@@ -484,7 +557,15 @@ impl SessionDetailHeader {
                 continue;
             }
             icon(&p, ic, pos2(mx + 6.0, my), 11.0, faint(&t));
-            let r = text(&p, pos2(mx + 15.0, my), Align2::LEFT_CENTER, s, if ic == Icon::Code { mono(11.0) } else { font(11.5) }, dim(&t), 160.0);
+            let r = text(
+                &p,
+                pos2(mx + 15.0, my),
+                Align2::LEFT_CENTER,
+                s,
+                if ic == Icon::Code { mono(11.0) } else { font(11.5) },
+                dim(&t),
+                160.0,
+            );
             mx = r.max.x + 12.0;
         }
         // right controls
@@ -498,23 +579,34 @@ impl SessionDetailHeader {
             ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
         }
         let holding = sresp.is_pointer_button_down_on() && self.state.is_active();
-        let (hold, fired) = glowkit_core::with_state(ui, id.with("hold"), || (0.0f32, false), |(v, f)| {
-            if holding {
-                *v = (*v + dt / 1.1).min(1.0);
-            } else {
-                *v = (*v - dt * 3.0).max(0.0);
-                *f = false;
-            }
-            let fire = *v >= 1.0 && !*f;
-            if fire {
-                *f = true;
-            }
-            (*v, fire)
-        });
+        let (hold, fired) = glowkit_core::with_state(
+            ui,
+            id.with("hold"),
+            || (0.0f32, false),
+            |(v, f)| {
+                if holding {
+                    *v = (*v + dt / 1.1).min(1.0);
+                } else {
+                    *v = (*v - dt * 3.0).max(0.0);
+                    *f = false;
+                }
+                let fire = *v >= 1.0 && !*f;
+                if fire {
+                    *f = true;
+                }
+                (*v, fire)
+            },
+        );
         if fired {
             out = Some(SessionAction::Stop);
         }
-        p.rect(sr, cr(10.0), mix(tint(&t, t.destructive), with_alpha(t.destructive, 0.2), hold), Stroke::new(1.0, with_alpha(t.destructive, 0.3)), StrokeKind::Inside);
+        p.rect(
+            sr,
+            cr(10.0),
+            mix(tint(&t, t.destructive), with_alpha(t.destructive, 0.2), hold),
+            Stroke::new(1.0, with_alpha(t.destructive, 0.3)),
+            StrokeKind::Inside,
+        );
         if hold > 0.0 {
             let fill = Rect::from_min_size(sr.min, vec2(sr.width() * hold, sr.height()));
             p.with_clip_rect(fill).rect_filled(sr, cr(10.0), with_alpha(t.destructive, 0.85));
@@ -527,7 +619,13 @@ impl SessionDetailHeader {
             paint::arc(&p, rc, 7.0, -FRAC_PI_2, -FRAC_PI_2 + TAU * hold, 1.6, fg);
         }
         p.rect_filled(Rect::from_center_size(rc, vec2(5.0, 5.0)), cr(1.0), fg);
-        p.text(pos2(rc.x + 13.0, sr.center().y), Align2::LEFT_CENTER, if holding { "Hold…" } else { "Stop" }, font(12.0), fg);
+        p.text(
+            pos2(rc.x + 13.0, sr.center().y),
+            Align2::LEFT_CENTER,
+            if holding { "Hold…" } else { "Stop" },
+            font(12.0),
+            fg,
+        );
         if sresp.hovered() && hold == 0.0 {
             let lp = ui.ctx().layer_painter(egui::LayerId::new(egui::Order::Tooltip, id.with("tip")));
             let tr = Rect::from_min_size(pos2(sr.min.x - 30.0, sr.max.y + 6.0), vec2(116.0, 24.0));
@@ -540,7 +638,9 @@ impl SessionDetailHeader {
         let label = if paused { "Resume" } else { "Pause" };
         let pw = button_w(&p, label, true);
         let pr = Rect::from_min_size(pos2(x - pw, cy - 16.0), vec2(pw, 32.0));
-        if button(ui, pr, id.with("pause"), label, Some(if paused { Icon::Play } else { Icon::Pause }), Btn::Secondary).clicked() {
+        if button(ui, pr, id.with("pause"), label, Some(if paused { Icon::Play } else { Icon::Pause }), Btn::Secondary)
+            .clicked()
+        {
             out = Some(if paused { SessionAction::Resume } else { SessionAction::Pause });
         }
         x = pr.min.x - 8.0;
@@ -556,7 +656,13 @@ impl SessionDetailHeader {
                 out = Some(SessionAction::OpenInbox);
             }
             let k = 0.5 + 0.5 * (now * 2.5).sin();
-            p.rect(nr, cr(16.0), surface(&t), Stroke::new(1.0, mix(hair(&t), t.warning, 0.4 + 0.4 * k)), StrokeKind::Inside);
+            p.rect(
+                nr,
+                cr(16.0),
+                surface(&t),
+                Stroke::new(1.0, mix(hair(&t), t.warning, 0.4 + 0.4 * k)),
+                StrokeKind::Inside,
+            );
             p.text(pos2(nr.min.x + 12.0, nr.center().y), Align2::LEFT_CENTER, label, font(12.0), t.foreground);
             let cb = Rect::from_center_size(pos2(nr.max.x - 16.0, nr.center().y), vec2(20.0, 18.0));
             p.rect_filled(cb, cr(9.0), t.foreground);
@@ -584,7 +690,15 @@ impl SessionDetailHeader {
                 }
             }
             bx += *sn as f32 * 12.0 + 8.0;
-            let r = text(&p, pos2(bx, by), Align2::LEFT_CENTER, &format!("Step {si} of {sn}"), font(11.5), t.foreground, 100.0);
+            let r = text(
+                &p,
+                pos2(bx, by),
+                Align2::LEFT_CENTER,
+                &format!("Step {si} of {sn}"),
+                font(11.5),
+                t.foreground,
+                100.0,
+            );
             text(&p, pos2(r.max.x + 8.0, by), Align2::LEFT_CENTER, sl, font(11.5), dim(&t), rect.width() * 0.3);
         }
         let mut rx = rect.max.x - pad;
@@ -596,9 +710,23 @@ impl SessionDetailHeader {
         let f = glowkit_core::anim::follow(ui, id.with("bud"), used / lim, 5.0);
         let bw = 120.0;
         let bar = Rect::from_min_size(pos2(rx - bw, by - 2.0), vec2(bw, 4.0));
-        let bc = if f > 1.0 { t.destructive } else if f > 0.8 { t.warning } else { t.foreground };
+        let bc = if f > 1.0 {
+            t.destructive
+        } else if f > 0.8 {
+            t.warning
+        } else {
+            t.foreground
+        };
         meter(&p, &t, bar, f, bc);
-        text(&p, pos2(bar.min.x - 8.0, by), Align2::RIGHT_CENTER, &format!("{} / {} tokens", fmt_tok(used), fmt_tok(lim)), font(11.0), dim(&t), 160.0);
+        text(
+            &p,
+            pos2(bar.min.x - 8.0, by),
+            Align2::RIGHT_CENTER,
+            &format!("{} / {} tokens", fmt_tok(used), fmt_tok(lim)),
+            font(11.0),
+            dim(&t),
+            160.0,
+        );
         if self.state.is_active() {
             glowkit_core::animate(ui);
         }

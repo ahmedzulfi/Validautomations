@@ -44,7 +44,10 @@ fn agent_scene(ui: &mut Ui, key: &str, width: f32, prompt: &str, tool: &str, e: 
         let a = ((e - 0.05) * 5.0).clamp(0.0, 1.0);
         let g = ui.painter().layout(prompt.to_owned(), FontId::proportional(13.5), t.foreground, w * 0.7);
         let (r, _) = ui.allocate_exact_size(vec2(w, g.size().y + 18.0), Sense::hover());
-        let b = Rect::from_min_size(pos2(r.max.x - g.size().x - 28.0, r.min.y + (1.0 - a) * 8.0), g.size() + vec2(28.0, 18.0));
+        let b = Rect::from_min_size(
+            pos2(r.max.x - g.size().x - 28.0, r.min.y + (1.0 - a) * 8.0),
+            g.size() + vec2(28.0, 18.0),
+        );
         let p = ui.painter();
         p.rect_filled(b, CornerRadius { nw: 16, ne: 16, sw: 16, se: 5 }, with_alpha(well(&t), a));
         p.galley(b.min + vec2(14.0, 9.0), g, with_alpha(t.foreground, a));
@@ -62,10 +65,24 @@ fn agent_scene(ui: &mut Ui, key: &str, width: f32, prompt: &str, tool: &str, e: 
                 let s = format!("Calling {tool}…");
                 text(p, pos2(x + 18.0, r.center().y), Align2::LEFT_CENTER, &s, 12.5, with_alpha(t.muted_foreground, k));
             } else {
-                check_disc(p, pos2(x + 6.0, r.center().y), 6.5, t.success, egui::Color32::WHITE, ((e - 1.5) * 3.0).clamp(0.0, 1.0));
+                check_disc(
+                    p,
+                    pos2(x + 6.0, r.center().y),
+                    6.5,
+                    t.success,
+                    egui::Color32::WHITE,
+                    ((e - 1.5) * 3.0).clamp(0.0, 1.0),
+                );
                 let s = format!("Used {tool}");
                 let tr = text(p, pos2(x + 18.0, r.center().y), Align2::LEFT_CENTER, &s, 12.5, t.muted_foreground);
-                mono(p, pos2(tr.max.x + 8.0, r.center().y), Align2::LEFT_CENTER, "1.1s", 10.5, with_alpha(t.muted_foreground, 0.7));
+                mono(
+                    p,
+                    pos2(tr.max.x + 8.0, r.center().y),
+                    Align2::LEFT_CENTER,
+                    "1.1s",
+                    10.5,
+                    with_alpha(t.muted_foreground, 0.7),
+                );
             }
         }
         if e > 1.5 {
@@ -99,7 +116,12 @@ fn sliders(ui: &mut Ui, add: impl FnOnce(&mut Ui)) {
 fn demo_table(ui: &mut Ui) {
     let (cycle, e) = scene_clock(ui, "tbl", 11.0);
     let mut rows_n: f32 = mem(ui, "rows", || 6.0);
-    let cols = [("Region", ColumnKind::Text), ("Owner", ColumnKind::Text), ("Revenue", ColumnKind::Number), ("QoQ", ColumnKind::Delta)];
+    let cols = [
+        ("Region", ColumnKind::Text),
+        ("Owner", ColumnKind::Text),
+        ("Revenue", ColumnKind::Number),
+        ("QoQ", ColumnKind::Delta),
+    ];
     let rows: Vec<Vec<String>> = [
         ("EMEA", "Ines", "$4.82M", "+21.4%"),
         ("North America", "Tomas", "$9.10M", "+8.2%"),
@@ -164,17 +186,25 @@ fn demo_link(ui: &mut Ui) {
             ui.spacing_mut().item_spacing.x = 14.0;
             let w = (ui.available_width() - 14.0) / 2.0;
             ui.add(
-                LinkPreviewResult::new("fieldnotes.dev", "Designing calm agent interfaces", "Why quiet, predictable UI earns more trust than flashy motion when an agent acts for you.")
-                    .scene(6)
-                    .width(w)
-                    .id_salt(("l1", cycle)),
+                LinkPreviewResult::new(
+                    "fieldnotes.dev",
+                    "Designing calm agent interfaces",
+                    "Why quiet, predictable UI earns more trust than flashy motion when an agent acts for you.",
+                )
+                .scene(6)
+                .width(w)
+                .id_salt(("l1", cycle)),
             );
             if e > 1.8 {
                 ui.add(
-                    LinkPreviewResult::new("studio.press", "The art of the empty state", "First screens that teach by example: three suggestions beat a blank prompt every time.")
-                        .scene(7)
-                        .width(w)
-                        .id_salt(("l2", cycle)),
+                    LinkPreviewResult::new(
+                        "studio.press",
+                        "The art of the empty state",
+                        "First screens that teach by example: three suggestions beat a blank prompt every time.",
+                    )
+                    .scene(7)
+                    .width(w)
+                    .id_salt(("l2", cycle)),
                 );
             }
         });
@@ -183,7 +213,16 @@ fn demo_link(ui: &mut Ui) {
 
 fn demo_gallery(ui: &mut Ui) {
     let (cycle, e) = scene_clock(ui, "gal", 11.0);
-    let caps = ["Alpenglow ridge", "Turquoise lagoon", "Aurora over the fjord", "Dune shadows", "Misty evergreens", "Neon alley", "Glacier lake", "Lavender rows"];
+    let caps = [
+        "Alpenglow ridge",
+        "Turquoise lagoon",
+        "Aurora over the fjord",
+        "Dune shadows",
+        "Misty evergreens",
+        "Neon alley",
+        "Glacier lake",
+        "Lavender rows",
+    ];
     let open = if (5.0..8.5).contains(&e) { Some(2) } else { None };
     let tile_pos: Rect = mem(ui, "gal_rect", || Rect::NOTHING);
     agent_scene(ui, "gal", 560.0, "Show me moody landscape references", "images.search", e, |ui| {
@@ -222,14 +261,26 @@ fn demo_weather(ui: &mut Ui) {
     agent_scene(ui, "wx", 560.0, "What's the weather like in Lisbon today?", "weather.now", e, |ui| {
         ui.horizontal_top(|ui| {
             ui.spacing_mut().item_spacing.x = 16.0;
-            ui.add(WeatherResult::new("Lisbon, PT", temp, sky).hourly(&hourly).range(temp - 6.0, temp + 1.0).width(330.0).id_salt(("wx", cycle, sky_f as i32)));
+            ui.add(
+                WeatherResult::new("Lisbon, PT", temp, sky)
+                    .hourly(&hourly)
+                    .range(temp - 6.0, temp + 1.0)
+                    .width(330.0)
+                    .id_salt(("wx", cycle, sky_f as i32)),
+            );
             ui.vertical(|ui| {
                 ui.add_space(6.0);
                 let t = Theme::of(ui);
                 let tk = ((e - 2.3) * 3.0).clamp(0.0, 1.0);
                 ui.multiply_opacity(tk);
                 ui.set_width(150.0);
-                ui.label(egui::RichText::new("Bright and mild. A light jacket for the evening, and sunglasses until sunset.").size(13.0).color(t.foreground));
+                ui.label(
+                    egui::RichText::new(
+                        "Bright and mild. A light jacket for the evening, and sunglasses until sunset.",
+                    )
+                    .size(13.0)
+                    .color(t.foreground),
+                );
             });
         });
     });
@@ -320,11 +371,8 @@ fn demo_options(ui: &mut Ui) {
         confirm = c;
     });
     if !st.2.confirmed && rows.len() == 3 && e < 10.0 {
-        let (target, press) = if e < 4.2 {
-            (rows[0].center() + vec2(60.0, 0.0), e > 3.9)
-        } else {
-            (confirm.center(), e > 5.4)
-        };
+        let (target, press) =
+            if e < 4.2 { (rows[0].center() + vec2(60.0, 0.0), e > 3.9) } else { (confirm.center(), e > 5.4) };
         if e > 3.0 {
             ghost(ui, "opt", target, true, press);
         }
@@ -426,10 +474,17 @@ fn demo_location(ui: &mut Ui) {
         Place::new("Kiln & Crumb", "2 Mill Lane · great pastries", "11 min"),
         Place::new("Fika Corner", "88 Canal Road · quiet, laptops ok", "14 min"),
     ];
-    let sel = if e < 5.0 { 0 } else if e < 8.0 { 1 } else { 2 };
+    let sel = if e < 5.0 {
+        0
+    } else if e < 8.0 {
+        1
+    } else {
+        2
+    };
     let mut rows = Vec::new();
     agent_scene(ui, "loc", 520.0, "Any good coffee within walking distance?", "maps.search", e, |ui| {
-        let (_, r) = LocationResult::new("Coffee near you", &places).selected(Some(sel)).id_salt(("loc", cycle)).show(ui);
+        let (_, r) =
+            LocationResult::new("Coffee near you", &places).selected(Some(sel)).id_salt(("loc", cycle)).show(ui);
         rows = r;
     });
     if rows.len() == 3 && e > 4.0 && e < 10.0 {

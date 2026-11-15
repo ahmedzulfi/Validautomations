@@ -76,7 +76,18 @@ fn bar_anim(ui: &Ui, id: Id, v: f32) -> BarNow {
     let r = glowkit_core::with_state(
         ui,
         id.with("bar_anim"),
-        || BarAnim { last: v, shown: v, trail: v, hold_until: 0.0, hit_at: -100.0, hit_amt: 0.0, heal_at: -100.0, heal_from: v, trail_start: v, frame: now },
+        || BarAnim {
+            last: v,
+            shown: v,
+            trail: v,
+            hold_until: 0.0,
+            hit_at: -100.0,
+            hit_amt: 0.0,
+            heal_at: -100.0,
+            heal_from: v,
+            trail_start: v,
+            frame: now,
+        },
         |s| {
             // wall-clock step so the trail reads the same at any frame rate
             let dt = ((now - s.frame) as f32).clamp(0.0, 0.25);
@@ -126,7 +137,17 @@ fn bar_anim(ui: &Ui, id: Id, v: f32) -> BarNow {
 
 /// Paint fill, trail, heal ghost and flashes inside `track`.
 #[allow(clippy::too_many_arguments)]
-fn paint_bar(painter: &Painter, track: Rect, a: &BarNow, v: f32, colors: [Color32; 2], style: GameStyle, pal: &GamePalette, time: f32, seed: u64) {
+fn paint_bar(
+    painter: &Painter,
+    track: Rect,
+    a: &BarNow,
+    v: f32,
+    colors: [Color32; 2],
+    style: GameStyle,
+    pal: &GamePalette,
+    time: f32,
+    seed: u64,
+) {
     // damage trail: white flash, then a warm chunk that drains after a beat
     if a.trail > a.shown {
         let k = (a.hit_t / 0.12).clamp(0.0, 1.0);
@@ -136,7 +157,14 @@ fn paint_bar(painter: &Painter, track: Rect, a: &BarNow, v: f32, colors: [Color3
     // heal ghost leading the fill
     if v > a.shown {
         let pulse = 0.6 + 0.4 * (time * 14.0).sin();
-        bar_fill(painter, track, a.shown, v, [with_alpha(pal.good, 0.55 * pulse), with_alpha(mix(pal.good, Color32::WHITE, 0.6), 0.6 * pulse)], style);
+        bar_fill(
+            painter,
+            track,
+            a.shown,
+            v,
+            [with_alpha(pal.good, 0.55 * pulse), with_alpha(mix(pal.good, Color32::WHITE, 0.6), 0.6 * pulse)],
+            style,
+        );
     }
     bar_fill(painter, track, 0.0, a.shown, colors, style);
     let edge_x = track.min.x + track.width() * a.shown;
@@ -146,24 +174,45 @@ fn paint_bar(painter: &Painter, track: Rect, a: &BarNow, v: f32, colors: [Color3
         let g = with_alpha(pal.good, 0.55 * (1.0 - k));
         paint::soft_shadow(painter, track, 3.0, 14.0, vec2(0.0, 0.0), g);
         let sx = track.min.x + track.width() * (a.heal_from + (a.shown - a.heal_from) * (k * 1.6).min(1.0));
-        paint::glow_ellipse(painter, pos2(sx, track.center().y), vec2(18.0, track.height()), with_alpha(Color32::WHITE, 0.6 * (1.0 - k)));
+        paint::glow_ellipse(
+            painter,
+            pos2(sx, track.center().y),
+            vec2(18.0, track.height()),
+            with_alpha(Color32::WHITE, 0.6 * (1.0 - k)),
+        );
         for i in 0..6u64 {
             let ph = (k * 1.3 + i as f32 * 0.17).fract();
-            let x = track.min.x + track.width() * (a.heal_from + (a.shown - a.heal_from).max(0.05) * glowkit_core::rng::hash01(seed + i * 3));
+            let x = track.min.x
+                + track.width()
+                    * (a.heal_from + (a.shown - a.heal_from).max(0.05) * glowkit_core::rng::hash01(seed + i * 3));
             let y = track.min.y - ph * 22.0;
             let s = 3.0 * (1.0 - ph);
-            painter.text(pos2(x, y), Align2::CENTER_CENTER, "+", egui::FontId::proportional(7.0 + s * 2.0), with_alpha(pal.good, (1.0 - ph) * (1.0 - k)));
+            painter.text(
+                pos2(x, y),
+                Align2::CENTER_CENTER,
+                "+",
+                egui::FontId::proportional(7.0 + s * 2.0),
+                with_alpha(pal.good, (1.0 - ph) * (1.0 - k)),
+            );
         }
     }
     // hit flash on the cut edge + chips
     if a.hit_t < 0.6 && a.shown < 1.0 {
         let k = a.hit_t / 0.6;
-        paint::glow_ellipse(painter, pos2(edge_x, track.center().y), vec2(14.0, track.height() * 1.2), with_alpha(Color32::WHITE, 0.7 * (1.0 - k)));
+        paint::glow_ellipse(
+            painter,
+            pos2(edge_x, track.center().y),
+            vec2(14.0, track.height() * 1.2),
+            with_alpha(Color32::WHITE, 0.7 * (1.0 - k)),
+        );
         burst(painter, pos2(edge_x + 4.0, track.center().y), a.hit_t, 8, seed, 90.0, 120.0, hex("#FF9F5A"), 2.4);
     }
     // stand-in for the edge highlight
     if a.shown > 0.01 && a.shown < 0.999 {
-        painter.line_segment([pos2(edge_x, track.min.y + 1.0), pos2(edge_x, track.max.y - 1.0)], Stroke::new(1.5, with_alpha(Color32::WHITE, 0.7)));
+        painter.line_segment(
+            [pos2(edge_x, track.min.y + 1.0), pos2(edge_x, track.max.y - 1.0)],
+            Stroke::new(1.5, with_alpha(Color32::WHITE, 0.7)),
+        );
     }
 }
 
@@ -175,7 +224,10 @@ fn ticks(painter: &Painter, track: Rect, n: usize) {
         let x = track.min.x + track.width() * i as f32 / n as f32;
         let major = i % 5 == 0;
         let y0 = if major { track.min.y } else { track.max.y - track.height() * 0.45 };
-        painter.line_segment([pos2(x, y0), pos2(x, track.max.y)], Stroke::new(1.0, Color32::from_black_alpha(if major { 150 } else { 100 })));
+        painter.line_segment(
+            [pos2(x, y0), pos2(x, track.max.y)],
+            Stroke::new(1.0, Color32::from_black_alpha(if major { 150 } else { 100 })),
+        );
     }
 }
 
@@ -289,7 +341,8 @@ impl egui::Widget for GameResourceBar {
         let time = glowkit_core::time(ui);
         let sh = shake(a.hit_t, self.shake * (a.hit_amt * 8.0).clamp(0.3, 1.5), resp.id.value() as f32 % 97.0);
         let painter = ui.painter();
-        let track = Rect::from_min_size(pos2(rect.min.x + bw + 6.0, rect.center().y - h / 2.0), vec2(self.width, h)).translate(sh);
+        let track = Rect::from_min_size(pos2(rect.min.x + bw + 6.0, rect.center().y - h / 2.0), vec2(self.width, h))
+            .translate(sh);
         let colors = self.colors.unwrap_or_else(|| self.kind.colors());
         let low = self.kind == GameResourceKind::Health && v < 0.25 && v > 0.0;
         if low {
@@ -303,7 +356,15 @@ impl egui::Widget for GameResourceBar {
         if self.numbers && h >= 12.0 {
             let f = egui::FontId::monospace((h * 0.62).clamp(9.0, 16.0));
             let txt = format!("{} / {}", self.current.max(0.0).round() as i64, self.max.round() as i64);
-            outlined(painter, track.center(), Align2::CENTER_CENTER, &txt, f, Color32::WHITE, Color32::from_black_alpha(200));
+            outlined(
+                painter,
+                track.center(),
+                Align2::CENTER_CENTER,
+                &txt,
+                f,
+                Color32::WHITE,
+                Color32::from_black_alpha(200),
+            );
         }
         if self.badge {
             let c = pos2(rect.min.x + bw / 2.0, rect.center().y) + sh * 0.6;
@@ -313,11 +374,17 @@ impl egui::Widget for GameResourceBar {
             let s = 1.0 + 0.12 * heal_pop - 0.08 * hit_pop;
             match self.style {
                 GameStyle::SciFi => {
-                    let pts: Vec<_> = (0..6).map(|i| {
-                        let ang = i as f32 / 6.0 * std::f32::consts::TAU + std::f32::consts::FRAC_PI_6;
-                        c + vec2(ang.cos(), ang.sin()) * r * s
-                    }).collect();
-                    painter.add(egui::Shape::convex_polygon(pts.clone(), hex("#06101EE8"), Stroke::new(1.5, with_alpha(pal.edge, 0.8))));
+                    let pts: Vec<_> = (0..6)
+                        .map(|i| {
+                            let ang = i as f32 / 6.0 * std::f32::consts::TAU + std::f32::consts::FRAC_PI_6;
+                            c + vec2(ang.cos(), ang.sin()) * r * s
+                        })
+                        .collect();
+                    painter.add(egui::Shape::convex_polygon(
+                        pts.clone(),
+                        hex("#06101EE8"),
+                        Stroke::new(1.5, with_alpha(pal.edge, 0.8)),
+                    ));
                 }
                 GameStyle::Fantasy => {
                     painter.circle_filled(c, r * s, hex("#2B1D12"));
@@ -334,7 +401,13 @@ impl egui::Widget for GameResourceBar {
             let ic = mix(colors[1], Color32::WHITE, hit_pop * 0.7);
             self.kind.icon().paint(painter, c, r * 1.05 * s, ic);
             if !self.numbers || h < 12.0 {
-                painter.text(pos2(track.min.x, track.min.y - 3.0), Align2::LEFT_BOTTOM, self.kind.tag(), egui::FontId::monospace(10.0), pal.hud);
+                painter.text(
+                    pos2(track.min.x, track.min.y - 3.0),
+                    Align2::LEFT_BOTTOM,
+                    self.kind.tag(),
+                    egui::FontId::monospace(10.0),
+                    pal.hud,
+                );
             }
         }
         resp
@@ -367,7 +440,17 @@ pub struct GameBossBar<'a> {
 impl<'a> GameBossBar<'a> {
     /// A boss named `name` at `current` / `max` health.
     pub fn new(name: &'a str, current: f32, max: f32) -> Self {
-        Self { name, title: "", current, max, armor: 0.0, phases: &[], style: GameStyle::SciFi, palette: None, width: None }
+        Self {
+            name,
+            title: "",
+            current,
+            max,
+            armor: 0.0,
+            phases: &[],
+            style: GameStyle::SciFi,
+            palette: None,
+            width: None,
+        }
     }
     /// Subtitle under the name.
     pub fn title(mut self, t: &'a str) -> Self {
@@ -430,9 +513,25 @@ impl egui::Widget for GameBossBar<'_> {
         };
         let glow_c = if enraged { pal.bad } else { pal.accent };
         let up = self.name.to_uppercase();
-        glow_text(painter, pos2(rect.center().x, rect.min.y + 18.0) + sh * 0.5, Align2::CENTER_CENTER, &up, name_f, name_col, with_alpha(glow_c, 0.6));
+        glow_text(
+            painter,
+            pos2(rect.center().x, rect.min.y + 18.0) + sh * 0.5,
+            Align2::CENTER_CENTER,
+            &up,
+            name_f,
+            name_col,
+            with_alpha(glow_c, 0.6),
+        );
         if !self.title.is_empty() {
-            outlined(painter, pos2(rect.center().x, rect.min.y + 36.0), Align2::CENTER_CENTER, self.title, title_f, with_alpha(name_col, 0.8), Color32::from_black_alpha(120));
+            outlined(
+                painter,
+                pos2(rect.center().x, rect.min.y + 36.0),
+                Align2::CENTER_CENTER,
+                self.title,
+                title_f,
+                with_alpha(name_col, 0.8),
+                Color32::from_black_alpha(120),
+            );
         }
         if enraged {
             let p = 0.5 + 0.5 * (time * 7.0).sin();
@@ -449,7 +548,10 @@ impl egui::Widget for GameBossBar<'_> {
             let x = track.min.x + track.width() * p.clamp(0.0, 1.0);
             let passed = v <= *p;
             let c = if passed { with_alpha(pal.hud, 0.45) } else { pal.accent };
-            painter.line_segment([pos2(x, track.min.y - 2.0), pos2(x, track.max.y + 2.0)], Stroke::new(2.0, Color32::from_black_alpha(200)));
+            painter.line_segment(
+                [pos2(x, track.min.y - 2.0), pos2(x, track.max.y + 2.0)],
+                Stroke::new(2.0, Color32::from_black_alpha(200)),
+            );
             let d = 5.0;
             let tip = pos2(x, track.max.y + 5.0);
             painter.add(egui::Shape::convex_polygon(
@@ -463,13 +565,36 @@ impl egui::Widget for GameBossBar<'_> {
             }
         }
         if since_phase < 0.3 && phase_idx > 0 {
-            paint::soft_shadow(painter, track, 3.0, 30.0, vec2(0.0, 0.0), with_alpha(Color32::WHITE, 0.5 * (1.0 - since_phase / 0.3)));
+            paint::soft_shadow(
+                painter,
+                track,
+                3.0,
+                30.0,
+                vec2(0.0, 0.0),
+                with_alpha(Color32::WHITE, 0.5 * (1.0 - since_phase / 0.3)),
+            );
         }
         let pct = format!("{:.0}%", v * 100.0);
-        outlined(painter, pos2(track.max.x, track.max.y + 4.0), Align2::RIGHT_TOP, &pct, egui::FontId::monospace(11.0), pal.hud, Color32::from_black_alpha(160));
+        outlined(
+            painter,
+            pos2(track.max.x, track.max.y + 4.0),
+            Align2::RIGHT_TOP,
+            &pct,
+            egui::FontId::monospace(11.0),
+            pal.hud,
+            Color32::from_black_alpha(160),
+        );
         if !self.phases.is_empty() {
             let ph = format!("PHASE {}", phase_idx + 1);
-            outlined(painter, pos2(track.min.x, track.max.y + 4.0), Align2::LEFT_TOP, &ph, egui::FontId::monospace(11.0), if enraged { pal.bad } else { pal.hud }, Color32::from_black_alpha(160));
+            outlined(
+                painter,
+                pos2(track.min.x, track.max.y + 4.0),
+                Align2::LEFT_TOP,
+                &ph,
+                egui::FontId::monospace(11.0),
+                if enraged { pal.bad } else { pal.hud },
+                Color32::from_black_alpha(160),
+            );
         }
         resp
     }

@@ -194,7 +194,8 @@ impl egui::Widget for ApprovalQueue<'_> {
             let label = format!("Approve all low risk ({})", low.len());
             let w = button_w(&p, &label, true);
             let b = Rect::from_min_size(pos2(x - w, hy - 14.0), vec2(w, 28.0));
-            if !low.is_empty() && button(ui, b, id.with("lowall"), &label, Some(Icon::Check), Btn::Secondary).clicked() {
+            if !low.is_empty() && button(ui, b, id.with("lowall"), &label, Some(Icon::Check), Btn::Secondary).clicked()
+            {
                 batch = Some((low, Decision::Approved));
             }
         } else {
@@ -210,7 +211,15 @@ impl egui::Widget for ApprovalQueue<'_> {
             if button(ui, b, id.with("bdeny"), "Deny", Some(Icon::X), Btn::Secondary).clicked() {
                 batch = Some((selected.clone(), Decision::Denied));
             }
-            text(&p, pos2(b.min.x - 10.0, hy), Align2::RIGHT_CENTER, &format!("{} selected", selected.len()), font(11.5), dim(&t), 100.0);
+            text(
+                &p,
+                pos2(b.min.x - 10.0, hy),
+                Align2::RIGHT_CENTER,
+                &format!("{} selected", selected.len()),
+                font(11.5),
+                dim(&t),
+                100.0,
+            );
         }
         hline(&p, &t, rect.min.x, rect.max.x, rect.min.y + header);
         let clip = Rect::from_min_max(pos2(rect.min.x, rect.min.y + header), pos2(rect.max.x, rect.max.y - footer));
@@ -240,10 +249,41 @@ impl egui::Widget for ApprovalQueue<'_> {
                 let fl = ease(Easing::OutCubic, (age / 0.5).clamp(0.0, 1.0));
                 pr.rect_filled(rr.shrink2(vec2(8.0, 3.0)), cr(9.0), with_alpha(tint(&t, c), 1.0 - 0.5 * fl));
                 let cy = rr.center().y;
-                state_icon(&pr, &t, pos2(rr.min.x + pad + 8.0, cy), 8.0, if ok { RunState::Done } else { RunState::Failed }, now);
-                let verb = if ok { if it.edited { "Approved with edits" } else { "Approved" } } else { "Denied" };
-                let vr = text(&pr, pos2(rr.min.x + pad + 24.0, cy), Align2::LEFT_CENTER, verb, font(12.5), ink(&t, c), 160.0);
-                text(&pr, pos2(vr.max.x + 10.0, cy), Align2::LEFT_CENTER, &it.command, mono(11.5), dim(&t), rr.width() - vr.max.x + rr.min.x - 120.0);
+                state_icon(
+                    &pr,
+                    &t,
+                    pos2(rr.min.x + pad + 8.0, cy),
+                    8.0,
+                    if ok { RunState::Done } else { RunState::Failed },
+                    now,
+                );
+                let verb = if ok {
+                    if it.edited {
+                        "Approved with edits"
+                    } else {
+                        "Approved"
+                    }
+                } else {
+                    "Denied"
+                };
+                let vr = text(
+                    &pr,
+                    pos2(rr.min.x + pad + 24.0, cy),
+                    Align2::LEFT_CENTER,
+                    verb,
+                    font(12.5),
+                    ink(&t, c),
+                    160.0,
+                );
+                text(
+                    &pr,
+                    pos2(vr.max.x + 10.0, cy),
+                    Align2::LEFT_CENTER,
+                    &it.command,
+                    mono(11.5),
+                    dim(&t),
+                    rr.width() - vr.max.x + rr.min.x - 120.0,
+                );
                 text(&pr, pos2(rr.max.x - pad, cy), Align2::RIGHT_CENTER, &it.agent, font(11.5), faint(&t), 140.0);
                 hline(&pc, &t, rr.min.x, rr.max.x, rr.max.y);
                 glowkit_core::animate(ui);
@@ -263,26 +303,68 @@ impl egui::Widget for ApprovalQueue<'_> {
             if cresp.hovered() {
                 ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
             }
-            let k = glowkit_core::anim::spring(ui, id.with(("selk", it.id)), if it.selected { 1.0 } else { 0.0 }, 400.0, 24.0);
-            pc.rect(cb, cr(4.5), mix(surface(&t), t.foreground, k.clamp(0.0, 1.0)), Stroke::new(1.0, mix(hair(&t), t.foreground, 0.3 + 0.7 * k.clamp(0.0, 1.0))), StrokeKind::Inside);
+            let k = glowkit_core::anim::spring(
+                ui,
+                id.with(("selk", it.id)),
+                if it.selected { 1.0 } else { 0.0 },
+                400.0,
+                24.0,
+            );
+            pc.rect(
+                cb,
+                cr(4.5),
+                mix(surface(&t), t.foreground, k.clamp(0.0, 1.0)),
+                Stroke::new(1.0, mix(hair(&t), t.foreground, 0.3 + 0.7 * k.clamp(0.0, 1.0))),
+                StrokeKind::Inside,
+            );
             if k > 0.05 {
-                glowkit_ai::paint_icon_width(&pc, Icon::Check, Rect::from_center_size(cb.center(), vec2(12.0, 12.0) * k.clamp(0.0, 1.2)), surface(&t), 2.0);
+                glowkit_ai::paint_icon_width(
+                    &pc,
+                    Icon::Check,
+                    Rect::from_center_size(cb.center(), vec2(12.0, 12.0) * k.clamp(0.0, 1.2)),
+                    surface(&t),
+                    2.0,
+                );
             }
             // risk + agent + tool
             let x0 = cb.max.x + 14.0;
             let rb = badge(&pc, &t, pos2(x0, cy - 10.0), Align2::LEFT_CENTER, it.risk.label(), it.risk.color(&t), true);
-            let ar = text(&pc, pos2(rb.max.x + 8.0, cy - 10.0), Align2::LEFT_CENTER, &it.agent, font(12.5), t.foreground, 160.0);
+            let ar = text(
+                &pc,
+                pos2(rb.max.x + 8.0, cy - 10.0),
+                Align2::LEFT_CENTER,
+                &it.agent,
+                font(12.5),
+                t.foreground,
+                160.0,
+            );
             let tc = chip(&pc, &t, pos2(ar.max.x + 8.0, cy - 10.0), Align2::LEFT_CENTER, &it.tool, true);
             let actions_w = 210.0;
             let wait = format!("waiting {}", fmt_secs(it.waiting));
             let wc = if it.waiting > 300.0 { ink(&t, t.warning) } else { faint(&t) };
-            text(&pc, pos2(tc.max.x + 10.0, cy - 10.0), Align2::LEFT_CENTER, &wait, font(11.0), wc, (rr.max.x - actions_w - tc.max.x - 20.0).max(10.0));
+            text(
+                &pc,
+                pos2(tc.max.x + 10.0, cy - 10.0),
+                Align2::LEFT_CENTER,
+                &wait,
+                font(11.0),
+                wc,
+                (rr.max.x - actions_w - tc.max.x - 20.0).max(10.0),
+            );
             // command line
             let cmd_w = rr.max.x - actions_w - x0 - 10.0;
             let cr_ = Rect::from_min_size(pos2(x0, cy + 3.0), vec2(cmd_w, 20.0));
             pc.rect_filled(cr_, cr(5.0), well(&t));
             pc.text(pos2(cr_.min.x + 7.0, cr_.center().y), Align2::LEFT_CENTER, "$", mono(11.0), faint(&t));
-            text(&pc, pos2(cr_.min.x + 18.0, cr_.center().y), Align2::LEFT_CENTER, &it.command, mono(11.0), t.foreground, cr_.width() - 24.0);
+            text(
+                &pc,
+                pos2(cr_.min.x + 18.0, cr_.center().y),
+                Align2::LEFT_CENTER,
+                &it.command,
+                mono(11.0),
+                t.foreground,
+                cr_.width() - 24.0,
+            );
             if !it.reason.is_empty() && hov {
                 // reason as a soft tooltip line under the command when hovered
                 let lp = ui.ctx().layer_painter(egui::LayerId::new(egui::Order::Tooltip, id.with("why")));
@@ -354,7 +436,15 @@ impl egui::Widget for ApprovalQueue<'_> {
         }
         let approved = self.items.iter().filter(|i| i.decision == Some(Decision::Approved)).count();
         let denied = self.items.iter().filter(|i| i.decision == Some(Decision::Denied)).count();
-        text(&p, pos2(rect.max.x - pad, fy), Align2::RIGHT_CENTER, &format!("{approved} approved · {denied} denied today"), font(11.0), faint(&t), 260.0);
+        text(
+            &p,
+            pos2(rect.max.x - pad, fy),
+            Align2::RIGHT_CENTER,
+            &format!("{approved} approved · {denied} denied today"),
+            font(11.0),
+            faint(&t),
+            260.0,
+        );
         // keyboard
         if st.editing.is_none() && resp.hovered() {
             if let Some(&top) = pending.first() {
@@ -497,16 +587,22 @@ impl egui::Widget for HumanInTheLoopPrompt<'_> {
         let accent = self.accent.unwrap_or(t.accent);
         let id = ui.next_auto_id().with("hitl");
         let answered = self.answer.is_some();
-        let m = glowkit_core::anim::spring(ui, id.with("m"), if answered { 1.0 } else { 0.0 }, 220.0, 26.0).clamp(0.0, 1.0);
+        let m =
+            glowkit_core::anim::spring(ui, id.with("m"), if answered { 1.0 } else { 0.0 }, 220.0, 26.0).clamp(0.0, 1.0);
         let opt_h = 46.0;
-        let full_h = 96.0 + self.options.len() as f32 * (opt_h + 6.0) + if self.allow_custom { 46.0 } else { 0.0 } + 12.0;
+        let full_h =
+            96.0 + self.options.len() as f32 * (opt_h + 6.0) + if self.allow_custom { 46.0 } else { 0.0 } + 12.0;
         let small_h = 52.0;
         let h = full_h + (small_h - full_h) * m;
         let (rect, resp) = alloc_centered(ui, self.width, h, Sense::hover());
         let p = ui.painter_at(rect.expand(14.0));
         panel(&p, &t, rect, 14.0);
         // left accent strip
-        p.rect_filled(Rect::from_min_size(rect.min + vec2(0.0, 12.0), vec2(3.0, rect.height() - 24.0)), cr(2.0), with_alpha(if answered { t.success } else { t.warning }, 0.85));
+        p.rect_filled(
+            Rect::from_min_size(rect.min + vec2(0.0, 12.0), vec2(3.0, rect.height() - 24.0)),
+            cr(2.0),
+            with_alpha(if answered { t.success } else { t.warning }, 0.85),
+        );
         let pad = 18.0;
         let mut pick: Option<HitlAnswer> = None;
         // receipt
@@ -519,22 +615,70 @@ impl egui::Widget for HumanInTheLoopPrompt<'_> {
                 Some(HitlAnswer::Custom(s)) => format!("\u{201C}{s}\u{201D}"),
                 None => String::new(),
             };
-            let r = text(&pr, pos2(rect.min.x + pad + 24.0, cy), Align2::LEFT_CENTER, "You answered", font(12.0), dim(&t), 120.0);
-            text(&pr, pos2(r.max.x + 6.0, cy), Align2::LEFT_CENTER, &label, font(12.5), t.foreground, rect.width() - 260.0);
+            let r = text(
+                &pr,
+                pos2(rect.min.x + pad + 24.0, cy),
+                Align2::LEFT_CENTER,
+                "You answered",
+                font(12.0),
+                dim(&t),
+                120.0,
+            );
+            text(
+                &pr,
+                pos2(r.max.x + 6.0, cy),
+                Align2::LEFT_CENTER,
+                &label,
+                font(12.5),
+                t.foreground,
+                rect.width() - 260.0,
+            );
             let ub = Rect::from_min_size(pos2(rect.max.x - pad - 64.0, cy - 13.0), vec2(64.0, 26.0));
-            if answered && m > 0.8 && button(ui, ub, id.with("undo"), "Undo", Some(Icon::History), Btn::Ghost).clicked() {
+            if answered && m > 0.8 && button(ui, ub, id.with("undo"), "Undo", Some(Icon::History), Btn::Ghost).clicked()
+            {
                 *self.answer = None;
             }
         }
         if m < 0.98 {
             let pa = faded(&p.with_clip_rect(rect), 1.0 - m);
             let top = rect.min.y + 16.0 - m * 30.0;
-            avatar(&pa, &t, pos2(rect.min.x + pad + 13.0, top + 13.0), 26.0, &self.agent.0.chars().take(1).collect::<String>(), t.chart[2]);
-            let nr = text(&pa, pos2(rect.min.x + pad + 34.0, top + 6.0), Align2::LEFT_CENTER, &self.agent.0, font(12.5), t.foreground, 200.0);
-            text(&pa, pos2(rect.min.x + pad + 34.0, top + 21.0), Align2::LEFT_CENTER, &self.agent.1, font(11.0), faint(&t), 260.0);
+            avatar(
+                &pa,
+                &t,
+                pos2(rect.min.x + pad + 13.0, top + 13.0),
+                26.0,
+                &self.agent.0.chars().take(1).collect::<String>(),
+                t.chart[2],
+            );
+            let nr = text(
+                &pa,
+                pos2(rect.min.x + pad + 34.0, top + 6.0),
+                Align2::LEFT_CENTER,
+                &self.agent.0,
+                font(12.5),
+                t.foreground,
+                200.0,
+            );
+            text(
+                &pa,
+                pos2(rect.min.x + pad + 34.0, top + 21.0),
+                Align2::LEFT_CENTER,
+                &self.agent.1,
+                font(11.0),
+                faint(&t),
+                260.0,
+            );
             let _ = nr;
             badge(&pa, &t, pos2(rect.max.x - pad, top + 13.0), Align2::RIGHT_CENTER, "Question", t.warning, true);
-            para(&pa, pos2(rect.min.x + pad, top + 40.0), &self.question, font(15.0), t.foreground, rect.width() - pad * 2.0, 2);
+            para(
+                &pa,
+                pos2(rect.min.x + pad, top + 40.0),
+                &self.question,
+                font(15.0),
+                t.foreground,
+                rect.width() - pad * 2.0,
+                2,
+            );
             let mut y = top + 80.0;
             for (i, (label, desc)) in self.options.iter().enumerate() {
                 let r = Rect::from_min_size(pos2(rect.min.x + pad, y), vec2(rect.width() - pad * 2.0, opt_h));
@@ -544,16 +688,58 @@ impl egui::Widget for HumanInTheLoopPrompt<'_> {
                 let k = glowkit_core::anim::follow(ui, id.with(("oh", i)), if hov { 1.0 } else { 0.0 }, 14.0);
                 let rec = self.recommended == Some(i);
                 let stroke = mix(hair(&t), accent, if rec { 0.35 + 0.4 * k } else { 0.6 * k });
-                pa.rect(r, cr(10.0), mix(surface(&t), tint(&t, accent), k * 0.8), Stroke::new(1.0, stroke), StrokeKind::Inside);
+                pa.rect(
+                    r,
+                    cr(10.0),
+                    mix(surface(&t), tint(&t, accent), k * 0.8),
+                    Stroke::new(1.0, stroke),
+                    StrokeKind::Inside,
+                );
                 let kr = Rect::from_center_size(pos2(r.min.x + 20.0, r.center().y), vec2(22.0, 22.0));
                 pa.rect(kr, cr(6.0), mix(well(&t), accent, k), Stroke::new(1.0, hair(&t)), StrokeKind::Inside);
-                pa.text(kr.center(), Align2::CENTER_CENTER, format!("{}", i + 1), mono(11.0), mix(dim(&t), t.accent_foreground, k));
-                let lr = text(&pa, pos2(r.min.x + 42.0, r.min.y + 15.0), Align2::LEFT_CENTER, label, font(13.0), t.foreground, r.width() - 160.0);
+                pa.text(
+                    kr.center(),
+                    Align2::CENTER_CENTER,
+                    format!("{}", i + 1),
+                    mono(11.0),
+                    mix(dim(&t), t.accent_foreground, k),
+                );
+                let lr = text(
+                    &pa,
+                    pos2(r.min.x + 42.0, r.min.y + 15.0),
+                    Align2::LEFT_CENTER,
+                    label,
+                    font(13.0),
+                    t.foreground,
+                    r.width() - 160.0,
+                );
                 if rec {
-                    badge(&pa, &t, pos2(lr.max.x + 8.0, r.min.y + 15.0), Align2::LEFT_CENTER, "Recommended", accent, false);
+                    badge(
+                        &pa,
+                        &t,
+                        pos2(lr.max.x + 8.0, r.min.y + 15.0),
+                        Align2::LEFT_CENTER,
+                        "Recommended",
+                        accent,
+                        false,
+                    );
                 }
-                text(&pa, pos2(r.min.x + 42.0, r.min.y + 32.0), Align2::LEFT_CENTER, desc, font(11.5), dim(&t), r.width() - 60.0);
-                icon(&pa, Icon::ArrowRight, pos2(r.max.x - 18.0 + 3.0 * k, r.center().y), 13.0, with_alpha(t.foreground, 0.2 + 0.6 * k));
+                text(
+                    &pa,
+                    pos2(r.min.x + 42.0, r.min.y + 32.0),
+                    Align2::LEFT_CENTER,
+                    desc,
+                    font(11.5),
+                    dim(&t),
+                    r.width() - 60.0,
+                );
+                icon(
+                    &pa,
+                    Icon::ArrowRight,
+                    pos2(r.max.x - 18.0 + 3.0 * k, r.center().y),
+                    13.0,
+                    with_alpha(t.foreground, 0.2 + 0.6 * k),
+                );
                 if let Some(h) = hit {
                     if h.hovered() {
                         ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
@@ -569,7 +755,10 @@ impl egui::Widget for HumanInTheLoopPrompt<'_> {
                 icon(&pa, Icon::Pencil, pos2(r.min.x + 16.0, r.center().y), 12.0, faint(&t));
                 if !answered {
                     let mut buf: String = glowkit_core::state(ui, id.with("custom"), String::new);
-                    let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_max(pos2(r.min.x + 30.0, r.min.y + 9.0), pos2(r.max.x - 80.0, r.max.y - 6.0))));
+                    let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_max(
+                        pos2(r.min.x + 30.0, r.min.y + 9.0),
+                        pos2(r.max.x - 80.0, r.max.y - 6.0),
+                    )));
                     let te = egui::TextEdit::singleline(&mut buf)
                         .frame(egui::Frame::NONE)
                         .hint_text("Or tell it what to do instead…")
@@ -578,14 +767,29 @@ impl egui::Widget for HumanInTheLoopPrompt<'_> {
                     let tr = child.add(te);
                     let send = Rect::from_min_size(pos2(r.max.x - 70.0, r.min.y + 6.0), vec2(62.0, 26.0));
                     let enter = tr.lost_focus() && ui.input(|i| i.key_pressed(Key::Enter));
-                    if (button(ui, send, id.with("send"), "Send", None, Btn::Secondary).clicked() || enter) && !buf.trim().is_empty() {
+                    if (button(ui, send, id.with("send"), "Send", None, Btn::Secondary).clicked() || enter)
+                        && !buf.trim().is_empty()
+                    {
                         pick = Some(HitlAnswer::Custom(buf.trim().to_owned()));
                         buf.clear();
                     }
                     let focused = tr.has_focus();
                     glowkit_core::set_state(ui, id.with("custom"), buf);
                     if !focused && resp.hovered() {
-                        for (k, key) in [Key::Num1, Key::Num2, Key::Num3, Key::Num4, Key::Num5, Key::Num6, Key::Num7, Key::Num8, Key::Num9].iter().enumerate() {
+                        for (k, key) in [
+                            Key::Num1,
+                            Key::Num2,
+                            Key::Num3,
+                            Key::Num4,
+                            Key::Num5,
+                            Key::Num6,
+                            Key::Num7,
+                            Key::Num8,
+                            Key::Num9,
+                        ]
+                        .iter()
+                        .enumerate()
+                        {
                             if k < self.options.len() && ui.input(|i| i.key_pressed(*key)) {
                                 pick = Some(HitlAnswer::Choice(k));
                             }
@@ -727,7 +931,16 @@ impl ErrorRecoveryCard {
         let h = 150.0 + logs_h + sug_h + 56.0;
         let (rect, _) = alloc_centered(ui, self.width, h, Sense::hover());
         let p = ui.painter_at(rect.expand(14.0));
-        let cc = glowkit_core::anim::follow(ui, id.with("c"), match state { RunState::Done => 2.0, RunState::Running => 1.0, _ => 0.0 }, 6.0);
+        let cc = glowkit_core::anim::follow(
+            ui,
+            id.with("c"),
+            match state {
+                RunState::Done => 2.0,
+                RunState::Running => 1.0,
+                _ => 0.0,
+            },
+            6.0,
+        );
         let col = if cc < 1.0 { mix(t.destructive, t.info, cc) } else { mix(t.info, t.success, cc - 1.0) };
         let _ = c;
         panel(&p, &t, rect, 14.0);
@@ -741,17 +954,47 @@ impl ErrorRecoveryCard {
             RunState::Running => format!("Retrying step {} of {}", self.step.0, self.step.1),
             _ => format!("Step {} of {} failed", self.step.0, self.step.1),
         };
-        text(&p, pos2(rect.min.x + pad + 28.0, head.min.y + 23.0), Align2::LEFT_CENTER, &title, font(13.5), ink(&t, col), 300.0);
-        text(&p, pos2(rect.min.x + pad + 28.0, head.min.y + 42.0), Align2::LEFT_CENTER, &self.step_title, font(12.0), t.foreground, rect.width() - 200.0);
+        text(
+            &p,
+            pos2(rect.min.x + pad + 28.0, head.min.y + 23.0),
+            Align2::LEFT_CENTER,
+            &title,
+            font(13.5),
+            ink(&t, col),
+            300.0,
+        );
+        text(
+            &p,
+            pos2(rect.min.x + pad + 28.0, head.min.y + 42.0),
+            Align2::LEFT_CENTER,
+            &self.step_title,
+            font(12.0),
+            t.foreground,
+            rect.width() - 200.0,
+        );
         // attempt pips
         let (ai, an) = self.attempt;
         let px = rect.max.x - pad;
-        let lr = text(&p, pos2(px, head.min.y + 23.0), Align2::RIGHT_CENTER, &format!("attempt {ai} of {an}"), font(11.0), dim(&t), 120.0);
+        let lr = text(
+            &p,
+            pos2(px, head.min.y + 23.0),
+            Align2::RIGHT_CENTER,
+            &format!("attempt {ai} of {an}"),
+            font(11.0),
+            dim(&t),
+            120.0,
+        );
         for k in 0..an {
             let x = px - (an - 1 - k) as f32 * 14.0 - 4.0;
             let cpos = pos2(x, head.min.y + 42.0);
             let used = k < ai;
-            let fill = if !used { track(&t) } else if k + 1 == ai { col } else { with_alpha(t.destructive, 0.55) };
+            let fill = if !used {
+                track(&t)
+            } else if k + 1 == ai {
+                col
+            } else {
+                with_alpha(t.destructive, 0.55)
+            };
             p.circle_filled(cpos, 4.0, fill);
         }
         let _ = lr;
@@ -768,7 +1011,15 @@ impl ErrorRecoveryCard {
             for (k, l) in self.logs.iter().enumerate() {
                 let ly = lrr.min.y + 15.0 + k as f32 * 17.0;
                 let err = l.contains("ERR") || l.contains("error");
-                text(&p, pos2(lrr.min.x + 10.0, ly), Align2::LEFT_CENTER, l, mono(10.5), if err { ink(&t, t.destructive) } else { dim(&t) }, lrr.width() - 20.0);
+                text(
+                    &p,
+                    pos2(lrr.min.x + 10.0, ly),
+                    Align2::LEFT_CENTER,
+                    l,
+                    mono(10.5),
+                    if err { ink(&t, t.destructive) } else { dim(&t) },
+                    lrr.width() - 20.0,
+                );
             }
             y += logs_h + 6.0;
         }
@@ -776,8 +1027,24 @@ impl ErrorRecoveryCard {
             let sr = Rect::from_min_size(pos2(rect.min.x + pad, y), vec2(rect.width() - pad * 2.0, 44.0));
             p.rect(sr, cr(9.0), tint(&t, t.accent), Stroke::new(1.0, with_alpha(t.accent, 0.25)), StrokeKind::Inside);
             icon(&p, Icon::Lightbulb, pos2(sr.min.x + 16.0, sr.min.y + 15.0), 13.0, ink(&t, t.accent));
-            text(&p, pos2(sr.min.x + 30.0, sr.min.y + 14.0), Align2::LEFT_CENTER, "Agent suggests", font(11.0), ink(&t, t.accent), 200.0);
-            text(&p, pos2(sr.min.x + 30.0, sr.min.y + 30.0), Align2::LEFT_CENTER, &self.suggestion, font(12.0), t.foreground, sr.width() - 40.0);
+            text(
+                &p,
+                pos2(sr.min.x + 30.0, sr.min.y + 14.0),
+                Align2::LEFT_CENTER,
+                "Agent suggests",
+                font(11.0),
+                ink(&t, t.accent),
+                200.0,
+            );
+            text(
+                &p,
+                pos2(sr.min.x + 30.0, sr.min.y + 30.0),
+                Align2::LEFT_CENTER,
+                &self.suggestion,
+                font(12.0),
+                t.foreground,
+                sr.width() - 40.0,
+            );
             y += sug_h;
         }
         let _ = y;
@@ -802,17 +1069,49 @@ impl ErrorRecoveryCard {
                 let cx = sb.min.x - 22.0;
                 let frac = (s / 10.0).clamp(0.0, 1.0);
                 p.circle_stroke(pos2(cx, by), 9.0, Stroke::new(2.0, track(&t)));
-                glowkit_core::paint::arc(&p, pos2(cx, by), 9.0, -std::f32::consts::FRAC_PI_2, -std::f32::consts::FRAC_PI_2 + frac * std::f32::consts::TAU, 2.0, t.info);
-                text(&p, pos2(cx - 16.0, by), Align2::RIGHT_CENTER, &format!("auto-retry in {}s", s.ceil() as i32), font(11.0), dim(&t), 140.0);
+                glowkit_core::paint::arc(
+                    &p,
+                    pos2(cx, by),
+                    9.0,
+                    -std::f32::consts::FRAC_PI_2,
+                    -std::f32::consts::FRAC_PI_2 + frac * std::f32::consts::TAU,
+                    2.0,
+                    t.info,
+                );
+                text(
+                    &p,
+                    pos2(cx - 16.0, by),
+                    Align2::RIGHT_CENTER,
+                    &format!("auto-retry in {}s", s.ceil() as i32),
+                    font(11.0),
+                    dim(&t),
+                    140.0,
+                );
                 glowkit_core::animate(ui);
             }
         } else if state == RunState::Running {
             spinner(&p, pos2(rect.min.x + pad + 8.0, by), 7.0, t.info, now, 1.8);
-            text(&p, pos2(rect.min.x + pad + 24.0, by), Align2::LEFT_CENTER, "Running the step again with backoff…", font(12.0), dim(&t), 300.0);
+            text(
+                &p,
+                pos2(rect.min.x + pad + 24.0, by),
+                Align2::LEFT_CENTER,
+                "Running the step again with backoff…",
+                font(12.0),
+                dim(&t),
+                300.0,
+            );
             glowkit_core::animate(ui);
         } else {
             icon(&p, Icon::Check, pos2(rect.min.x + pad + 8.0, by), 14.0, t.success);
-            text(&p, pos2(rect.min.x + pad + 24.0, by), Align2::LEFT_CENTER, "Step succeeded, the run continues", font(12.0), dim(&t), 300.0);
+            text(
+                &p,
+                pos2(rect.min.x + pad + 24.0, by),
+                Align2::LEFT_CENTER,
+                "Step succeeded, the run continues",
+                font(12.0),
+                dim(&t),
+                300.0,
+            );
         }
         if (cc - cc.round()).abs() > 0.01 {
             glowkit_core::animate(ui);

@@ -562,7 +562,12 @@ impl Gallery {
                 dot_field(ui.painter(), deco.translate(vec2(-(full.width() - 460.0), 60.0)), &t, time + 2.0);
                 let title = if ui.available_width() > 760.0 { 60.0 } else { 40.0 };
                 centered_text(ui, "Premium animated UI", display(title), t.foreground);
-                centered_text(ui, "for Rust apps", display(title), t.muted_foreground.lerp_to_gamma(t.foreground, 0.35));
+                centered_text(
+                    ui,
+                    "for Rust apps",
+                    display(title),
+                    t.muted_foreground.lerp_to_gamma(t.foreground, 0.35),
+                );
                 ui.add_space(18.0);
                 centered_rich(
                     ui,

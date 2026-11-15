@@ -95,7 +95,16 @@ pub struct GameSkillTree<'a> {
 impl<'a> GameSkillTree<'a> {
     /// A tree over `nodes`, spending `points`.
     pub fn new(nodes: &'a mut Vec<GameSkillNode>, points: &'a mut u32) -> Self {
-        Self { nodes, points, title: "Skills", height: 380.0, style: GameStyle::SciFi, palette: None, autoplay: false, cues: None }
+        Self {
+            nodes,
+            points,
+            title: "Skills",
+            height: 380.0,
+            style: GameStyle::SciFi,
+            palette: None,
+            autoplay: false,
+            cues: None,
+        }
     }
     /// Panel title.
     pub fn title(mut self, t: &'a str) -> Self {
@@ -155,7 +164,11 @@ impl egui::Widget for GameSkillTree<'_> {
         let mut hovered = None;
         let mut try_unlock: Option<usize> = None;
         for i in 0..n {
-            let r = ui.interact(Rect::from_center_size(at(self.nodes[i].pos), Vec2::splat(nr * 2.2)), id.with(("node", i)), Sense::click());
+            let r = ui.interact(
+                Rect::from_center_size(at(self.nodes[i].pos), Vec2::splat(nr * 2.2)),
+                id.with(("node", i)),
+                Sense::click(),
+            );
             if r.hovered() {
                 hovered = Some(i);
                 ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
@@ -183,7 +196,8 @@ impl egui::Widget for GameSkillTree<'_> {
         if let Some(i) = try_unlock {
             if available(self.nodes, i) && self.nodes[i].cost <= *self.points {
                 *self.points -= self.nodes[i].cost;
-                st.from[i] = self.nodes[i].requires.iter().copied().find(|r| self.nodes.get(*r).is_some_and(|p| p.unlocked));
+                st.from[i] =
+                    self.nodes[i].requires.iter().copied().find(|r| self.nodes.get(*r).is_some_and(|p| p.unlocked));
                 self.nodes[i].unlocked = true;
                 st.unlocked_at[i] = now;
                 push_cue(&mut self.cues, GameCue::Unlock);
@@ -209,17 +223,33 @@ impl egui::Widget for GameSkillTree<'_> {
             y += step * 0.866;
             row += 1;
         }
-        painter.text(pos2(rect.min.x + 22.0, rect.min.y + 26.0), Align2::LEFT_CENTER, self.title.to_uppercase(), title_f.clone(), pal.text);
+        painter.text(
+            pos2(rect.min.x + 22.0, rect.min.y + 26.0),
+            Align2::LEFT_CENTER,
+            self.title.to_uppercase(),
+            title_f.clone(),
+            pal.text,
+        );
         // points counter
         let (psince, _, _) = changed(ui, id.with("pts"), *self.points as f32);
         let pp = 1.0 + 0.3 * (1.0 - (psince / 0.3).min(1.0));
         let pt = format!("{}", self.points);
         let px = rect.max.x - 22.0;
         let painter = ui.painter();
-        painter.text(pos2(px - 30.0, rect.min.y + 26.0), Align2::RIGHT_CENTER, "SKILL POINTS", FontId::monospace(11.0), pal.dim);
+        painter.text(
+            pos2(px - 30.0, rect.min.y + 26.0),
+            Align2::RIGHT_CENTER,
+            "SKILL POINTS",
+            FontId::monospace(11.0),
+            pal.dim,
+        );
         let pc2 = pos2(px - 12.0, rect.min.y + 26.0);
         paint::glow(painter, pc2, 18.0 * pp, with_alpha(pal.accent, 0.35));
-        painter.circle_filled(pc2, 12.0 * pp, if self.style == GameStyle::Fantasy { hex("#2B1D12") } else { hex("#06101E") });
+        painter.circle_filled(
+            pc2,
+            12.0 * pp,
+            if self.style == GameStyle::Fantasy { hex("#2B1D12") } else { hex("#06101E") },
+        );
         painter.circle_stroke(pc2, 12.0 * pp, Stroke::new(1.5, pal.accent));
         painter.text(pc2, Align2::CENTER_CENTER, pt, FontId::proportional(13.0 * pp), Color32::WHITE);
         // links
@@ -235,7 +265,8 @@ impl egui::Widget for GameSkillTree<'_> {
                 let ut = (now - st.unlocked_at[i]) as f32;
                 let via = st.from[i] == Some(p) || st.from[i].is_none();
                 if child.unlocked && parent.unlocked && via {
-                    let fill = if ut < 0.45 { glowkit_core::ease(glowkit_core::Easing::InOutCubic, ut / 0.45) } else { 1.0 };
+                    let fill =
+                        if ut < 0.45 { glowkit_core::ease(glowkit_core::Easing::InOutCubic, ut / 0.45) } else { 1.0 };
                     painter.line_segment([a, b], Stroke::new(4.0, with_alpha(pal.dim, 0.25)));
                     let m = a + (b - a) * fill;
                     painter.line_segment([a, m], Stroke::new(7.0, with_alpha(pal.accent, 0.25)));
@@ -258,7 +289,10 @@ impl egui::Widget for GameSkillTree<'_> {
                         let s0 = ((d + shift - dash * 2.0).max(0.0)).min(len);
                         let s1 = (d + shift - dash).clamp(0.0, len);
                         if s1 > s0 {
-                            painter.line_segment([a + dir * s0, a + dir * s1], Stroke::new(2.0, with_alpha(pal.accent, 0.55)));
+                            painter.line_segment(
+                                [a + dir * s0, a + dir * s1],
+                                Stroke::new(2.0, with_alpha(pal.accent, 0.55)),
+                            );
                         }
                         d += dash * 2.0;
                     }
@@ -293,18 +327,33 @@ impl egui::Widget for GameSkillTree<'_> {
                 paint::glow(painter, c, r * 2.0, with_alpha(pal.accent, 0.2 * p));
             }
             let (fill, edge) = if lit {
-                (if self.style == GameStyle::Fantasy { hex("#5A2A18") } else { mix(hex("#06101E"), pal.accent, 0.35) }, mix(pal.accent, Color32::WHITE, 0.3))
+                (
+                    if self.style == GameStyle::Fantasy {
+                        hex("#5A2A18")
+                    } else {
+                        mix(hex("#06101E"), pal.accent, 0.35)
+                    },
+                    mix(pal.accent, Color32::WHITE, 0.3),
+                )
             } else if avail {
-                (if self.style == GameStyle::Fantasy { hex("#3A2918") } else { hex("#0A1424") }, with_alpha(pal.accent, if affordable { 0.9 } else { 0.4 }))
+                (
+                    if self.style == GameStyle::Fantasy { hex("#3A2918") } else { hex("#0A1424") },
+                    with_alpha(pal.accent, if affordable { 0.9 } else { 0.4 }),
+                )
             } else {
-                (if self.style == GameStyle::Fantasy { hex("#4A3A28") } else { hex("#0A0E16") }, with_alpha(pal.dim, 0.4))
+                (
+                    if self.style == GameStyle::Fantasy { hex("#4A3A28") } else { hex("#0A0E16") },
+                    with_alpha(pal.dim, 0.4),
+                )
             };
             match self.style {
                 GameStyle::SciFi => {
-                    let pts: Vec<Pos2> = (0..6).map(|k| {
-                        let a = k as f32 / 6.0 * TAU;
-                        c + vec2(a.cos(), a.sin()) * r
-                    }).collect();
+                    let pts: Vec<Pos2> = (0..6)
+                        .map(|k| {
+                            let a = k as f32 / 6.0 * TAU;
+                            c + vec2(a.cos(), a.sin()) * r
+                        })
+                        .collect();
                     painter.add(Shape::convex_polygon(pts, fill, Stroke::new(2.0, edge)));
                 }
                 GameStyle::Fantasy => {
@@ -317,7 +366,13 @@ impl egui::Widget for GameSkillTree<'_> {
                     painter.circle_stroke(c, r, Stroke::new(1.5, edge));
                 }
             }
-            let ic = if lit { nd.icon.tint() } else if avail { mix(nd.icon.tint(), hex("#707680"), 0.5) } else { hex("#4A505C") };
+            let ic = if lit {
+                nd.icon.tint()
+            } else if avail {
+                mix(nd.icon.tint(), hex("#707680"), 0.5)
+            } else {
+                hex("#4A505C")
+            };
             nd.icon.paint(painter, c, r * 1.05, ic);
             if nd.unlocked {
                 ring(painter, c, ut, 0.6, r, r * 2.6, pal.accent, 3.0);
@@ -329,7 +384,13 @@ impl egui::Widget for GameSkillTree<'_> {
             if !nd.unlocked && nd.cost > 1 {
                 let b = c + vec2(r * 0.75, r * 0.75);
                 painter.circle_filled(b, 8.0, hex("#000000D0"));
-                painter.text(b, Align2::CENTER_CENTER, nd.cost.to_string(), FontId::proportional(10.0), if affordable { pal.accent } else { pal.dim });
+                painter.text(
+                    b,
+                    Align2::CENTER_CENTER,
+                    nd.cost.to_string(),
+                    FontId::proportional(10.0),
+                    if affordable { pal.accent } else { pal.dim },
+                );
             }
         }
         // hover card
@@ -352,10 +413,23 @@ impl egui::Widget for GameSkillTree<'_> {
             let card = Rect::from_min_size(tl, vec2(cw, chh));
             frame(painter, card, self.style, &pal, 0.5);
             painter.text(card.min + vec2(12.0, 18.0), Align2::LEFT_CENTER, &nd.name, card_f.clone(), pal.text);
-            let status = if nd.unlocked { ("UNLOCKED", pal.good) } else if available(self.nodes, i) { ("AVAILABLE", pal.accent) } else { ("LOCKED", pal.dim) };
-            let sc = if self.style == GameStyle::Fantasy { glowkit_core::color::shade(status.1, -0.35) } else { status.1 };
+            let status = if nd.unlocked {
+                ("UNLOCKED", pal.good)
+            } else if available(self.nodes, i) {
+                ("AVAILABLE", pal.accent)
+            } else {
+                ("LOCKED", pal.dim)
+            };
+            let sc =
+                if self.style == GameStyle::Fantasy { glowkit_core::color::shade(status.1, -0.35) } else { status.1 };
             painter.text(card.min + vec2(12.0, 36.0), Align2::LEFT_CENTER, status.0, FontId::monospace(10.0), sc);
-            painter.text(pos2(card.max.x - 12.0, card.min.y + 36.0), Align2::RIGHT_CENTER, format!("{} PT", nd.cost), FontId::monospace(10.0), pal.dim);
+            painter.text(
+                pos2(card.max.x - 12.0, card.min.y + 36.0),
+                Align2::RIGHT_CENTER,
+                format!("{} PT", nd.cost),
+                FontId::monospace(10.0),
+                pal.dim,
+            );
             painter.galley(card.min + vec2(12.0, 50.0), g, pal.dim);
         }
         resp

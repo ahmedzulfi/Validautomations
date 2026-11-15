@@ -10816,6 +10816,597 @@
    "code": "let qs = vec![BoardQuestion::new(\"Which layout?\", &[(\"Grid\", \"Cards in columns\"), (\"List\", \"One per row\")])];\nlet mut answers = BoardQuestionnaireState::default();\nui.add(BoardQuestionnaire::new(&qs, &mut answers));"
   },
   {
+   "id": "agent-tree",
+   "showcase": true,
+   "name": "Agent Tree",
+   "category": "AI",
+   "description": "An orchestrator and its sub-agents as a live tree of cards: status, model, task, cost and time on each, lights running along connectors to working agents, branches that fold.",
+   "covers": [
+    "affectUI: Agent Tree",
+    "affectUI: Agent Crew"
+   ],
+   "code": "let root = AgentNode::new(\"Orchestrator\", \"Nova Ultra\").state(RunState::Running)\n    .task(\"Launch the new pricing page\")\n    .child(AgentNode::new(\"Researcher\", \"Nova 2\").state(RunState::Running).cost(0.06)\n        .child(AgentNode::new(\"Scraper\", \"Nova Flash\").state(RunState::Done)))\n    .child(AgentNode::new(\"Writer\", \"Nova 2\").state(RunState::NeedsInput));\nui.add(AgentTree::new(&root).title(\"Agents\"));"
+  },
+  {
+   "id": "handoff-card",
+   "showcase": true,
+   "name": "Handoff Card",
+   "category": "AI",
+   "description": "A relay hand-off between two agents: a baton travels the track, the receiver lights up, and the context that went along drops in while what got lost is struck through.",
+   "covers": [
+    "affectUI: Agent Handoff",
+    "Creance: AgentHandoffBanner"
+   ],
+   "code": "ui.add(HandoffCard::new((\"Researcher\", \"Nova 2\"), (\"Writer\", \"Nova Flash\"))\n    .reason(\"Compared 5 competitors; Notion and Linear are closest to us\")\n    .item(HandoffItem::new(\"competitors.md\", 2400.0))\n    .item(HandoffItem::new(\"raw page HTML\", 18200.0).dropped())\n    .progress(progress));"
+  },
+  {
+   "id": "trace-waterfall",
+   "showcase": true,
+   "name": "Trace Waterfall",
+   "category": "AI",
+   "description": "A run's trace as a waterfall: summary strip, folding span tree, bars by kind on a time axis with duration and cost, the slowest call tagged, a live now-line and hover details.",
+   "covers": [
+    "affectUI: Trace Waterfall",
+    "affectUI: Cost Waterfall",
+    "ReUI: Run Step Trace"
+   ],
+   "code": "let spans = vec![\n    TraceSpan::new(\"Orchestrator\", SpanKind::Agent, 0, 0.0).dur(17.5),\n    TraceSpan::new(\"Plan the launch\", SpanKind::Llm, 1, 0.3).dur(4.2).usage(3900.0, 0.092),\n    TraceSpan::new(\"web_search\", SpanKind::Tool, 1, 4.7), // still running\n];\nui.add(TraceWaterfall::new(&spans).title(\"Launch the pricing page\").now(t));"
+  },
+  {
+   "id": "approval-queue",
+   "showcase": true,
+   "name": "Approval Queue",
+   "category": "AI",
+   "description": "Pending tool calls to approve, deny or edit, with risk badges, the exact command, waiting time, batch actions and rows that resolve and fold away.",
+   "covers": [
+    "ReUI: Action Approval Inbox",
+    "affectUI: Approval Gates",
+    "affectUI: Approval Card",
+    "Creance: ApprovalPrompt",
+    "Creance: RiskLabel"
+   ],
+   "code": "let mut queue = vec![\n    ApprovalRequest::new(1, \"Deploy Fixer\", \"shell\", \"pnpm add zod@3.23.8\").risk(Risk::Medium),\n    ApprovalRequest::new(2, \"Refund Resolver\", \"stripe.refunds.create\", \"amount=1240.00\").risk(Risk::High),\n];\nui.add(ApprovalQueue::new(&mut queue));"
+  },
+  {
+   "id": "diff-review",
+   "showcase": true,
+   "name": "Diff Review",
+   "category": "AI",
+   "description": "An agent's file changes for review: unified or side-by-side diff, per-hunk accept and reject that fold the hunk, J/K/Y/N keys, and an apply footer.",
+   "covers": [
+    "Creance: DiffReview",
+    "Creance: DiffLine",
+    "affectUI: Inline Diff",
+    "affectUI: Review Center"
+   ],
+   "code": "let mut files = vec![DiffFile::new(\"web/package.json\")\n    .note(\"server/validate.ts imports zod, which was missing\")\n    .hunk(DiffHunk::parse(8, 8, \"\\\"dependencies\\\"\", \"   \\\"react\\\": \\\"^19.0.0\\\",\\n+  \\\"zod\\\": \\\"^3.23.8\\\",\\n   \\\"react-dom\\\": \\\"^19.0.0\\\"\"))];\nui.add(DiffReview::new(&mut files));"
+  },
+  {
+   "id": "run-monitor",
+   "showcase": true,
+   "name": "Run Monitor",
+   "category": "AI",
+   "description": "Live agent runs in one table: filter tabs with rolling counts, status, step progress, ticking elapsed time, tokens and a cost sparkline; rows glide as runs change state.",
+   "covers": [
+    "ReUI: Agent Run Queue",
+    "ReUI: Agent Fleet Overview",
+    "affectUI: Running Now",
+    "affectUI: Agent Inbox"
+   ],
+   "code": "let runs = vec![\n    RunInfo::new(\"RUN-4822\", \"Refund Resolver\", RunState::Running).step(3, 6, \"Capture refund\").usage(84.0, 12_400.0, 0.21),\n    RunInfo::new(\"RUN-4817\", \"Lead Enricher\", RunState::NeedsInput).step(3, 4, \"Approve CRM write\"),\n];\nui.add(RunMonitor::new(&runs));"
+  },
+  {
+   "id": "run-timeline",
+   "showcase": true,
+   "name": "Run Timeline",
+   "category": "AI",
+   "description": "An agent run as a quiet trail of steps: tool calls with live spinners, finished steps that fold, a failed step with its error and Retry, and a light running down the rail.",
+   "covers": [
+    "Creance: RunTimeline",
+    "Creance: ToolCallCard",
+    "affectUI: Agent Trail",
+    "Creative Tim: Tool Use"
+   ],
+   "code": "let steps = vec![\n    TimelineStep::new(\"Investigate the failed deploy\", RunState::Done).secs(4.0)\n        .tool(StepTool::new(\"read_logs\", Icon::Terminal, RunState::Done).secs(1.2)),\n    TimelineStep::new(\"Install the missing dependency\", RunState::Running)\n        .tool(StepTool::new(\"shell\", Icon::Terminal, RunState::Running).detail(\"pnpm add zod\")),\n];\nlet out = RunTimeline::new(\"Fix the failing deploy\", &steps).show(ui);"
+  },
+  {
+   "id": "cost-meter",
+   "showcase": true,
+   "name": "Cost Meter",
+   "category": "AI",
+   "description": "Spend against a budget: a big gliding total, a budget bar that turns amber and then red with a pulsing over-limit tag, tokens in and out, and spend split by model.",
+   "covers": [
+    "Creance: BudgetMeter"
+   ],
+   "code": "ui.add(CostMeter::new(10.0)\n    .model(\"Nova Ultra\", 42_000.0, 6_100.0, 2.41)\n    .model(\"Nova 2\", 120_000.0, 18_000.0, 1.62)\n    .model(\"Nova Flash\", 300_000.0, 22_000.0, 0.38));"
+  },
+  {
+   "id": "log-stream",
+   "showcase": true,
+   "name": "Log Stream",
+   "category": "AI",
+   "description": "Live tailing logs: level filter chips with counts, a Follow switch, lines that slide in with a highlight, and a Jump to latest pill when you scroll back.",
+   "covers": [],
+   "code": "ui.add(LogStream::new(&lines).height(300.0));"
+  },
+  {
+   "id": "sandbox-status",
+   "showcase": true,
+   "name": "Sandbox Status",
+   "category": "AI",
+   "description": "The container an agent works in: state, uptime, gliding CPU, memory and disk gauges that warn past 75%, a CPU sparkline, network, ports and actions.",
+   "covers": [],
+   "code": "ui.add(SandboxStatus::new(\"sbx-7f3a2c\").image(\"ubuntu-24.04 \u00b7 python 3.12 \u00b7 node 22\")\n    .state(RunState::Running).cpu(0.42).memory(2.8, 8.0).disk(11.0, 40.0)\n    .uptime(1834.0).network(1.2, 0.3).port(3000, \"preview\"));"
+  },
+  {
+   "id": "agent-session-list",
+   "showcase": true,
+   "name": "Agent Session List",
+   "category": "AI",
+   "description": "Agent sessions across laptops, cloud sandboxes, CLIs and phones: live, idle and needs-input states, unread pills, search and tabs, rows gliding between sections.",
+   "covers": [
+    "affectUI: Agent Inbox",
+    "Creance: NeedsYouInbox",
+    "Creance: StatusBadge"
+   ],
+   "code": "let mut selected = Some(1);\nui.add(AgentSessionList::new(&sessions, &mut selected));"
+  },
+  {
+   "id": "session-detail-header",
+   "showcase": true,
+   "name": "Session Detail Header",
+   "category": "AI",
+   "description": "The control bar of one agent session: title, repo, branch and device, live state and clock, step pips, token budget, a Needs-you pill, Pause and a hold-to-stop kill switch.",
+   "covers": [
+    "Creance: AgentRunLayout",
+    "Creance: KillSwitch",
+    "affectUI: Run Controls"
+   ],
+   "code": "let action = SessionDetailHeader::new(\"Deploy Fixer\", \"Fix the failing production deploy\")\n    .meta(\"acme/web\", \"fix/missing-zod\", \"MacBook Pro\")\n    .state(RunState::Running, 142.0).step(3, 5, \"Running the test suite\")\n    .budget(18_400.0, 50_000.0).needs_you(2).model(\"Nova 2\")\n    .show(ui);"
+  },
+  {
+   "id": "mcp-server-list",
+   "showcase": true,
+   "name": "MCP Server List",
+   "category": "AI",
+   "description": "MCP servers with connect status, transport, tool counts, latency bars and switches; switching one on plays a handshake, rows unfold to their tools.",
+   "covers": [
+    "ReUI: Tool Access Matrix",
+    "affectUI: Tool Access Map"
+   ],
+   "code": "let mut servers = vec![\n    McpServer::new(\"GitHub\", \"http\", \"https://api.githubcopilot.com/mcp/\").tools(&[\"create_issue\", \"search_code\"]),\n    McpServer::new(\"Postgres\", \"stdio\", \"npx @mcp/postgres $DATABASE_URL\").enabled(false),\n];\nui.add(McpServerList::new(&mut servers));"
+  },
+  {
+   "id": "skills-browser",
+   "showcase": true,
+   "name": "Skills Browser",
+   "category": "AI",
+   "description": "Agent skills and plugins as cards with search and category tabs; Install fills across the button and morphs into Installed, which offers Remove on hover.",
+   "covers": [],
+   "code": "let mut skills = vec![\n    Skill::new(\"PDF tools\", \"Lumen Labs\", \"Documents\").desc(\"Read, fill and merge PDFs\").installs(48_200),\n    Skill::new(\"Postgres\", \"Community\", \"Data\").desc(\"Query and migrate databases\").installed(true),\n];\nui.add(SkillsBrowser::new(&mut skills));"
+  },
+  {
+   "id": "agent-fleet-grid",
+   "showcase": true,
+   "name": "Agent Fleet Grid",
+   "category": "AI",
+   "description": "Many agents as tiles with status rings: progress arcs with a glowing head while working, a pulsing amber ring when one needs you, red on failure, plus runs and success rate.",
+   "covers": [
+    "ReUI: Agent Fleet Overview",
+    "affectUI: Agent Fleet",
+    "affectUI: Fan-out Grid",
+    "Creative Tim: Workflow Status"
+   ],
+   "code": "let fleet = vec![\n    FleetAgent::new(\"Deploy Fixer\", \"DevOps\", RunState::Running).activity(0.4, \"Reading build logs\").stats(31, 0.97),\n    FleetAgent::new(\"Data Loader\", \"Data\", RunState::NeedsInput).activity(0.7, \"Which region first?\"),\n];\nui.add(AgentFleetGrid::new(&fleet));"
+  },
+  {
+   "id": "eval-scoreboard",
+   "showcase": true,
+   "name": "Eval Scoreboard",
+   "category": "AI",
+   "description": "An eval report: overall pass rate with its delta and trend, suites as stacked pass / flaky / fail bars that grow as cases finish, and regressions tagged.",
+   "covers": [
+    "ReUI: Agent Eval Report"
+   ],
+   "code": "let suites = vec![\n    EvalSuite::new(\"Refund flows\", 48).results(46, 1, 1).delta(2.1),\n    EvalSuite::new(\"Outreach tone\", 42).results(30, 8, 0).delta(-4.8),\n];\nui.add(EvalScoreboard::new(&suites).baseline(\"v2.0.3\").trend(vec![91.0, 93.2, 94.6, 92.1, 94.0]));"
+  },
+  {
+   "id": "memory-viewer",
+   "showcase": true,
+   "name": "Memory Viewer",
+   "category": "AI",
+   "description": "What an agent remembers: kind badges, source, a recency dot that cools with age, confidence bars, pins that float to the top and new memories sliding in.",
+   "covers": [
+    "ReUI: Agent Memory",
+    "affectUI: Memory Panel"
+   ],
+   "code": "let mut mem = vec![\n    MemoryEntry::new(1, MemoryKind::Preference, \"Acme prefers email over phone\").meta(\"Chat \u00b7 Support\", 3600.0, 0.96),\n    MemoryEntry::new(2, MemoryKind::Policy, \"Refunds above $500 need finance approval\").pinned(true),\n];\nui.add(MemoryViewer::new(&mut mem));"
+  },
+  {
+   "id": "schedule-list",
+   "showcase": true,
+   "name": "Schedule List",
+   "category": "AI",
+   "description": "Scheduled agent jobs with countdown rings, ticking next-run times, pips for recent outcomes, Run now and on/off switches; jobs fire and record their result.",
+   "covers": [
+    "affectUI: Scheduled Runs"
+   ],
+   "code": "let mut jobs = vec![ScheduledJob::new(\"Morning digest\", \"Digest Writer\", \"Weekdays at 08:30\").next(5400.0, 86400.0)];\nlet out = ScheduleList::new(&mut jobs).show(ui);"
+  },
+  {
+   "id": "human-in-the-loop-prompt",
+   "showcase": true,
+   "name": "Human-in-the-Loop Prompt",
+   "category": "AI",
+   "description": "An agent asks a question in its own card: numbered options with one Recommended, a row for your own words, 1-9 keys, and a morph into a one-line receipt with Undo.",
+   "covers": [
+    "Creance: QuestionCard",
+    "affectUI: Decision Card"
+   ],
+   "code": "let mut answer: Option<HitlAnswer> = None;\nui.add(HumanInTheLoopPrompt::new(&mut answer, \"Which region should I seed first?\")\n    .agent(\"Data Loader\", \"Seed the staging database\")\n    .option(\"us-east-1\", \"Closest to the API \u00b7 2.1 GB of fixtures\")\n    .option(\"eu-west-1\", \"Only the GDPR tenants \u00b7 640 MB\")\n    .recommended(0));"
+  },
+  {
+   "id": "error-recovery-card",
+   "showcase": true,
+   "name": "Error Recovery Card",
+   "category": "AI",
+   "description": "A failed step waiting for you: error code and message, attempt pips, last log lines, the agent's suggested fix, Retry / Skip / Abort and an auto-retry countdown ring.",
+   "covers": [
+    "ReUI: Failed Run Triage",
+    "Creance: ErrorCard",
+    "affectUI: Fallback Chain"
+   ],
+   "code": "let out = ErrorRecoveryCard::new(\"Capture the partial refund\", \"402 card_declined\")\n    .message(\"The processor declined the partial capture on the original card.\")\n    .step(3, 6).attempt(2, 3).auto_retry(Some(7.0))\n    .suggestion(\"Retry with a manual amount, or credit the account instead.\")\n    .show(ui);"
+  },
+  {
+   "id": "plan-board",
+   "showcase": true,
+   "name": "Plan Board",
+   "category": "AI",
+   "description": "An agent's plan as a four-column board: step cards with agent, tool and live progress lift and glide from Planned to Running to Review to Done.",
+   "covers": [
+    "affectUI: Agent Plan",
+    "Creance: PlanEditor",
+    "Creative Tim: Multi-step Agent",
+    "ReUI: Playbook Builder"
+   ],
+   "code": "let steps = vec![\n    PlanCard::new(1, \"Read the failing build log\", RunState::Done).agent(\"Deploy Fixer\", Icon::Terminal),\n    PlanCard::new(2, \"Add zod to web dependencies\", RunState::Running).agent(\"Deploy Fixer\", Icon::Code).progress(0.4, 2.0),\n    PlanCard::new(3, \"Approve the production deploy\", RunState::Queued).agent(\"You\", Icon::Lock),\n];\nui.add(PlanBoard::new(\"Fix the failing production deploy\", &steps));"
+  },
+  {
+   "id": "context-window-viz",
+   "showcase": true,
+   "name": "Context Window",
+   "category": "AI",
+   "description": "What fills the model's context: a stacked bar by source with the auto-compact mark and a field of cells; hover a source to light it up, watch compaction squeeze the chat.",
+   "covers": [
+    "affectUI: Context Window",
+    "affectUI: Context Map"
+   ],
+   "code": "let parts = vec![\n    ContextPart::new(\"System prompt\", 3_200.0),\n    ContextPart::new(\"Tools\", 14_800.0),\n    ContextPart::new(\"Files\", 61_000.0),\n    ContextPart::new(\"Conversation\", 48_000.0),\n];\nui.add(ContextWindowViz::new(&parts, 200_000.0).compact_at(0.9));"
+  },
+  {
+   "id": "asst-thread",
+   "showcase": true,
+   "name": "Assistant Thread",
+   "category": "AI",
+   "description": "A branching chat thread: streaming Markdown replies, regenerate with a reply picker, and inline edit-and-resend that forks the conversation.",
+   "covers": [
+    "assistant-ui: Thread",
+    "assistant-ui: Branch Picker",
+    "assistant-ui: Edit Composer",
+    "nextui (agent): Conversation"
+   ],
+   "code": "let mut model = ThreadModel::new().with_exchange(\"Summarize Q3\", \"Revenue grew 18%...\");\nlet out = AssistantThread::new(&mut model).height(320.0).show(ui);\nfor e in out.events {\n    match e {\n        ThreadEvent::Regenerate(turn) => model.regenerate_with(turn, &next_reply()),\n        ThreadEvent::Edited(_) => model.stream_reply(&next_reply()),\n        _ => {}\n    }\n}"
+  },
+  {
+   "id": "asst-composer",
+   "showcase": true,
+   "name": "Smart Composer",
+   "category": "AI",
+   "description": "Agent composer with @mentions and /slash-command menus that filter as you type, highlighted inline tokens and a waking send button.",
+   "covers": [
+    "assistant-ui: Slash commands",
+    "assistant-ui: Mentions",
+    "assistant-ui: Composer trigger popover",
+    "nextui (agent): Prompt Composer"
+   ],
+   "code": "let people = [MentionItem::new(\"Mara\", \"teammate\", hex(\"#EC4899\"))];\nlet cmds = [SlashCommand::new(\"review\", \"Review the current diff\", Icon::Eye)];\nlet out = SmartComposer::new(&mut state).mentions(&people).commands(&cmds).model_label(\"Fable 5\").show(ui);\nif let Some(msg) = out.submitted { send(msg); }"
+  },
+  {
+   "id": "asst-composer-attachments",
+   "showcase": true,
+   "name": "Attachments & Context",
+   "category": "AI",
+   "description": "Drag files onto the composer (a marching dashed drop zone), staged files with upload rings, and removable context chips.",
+   "covers": [
+    "assistant-ui: Attachments",
+    "assistant-ui: Context",
+    "CopilotKit: Copilot Textarea (context)",
+    "nextui (agent): File Upload"
+   ],
+   "code": "state.files.push(StagedFile::new(\"screenshot.png\", \"128 KB\"));\nstate.chips.push(ContextChip::new(\"Selection \u00b7 auth.rs L12\u201340\", Icon::Code));\nSmartComposer::new(&mut state).placeholder(\"Ask anything, or drop files here\").show(ui); // dropped files are staged automatically"
+  },
+  {
+   "id": "asst-thread-list",
+   "showcase": true,
+   "name": "Thread List Sidebar",
+   "category": "AI",
+   "description": "Conversation sidebar with search highlighting, pinned and date groups, inline rename and a collapsible archive.",
+   "covers": [
+    "assistant-ui: Thread List",
+    "assistant-ui: Thread search",
+    "nextui (agent): Chat History"
+   ],
+   "code": "let mut st = ThreadListState { entries: vec![ThreadEntry::new(\"Q3 deck\", \"Today\").pinned()], ..Default::default() };\nlet out = ThreadListSidebar::new(&mut st).height(420.0).show(ui);\nif let Some(i) = out.opened { open_thread(i); }"
+  },
+  {
+   "id": "asst-welcome",
+   "showcase": true,
+   "name": "Welcome Suggestions",
+   "category": "AI",
+   "description": "The empty state: a glowing mark, greeting, staggered starter cards that lift on hover, and the composer.",
+   "covers": [
+    "assistant-ui: Thread Welcome",
+    "assistant-ui: Empty state",
+    "CopilotKit: Suggestions",
+    "nextui (agent): Welcome Screen"
+   ],
+   "code": "let s = [WelcomeSuggestion::new(\"Plan a trip\", \"Three days in Lisbon\", Icon::Globe)];\nif let Some(i) = WelcomeScreen::new(\"How can I help you today?\").suggestions(&s).show(ui, |ui| {\n    SmartComposer::new(&mut composer).show(ui);\n}) { composer.text = s[i].title.clone(); }"
+  },
+  {
+   "id": "asst-copilot-sidebar",
+   "showcase": true,
+   "name": "Copilot Sidebar",
+   "category": "AI",
+   "description": "A docked assistant panel that springs in from the right edge, pushing (or overlaying) the app, with a live chat inside.",
+   "covers": [
+    "CopilotKit: CopilotSidebar",
+    "assistant-ui: Assistant sidebar"
+   ],
+   "code": "CopilotSidebar::new(&mut open).panel_width(330.0).show(ui,\n    |ui| my_app(ui),\n    |ui| { AssistantThread::new(&mut model).height(260.0).show(ui); },\n);"
+  },
+  {
+   "id": "asst-copilot-popup",
+   "showcase": true,
+   "name": "Copilot Popup",
+   "category": "AI",
+   "description": "A floating launcher whose sparkle morphs into a cross as a chat window springs out of the corner.",
+   "covers": [
+    "CopilotKit: CopilotPopup",
+    "assistant-ui: Assistant modal",
+    "assistant-ui: Launcher"
+   ],
+   "code": "CopilotPopup::new(&mut open).window_size(egui::vec2(330.0, 380.0)).show(ui,\n    |ui| my_app(ui),\n    |ui| { AssistantThread::new(&mut model).show(ui); },\n);"
+  },
+  {
+   "id": "asst-inline-suggestion",
+   "showcase": true,
+   "name": "Inline Suggestion",
+   "category": "AI",
+   "description": "Ghost-text autocomplete: a muted continuation fades in after a pause with a Tab hint; Tab accepts with a soft flash.",
+   "covers": [
+    "CopilotKit: CopilotTextarea",
+    "nextui (agent): Autocomplete"
+   ],
+   "code": "let ghost = my_model_completion(&text); // Option<&str>\nlet out = InlineSuggestion::new(&mut text, ghost).delay(0.5).show(ui);\nif out.accepted { /* log acceptance */ }"
+  },
+  {
+   "id": "asst-selection-toolbar",
+   "showcase": true,
+   "name": "Selection Ask AI",
+   "category": "AI",
+   "description": "Select text to pop a floating Ask AI toolbar; quick actions stream an answer card under the selection.",
+   "covers": [
+    "assistant-ui: Selection Toolbar",
+    "assistant-ui: Quote",
+    "CopilotKit: Copilot Textarea (ask on selection)"
+   ],
+   "code": "let actions = [SelectionAction::new(\"Explain\", Icon::Lightbulb, answer)];\nlet out = SelectionAskBar::new(paragraph, &actions).show(ui);"
+  },
+  {
+   "id": "asst-mode-switcher",
+   "showcase": true,
+   "name": "Agent Mode Switcher",
+   "category": "AI",
+   "description": "Ask / Agent / Plan segmented switch: a tinted pill glides between modes and the description slides along.",
+   "covers": [
+    "nextui (agent): Mode Selector",
+    "assistant-ui: Composer mode"
+   ],
+   "code": "let modes = [AgentMode::new(\"Ask\", Icon::Search, \"Answers only\", t.info), AgentMode::new(\"Agent\", Icon::Bolt, \"Edits files\", t.accent)];\nui.add(AgentModeSwitcher::new(&modes, &mut mode));"
+  },
+  {
+   "id": "asst-model-picker",
+   "showcase": true,
+   "name": "Model Picker (rich)",
+   "category": "AI",
+   "description": "A model popover with search, provider marks, speed bolts, cost, context-window chips and capability tags.",
+   "covers": [
+    "assistant-ui: Model selector",
+    "nextui (agent): Model Selector"
+   ],
+   "code": "let models = [ModelSpec::new(\"Swift 3 mini\", \"Swift\", hex(\"#0EA5E9\")).speed_cost(3, 1).context(\"200K\")];\nModelPickerRich::new(&models, &mut selected).show(ui);"
+  },
+  {
+   "id": "asst-usage-banner",
+   "showcase": true,
+   "name": "Usage Limit Banner",
+   "category": "AI",
+   "description": "A quota banner whose tone morphs from calm to amber to red, with a segmented meter, reset timer and upgrade shine.",
+   "covers": [
+    "assistant-ui: Quota banner",
+    "nextui (agent): Usage Limit"
+   ],
+   "code": "let out = UsageLimitBanner::new(42, 50).resets_in(\"3h 12m\").plan(\"Pro\").show(ui);\nif out.upgrade { open_billing(); }"
+  },
+  {
+   "id": "asst-citations",
+   "showcase": true,
+   "name": "Citations Footer",
+   "category": "AI",
+   "description": "Answer text with numbered citation pills and a Sources footer that expands into cards; hovering links both.",
+   "covers": [
+    "assistant-ui: Sources",
+    "assistant-ui: Inline citation",
+    "nextui (agent): Citations"
+   ],
+   "code": "let hovered = CitedText::new(\"Rust prevents data races [1].\").show(ui, footer_hover);\nlet footer_hover = CitationsFooter::new(&sources, &mut open).show(ui, hovered);"
+  },
+  {
+   "id": "asst-voice-mode",
+   "showcase": true,
+   "name": "Voice Mode Overlay",
+   "category": "AI",
+   "description": "A voice conversation overlay that grows out of the mic button: living orb, shimmering status, live captions and call controls.",
+   "covers": [
+    "assistant-ui: Voice conversation",
+    "CopilotKit: Voice (push to talk)",
+    "nextui (agent): Voice Mode"
+   ],
+   "code": "VoiceModeOverlay::new(&mut open).state(VoiceState::Speaking).level(level).caption(&caption)\n    .show(ui, |ui| my_chat(ui));"
+  },
+  {
+   "id": "asst-tool-table",
+   "showcase": true,
+   "name": "Data Table Result",
+   "category": "AI",
+   "description": "A tool result as a sortable data table: rows slide in, numbers align, deltas are colored pills.",
+   "covers": [
+    "Tool UI: Data Table",
+    "assistant-ui: Data table",
+    "CopilotKit: Generative UI (table)"
+   ],
+   "code": "let cols = [(\"Region\", ColumnKind::Text), (\"Revenue\", ColumnKind::Number), (\"QoQ\", ColumnKind::Delta)];\nui.add(DataTableResult::new(\"warehouse.query\", &cols, &rows).subtitle(\"SELECT ...\").max_rows(6));"
+  },
+  {
+   "id": "asst-tool-chart",
+   "showcase": true,
+   "name": "Chart Result",
+   "category": "AI",
+   "description": "The agent answers with a chart card: headline value, change pill and an animated area, line or bar chart.",
+   "covers": [
+    "Tool UI: Chart",
+    "assistant-ui: Chart",
+    "CopilotKit: Generative UI (chart)"
+   ],
+   "code": "let s = [Series::new(\"Signups\", vec![320.0, 410.0, 520.0, 860.0])];\nui.add(ChartResult::new(\"analytics.timeseries\", &s).labels(&[\"W1\", \"W2\", \"W3\", \"W4\"])\n    .headline(\"860\", \"+18.6%\").kind(ChartKind::Area));"
+  },
+  {
+   "id": "asst-tool-link",
+   "showcase": true,
+   "name": "Link Preview Result",
+   "category": "AI",
+   "description": "Unfurled links as cards: cover image with a slow hover zoom, favicon and domain, title and description.",
+   "covers": [
+    "Tool UI: Link Preview",
+    "assistant-ui: Link preview"
+   ],
+   "code": "if ui.add(LinkPreviewResult::new(\"fieldnotes.dev\", \"Designing calm agent interfaces\", \"Why quiet UI earns trust.\")).clicked() {\n    // open the link\n}"
+  },
+  {
+   "id": "asst-tool-gallery",
+   "showcase": true,
+   "name": "Image Gallery Result",
+   "category": "AI",
+   "description": "Image results as a hero-plus-grid gallery with shimmer loading, +N tile and a lightbox that grows from the tile.",
+   "covers": [
+    "Tool UI: Image Gallery",
+    "assistant-ui: Image"
+   ],
+   "code": "let captions = [\"Alpenglow\", \"Lagoon\", \"Aurora\", \"Dunes\", \"Forest\", \"Neon\"];\nui.add(ImageGalleryResult::new(\"images.search\", &captions));"
+  },
+  {
+   "id": "asst-tool-weather",
+   "showcase": true,
+   "name": "Weather Card",
+   "category": "AI",
+   "description": "A generative weather card: condition-tinted sky, animated painted glyph, counting temperature and an hourly curve.",
+   "covers": [
+    "Tool UI: Weather Widget",
+    "assistant-ui: Current weather",
+    "CopilotKit: Generative UI (weather)"
+   ],
+   "code": "let hourly = [18.0, 20.0, 23.0, 24.0, 22.0];\nui.add(WeatherResult::new(\"Lisbon, PT\", 24.0, Sky::Sunny).hourly(&hourly).range(16.0, 25.0));"
+  },
+  {
+   "id": "asst-tool-form",
+   "showcase": true,
+   "name": "Form Result (HITL)",
+   "category": "AI",
+   "description": "The agent pauses for details: text, segmented choice and switch fields, then folds into a receipt on submit.",
+   "covers": [
+    "Tool UI: Form",
+    "CopilotKit: Human-in-the-loop",
+    "assistant-ui: Table reservation"
+   ],
+   "code": "let fields = [FormField::text(\"Name\", \"Ada\"), FormField::choice(\"Party size\", &[\"2\", \"4\", \"6\"]), FormField::toggle(\"Window table\")];\nFormResult::new(\"Reserve a table\", &fields, &mut state).submit_label(\"Confirm booking\").show(ui);\nif state.submitted { /* resume the agent with state.values */ }"
+  },
+  {
+   "id": "asst-tool-options",
+   "showcase": true,
+   "name": "Option List Result",
+   "category": "AI",
+   "description": "The agent asks you to pick one or many options; confirming collapses the list to the chosen rows.",
+   "covers": [
+    "Tool UI: Option List",
+    "assistant-ui: Option list",
+    "CopilotKit: Human-in-the-loop (choice)"
+   ],
+   "code": "let opts = [ToolOption::new(\"Rebase\", \"Linear history\").tag(\"Recommended\"), ToolOption::new(\"Merge\", \"Keep both\")];\nOptionListResult::new(\"How should I integrate main?\", &opts, &mut state).multiple(false).show(ui);"
+  },
+  {
+   "id": "asst-tool-plan",
+   "showcase": true,
+   "name": "Plan Result",
+   "category": "AI",
+   "description": "A live to-do plan: progress bar, spinning active step with detail, self-drawing checks as steps finish.",
+   "covers": [
+    "Tool UI: Plan",
+    "assistant-ui: Agent plan",
+    "CopilotKit: Agentic plan"
+   ],
+   "code": "let steps = [PlanStep::new(\"Reproduce\").status(PlanStatus::Done), PlanStep::new(\"Fix\").detail(\"Serialize writes\").status(PlanStatus::Active)];\nui.add(PlanResult::new(\"Fix flaky checkout test\", &steps));"
+  },
+  {
+   "id": "asst-progress-steps",
+   "showcase": true,
+   "name": "Progress Steps",
+   "category": "AI",
+   "description": "A horizontal tracker of an agent's phases: a gliding rail, pulsing current node and checks as phases complete.",
+   "covers": [
+    "Tool UI: Progress Tracker",
+    "nextui (agent): Agent Steps",
+    "assistant-ui: Job progress"
+   ],
+   "code": "let steps = [\"Search\", \"Read 6 sources\", \"Draft\", \"Cite\"];\nui.add(ProgressSteps::new(&steps, progress).elapsed(secs_in_step));"
+  },
+  {
+   "id": "asst-tool-code",
+   "showcase": true,
+   "name": "Code Result",
+   "category": "AI",
+   "description": "Generated code with a Run button: a console slides open and output streams in, ending with an exit chip.",
+   "covers": [
+    "Tool UI: Code Block",
+    "assistant-ui: Code runner",
+    "nextui (agent): Code Execution"
+   ],
+   "code": "let out = [\"p50: 102 ms\", \"p95: 131 ms\"];\nlet (_resp, _run_rect) = CodeResult::new(\"python\", code, &out).filename(\"latency.py\").show(ui);"
+  },
+  {
+   "id": "asst-tool-location",
+   "showcase": true,
+   "name": "Location Result",
+   "category": "AI",
+   "description": "A painted map with a self-drawing route, bouncing pin and a place list that moves the pin on hover.",
+   "covers": [
+    "Tool UI: Map",
+    "assistant-ui: Geo map",
+    "CopilotKit: Generative UI (map)"
+   ],
+   "code": "let places = [Place::new(\"Blue Door Coffee\", \"14 Harbor St\", \"6 min\")];\nlet (_resp, _rows) = LocationResult::new(\"Coffee near you\", &places).show(ui);"
+  },
+  {
    "id": "animated-testimonials",
    "showcase": true,
    "name": "Animated Testimonials",
@@ -11950,6 +12541,294 @@
     "Tailwind UI: Empty states"
    ],
    "code": "let mut app = AuthGateApp::default();\napp.signed_in = true;\napp.route = \"reports\".into(); // \"reports\" | \"admin\" | \"projects\"\napp.show(ui);"
+  },
+  {
+   "id": "app-agent-sessions",
+   "showcase": true,
+   "name": "Agent Sessions",
+   "category": "Templates",
+   "description": "Supervise coding-agent sessions across your machines: live / needs-input / idle states grouped by device, a streaming transcript with tool calls, a diff panel, an approve / deny bar, usage limits and a new-session composer (Ctrl+N, Enter / Esc).",
+   "covers": [],
+   "code": "let mut app = AgentSessionsApp::default();\napp.show(ui);"
+  },
+  {
+   "id": "app-agent-fleet",
+   "showcase": true,
+   "name": "Agent Fleet Manager",
+   "category": "Templates",
+   "description": "Skills, plugins, MCP servers and projects for coding agents: search, filter tabs, cards with install progress and enable switches, update badges and a details drawer (Esc closes).",
+   "covers": [],
+   "code": "let mut app = AgentFleetApp::default();\napp.route = \"skills\".into(); // \"plugins\" | \"mcp\" | \"projects\"\napp.show(ui);"
+  },
+  {
+   "id": "app-agent-fleet-mcp",
+   "showcase": true,
+   "name": "MCP Server Health",
+   "category": "Templates",
+   "description": "The fleet manager's MCP servers: live latency sparklines, degraded and down states with reconnect countdowns, transport and tool counts, restart from the drawer.",
+   "covers": [],
+   "code": "let mut app = AgentFleetApp::default();\napp.route = \"mcp\".into();\napp.show(ui);"
+  },
+  {
+   "id": "app-local-llm",
+   "showcase": true,
+   "name": "Local LLM Chat",
+   "category": "Templates",
+   "description": "A desktop front end for local models: streaming chat with live tokens/sec, context and first-token readouts, a model switcher that loads into VRAM (Ctrl+L), system-prompt presets (Alt+1..4), sampling sliders and RAM / VRAM / GPU meters.",
+   "covers": [],
+   "code": "let mut app = LocalLlmApp::default();\napp.show(ui);"
+  },
+  {
+   "id": "app-local-llm-models",
+   "showcase": true,
+   "name": "Local Model Library",
+   "category": "Templates",
+   "description": "The local LLM app's model library: hardware tiles, quantization picks with sizes, fits-in-VRAM hints, downloads with progress, speed and ETA, and one-click load.",
+   "covers": [],
+   "code": "let mut app = LocalLlmApp::default();\napp.route = \"models\".into();\napp.show(ui);"
+  },
+  {
+   "id": "app-trading-terminal",
+   "showcase": true,
+   "name": "Trading Terminal",
+   "category": "Templates",
+   "description": "A live trading terminal: candlesticks with EMA / Bollinger / volume, crosshair, wheel zoom and drag pan; an order book with depth bars and flashing levels, a trade tape, positions with live PnL, order entry (B / S, limit / market) and a watchlist with sparklines.",
+   "covers": [],
+   "code": "let mut app = TradingTerminalApp::default(); // dark by default\napp.show(ui);"
+  },
+  {
+   "id": "app-dev-inspector",
+   "showcase": true,
+   "name": "Profiler / Inspector",
+   "category": "Templates",
+   "description": "A developer profiler for a running process: live frame-time chart with budget lines, a collapsible span tree, a zoomable flame graph (wheel, drag, double-click to fit, F resets), a property inspector with per-frame history and a filterable log console (Space pauses, \u2190 \u2192 step frames).",
+   "covers": [],
+   "code": "let mut app = DevInspectorApp::default();\napp.show(ui);"
+  },
+  {
+   "id": "game-hud",
+   "showcase": true,
+   "name": "Game HUD",
+   "category": "Game UI",
+   "description": "A full shooter / RPG HUD over a live scene: health and mana with damage trails, ability cooldowns, ammo, minimap, kill feed and a dynamic crosshair, all driven by simulated gameplay.",
+   "covers": [],
+   "code": "// every block takes plain game state each frame\nui.add(GameResourceBar::new(hp, 1000.0).kind(GameResourceKind::Health));\nui.add(GameCooldownIcon::new(GameIcon::Fire, cd, 6.0).key(\"Q\"));\nui.add(GameAmmoCounter::new(mag, 30, reserve).reloading(reload));\nui.add(GameMinimap::new(player, heading).markers(&markers));\nui.add(GameKillFeed::new(&kills));\nui.add(GameCrosshair::new(GameCrosshairShape::Cross).spread(spread));"
+  },
+  {
+   "id": "game-main-menu",
+   "showcase": true,
+   "name": "Main Menu",
+   "category": "Game UI",
+   "description": "A title screen over a parallax scene: the title drops in letter by letter and breathes with a glow, entries stagger in and slide on hover, and every hover / confirm is reported as a sound cue.",
+   "covers": [],
+   "code": "let mut cues = Vec::new();\nui.add(GameMainMenu::new(&mut sel, &[\"Continue\", \"New Game\", \"Settings\", \"Credits\", \"Quit\"])\n    .title(\"Astral Drift\")\n    .subtitle(\"Chapter III \u00b7 The Sunken Vault\")\n    .style(GameStyle::SciFi)\n    .activated(&mut chosen)\n    .cues(&mut cues));\nfor cue in cues { audio.play(cue); }"
+  },
+  {
+   "id": "game-pause-menu",
+   "showcase": true,
+   "name": "Pause Menu",
+   "category": "Game UI",
+   "description": "A pause overlay: the running scene slows to a stop and dims into a vignette while the panel springs in with play info and staggered menu entries.",
+   "covers": [],
+   "code": "ui.add(GamePauseMenu::new(paused, &mut sel, &[\"Resume\", \"Settings\", \"Load Game\", \"Quit to Title\"])\n    .info(&[(\"Chapter\", \"III \u00b7 The Sunken Vault\"), (\"Play time\", \"12h 04m\")])\n    .activated(&mut chosen));"
+  },
+  {
+   "id": "game-settings-panel",
+   "showcase": true,
+   "name": "Settings Panel",
+   "category": "Game UI",
+   "description": "Tabbed game settings for graphics, audio and controls: segmented sliders, springy toggles, arrow selectors and key rebind rows that capture the next key you press.",
+   "covers": [],
+   "code": "let mut settings = GameSettings::default();\nui.add(GameSettingsPanel::new(&mut settings).style(GameStyle::SciFi).cues(&mut cues));"
+  },
+  {
+   "id": "game-resource-bars",
+   "showcase": true,
+   "name": "Health & Mana Bars",
+   "category": "Game UI",
+   "description": "Health, mana and stamina bars in three skins: damage cuts the fill and leaves a delayed trail that drains after a beat (with sparks and shake), heals pour in with a green ghost and rising pluses, low health pulses red.",
+   "covers": [],
+   "code": "ui.add(GameResourceBar::new(hp, 1000.0).kind(GameResourceKind::Health).style(GameStyle::SciFi).segments(10));\nui.add(GameResourceBar::new(mp, 600.0).kind(GameResourceKind::Mana).style(GameStyle::SciFi));"
+  },
+  {
+   "id": "game-boss-bar",
+   "showcase": true,
+   "name": "Boss Bar",
+   "category": "Game UI",
+   "description": "A wide boss health bar with the name glowing above, phase notches that fire a flash, ring and sparks when crossed, an armor layer and an enraged pulse in the final phase.",
+   "covers": [],
+   "code": "ui.add(GameBossBar::new(\"Vorrhak\", hp, 80_000.0)\n    .title(\"The Ashen Tyrant\")\n    .phases(&[0.66, 0.33])\n    .armor(armor));"
+  },
+  {
+   "id": "game-minimap",
+   "showcase": true,
+   "name": "Minimap",
+   "category": "Game UI",
+   "description": "Round and square minimaps with procedural terrain, fog of war that clears along the explored trail, a player arrow with view cone, pulsing enemies, rippling pings and objectives pinned to the rim.",
+   "covers": [],
+   "code": "ui.add(GameMinimap::new(player, heading)\n    .markers(&markers)\n    .explored(&trail, 70.0)\n    .round(true)\n    .rotate(true)\n    .size(180.0));"
+  },
+  {
+   "id": "game-ammo-counter",
+   "showcase": true,
+   "name": "Ammo Counter",
+   "category": "Game UI",
+   "description": "Magazine and reserve counters: each shot kicks the number and ejects a spinning casing, low ammo pulses amber, an empty magazine flashes RELOAD and the reload sweeps rounds back in.",
+   "covers": [],
+   "code": "ui.add(GameAmmoCounter::new(mag, 30, reserve)\n    .reloading(reload_progress)\n    .weapon(\"AR-7 Vanguard\")\n    .cues(&mut cues));"
+  },
+  {
+   "id": "game-cooldown-icons",
+   "showcase": true,
+   "name": "Cooldown Icons",
+   "category": "Game UI",
+   "description": "Ability slots with a radial cooldown sweep, a bright hand on the edge and seconds left; coming off cooldown flashes white, pops on a spring and throws a ring of sparks.",
+   "covers": [],
+   "code": "ui.add(GameCooldownIcon::new(GameIcon::Fire, remaining, 8.0).key(\"Q\").charges(2));"
+  },
+  {
+   "id": "game-hotbar",
+   "showcase": true,
+   "name": "Hotbar",
+   "category": "Game UI",
+   "description": "Item hotbars where the selected slot springs up and grows with a glow beneath, its name popping up above; select by click, scroll wheel or number keys.",
+   "covers": [],
+   "code": "ui.add(GameHotbar::new(&mut selected, &slots).keyboard(true).style(GameStyle::Fantasy));"
+  },
+  {
+   "id": "game-inventory",
+   "showcase": true,
+   "name": "Inventory Grid",
+   "category": "Game UI",
+   "description": "Drag-and-drop inventory: items glow by rarity (legendaries run a light beam around their slot), lift out with a lagging tilt, swap with a springy landing, and show a tooltip card comparing stats with your equipped gear.",
+   "covers": [],
+   "code": "ui.add(GameInventoryGrid::new(&mut bag, 6)\n    .title(\"Backpack\")\n    .equipped(&equipped)\n    .style(GameStyle::Fantasy));"
+  },
+  {
+   "id": "game-item-tooltip",
+   "showcase": true,
+   "name": "Item Tooltip",
+   "category": "Game UI",
+   "description": "Item tooltip cards with a rarity-tinted header, stats compared to the equipped item (green and red arrows with deltas) and flavor text, in all three skins.",
+   "covers": [],
+   "code": "ui.add(GameItemTooltip::new(&item).compare(Some(&equipped_sword)).style(GameStyle::SciFi));"
+  },
+  {
+   "id": "game-skill-tree",
+   "showcase": true,
+   "name": "Skill Tree",
+   "category": "Game UI",
+   "description": "A skill tree where unlocking sends a surge of energy down the link before the node pops, rings and sparkles alight; available links shimmer, locked ones stay faint, and hovering shows a card.",
+   "covers": [],
+   "code": "ui.add(GameSkillTree::new(&mut nodes, &mut points).title(\"Pyromancy\").cues(&mut cues));"
+  },
+  {
+   "id": "game-dialogue-box",
+   "showcase": true,
+   "name": "Dialogue Box",
+   "category": "Game UI",
+   "description": "An RPG dialogue box with a painted portrait that blinks and talks, a name plate, typewriter text with a glowing caret, and player choices that stagger in when the line finishes.",
+   "covers": [],
+   "code": "ui.add(GameDialogueBox::new(&line)\n    .chosen(&mut choice)\n    .advance(&mut next)\n    .cues(&mut cues)); // GameCue::Type per letter for blips"
+  },
+  {
+   "id": "game-quest-tracker",
+   "showcase": true,
+   "name": "Quest Tracker",
+   "category": "Game UI",
+   "description": "A HUD quest tracker: new quests slide in flagged NEW, counts pop as they go up, finished objectives tick with a burst and a sweeping strike-through, and completed quests light up with a banner.",
+   "covers": [],
+   "code": "ui.add(GameQuestTracker::new(&quests).width(320.0));"
+  },
+  {
+   "id": "game-quest-log",
+   "showcase": true,
+   "name": "Quest Log",
+   "category": "Game UI",
+   "description": "A quest journal: main and side quests on the left with a gliding highlight, the selected quest's story, objectives with filling progress bars and rewards on the right.",
+   "covers": [],
+   "code": "ui.add(GameQuestLog::new(&quests, &mut selected).style(GameStyle::Fantasy));"
+  },
+  {
+   "id": "game-loot-popup",
+   "showcase": true,
+   "name": "Loot Popup",
+   "category": "Game UI",
+   "description": "A loot reveal: an orb in the rarity color charges and trembles, then bursts into a flash, shock rings, particles and god rays as the item card springs out with its stats.",
+   "covers": [],
+   "code": "ui.add(GameLootPopup::new(&item).cues(&mut cues)); // GameCue::Loot(rarity) at the burst"
+  },
+  {
+   "id": "game-achievement-toast",
+   "showcase": true,
+   "name": "Achievement Toast",
+   "category": "Game UI",
+   "description": "Achievement toasts that drop in on a spring, pop their badge with a ring and sparks, sweep a sheen across the card and count down before sliding away.",
+   "covers": [],
+   "code": "ui.add(GameAchievementToast::new(\"Dragonslayer\", \"Defeat Vorrhak on Veteran\", GameIcon::Trophy)\n    .points(50)\n    .rarity(GameRarity::Legendary)\n    .percent(2.4)\n    .age(seconds_since_unlock));"
+  },
+  {
+   "id": "game-damage-numbers",
+   "showcase": true,
+   "name": "Damage Numbers",
+   "category": "Game UI",
+   "description": "Floating combat text over a training target: normal hits pop and arc away, crits slam in golden with a starburst and shake, heals rise green, misses slide off. Click the scene to land crits.",
+   "covers": [],
+   "code": "feed.spawn(ui, hit_pos, 1284, GameDamageKind::Crit);\nfeed.prune(ui);\nGameDamageNumbers::new(&feed).paint(ui, viewport_rect);"
+  },
+  {
+   "id": "game-crosshairs",
+   "showcase": true,
+   "name": "Crosshairs",
+   "category": "Game UI",
+   "description": "A set of dynamic crosshairs (cross, dot, circle, chevron, brackets, scope) that open on a spring as spread grows, with white hit markers and red kill markers.",
+   "covers": [],
+   "code": "ui.add(GameCrosshair::new(GameCrosshairShape::Cross)\n    .spread(weapon_spread)\n    .hit(Some(secs_since_hit), was_kill)\n    .color(egui::Color32::from_rgb(124, 255, 178)));"
+  },
+  {
+   "id": "game-loading-screen",
+   "showcase": true,
+   "name": "Loading Screen",
+   "category": "Game UI",
+   "description": "A loading screen with drifting level art, the level name in the corner, rotating gameplay tips, a progress bar with a moving sheen, a styled spinner and a pulsing prompt at 100%.",
+   "covers": [],
+   "code": "ui.add(GameLoadingScreen::new(progress)\n    .level(\"The Sunken Vault\", \"Chapter III\")\n    .tips(&TIPS));"
+  },
+  {
+   "id": "game-level-up",
+   "showcase": true,
+   "name": "Level Up Screen",
+   "category": "Game UI",
+   "description": "A level-up moment: rays wheel open, LEVEL UP slams in letter by letter with a shake, the level number rolls over, confetti bursts and stat gains pop in one by one.",
+   "covers": [],
+   "code": "ui.add(GameLevelUpScreen::new(level)\n    .stats(&[(\"Strength\", 31.0, 34.0), (\"Vitality\", 22.0, 25.0), (\"Agility\", 18.0, 19.0)])\n    .note(\"+1 Skill Point\"));"
+  },
+  {
+   "id": "game-kill-feed",
+   "showcase": true,
+   "name": "Kill Feed",
+   "category": "Game UI",
+   "description": "A kill feed where new kills punch in from the right with a flash, old ones fade and the rest glide up; headshots get a skull and your own kills a bright frame.",
+   "covers": [],
+   "code": "ui.add(GameKillFeed::new(&entries).max_rows(6));"
+  },
+  {
+   "id": "game-scoreboard",
+   "showcase": true,
+   "name": "Scoreboard",
+   "category": "Game UI",
+   "description": "A two-team scoreboard: rows stagger in, re-sort with springy moves as scores change (the new score pops), the local player glows, dead players dim with a skull and ping shows as signal bars.",
+   "covers": [],
+   "code": "ui.add(GameScoreboard::new(&rows).teams([\"Aurora\", \"Obsidian\"]));"
+  },
+  {
+   "id": "game-character-select",
+   "showcase": true,
+   "name": "Character Select",
+   "category": "Game UI",
+   "description": "A hero select carousel: cards ride a spring along an arc with the chosen one tall and glowing, the scene tints to the hero's color, stat bars refill and the confirm button breathes.",
+   "covers": [],
+   "code": "ui.add(GameCharacterSelect::new(&roster, &mut selected).confirmed(&mut ready));"
   }
  ],
  "total_have": 679,

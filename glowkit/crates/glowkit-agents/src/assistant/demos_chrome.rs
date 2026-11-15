@@ -73,13 +73,23 @@ fn demo_composer(ui: &mut Ui) {
     column(ui, 620.0, |ui| {
         let top = ui.cursor().min;
         ui.add_space(230.0);
-        let out = SmartComposer::new(&mut st).mentions(&ppl).commands(&cmds).model_label("Fable 5").focus_ring(d.playing).id_salt("cmp").show(ui);
+        let out = SmartComposer::new(&mut st)
+            .mentions(&ppl)
+            .commands(&cmds)
+            .model_label("Fable 5")
+            .focus_ring(d.playing)
+            .id_salt("cmp")
+            .show(ui);
         if out.submitted.is_some() {
             st.text.clear();
         }
         ui.add_space(10.0);
         let t = Theme::of(ui);
-        ui.label(egui::RichText::new("Type / for commands or @ to mention, arrows + Enter to pick").size(11.5).color(t.muted_foreground));
+        ui.label(
+            egui::RichText::new("Type / for commands or @ to mention, arrows + Enter to pick")
+                .size(11.5)
+                .color(t.muted_foreground),
+        );
         d.area(ui, Rect::from_min_max(top, ui.cursor().min + vec2(620.0, 0.0)));
     });
     set_mem(ui, "cmp_state", st);
@@ -117,14 +127,23 @@ fn demo_attachments(ui: &mut Ui) {
     column(ui, 620.0, |ui| {
         let top = ui.cursor().min;
         ui.add_space(110.0);
-        let out = SmartComposer::new(&mut st).model_label("Fable 5").drag_preview(drag).placeholder("Ask anything, or drop files here").id_salt("att").show(ui);
+        let out = SmartComposer::new(&mut st)
+            .model_label("Fable 5")
+            .drag_preview(drag)
+            .placeholder("Ask anything, or drop files here")
+            .id_salt("att")
+            .show(ui);
         set_mem(ui, "att_rect", out.rect);
         if out.attach_clicked {
             st.files.push(StagedFile::simulated(format!("notes-{}.md", st.files.len() + 1), "4 KB"));
         }
         ui.add_space(10.0);
         let t = Theme::of(ui);
-        ui.label(egui::RichText::new("Drop real files onto the window, or press + to stage one").size(11.5).color(t.muted_foreground));
+        ui.label(
+            egui::RichText::new("Drop real files onto the window, or press + to stage one")
+                .size(11.5)
+                .color(t.muted_foreground),
+        );
         d.area(ui, Rect::from_min_max(top, ui.cursor().min + vec2(620.0, 0.0)));
     });
     match cursor {
@@ -132,7 +151,8 @@ fn demo_attachments(ui: &mut Ui) {
             ghost(ui, "att", p, true, pr);
             // a dragged file card follows the cursor
             let t = Theme::of(ui);
-            let painter = ui.ctx().layer_painter(egui::LayerId::new(egui::Order::Foreground, egui::Id::unique("asst_att_drag")));
+            let painter =
+                ui.ctx().layer_painter(egui::LayerId::new(egui::Order::Foreground, egui::Id::unique("asst_att_drag")));
             let r = Rect::from_min_size(p + vec2(14.0, 14.0), vec2(120.0, 34.0));
             painter.rect_filled(r, cr(9.0), surface(&t));
             painter.rect_stroke(r, cr(9.0), hairline(&t), egui::StrokeKind::Inside);
@@ -162,7 +182,8 @@ fn thread_entries() -> Vec<ThreadEntry> {
 
 fn demo_thread_list(ui: &mut Ui) {
     let d = Director::new(ui, "tl_dir", 5.0);
-    let mut st: ThreadListState = mem(ui, "tl_state", || ThreadListState { entries: thread_entries(), selected: Some(1), ..Default::default() });
+    let mut st: ThreadListState =
+        mem(ui, "tl_state", || ThreadListState { entries: thread_entries(), selected: Some(1), ..Default::default() });
     let rows: Vec<(usize, Rect)> = mem(ui, "tl_rows", Vec::new);
     let mut cursor = None;
     if d.playing {
@@ -226,7 +247,11 @@ fn demo_thread_list(ui: &mut Ui) {
             p.line_segment([pos2(r.min.x, r.min.y + 50.0), pos2(r.max.x, r.min.y + 50.0)], hairline(&t));
             for (i, wv) in [0.7f32, 0.9, 0.55, 0.8].iter().enumerate() {
                 let y = r.min.y + 80.0 + i as f32 * 26.0;
-                p.rect_filled(Rect::from_min_size(pos2(r.min.x + 20.0, y), vec2((r.width() - 40.0) * wv, 10.0)), cr(5.0), well(&t));
+                p.rect_filled(
+                    Rect::from_min_size(pos2(r.min.x + 20.0, y), vec2((r.width() - 40.0) * wv, 10.0)),
+                    cr(5.0),
+                    well(&t),
+                );
             }
             let b = Rect::from_min_size(pos2(r.max.x - 200.0, r.min.y + 200.0), vec2(180.0, 36.0));
             p.rect_filled(b, cr(16.0), well(&t));
@@ -292,7 +317,14 @@ fn app_mock(ui: &mut Ui) {
     let (r, _) = ui.allocate_exact_size(vec2(w, 40.0), Sense::hover());
     let p = ui.painter();
     text_bold(p, pos2(r.min.x, r.min.y + 12.0), Align2::LEFT_CENTER, "Acme Analytics", 16.0, t.foreground);
-    text(p, pos2(r.min.x, r.min.y + 32.0), Align2::LEFT_CENTER, "Revenue overview · last 8 weeks", 12.0, t.muted_foreground);
+    text(
+        p,
+        pos2(r.min.x, r.min.y + 32.0),
+        Align2::LEFT_CENTER,
+        "Revenue overview · last 8 weeks",
+        12.0,
+        t.muted_foreground,
+    );
     let (r, _) = ui.allocate_exact_size(vec2(w, 74.0), Sense::hover());
     let n = if w > 420.0 { 3 } else { 2 };
     let gap = 10.0;
@@ -313,7 +345,14 @@ fn app_mock(ui: &mut Ui) {
     ui.painter().rect_filled(cr2, cr(12.0), surface(&t));
     ui.painter().rect_stroke(cr2, cr(12.0), hairline(&t), egui::StrokeKind::Inside);
     let mut c = ui.new_child(egui::UiBuilder::new().max_rect(cr2.shrink(12.0)));
-    c.add(AreaChart::new(&s).labels(&["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"]).height(176.0).width(cr2.width() - 24.0).legend(false).id_salt("app_mock_chart"));
+    c.add(
+        AreaChart::new(&s)
+            .labels(&["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"])
+            .height(176.0)
+            .width(cr2.width() - 24.0)
+            .legend(false)
+            .id_salt("app_mock_chart"),
+    );
 }
 
 const COPILOT_REPLY: &str = "Revenue is up **12%** over 8 weeks. The jump in **W4** lines up with the annual-plan discount; W6 dipped slightly as the promo ended.";
@@ -355,7 +394,12 @@ fn demo_copilot_sidebar(ui: &mut Ui) {
     }
     column(ui, 860.0, |ui| {
         let top = ui.cursor().min;
-        let _ = CopilotSidebar::new(&mut open).height(400.0).panel_width(330.0).push_content(push > 0.5).id_salt("cps").show(ui, app_mock, |ui| mini_chat(ui, "cps", &mut model, &mut st));
+        let _ = CopilotSidebar::new(&mut open)
+            .height(400.0)
+            .panel_width(330.0)
+            .push_content(push > 0.5)
+            .id_salt("cps")
+            .show(ui, app_mock, |ui| mini_chat(ui, "cps", &mut model, &mut st));
         ui.add_space(10.0);
         ui.add(ControlSlider::new("Push content (0 = overlay)", &mut push, 0.0..=1.0).width(280.0));
         d.area(ui, Rect::from_min_max(top, ui.cursor().min + vec2(860.0, 0.0)));
@@ -382,7 +426,8 @@ fn demo_copilot_popup(ui: &mut Ui) {
         if want != open {
             open = want;
             if open {
-                model = ThreadModel::new().with_exchange("Hi!", "Hi there! I can answer questions about this dashboard.");
+                model =
+                    ThreadModel::new().with_exchange("Hi!", "Hi there! I can answer questions about this dashboard.");
             }
         }
         if e > 3.0 && model.turns.len() == 1 && open {
@@ -392,7 +437,10 @@ fn demo_copilot_popup(ui: &mut Ui) {
     }
     column(ui, 860.0, |ui| {
         let top = ui.cursor().min;
-        let r = CopilotPopup::new(&mut open).height(440.0).id_salt("cpp").show(ui, app_mock, |ui| mini_chat(ui, "cpp", &mut model, &mut st));
+        let r = CopilotPopup::new(&mut open)
+            .height(440.0)
+            .id_salt("cpp")
+            .show(ui, app_mock, |ui| mini_chat(ui, "cpp", &mut model, &mut st));
         set_mem(ui, "cpp_launch", r.rect);
         d.area(ui, Rect::from_min_max(top, ui.cursor().min + vec2(860.0, 0.0)));
     });
@@ -407,8 +455,14 @@ fn demo_copilot_popup(ui: &mut Ui) {
 
 fn completion(text: &str) -> Option<&'static str> {
     let table: [(&str, &str); 4] = [
-        ("Hi Jonas,\n\nThanks for the quick turnaround on ", "the pricing page. The new layout reads much better, and the FAQ answers exactly what sales keeps hearing."),
-        ("the FAQ answers exactly what sales keeps hearing.\n\nCould you ", "also add the annual discount to the comparison table before Friday's launch?"),
+        (
+            "Hi Jonas,\n\nThanks for the quick turnaround on ",
+            "the pricing page. The new layout reads much better, and the FAQ answers exactly what sales keeps hearing.",
+        ),
+        (
+            "the FAQ answers exactly what sales keeps hearing.\n\nCould you ",
+            "also add the annual discount to the comparison table before Friday's launch?",
+        ),
         ("Friday's launch?\n\n", "Best,\nMara"),
         ("Hi Jonas,\n\n", "Thanks for the quick turnaround on the pricing page."),
     ];
@@ -452,7 +506,14 @@ fn demo_inline(ui: &mut Ui) {
         ui.horizontal(|ui| {
             let (r, _) = ui.allocate_exact_size(vec2(600.0, 26.0), Sense::hover());
             let p = ui.painter();
-            text(p, pos2(r.min.x + 2.0, r.center().y), Align2::LEFT_CENTER, "To:  jonas@acme.studio", 12.5, t.muted_foreground);
+            text(
+                p,
+                pos2(r.min.x + 2.0, r.center().y),
+                Align2::LEFT_CENTER,
+                "To:  jonas@acme.studio",
+                12.5,
+                t.muted_foreground,
+            );
             chip(p, &t, ui, pos2(r.max.x - 120.0, r.min.y + 2.0), "Autocomplete on", 11.0, Some(t.accent));
         });
         InlineSuggestion::new(&mut text_s, sugg).delay(delay).rows(7).accept_now(accept).id_salt("inl").show(ui);
@@ -550,7 +611,9 @@ fn demo_modes(ui: &mut Ui) {
             ui.add(AgentModeSwitcher::new(&modes, &mut sel).id_salt("modes"));
         });
         ui.add_space(18.0);
-        let ph = ["Ask a question about the codebase…", "Tell the agent what to build…", "Describe what you want planned…"][sel];
+        let ph =
+            ["Ask a question about the codebase…", "Tell the agent what to build…", "Describe what you want planned…"]
+                [sel];
         SmartComposer::new(&mut st).placeholder(ph).model_label(modes[sel].name.as_str()).id_salt("mode_c").show(ui);
         ui.add_space(18.0);
         ui.vertical_centered(|ui| {
@@ -564,10 +627,25 @@ fn demo_modes(ui: &mut Ui) {
 
 fn models() -> Vec<ModelSpec> {
     vec![
-        ModelSpec::new("Fable 5", "Fable", hex("#D97757")).description("Most capable, for deep work and agents").speed_cost(2, 3).context("1M").tags(&["Reasoning", "Vision"]),
-        ModelSpec::new("Quill 4.5", "Quill", hex("#6366F1")).description("Balanced speed and intelligence").speed_cost(2, 2).context("400K").tags(&["Vision"]),
-        ModelSpec::new("Swift 3 mini", "Swift", hex("#0EA5E9")).description("Fast and cheap for everyday chat").speed_cost(3, 1).context("200K"),
-        ModelSpec::new("Atlas Coder", "Atlas", hex("#10B981")).description("Tuned for code edits and refactors").speed_cost(2, 2).context("256K").tags(&["Reasoning"]),
+        ModelSpec::new("Fable 5", "Fable", hex("#D97757"))
+            .description("Most capable, for deep work and agents")
+            .speed_cost(2, 3)
+            .context("1M")
+            .tags(&["Reasoning", "Vision"]),
+        ModelSpec::new("Quill 4.5", "Quill", hex("#6366F1"))
+            .description("Balanced speed and intelligence")
+            .speed_cost(2, 2)
+            .context("400K")
+            .tags(&["Vision"]),
+        ModelSpec::new("Swift 3 mini", "Swift", hex("#0EA5E9"))
+            .description("Fast and cheap for everyday chat")
+            .speed_cost(3, 1)
+            .context("200K"),
+        ModelSpec::new("Atlas Coder", "Atlas", hex("#10B981"))
+            .description("Tuned for code edits and refactors")
+            .speed_cost(2, 2)
+            .context("256K")
+            .tags(&["Reasoning"]),
     ]
 }
 
@@ -611,7 +689,13 @@ fn demo_usage(ui: &mut Ui) {
     let mut used: f32 = mem(ui, "use_used", || 30.0);
     if d.playing {
         let e = d.elapsed % 12.0;
-        used = if e < 2.5 { 30.0 } else if e < 6.0 { 43.0 } else { 50.0 };
+        used = if e < 2.5 {
+            30.0
+        } else if e < 6.0 {
+            43.0
+        } else {
+            50.0
+        };
     }
     column(ui, 620.0, |ui| {
         let top = ui.cursor().min;
@@ -625,7 +709,14 @@ fn demo_usage(ui: &mut Ui) {
             if at_limit {
                 ui.multiply_opacity(0.55);
             }
-            SmartComposer::new(&mut st).placeholder(if at_limit { "You can send messages again in 3h 12m" } else { "Message the assistant…" }).id_salt("use_c").show(ui);
+            SmartComposer::new(&mut st)
+                .placeholder(if at_limit {
+                    "You can send messages again in 3h 12m"
+                } else {
+                    "Message the assistant…"
+                })
+                .id_salt("use_c")
+                .show(ui);
         });
         ui.add_space(14.0);
         ui.add(ControlSlider::new("Messages used", &mut used, 0.0..=50.0).width(280.0));
@@ -679,7 +770,8 @@ fn demo_citations(ui: &mut Ui) {
 }
 
 const VOICE_USER: &str = "What's on my calendar this afternoon?";
-const VOICE_BOT: &str = "You have a design review at two, then a quiet block until four thirty when Mara joins for the launch sync.";
+const VOICE_BOT: &str =
+    "You have a design review at two, then a quiet block until four thirty when Mara joins for the launch sync.";
 
 fn demo_voice(ui: &mut Ui) {
     let d = Director::new(ui, "vm_dir", 5.0);
@@ -704,17 +796,29 @@ fn demo_voice(ui: &mut Ui) {
         (VoiceState::Speaking, words[..n].join(" "))
     };
     let level = match state {
-        VoiceState::Listening | VoiceState::Speaking => 0.35 + 0.3 * (time * 7.0).sin().abs() * (time * 2.3).sin().abs(),
+        VoiceState::Listening | VoiceState::Speaking => {
+            0.35 + 0.3 * (time * 7.0).sin().abs() * (time * 2.3).sin().abs()
+        }
         _ => 0.05,
     };
     column(ui, 760.0, |ui| {
         let top = ui.cursor().min;
-        let out = VoiceModeOverlay::new(&mut open).state(state).level(level).caption(&caption).muted(muted).height(430.0).id_salt("vm").show(ui, |ui| {
-            let t = Theme::of(ui);
-            ui.label(egui::RichText::new("Assistant").size(15.0).color(t.foreground));
-            ui.add_space(8.0);
-            ui.add(glowkit_ai::ChatMessage::new(glowkit_ai::Role::Assistant, "Hi! Tap the mic to talk instead of typing."));
-        });
+        let out = VoiceModeOverlay::new(&mut open)
+            .state(state)
+            .level(level)
+            .caption(&caption)
+            .muted(muted)
+            .height(430.0)
+            .id_salt("vm")
+            .show(ui, |ui| {
+                let t = Theme::of(ui);
+                ui.label(egui::RichText::new("Assistant").size(15.0).color(t.foreground));
+                ui.add_space(8.0);
+                ui.add(glowkit_ai::ChatMessage::new(
+                    glowkit_ai::Role::Assistant,
+                    "Hi! Tap the mic to talk instead of typing.",
+                ));
+            });
         if out.mute_clicked {
             muted = !muted;
         }

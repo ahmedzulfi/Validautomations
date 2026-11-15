@@ -134,7 +134,12 @@ impl<'a> ThreadListSidebar<'a> {
         let sk = toggle(ui, id.with("sk"), sfocus);
         let p = ui.painter();
         p.rect_filled(sr, cr(10.0), mix(bg, surface(&t), 0.5 + 0.5 * sk));
-        p.rect_stroke(sr, cr(10.0), Stroke::new(1.0, mix(with_alpha(t.border, 0.0), t.ring, sk * 0.6)), StrokeKind::Inside);
+        p.rect_stroke(
+            sr,
+            cr(10.0),
+            Stroke::new(1.0, mix(with_alpha(t.border, 0.0), t.ring, sk * 0.6)),
+            StrokeKind::Inside,
+        );
         icon(p, Icon::Search, pos2(sr.min.x + 15.0, sr.center().y), 13.0, t.muted_foreground);
         let te_r = Rect::from_min_max(pos2(sr.min.x + 28.0, sr.min.y), pos2(sr.max.x - 8.0, sr.max.y));
         ui.put(
@@ -153,7 +158,9 @@ impl<'a> ThreadListSidebar<'a> {
         // build sections
         let matches = |e: &ThreadEntry| q.is_empty() || e.title.to_lowercase().contains(&q);
         let mut sections: Vec<(String, Vec<usize>)> = Vec::new();
-        let pinned: Vec<usize> = (0..st.entries.len()).filter(|&i| st.entries[i].pinned && !st.entries[i].archived && matches(&st.entries[i])).collect();
+        let pinned: Vec<usize> = (0..st.entries.len())
+            .filter(|&i| st.entries[i].pinned && !st.entries[i].archived && matches(&st.entries[i]))
+            .collect();
         if !pinned.is_empty() {
             sections.push(("Pinned".into(), pinned));
         }
@@ -167,133 +174,212 @@ impl<'a> ThreadListSidebar<'a> {
                 None => sections.push((e.group.clone(), vec![i])),
             }
         }
-        let archived: Vec<usize> = (0..st.entries.len()).filter(|&i| st.entries[i].archived && matches(&st.entries[i])).collect();
+        let archived: Vec<usize> =
+            (0..st.entries.len()).filter(|&i| st.entries[i].archived && matches(&st.entries[i])).collect();
         let mut action: Option<(usize, u8)> = None;
         let mut toggle_arch = false;
-        let mut child = ui.new_child(egui::UiBuilder::new().max_rect(list).layout(egui::Layout::top_down(egui::Align::Min)));
+        let mut child =
+            ui.new_child(egui::UiBuilder::new().max_rect(list).layout(egui::Layout::top_down(egui::Align::Min)));
         child.set_clip_rect(list.intersect(ui.clip_rect()));
-        egui::ScrollArea::vertical().id_salt(id.with("scroll")).max_height(list.height()).auto_shrink([false, false]).show(&mut child, |ui| {
-            ui.spacing_mut().item_spacing.y = 2.0;
-            let w = ui.available_width();
-            let draw_rows = |ui: &mut Ui, ix: &[usize], st: &mut ThreadListState, out: &mut ThreadListOutput, action: &mut Option<(usize, u8)>| {
-                for &i in ix {
-                    let rid = id.with(("row", hash_str(&st.entries[i].title) ^ i as u64));
-                    let (r, resp) = ui.allocate_exact_size(vec2(w, 34.0), Sense::click());
-                    out.rows.push((i, r));
-                    let e = since_change(ui, rid, (st.entries[i].pinned as u64) | ((st.entries[i].archived as u64) << 1));
-                    keep_alive(ui, e, 0.5);
-                    let a = (e * 4.0).clamp(0.0, 1.0);
-                    let selected = st.selected == Some(i);
-                    let hov = toggle(ui, rid.with("h"), resp.hovered() || resp.contains_pointer());
-                    let sel = toggle(ui, rid.with("s"), selected);
-                    let p = ui.painter();
-                    let fill = mix(with_alpha(surface(&t), 0.0), surface(&t), sel.max(hov * 0.6));
-                    p.rect_filled(r, cr(9.0), fill);
-                    if sel > 0.01 {
-                        p.rect_stroke(r, cr(9.0), Stroke::new(1.0, hairline(&t).color.gamma_multiply(sel)), StrokeKind::Inside);
-                    }
-                    let renaming = st.renaming.as_ref().is_some_and(|x| x.0 == i);
-                    if renaming {
-                        let tr = r.shrink2(vec2(10.0, 4.0));
-                        p.rect_stroke(tr.expand2(vec2(4.0, 0.0)), cr(7.0), Stroke::new(1.5, t.ring), StrokeKind::Inside);
-                        let tid = rid.with("te");
-                        let buf = &mut st.renaming.as_mut().unwrap().1;
-                        let resp = ui.put(
-                            tr,
-                            egui::TextEdit::singleline(buf).id(tid).frame(egui::Frame::NONE).margin(egui::Margin::ZERO).font(FontId::proportional(13.0)).align(Align2::LEFT_CENTER).desired_width(tr.width()),
+        egui::ScrollArea::vertical()
+            .id_salt(id.with("scroll"))
+            .max_height(list.height())
+            .auto_shrink([false, false])
+            .show(&mut child, |ui| {
+                ui.spacing_mut().item_spacing.y = 2.0;
+                let w = ui.available_width();
+                let draw_rows = |ui: &mut Ui,
+                                 ix: &[usize],
+                                 st: &mut ThreadListState,
+                                 out: &mut ThreadListOutput,
+                                 action: &mut Option<(usize, u8)>| {
+                    for &i in ix {
+                        let rid = id.with(("row", hash_str(&st.entries[i].title) ^ i as u64));
+                        let (r, resp) = ui.allocate_exact_size(vec2(w, 34.0), Sense::click());
+                        out.rows.push((i, r));
+                        let e = since_change(
+                            ui,
+                            rid,
+                            (st.entries[i].pinned as u64) | ((st.entries[i].archived as u64) << 1),
                         );
-                        if !resp.has_focus() && !resp.lost_focus() {
-                            ui.memory_mut(|m| m.request_focus(tid));
+                        keep_alive(ui, e, 0.5);
+                        let a = (e * 4.0).clamp(0.0, 1.0);
+                        let selected = st.selected == Some(i);
+                        let hov = toggle(ui, rid.with("h"), resp.hovered() || resp.contains_pointer());
+                        let sel = toggle(ui, rid.with("s"), selected);
+                        let p = ui.painter();
+                        let fill = mix(with_alpha(surface(&t), 0.0), surface(&t), sel.max(hov * 0.6));
+                        p.rect_filled(r, cr(9.0), fill);
+                        if sel > 0.01 {
+                            p.rect_stroke(
+                                r,
+                                cr(9.0),
+                                Stroke::new(1.0, hairline(&t).color.gamma_multiply(sel)),
+                                StrokeKind::Inside,
+                            );
                         }
-                        let (enter, esc) = ui.input(|i| (i.key_pressed(egui::Key::Enter), i.key_pressed(egui::Key::Escape)));
-                        if resp.lost_focus() || enter || esc {
-                            if let Some((ix, s)) = st.renaming.take() {
-                                if !esc && !s.trim().is_empty() {
-                                    st.entries[ix].title = s.trim().to_owned();
+                        let renaming = st.renaming.as_ref().is_some_and(|x| x.0 == i);
+                        if renaming {
+                            let tr = r.shrink2(vec2(10.0, 4.0));
+                            p.rect_stroke(
+                                tr.expand2(vec2(4.0, 0.0)),
+                                cr(7.0),
+                                Stroke::new(1.5, t.ring),
+                                StrokeKind::Inside,
+                            );
+                            let tid = rid.with("te");
+                            let buf = &mut st.renaming.as_mut().unwrap().1;
+                            let resp = ui.put(
+                                tr,
+                                egui::TextEdit::singleline(buf)
+                                    .id(tid)
+                                    .frame(egui::Frame::NONE)
+                                    .margin(egui::Margin::ZERO)
+                                    .font(FontId::proportional(13.0))
+                                    .align(Align2::LEFT_CENTER)
+                                    .desired_width(tr.width()),
+                            );
+                            if !resp.has_focus() && !resp.lost_focus() {
+                                ui.memory_mut(|m| m.request_focus(tid));
+                            }
+                            let (enter, esc) =
+                                ui.input(|i| (i.key_pressed(egui::Key::Enter), i.key_pressed(egui::Key::Escape)));
+                            if resp.lost_focus() || enter || esc {
+                                if let Some((ix, s)) = st.renaming.take() {
+                                    if !esc && !s.trim().is_empty() {
+                                        st.entries[ix].title = s.trim().to_owned();
+                                    }
+                                }
+                            }
+                            continue;
+                        }
+                        let title = st.entries[i].title.clone();
+                        let col = with_alpha(
+                            if selected {
+                                t.foreground
+                            } else {
+                                mix(t.muted_foreground, t.foreground, 0.55 + 0.45 * hov)
+                            },
+                            a,
+                        );
+                        let clip = Rect::from_min_max(r.min, pos2(r.max.x - 8.0 - 76.0 * hov, r.max.y));
+                        let pc = p.with_clip_rect(clip.intersect(ui.clip_rect()));
+                        let x0 = r.min.x + 10.0 + (1.0 - a) * 6.0;
+                        // highlight the search match
+                        if !q.is_empty() {
+                            if let Some(pos) = title.to_lowercase().find(&q) {
+                                let pre = text_w(ui, &title[..pos], 13.0);
+                                let mw = text_w(ui, &title[pos..pos + q.len()], 13.0);
+                                pc.rect_filled(
+                                    Rect::from_min_size(pos2(x0 + pre - 1.0, r.center().y - 9.0), vec2(mw + 2.0, 18.0)),
+                                    cr(4.0),
+                                    with_alpha(t.warning, 0.22),
+                                );
+                            }
+                        }
+                        pc.text(pos2(x0, r.center().y), Align2::LEFT_CENTER, &title, FontId::proportional(13.0), col);
+                        if hov > 0.02 {
+                            let icons = [
+                                Icon::Bookmark,
+                                Icon::Pencil,
+                                if st.entries[i].archived { Icon::History } else { Icon::Download },
+                            ];
+                            for (k, ic) in icons.iter().enumerate() {
+                                let br = Rect::from_center_size(
+                                    pos2(r.max.x - 14.0 - (2 - k) as f32 * 24.0, r.center().y),
+                                    Vec2::splat(22.0),
+                                );
+                                let b = ui.interact(br, rid.with(("a", k)), Sense::click());
+                                let bh = toggle(ui, rid.with(("ah", k)), b.hovered());
+                                let p = ui.painter();
+                                if bh > 0.01 {
+                                    p.rect_filled(br, cr(6.0), with_alpha(well(&t), bh));
+                                }
+                                let on = k == 0 && st.entries[i].pinned;
+                                icon(
+                                    p,
+                                    *ic,
+                                    br.center(),
+                                    12.5,
+                                    with_alpha(
+                                        if on { t.accent } else { mix(t.muted_foreground, t.foreground, bh) },
+                                        hov,
+                                    ),
+                                );
+                                if b.clicked() {
+                                    *action = Some((i, k as u8));
                                 }
                             }
                         }
-                        continue;
-                    }
-                    let title = st.entries[i].title.clone();
-                    let col = with_alpha(if selected { t.foreground } else { mix(t.muted_foreground, t.foreground, 0.55 + 0.45 * hov) }, a);
-                    let clip = Rect::from_min_max(r.min, pos2(r.max.x - 8.0 - 76.0 * hov, r.max.y));
-                    let pc = p.with_clip_rect(clip.intersect(ui.clip_rect()));
-                    let x0 = r.min.x + 10.0 + (1.0 - a) * 6.0;
-                    // highlight the search match
-                    if !q.is_empty() {
-                        if let Some(pos) = title.to_lowercase().find(&q) {
-                            let pre = text_w(ui, &title[..pos], 13.0);
-                            let mw = text_w(ui, &title[pos..pos + q.len()], 13.0);
-                            pc.rect_filled(Rect::from_min_size(pos2(x0 + pre - 1.0, r.center().y - 9.0), vec2(mw + 2.0, 18.0)), cr(4.0), with_alpha(t.warning, 0.22));
+                        if resp.clicked() {
+                            st.selected = Some(i);
+                            out.opened = Some(i);
+                        }
+                        if resp.double_clicked() {
+                            *action = Some((i, 1));
                         }
                     }
-                    pc.text(pos2(x0, r.center().y), Align2::LEFT_CENTER, &title, FontId::proportional(13.0), col);
-                    if hov > 0.02 {
-                        let icons = [Icon::Bookmark, Icon::Pencil, if st.entries[i].archived { Icon::History } else { Icon::Download }];
-                        for (k, ic) in icons.iter().enumerate() {
-                            let br = Rect::from_center_size(pos2(r.max.x - 14.0 - (2 - k) as f32 * 24.0, r.center().y), Vec2::splat(22.0));
-                            let b = ui.interact(br, rid.with(("a", k)), Sense::click());
-                            let bh = toggle(ui, rid.with(("ah", k)), b.hovered());
-                            let p = ui.painter();
-                            if bh > 0.01 {
-                                p.rect_filled(br, cr(6.0), with_alpha(well(&t), bh));
-                            }
-                            let on = k == 0 && st.entries[i].pinned;
-                            icon(p, *ic, br.center(), 12.5, with_alpha(if on { t.accent } else { mix(t.muted_foreground, t.foreground, bh) }, hov));
-                            if b.clicked() {
-                                *action = Some((i, k as u8));
-                            }
-                        }
+                };
+                for (name, ix) in &sections {
+                    ui.add_space(6.0);
+                    let (hr, _) = ui.allocate_exact_size(vec2(w, 18.0), Sense::hover());
+                    let p = ui.painter();
+                    if name == "Pinned" {
+                        icon(p, Icon::Bookmark, pos2(hr.min.x + 15.0, hr.center().y), 10.0, t.muted_foreground);
+                        text(
+                            p,
+                            pos2(hr.min.x + 24.0, hr.center().y),
+                            Align2::LEFT_CENTER,
+                            name,
+                            11.0,
+                            t.muted_foreground,
+                        );
+                    } else {
+                        text(
+                            p,
+                            pos2(hr.min.x + 10.0, hr.center().y),
+                            Align2::LEFT_CENTER,
+                            name,
+                            11.0,
+                            t.muted_foreground,
+                        );
                     }
-                    if resp.clicked() {
-                        st.selected = Some(i);
-                        out.opened = Some(i);
+                    draw_rows(ui, ix, st, &mut out, &mut action);
+                }
+                if sections.is_empty() {
+                    let (r, _) = ui.allocate_exact_size(vec2(w, 60.0), Sense::hover());
+                    text(ui.painter(), r.center(), Align2::CENTER_CENTER, "No threads match", 12.5, t.muted_foreground);
+                }
+                if !archived.is_empty() {
+                    ui.add_space(8.0);
+                    let (hr, hresp) = ui.allocate_exact_size(vec2(w, 26.0), Sense::click());
+                    let ak = toggle(ui, id.with("arch_k"), st.show_archived);
+                    let hk = toggle(ui, id.with("arch_h"), hresp.hovered());
+                    let p = ui.painter();
+                    p.rect_filled(hr, cr(8.0), with_alpha(surface(&t), hk * 0.6));
+                    let c = pos2(hr.min.x + 15.0, hr.center().y);
+                    let ang = ak * std::f32::consts::FRAC_PI_2;
+                    let d = vec2(ang.cos(), ang.sin());
+                    let n = vec2(-d.y, d.x);
+                    p.line_segment([c - d * 2.0 - n * 3.5, c + d * 2.0], Stroke::new(1.4, t.muted_foreground));
+                    p.line_segment([c - d * 2.0 + n * 3.5, c + d * 2.0], Stroke::new(1.4, t.muted_foreground));
+                    text(
+                        p,
+                        pos2(hr.min.x + 26.0, hr.center().y),
+                        Align2::LEFT_CENTER,
+                        &format!("Archived  ·  {}", archived.len()),
+                        11.5,
+                        t.muted_foreground,
+                    );
+                    if hresp.clicked() {
+                        toggle_arch = true;
                     }
-                    if resp.double_clicked() {
-                        *action = Some((i, 1));
+                    if ak > 0.02 {
+                        ui.multiply_opacity(ak);
+                        draw_rows(ui, &archived, st, &mut out, &mut action);
                     }
                 }
-            };
-            for (name, ix) in &sections {
-                ui.add_space(6.0);
-                let (hr, _) = ui.allocate_exact_size(vec2(w, 18.0), Sense::hover());
-                let p = ui.painter();
-                if name == "Pinned" {
-                    icon(p, Icon::Bookmark, pos2(hr.min.x + 15.0, hr.center().y), 10.0, t.muted_foreground);
-                    text(p, pos2(hr.min.x + 24.0, hr.center().y), Align2::LEFT_CENTER, name, 11.0, t.muted_foreground);
-                } else {
-                    text(p, pos2(hr.min.x + 10.0, hr.center().y), Align2::LEFT_CENTER, name, 11.0, t.muted_foreground);
-                }
-                draw_rows(ui, ix, st, &mut out, &mut action);
-            }
-            if sections.is_empty() {
-                let (r, _) = ui.allocate_exact_size(vec2(w, 60.0), Sense::hover());
-                text(ui.painter(), r.center(), Align2::CENTER_CENTER, "No threads match", 12.5, t.muted_foreground);
-            }
-            if !archived.is_empty() {
-                ui.add_space(8.0);
-                let (hr, hresp) = ui.allocate_exact_size(vec2(w, 26.0), Sense::click());
-                let ak = toggle(ui, id.with("arch_k"), st.show_archived);
-                let hk = toggle(ui, id.with("arch_h"), hresp.hovered());
-                let p = ui.painter();
-                p.rect_filled(hr, cr(8.0), with_alpha(surface(&t), hk * 0.6));
-                let c = pos2(hr.min.x + 15.0, hr.center().y);
-                let ang = ak * std::f32::consts::FRAC_PI_2;
-                let d = vec2(ang.cos(), ang.sin());
-                let n = vec2(-d.y, d.x);
-                p.line_segment([c - d * 2.0 - n * 3.5, c + d * 2.0], Stroke::new(1.4, t.muted_foreground));
-                p.line_segment([c - d * 2.0 + n * 3.5, c + d * 2.0], Stroke::new(1.4, t.muted_foreground));
-                text(p, pos2(hr.min.x + 26.0, hr.center().y), Align2::LEFT_CENTER, &format!("Archived  ·  {}", archived.len()), 11.5, t.muted_foreground);
-                if hresp.clicked() {
-                    toggle_arch = true;
-                }
-                if ak > 0.02 {
-                    ui.multiply_opacity(ak);
-                    draw_rows(ui, &archived, st, &mut out, &mut action);
-                }
-            }
-        });
+            });
         if toggle_arch {
             st.show_archived = !st.show_archived;
         }

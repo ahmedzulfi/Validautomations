@@ -4,11 +4,11 @@
 // Some painting helpers are only used by gallery demos.
 #![cfg_attr(not(feature = "demos"), allow(dead_code))]
 
-pub mod supervise;
 pub mod assistant;
+pub mod supervise;
 
-pub use supervise::*;
 pub use assistant::*;
+pub use supervise::*;
 
 /// Gallery demos for this crate.
 #[cfg(feature = "demos")]

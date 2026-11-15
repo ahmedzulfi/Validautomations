@@ -164,7 +164,11 @@ impl<'a> FormResult<'a> {
                 let c = pos2(r.min.x + 10.0, r.center().y + 2.0);
                 let col = if st.submitted { t.success } else { t.muted_foreground };
                 check_disc(p, c, 9.0, col, Color32::WHITE, (ce * 2.2).clamp(0.0, 1.0));
-                let msg = if st.submitted { "Sent to the agent. It will continue with these details." } else { "You dismissed this request." };
+                let msg = if st.submitted {
+                    "Sent to the agent. It will continue with these details."
+                } else {
+                    "You dismissed this request."
+                };
                 text(p, pos2(c.x + 16.0, c.y), Align2::LEFT_CENTER, msg, 12.0, t.muted_foreground);
                 return;
             }
@@ -181,7 +185,12 @@ impl<'a> FormResult<'a> {
                         let fk = toggle(ui, fid.with("fk"), has_focus);
                         let p = ui.painter();
                         if fk > 0.01 {
-                            p.rect_stroke(r.expand(2.5), cr(11.0), Stroke::new(3.0, with_alpha(t.ring, 0.18 * fk)), StrokeKind::Inside);
+                            p.rect_stroke(
+                                r.expand(2.5),
+                                cr(11.0),
+                                Stroke::new(3.0, with_alpha(t.ring, 0.18 * fk)),
+                                StrokeKind::Inside,
+                            );
                         }
                         p.rect_filled(r, cr(9.0), well(&t));
                         p.rect_stroke(r, cr(9.0), Stroke::new(1.0, mix(t.border, t.ring, fk)), StrokeKind::Inside);
@@ -209,14 +218,27 @@ impl<'a> FormResult<'a> {
                         let x = glowkit_core::anim::spring(ui, fid.with("x"), cur as f32, 380.0, 30.0);
                         let p = ui.painter();
                         p.rect_filled(r, cr(10.0), track(&t));
-                        let pill = Rect::from_min_size(pos2(r.min.x + 3.0 + x * seg, r.min.y + 3.0), vec2(seg, r.height() - 6.0));
+                        let pill = Rect::from_min_size(
+                            pos2(r.min.x + 3.0 + x * seg, r.min.y + 3.0),
+                            vec2(seg, r.height() - 6.0),
+                        );
                         glowkit_core::paint::soft_shadow(p, pill, 8.0, 6.0, vec2(0.0, 1.0), shadow(&t, 0.6));
                         p.rect_filled(pill, cr(8.0), surface(&t));
                         for (k, o) in opts.iter().enumerate() {
-                            let sr = Rect::from_min_size(pos2(r.min.x + 3.0 + k as f32 * seg, r.min.y + 3.0), vec2(seg, r.height() - 6.0));
+                            let sr = Rect::from_min_size(
+                                pos2(r.min.x + 3.0 + k as f32 * seg, r.min.y + 3.0),
+                                vec2(seg, r.height() - 6.0),
+                            );
                             let b = ui.interact(sr, fid.with(("o", k)), Sense::click());
                             let on = 1.0 - (x - k as f32).abs().min(1.0);
-                            text(ui.painter(), sr.center(), Align2::CENTER_CENTER, o, 12.5, mix(t.muted_foreground, t.foreground, on));
+                            text(
+                                ui.painter(),
+                                sr.center(),
+                                Align2::CENTER_CENTER,
+                                o,
+                                12.5,
+                                mix(t.muted_foreground, t.foreground, on),
+                            );
                             if b.clicked() {
                                 st.values[i] = o.clone();
                             }
@@ -234,13 +256,24 @@ impl<'a> FormResult<'a> {
                         let track = Rect::from_min_size(pos2(r.max.x - 38.0, r.center().y - 11.0), vec2(38.0, 22.0));
                         p.rect_filled(track, cr(11.0), mix(t.input, t.primary, k.clamp(0.0, 1.0)));
                         let kx = track.min.x + 11.0 + k * 16.0;
-                        p.circle_filled(pos2(kx, track.center().y), 9.0, if t.dark { mix(t.foreground, t.primary_foreground, k.clamp(0.0, 1.0)) } else { Color32::WHITE });
+                        p.circle_filled(
+                            pos2(kx, track.center().y),
+                            9.0,
+                            if t.dark {
+                                mix(t.foreground, t.primary_foreground, k.clamp(0.0, 1.0))
+                            } else {
+                                Color32::WHITE
+                            },
+                        );
                     }
                 }
             }
             ui.add_space(4.0);
             let (r, _) = ui.allocate_exact_size(vec2(w, 32.0), Sense::hover());
-            let ready = fields.iter().enumerate().all(|(i, f)| !matches!(f.kind, FieldKind::Text(_)) || !st.values[i].trim().is_empty());
+            let ready = fields
+                .iter()
+                .enumerate()
+                .all(|(i, f)| !matches!(f.kind, FieldKind::Text(_)) || !st.values[i].trim().is_empty());
             let sw = button_w(ui, submit_label, 32.0, false);
             let sr = Rect::from_min_size(pos2(r.max.x - sw, r.min.y), vec2(sw, 32.0));
             submit_rect = sr;
@@ -363,7 +396,8 @@ impl<'a> OptionListResult<'a> {
                     rows.push(Rect::NOTHING);
                     continue;
                 }
-                let (r, resp) = ui.allocate_exact_size(vec2(w, h), if st.confirmed { Sense::hover() } else { Sense::click() });
+                let (r, resp) =
+                    ui.allocate_exact_size(vec2(w, h), if st.confirmed { Sense::hover() } else { Sense::click() });
                 rows.push(r);
                 let rid = id.with(("row", i));
                 let hk = toggle(ui, rid.with("h"), resp.hovered() && !st.confirmed);
@@ -382,27 +416,69 @@ impl<'a> OptionListResult<'a> {
                 let a = k_in * (1.0 - hide);
                 let box_r = Rect::from_min_size(r.min + vec2(0.0, (1.0 - k_in) * 8.0), vec2(w, 46.0));
                 p.rect_filled(box_r, cr(11.0), with_alpha(mix(surface(&t), well(&t), hk.max(sk * 0.6)), a));
-                p.rect_stroke(box_r, cr(11.0), Stroke::new(1.0 + sk * 0.5, with_alpha(mix(t.border, t.foreground, sk * 0.8), a)), StrokeKind::Inside);
+                p.rect_stroke(
+                    box_r,
+                    cr(11.0),
+                    Stroke::new(1.0 + sk * 0.5, with_alpha(mix(t.border, t.foreground, sk * 0.8), a)),
+                    StrokeKind::Inside,
+                );
                 let ic = pos2(box_r.min.x + 20.0, box_r.center().y);
                 if multi {
                     let b = Rect::from_center_size(ic, Vec2::splat(16.0));
-                    p.rect_stroke(b, cr(4.5), Stroke::new(1.3, with_alpha(mix(t.muted_foreground, t.primary, sk.clamp(0.0, 1.0)), a)), StrokeKind::Inside);
+                    p.rect_stroke(
+                        b,
+                        cr(4.5),
+                        Stroke::new(1.3, with_alpha(mix(t.muted_foreground, t.primary, sk.clamp(0.0, 1.0)), a)),
+                        StrokeKind::Inside,
+                    );
                     if sk > 0.02 {
-                        p.rect_filled(Rect::from_center_size(ic, Vec2::splat(16.0 * sk.clamp(0.0, 1.1))), cr(4.5), with_alpha(t.primary, a));
-                        check_disc(&p, ic, 7.5, Color32::TRANSPARENT, with_alpha(t.primary_foreground, a), sk.clamp(0.0, 1.0));
+                        p.rect_filled(
+                            Rect::from_center_size(ic, Vec2::splat(16.0 * sk.clamp(0.0, 1.1))),
+                            cr(4.5),
+                            with_alpha(t.primary, a),
+                        );
+                        check_disc(
+                            &p,
+                            ic,
+                            7.5,
+                            Color32::TRANSPARENT,
+                            with_alpha(t.primary_foreground, a),
+                            sk.clamp(0.0, 1.0),
+                        );
                     }
                 } else {
-                    p.circle_stroke(ic, 8.0, Stroke::new(1.3, with_alpha(mix(t.muted_foreground, t.primary, sk.clamp(0.0, 1.0)), a)));
+                    p.circle_stroke(
+                        ic,
+                        8.0,
+                        Stroke::new(1.3, with_alpha(mix(t.muted_foreground, t.primary, sk.clamp(0.0, 1.0)), a)),
+                    );
                     if sk > 0.02 {
                         p.circle_filled(ic, 4.2 * sk, with_alpha(t.primary, a));
                     }
                 }
                 let tx = box_r.min.x + 40.0;
-                text_bold(&p, pos2(tx, box_r.min.y + 15.0), Align2::LEFT_CENTER, &o.title, 13.0, with_alpha(t.foreground, a));
-                text(&p, pos2(tx, box_r.min.y + 32.0), Align2::LEFT_CENTER, &o.detail, 11.5, with_alpha(t.muted_foreground, a));
+                text_bold(
+                    &p,
+                    pos2(tx, box_r.min.y + 15.0),
+                    Align2::LEFT_CENTER,
+                    &o.title,
+                    13.0,
+                    with_alpha(t.foreground, a),
+                );
+                text(
+                    &p,
+                    pos2(tx, box_r.min.y + 32.0),
+                    Align2::LEFT_CENTER,
+                    &o.detail,
+                    11.5,
+                    with_alpha(t.muted_foreground, a),
+                );
                 if let Some(tag) = &o.tag {
                     let g = galley(ui, tag.as_str(), 10.5, t.accent);
-                    let tr = Rect::from_min_size(pos2(box_r.max.x - 12.0 - g.size().x - 14.0, box_r.center().y - 10.0), vec2(g.size().x + 14.0, 20.0));
+                    let tr = Rect::from_min_size(
+                        pos2(box_r.max.x - 12.0 - g.size().x - 14.0, box_r.center().y - 10.0),
+                        vec2(g.size().x + 14.0, 20.0),
+                    );
                     p.rect_filled(tr, cr(10.0), with_alpha(t.accent, 0.1 * a));
                     text(&p, tr.center(), Align2::CENTER_CENTER, tag, 10.5, with_alpha(t.accent, a));
                 }
@@ -412,7 +488,14 @@ impl<'a> OptionListResult<'a> {
                 let (r, _) = ui.allocate_exact_size(vec2(w, fh), Sense::hover());
                 ui.multiply_opacity(1.0 - done);
                 let n = st.selected.iter().filter(|s| **s).count();
-                text(ui.painter(), pos2(r.min.x + 2.0, r.center().y), Align2::LEFT_CENTER, &format!("{n} selected"), 11.5, t.muted_foreground);
+                text(
+                    ui.painter(),
+                    pos2(r.min.x + 2.0, r.center().y),
+                    Align2::LEFT_CENTER,
+                    &format!("{n} selected"),
+                    11.5,
+                    t.muted_foreground,
+                );
                 let bw = button_w(ui, "Confirm", 32.0, false);
                 let br = Rect::from_min_size(pos2(r.max.x - bw, r.center().y - 16.0), vec2(bw, 32.0));
                 confirm_rect = br;

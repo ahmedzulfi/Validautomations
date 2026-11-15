@@ -47,7 +47,15 @@ fn q(name: &str, size: f64, dl: bool) -> ModelQuant {
     ModelQuant { name: name.into(), size_gb: size, downloaded: dl }
 }
 
-fn model(name: &str, family: &str, params: f64, ctx: u32, tags: &[&str], quants: Vec<ModelQuant>, quant: usize) -> LocalModel {
+fn model(
+    name: &str,
+    family: &str,
+    params: f64,
+    ctx: u32,
+    tags: &[&str],
+    quants: Vec<ModelQuant>,
+    quant: usize,
+) -> LocalModel {
     LocalModel {
         name: name.into(),
         family: family.into(),
@@ -62,16 +70,72 @@ fn model(name: &str, family: &str, params: f64, ctx: u32, tags: &[&str], quants:
 
 fn default_models() -> Vec<LocalModel> {
     vec![
-        model("Corvid 8B Instruct", "Corvid 3 · dense", 8.0, 32_768, &["chat", "tools"], vec![q("Q4_K_M", 4.9, true), q("Q5_K_M", 5.7, false), q("Q8_0", 8.5, false), q("F16", 16.1, false)], 0),
-        model("Kestrel Coder 14B", "Kestrel · code", 14.0, 65_536, &["code", "fim"], vec![q("Q4_K_M", 8.9, true), q("Q6_K", 12.1, false), q("Q8_0", 15.7, false)], 0),
-        model("Wren 3B", "Wren 2 · small", 3.0, 16_384, &["chat", "fast"], vec![q("Q4_K_M", 2.0, false), q("Q8_0", 3.4, true)], 1),
-        model("Heron 32B Reasoning", "Heron · reasoning", 32.0, 131_072, &["reasoning"], vec![q("IQ3_XS", 13.7, false), q("Q4_K_M", 19.8, false), q("Q5_K_M", 23.3, false)], 1),
+        model(
+            "Corvid 8B Instruct",
+            "Corvid 3 · dense",
+            8.0,
+            32_768,
+            &["chat", "tools"],
+            vec![q("Q4_K_M", 4.9, true), q("Q5_K_M", 5.7, false), q("Q8_0", 8.5, false), q("F16", 16.1, false)],
+            0,
+        ),
+        model(
+            "Kestrel Coder 14B",
+            "Kestrel · code",
+            14.0,
+            65_536,
+            &["code", "fim"],
+            vec![q("Q4_K_M", 8.9, true), q("Q6_K", 12.1, false), q("Q8_0", 15.7, false)],
+            0,
+        ),
+        model(
+            "Wren 3B",
+            "Wren 2 · small",
+            3.0,
+            16_384,
+            &["chat", "fast"],
+            vec![q("Q4_K_M", 2.0, false), q("Q8_0", 3.4, true)],
+            1,
+        ),
+        model(
+            "Heron 32B Reasoning",
+            "Heron · reasoning",
+            32.0,
+            131_072,
+            &["reasoning"],
+            vec![q("IQ3_XS", 13.7, false), q("Q4_K_M", 19.8, false), q("Q5_K_M", 23.3, false)],
+            1,
+        ),
         LocalModel {
             download: Some((-1.0, 7.0)),
-            ..model("Osprey Vision 11B", "Osprey · multimodal", 11.0, 32_768, &["vision", "chat"], vec![q("Q4_K_M", 7.0, false), q("Q8_0", 11.9, false)], 0)
+            ..model(
+                "Osprey Vision 11B",
+                "Osprey · multimodal",
+                11.0,
+                32_768,
+                &["vision", "chat"],
+                vec![q("Q4_K_M", 7.0, false), q("Q8_0", 11.9, false)],
+                0,
+            )
         },
-        model("Finch 1.5B", "Finch · on-device", 1.5, 8_192, &["fast", "edge"], vec![q("Q4_0", 0.9, false), q("Q8_0", 1.6, false)], 1),
-        model("Corvid 70B Instruct", "Corvid 3 · dense", 70.0, 32_768, &["chat", "tools"], vec![q("IQ2_M", 24.1, false), q("Q4_K_M", 42.5, false)], 0),
+        model(
+            "Finch 1.5B",
+            "Finch · on-device",
+            1.5,
+            8_192,
+            &["fast", "edge"],
+            vec![q("Q4_0", 0.9, false), q("Q8_0", 1.6, false)],
+            1,
+        ),
+        model(
+            "Corvid 70B Instruct",
+            "Corvid 3 · dense",
+            70.0,
+            32_768,
+            &["chat", "tools"],
+            vec![q("IQ2_M", 24.1, false), q("Q4_K_M", 42.5, false)],
+            0,
+        ),
     ]
 }
 
@@ -200,7 +264,15 @@ fn stats_line(ui: &mut Ui, text: &str, t: &Theme) {
     }
     let w = ui.available_width();
     let (r, _) = ui.allocate_exact_size(vec2(w, 12.0), Sense::hover());
-    pk::mono(ui.painter(), pos2(r.min.x + 44.0, r.min.y - 4.0), Align2::LEFT_CENTER, text, 11.0, t.muted_foreground, w - 50.0);
+    pk::mono(
+        ui.painter(),
+        pos2(r.min.x + 44.0, r.min.y - 4.0),
+        Align2::LEFT_CENTER,
+        text,
+        11.0,
+        t.muted_foreground,
+        w - 50.0,
+    );
 }
 
 fn prefix_chars(s: &str, n: usize) -> String {
@@ -248,7 +320,14 @@ impl LocalLlmApp {
             if now - s > 1.6 {
                 self.loaded = m;
                 self.loading = None;
-                toast(ctx, Toast::success(format!("{} loaded", self.models[m].name)).description(format!("{} · {:.1} GB in VRAM", self.models[m].quants[self.models[m].quant].name, self.vram_model(m))));
+                toast(
+                    ctx,
+                    Toast::success(format!("{} loaded", self.models[m].name)).description(format!(
+                        "{} · {:.1} GB in VRAM",
+                        self.models[m].quants[self.models[m].quant].name,
+                        self.vram_model(m)
+                    )),
+                );
             }
         }
         for m in &mut self.models {
@@ -261,7 +340,14 @@ impl LocalLlmApp {
                 if (now - start) * speed >= size {
                     m.download = None;
                     m.quants[m.quant].downloaded = true;
-                    toast(ctx, Toast::success(format!("{} downloaded", m.name)).description(format!("{} · {}", m.quants[m.quant].name, pk::gb(size))));
+                    toast(
+                        ctx,
+                        Toast::success(format!("{} downloaded", m.name)).description(format!(
+                            "{} · {}",
+                            m.quants[m.quant].name,
+                            pk::gb(size)
+                        )),
+                    );
                 }
             }
         }
@@ -301,7 +387,8 @@ impl LocalLlmApp {
         }
         let kv = 0.4 + self.messages.len() as f64 * 0.05;
         let ram = 11.2 + (now * 0.3).sin() * 0.15 + (self.vram_model(self.loaded) - VRAM_TOTAL).max(0.0);
-        let util = if gen { 0.88 + 0.08 * ((now * 5.0).sin() as f32) } else { 0.04 + 0.02 * ((now * 1.3).sin() as f32).abs() };
+        let util =
+            if gen { 0.88 + 0.08 * ((now * 5.0).sin() as f32) } else { 0.04 + 0.02 * ((now * 1.3).sin() as f32).abs() };
         ((vram + kv).min(VRAM_TOTAL), ram, util)
     }
 
@@ -330,9 +417,21 @@ impl LocalLlmApp {
         let loading = self.loading;
         let dotc = if loading.is_some() { t.warning } else { t.success };
         pk::dot(&p, pos2(pill.min.x + 14.0, pill.center().y), 3.5, dotc, loading.map(|_| now));
-        let nr = kit::text_at(&p, pos2(pill.min.x + 26.0, pill.center().y), Align2::LEFT_CENTER, &label, 13.0, t.foreground, 260.0);
+        let nr = kit::text_at(
+            &p,
+            pos2(pill.min.x + 26.0, pill.center().y),
+            Align2::LEFT_CENTER,
+            &label,
+            13.0,
+            t.foreground,
+            260.0,
+        );
         pk::tag(&p, pos2(nr.max.x + 8.0, pill.center().y), false, &quant, t.primary, &t, true);
-        AppIcon::Ui(UiIcon::ChevronDown).paint(&p, Rect::from_center_size(pos2(pill.max.x - 14.0, pill.center().y), vec2(12.0, 12.0)), t.muted_foreground.lerp_to_gamma(t.foreground, hv));
+        AppIcon::Ui(UiIcon::ChevronDown).paint(
+            &p,
+            Rect::from_center_size(pos2(pill.max.x - 14.0, pill.center().y), vec2(12.0, 12.0)),
+            t.muted_foreground.lerp_to_gamma(t.foreground, hv),
+        );
         kit::tip(&pr, "Switch model", Some("Ctrl+L"));
         if pr.clicked() || ui.input_mut(|i| i.consume_key(egui::Modifiers::COMMAND, Key::L)) {
             self.picker = !self.picker;
@@ -347,7 +446,10 @@ impl LocalLlmApp {
         let mut x = strip.max.x - 16.0;
         let ej = Rect::from_min_max(pos2(x - 70.0, strip.center().y - 14.0), pos2(x, strip.center().y + 14.0));
         if pk::small_btn(ui, ej, id.with("eject"), "Eject", None, None, None).clicked() {
-            toast(ui.ctx(), Toast::new(format!("{label} unloaded")).description("VRAM freed. Pick a model to keep chatting."));
+            toast(
+                ui.ctx(),
+                Toast::new(format!("{label} unloaded")).description("VRAM freed. Pick a model to keep chatting."),
+            );
         }
         x = ej.min.x - 16.0;
         for (k, (val, cap)) in [
@@ -358,7 +460,15 @@ impl LocalLlmApp {
         .iter()
         .enumerate()
         {
-            let cr = kit::text_at(&p, pos2(x, strip.center().y + 8.0), Align2::RIGHT_CENTER, cap, 10.5, t.muted_foreground, 90.0);
+            let cr = kit::text_at(
+                &p,
+                pos2(x, strip.center().y + 8.0),
+                Align2::RIGHT_CENTER,
+                cap,
+                10.5,
+                t.muted_foreground,
+                90.0,
+            );
             let col = if k == 2 && gen.is_some() { pk::tone_fg(&t, t.success) } else { t.foreground };
             let vr = pk::mono(&p, pos2(x, strip.center().y - 7.0), Align2::RIGHT_CENTER, val, 13.0, col, 110.0);
             x = vr.min.x.min(cr.min.x) - 22.0;
@@ -366,7 +476,11 @@ impl LocalLlmApp {
         // loading bar
         if let Some((mi, s)) = loading {
             let k = ((now - s) / 1.6).clamp(0.0, 1.0) as f32;
-            p.rect_filled(Rect::from_min_size(pos2(strip.min.x, strip.max.y - 2.0), vec2(strip.width() * k, 2.0)), 0.0, t.primary);
+            p.rect_filled(
+                Rect::from_min_size(pos2(strip.min.x, strip.max.y - 2.0), vec2(strip.width() * k, 2.0)),
+                0.0,
+                t.primary,
+            );
             let _ = mi;
         }
         // --- conversation ---
@@ -383,7 +497,11 @@ impl LocalLlmApp {
                     if *user {
                         ui.add(ChatMessage::new(Role::User, text).id_salt(("llm_u", i)));
                     } else {
-                        let out = ChatMessage::new(Role::Assistant, text).name(&label).actions(true).id_salt(("llm_a", i)).show(ui, |_| {});
+                        let out = ChatMessage::new(Role::Assistant, text)
+                            .name(&label)
+                            .actions(true)
+                            .id_salt(("llm_a", i))
+                            .show(ui, |_| {});
                         stats_line(ui, stats, &t);
                         if out.action == Some(MessageAction::Copy) {
                             copy = true;
@@ -394,7 +512,11 @@ impl LocalLlmApp {
                     let e = (now - g.started) as f32;
                     let n = ((e - 0.22).max(0.0) * g.tps * CPT) as usize;
                     let part = prefix_chars(&g.answer, n);
-                    ChatMessage::new(Role::Assistant, &part).name(&label).streaming(true).id_salt("llm_gen").show(ui, |_| {});
+                    ChatMessage::new(Role::Assistant, &part)
+                        .name(&label)
+                        .streaming(true)
+                        .id_salt("llm_gen")
+                        .show(ui, |_| {});
                     stats_line(ui, &format!("{tps:.1} tok/s · {} tokens · generating…", (n as f32 / CPT) as usize), &t);
                 }
                 ui.add_space(6.0);
@@ -415,12 +537,24 @@ impl LocalLlmApp {
                 .attach_button(false)
                 .id_salt("llm_prompt")
                 .show(ui, |ui| {
-                    ui.label(egui::RichText::new(format!("Preset: {}", PRESETS[preset].0)).size(11.5).color(t.muted_foreground));
+                    ui.label(
+                        egui::RichText::new(format!("Preset: {}", PRESETS[preset].0))
+                            .size(11.5)
+                            .color(t.muted_foreground),
+                    );
                 });
             submitted = out.submitted;
             stop = out.stop;
         });
-        kit::text_at(&p, pos2(col.center().x, main.max.y - 13.0), Align2::CENTER_CENTER, "Runs entirely on this machine · nothing is sent to the network", 11.0, t.muted_foreground, col.width());
+        kit::text_at(
+            &p,
+            pos2(col.center().x, main.max.y - 13.0),
+            Align2::CENTER_CENTER,
+            "Runs entirely on this machine · nothing is sent to the network",
+            11.0,
+            t.muted_foreground,
+            col.width(),
+        );
         if stop {
             if let Some(g) = self.generation.take() {
                 let n = (((now - g.started) as f32 - 0.22).max(0.0) * g.tps * CPT) as usize;
@@ -442,7 +576,8 @@ impl LocalLlmApp {
 
     fn picker_overlay(&mut self, ui: &mut Ui, anchor: Rect, bounds: Rect, id: Id, now: f64) {
         let t = Theme::of(ui);
-        let installed: Vec<usize> = (0..self.models.len()).filter(|i| self.models[*i].quants.iter().any(|q| q.downloaded)).collect();
+        let installed: Vec<usize> =
+            (0..self.models.len()).filter(|i| self.models[*i].quants.iter().any(|q| q.downloaded)).collect();
         let h = 44.0 + installed.len() as f32 * 48.0;
         let r = Rect::from_min_size(pos2(anchor.min.x, anchor.max.y + 6.0), vec2(380.0, h));
         let p = ui.painter().clone();
@@ -450,22 +585,58 @@ impl LocalLlmApp {
         p.rect_filled(r, 10.0, t.popover);
         p.rect_stroke(r, 10.0, Stroke::new(1.0, t.border), StrokeKind::Inside);
         pk::label(&p, pos2(r.min.x + 14.0, r.min.y + 20.0), "Downloaded models", &t, 200.0);
-        kit::text_at(&p, pos2(r.max.x - 14.0, r.min.y + 20.0), Align2::RIGHT_CENTER, &format!("{VRAM_TOTAL:.0} GB VRAM"), 11.0, t.muted_foreground, 100.0);
+        kit::text_at(
+            &p,
+            pos2(r.max.x - 14.0, r.min.y + 20.0),
+            Align2::RIGHT_CENTER,
+            &format!("{VRAM_TOTAL:.0} GB VRAM"),
+            11.0,
+            t.muted_foreground,
+            100.0,
+        );
         let _ = ui.interact(r, id.with("eat"), Sense::click());
         let mut close = false;
         for (k, &mi) in installed.iter().enumerate() {
-            let rr = Rect::from_min_size(pos2(r.min.x + 6.0, r.min.y + 38.0 + k as f32 * 48.0), vec2(r.width() - 12.0, 46.0));
+            let rr = Rect::from_min_size(
+                pos2(r.min.x + 6.0, r.min.y + 38.0 + k as f32 * 48.0),
+                vec2(r.width() - 12.0, 46.0),
+            );
             let (resp, _) = kit::row(ui, rr, id.with(("m", mi)), 7.0);
             let md = &self.models[mi];
             let qi = md.quants.iter().position(|q| q.downloaded).unwrap_or(0);
             let size = md.quants[qi].size_gb;
             if mi == self.loaded {
-                AppIcon::Ui(UiIcon::Check).paint(&p, Rect::from_center_size(pos2(rr.max.x - 16.0, rr.center().y), vec2(14.0, 14.0)), t.primary);
+                AppIcon::Ui(UiIcon::Check).paint(
+                    &p,
+                    Rect::from_center_size(pos2(rr.max.x - 16.0, rr.center().y), vec2(14.0, 14.0)),
+                    t.primary,
+                );
             }
-            kit::text_at(&p, pos2(rr.min.x + 10.0, rr.min.y + 15.0), Align2::LEFT_CENTER, &md.name, 13.0, t.foreground, rr.width() - 120.0);
+            kit::text_at(
+                &p,
+                pos2(rr.min.x + 10.0, rr.min.y + 15.0),
+                Align2::LEFT_CENTER,
+                &md.name,
+                13.0,
+                t.foreground,
+                rr.width() - 120.0,
+            );
             let fits = size + 0.6 <= VRAM_TOTAL;
-            let sub = format!("{} · {} · {}", md.quants[qi].name, pk::gb(size), if fits { "fits in VRAM" } else { "partial offload" });
-            kit::text_at(&p, pos2(rr.min.x + 10.0, rr.min.y + 32.0), Align2::LEFT_CENTER, &sub, 11.0, t.muted_foreground, rr.width() - 60.0);
+            let sub = format!(
+                "{} · {} · {}",
+                md.quants[qi].name,
+                pk::gb(size),
+                if fits { "fits in VRAM" } else { "partial offload" }
+            );
+            kit::text_at(
+                &p,
+                pos2(rr.min.x + 10.0, rr.min.y + 32.0),
+                Align2::LEFT_CENTER,
+                &sub,
+                11.0,
+                t.muted_foreground,
+                rr.width() - 60.0,
+            );
             if resp.clicked() {
                 if mi != self.loaded {
                     self.models[mi].quant = qi;
@@ -474,7 +645,9 @@ impl LocalLlmApp {
                 close = true;
             }
         }
-        let outside = ui.input(|i| i.pointer.any_click() && i.pointer.interact_pos().is_some_and(|q| !r.contains(q) && !anchor.contains(q)));
+        let outside = ui.input(|i| {
+            i.pointer.any_click() && i.pointer.interact_pos().is_some_and(|q| !r.contains(q) && !anchor.contains(q))
+        });
         if close || outside || ui.input(|i| i.key_pressed(Key::Escape)) {
             self.picker = false;
         }
@@ -501,9 +674,25 @@ impl LocalLlmApp {
             if on {
                 p.circle_filled(c, 3.2, t.primary);
             }
-            kit::text_at(&p, pos2(rr.min.x + 30.0, rr.center().y), Align2::LEFT_CENTER, name, 12.5, if on { t.foreground } else { t.muted_foreground }, rr.width() - 60.0);
+            kit::text_at(
+                &p,
+                pos2(rr.min.x + 30.0, rr.center().y),
+                Align2::LEFT_CENTER,
+                name,
+                12.5,
+                if on { t.foreground } else { t.muted_foreground },
+                rr.width() - 60.0,
+            );
             if k < 9 {
-                kit::text_at(&p, pos2(rr.max.x - 8.0, rr.center().y), Align2::RIGHT_CENTER, &format!("Alt {}", k + 1), 10.5, with_alpha(t.muted_foreground, 0.7), 50.0);
+                kit::text_at(
+                    &p,
+                    pos2(rr.max.x - 8.0, rr.center().y),
+                    Align2::RIGHT_CENTER,
+                    &format!("Alt {}", k + 1),
+                    10.5,
+                    with_alpha(t.muted_foreground, 0.7),
+                    50.0,
+                );
             }
             if resp.clicked() {
                 self.preset = k;
@@ -532,7 +721,15 @@ impl LocalLlmApp {
         ];
         for (name, v, range, dec) in sliders {
             kit::text_at(&p, pos2(x0, y + 8.0), Align2::LEFT_CENTER, name, 12.0, t.foreground, 120.0);
-            pk::mono(&p, pos2(x1, y + 8.0), Align2::RIGHT_CENTER, &format!("{:.*}", dec, *v), 11.5, t.muted_foreground, 60.0);
+            pk::mono(
+                &p,
+                pos2(x1, y + 8.0),
+                Align2::RIGHT_CENTER,
+                &format!("{:.*}", dec, *v),
+                11.5,
+                t.muted_foreground,
+                60.0,
+            );
             let sr = Rect::from_min_size(pos2(x0, y + 18.0), vec2(x1 - x0, 22.0));
             kit::child(ui, sr, |ui| ui.add(Slider::new(v, range).width(sr.width()).decimals(dec)));
             y += 44.0;
@@ -551,7 +748,15 @@ impl LocalLlmApp {
         for (k, (name, used, total, c)) in rows.iter().enumerate() {
             let f = kit::follow(ui.ctx(), id.with(("mem", k)), (*used / *total) as f32, 5.0);
             kit::text_at(&p, pos2(x0, y), Align2::LEFT_CENTER, name, 12.0, t.foreground, 60.0);
-            pk::mono(&p, pos2(x1, y), Align2::RIGHT_CENTER, &format!("{:.1} / {:.0} GB", f as f64 * total, total), 11.5, t.muted_foreground, 120.0);
+            pk::mono(
+                &p,
+                pos2(x1, y),
+                Align2::RIGHT_CENTER,
+                &format!("{:.1} / {:.0} GB", f as f64 * total, total),
+                11.5,
+                t.muted_foreground,
+                120.0,
+            );
             pk::meter(&p, Rect::from_min_max(pos2(x0, y + 10.0), pos2(x1, y + 16.0)), f, *c, &t);
             y += 32.0;
         }
@@ -572,7 +777,10 @@ impl LocalLlmApp {
         let bw = hr.width() / hist.len() as f32;
         for (i, v) in hist.iter().enumerate() {
             let bh = (hr.height() * v.clamp(0.08, 1.0)).max(2.0);
-            let br = Rect::from_min_max(pos2(hr.min.x + i as f32 * bw + 0.5, hr.max.y - bh), pos2(hr.min.x + (i + 1) as f32 * bw - 0.5, hr.max.y));
+            let br = Rect::from_min_max(
+                pos2(hr.min.x + i as f32 * bw + 0.5, hr.max.y - bh),
+                pos2(hr.min.x + (i + 1) as f32 * bw - 0.5, hr.max.y),
+            );
             p.rect_filled(br, 1.0, with_alpha(t.success, 0.35 + 0.6 * v));
         }
         glowkit_core::set_state(ui, id.with("hist"), hist);
@@ -588,11 +796,22 @@ impl LocalLlmApp {
         let inner = rect.shrink2(vec2(24.0, 20.0));
         let p = ui.painter().clone();
         kit::text_at(&p, inner.min, Align2::LEFT_TOP, "Models", 22.0, t.foreground, 300.0);
-        kit::text_at(&p, inner.min + vec2(0.0, 31.0), Align2::LEFT_TOP, "Download open-weight models and pick a quantization that fits your GPU.", 13.5, t.muted_foreground, inner.width() * 0.6);
+        kit::text_at(
+            &p,
+            inner.min + vec2(0.0, 31.0),
+            Align2::LEFT_TOP,
+            "Download open-weight models and pick a quantization that fits your GPU.",
+            13.5,
+            t.muted_foreground,
+            inner.width() * 0.6,
+        );
         // hardware tiles
         let (vram, ram, util) = self.mem(now);
-        let disk_used: f64 = 212.0 + self.models.iter().flat_map(|m| m.quants.iter()).filter(|q| q.downloaded).map(|q| q.size_gb).sum::<f64>() - 16.3;
-        let tiles = kit::cols(Rect::from_min_size(pos2(inner.min.x, inner.min.y + 64.0), vec2(inner.width(), 70.0)), 4, 12.0);
+        let disk_used: f64 = 212.0
+            + self.models.iter().flat_map(|m| m.quants.iter()).filter(|q| q.downloaded).map(|q| q.size_gb).sum::<f64>()
+            - 16.3;
+        let tiles =
+            kit::cols(Rect::from_min_size(pos2(inner.min.x, inner.min.y + 64.0), vec2(inner.width(), 70.0)), 4, 12.0);
         let tile_data = [
             ("VRAM", format!("{vram:.1} / {VRAM_TOTAL:.0} GB"), (vram / VRAM_TOTAL) as f32, t.chart[0]),
             ("System RAM", format!("{ram:.1} / {RAM_TOTAL:.0} GB"), (ram / RAM_TOTAL) as f32, t.chart[1]),
@@ -602,13 +821,33 @@ impl LocalLlmApp {
         for (k, (r, (name, val, f, c))) in tiles.iter().zip(tile_data.iter()).enumerate() {
             kit::card(&p, *r, &t);
             pk::label(&p, pos2(r.min.x + 14.0, r.min.y + 18.0), name, &t, r.width() - 28.0);
-            pk::mono(&p, pos2(r.min.x + 14.0, r.min.y + 40.0), Align2::LEFT_CENTER, val, 14.0, t.foreground, r.width() - 28.0);
+            pk::mono(
+                &p,
+                pos2(r.min.x + 14.0, r.min.y + 40.0),
+                Align2::LEFT_CENTER,
+                val,
+                14.0,
+                t.foreground,
+                r.width() - 28.0,
+            );
             let f = kit::follow(ui.ctx(), id.with(("tile", k)), *f, 5.0);
-            pk::meter(&p, Rect::from_min_max(pos2(r.min.x + 14.0, r.max.y - 14.0), pos2(r.max.x - 14.0, r.max.y - 9.0)), f, *c, &t);
+            pk::meter(
+                &p,
+                Rect::from_min_max(pos2(r.min.x + 14.0, r.max.y - 14.0), pos2(r.max.x - 14.0, r.max.y - 9.0)),
+                f,
+                *c,
+                &t,
+            );
         }
         // toolbar
         let ty = inner.min.y + 150.0;
-        pk::search(ui, Rect::from_min_size(pos2(inner.min.x, ty), vec2(260.0, 32.0)), &mut self.query, "Search models", "llm_search");
+        pk::search(
+            ui,
+            Rect::from_min_size(pos2(inner.min.x, ty), vec2(260.0, 32.0)),
+            &mut self.query,
+            "Search models",
+            "llm_search",
+        );
         let filters = ["All", "Downloaded", "Fits in VRAM", "Code"];
         let mut x = inner.min.x + 276.0;
         for (k, f) in filters.iter().enumerate() {
@@ -632,7 +871,15 @@ impl LocalLlmApp {
                 ok && (q.is_empty() || m.name.to_lowercase().contains(&q) || m.family.to_lowercase().contains(&q))
             })
             .collect();
-        kit::text_at(&p, pos2(inner.max.x, ty + 16.0), Align2::RIGHT_CENTER, &format!("{} models", vis.len()), 12.0, t.muted_foreground, 100.0);
+        kit::text_at(
+            &p,
+            pos2(inner.max.x, ty + 16.0),
+            Align2::RIGHT_CENTER,
+            &format!("{} models", vis.len()),
+            12.0,
+            t.muted_foreground,
+            100.0,
+        );
         // list
         let lr = Rect::from_min_max(pos2(inner.min.x, ty + 44.0), pos2(inner.max.x, rect.max.y - 12.0));
         kit::card(&p, lr, &t);
@@ -659,7 +906,15 @@ impl LocalLlmApp {
                     let tile = Rect::from_center_size(pos2(x0 + 18.0, cy), vec2(36.0, 36.0));
                     let tc = t.chart[mi % 6];
                     p.rect_filled(tile, 9.0, pk::soft(&t, tc, 1.6));
-                    kit::text_at(&p, tile.center(), Align2::CENTER_CENTER, &format!("{}B", m.params_b), 11.0, pk::tone_fg(&t, tc), 34.0);
+                    kit::text_at(
+                        &p,
+                        tile.center(),
+                        Align2::CENTER_CENTER,
+                        &format!("{}B", m.params_b),
+                        11.0,
+                        pk::tone_fg(&t, tc),
+                        34.0,
+                    );
                     // right block: action
                     let ax1 = rr.max.x - 16.0;
                     let aw = 132.0;
@@ -669,20 +924,64 @@ impl LocalLlmApp {
                         let done = ((now - start) * 0.085).min(size);
                         let f = (done / size) as f32;
                         let eta = ((size - done) / 0.085).max(0.0);
-                        pk::mono(&p, pos2(ar.min.x, cy - 10.0), Align2::LEFT_CENTER, &format!("{:.0}%", f * 100.0), 11.5, t.foreground, 50.0);
-                        kit::text_at(&p, pos2(ar.max.x - 22.0, cy - 10.0), Align2::RIGHT_CENTER, &format!("87 MB/s · {:.0}s", eta), 10.5, t.muted_foreground, 100.0);
-                        pk::meter(&p, Rect::from_min_max(pos2(ar.min.x, cy + 4.0), pos2(ar.max.x - 22.0, cy + 9.0)), f, t.primary, &t);
+                        pk::mono(
+                            &p,
+                            pos2(ar.min.x, cy - 10.0),
+                            Align2::LEFT_CENTER,
+                            &format!("{:.0}%", f * 100.0),
+                            11.5,
+                            t.foreground,
+                            50.0,
+                        );
+                        kit::text_at(
+                            &p,
+                            pos2(ar.max.x - 22.0, cy - 10.0),
+                            Align2::RIGHT_CENTER,
+                            &format!("87 MB/s · {:.0}s", eta),
+                            10.5,
+                            t.muted_foreground,
+                            100.0,
+                        );
+                        pk::meter(
+                            &p,
+                            Rect::from_min_max(pos2(ar.min.x, cy + 4.0), pos2(ar.max.x - 22.0, cy + 9.0)),
+                            f,
+                            t.primary,
+                            &t,
+                        );
                         let xr = Rect::from_center_size(pos2(ar.max.x - 8.0, cy - 2.0), vec2(20.0, 20.0));
-                        if pk::icon_btn(ui, xr, id.with(("cancel", mi)), LineIcon::X.into(), "Cancel download", None).clicked() {
+                        if pk::icon_btn(ui, xr, id.with(("cancel", mi)), LineIcon::X.into(), "Cancel download", None)
+                            .clicked()
+                        {
                             actions.push((mi, "cancel", 0));
                         }
                     } else if mi == self.loaded && qd {
                         kit::status_pill(&p, pos2(ar.max.x, cy), true, "Loaded", t.success, &t);
                     } else if qd {
-                        if pk::small_btn(ui, Rect::from_min_max(pos2(ar.max.x - 80.0, ar.min.y), ar.max), id.with(("load", mi)), "Load", Some(AppIcon::Play), None, None).clicked() {
+                        if pk::small_btn(
+                            ui,
+                            Rect::from_min_max(pos2(ar.max.x - 80.0, ar.min.y), ar.max),
+                            id.with(("load", mi)),
+                            "Load",
+                            Some(AppIcon::Play),
+                            None,
+                            None,
+                        )
+                        .clicked()
+                        {
                             actions.push((mi, "load", 0));
                         }
-                    } else if pk::small_btn(ui, Rect::from_min_max(pos2(ar.max.x - 110.0, ar.min.y), ar.max), id.with(("dl", mi)), &pk::gb(m.quants[m.quant].size_gb), Some(UiIcon::Download.into()), Some(t.primary), None).clicked() {
+                    } else if pk::small_btn(
+                        ui,
+                        Rect::from_min_max(pos2(ar.max.x - 110.0, ar.min.y), ar.max),
+                        id.with(("dl", mi)),
+                        &pk::gb(m.quants[m.quant].size_gb),
+                        Some(UiIcon::Download.into()),
+                        Some(t.primary),
+                        None,
+                    )
+                    .clicked()
+                    {
                         actions.push((mi, "download", 0));
                     }
                     // fit indicator
@@ -695,7 +994,15 @@ impl LocalLlmApp {
                         ("Too large", t.destructive)
                     };
                     let fx = ar.min.x - 24.0;
-                    let fr = kit::text_at(&p, pos2(fx, cy), Align2::RIGHT_CENTER, fit_txt, 11.5, pk::tone_fg(&t, fit_c), 110.0);
+                    let fr = kit::text_at(
+                        &p,
+                        pos2(fx, cy),
+                        Align2::RIGHT_CENTER,
+                        fit_txt,
+                        11.5,
+                        pk::tone_fg(&t, fit_c),
+                        110.0,
+                    );
                     p.circle_filled(pos2(fr.min.x - 8.0, cy), 3.0, fit_c);
                     // quants
                     let mut qx1 = fr.min.x - 28.0;
@@ -713,23 +1020,52 @@ impl LocalLlmApp {
                         }
                         let qq = &m.quants[qi];
                         let on = qi == m.quant;
-                        let resp = ui.interact(r, id.with(("q", mi, qi)), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
+                        let resp = ui
+                            .interact(r, id.with(("q", mi, qi)), Sense::click())
+                            .on_hover_cursor(egui::CursorIcon::PointingHand);
                         let h = kit::hover(ui, id.with(("qh", mi, qi)), resp.hovered());
                         let c = if on { t.primary } else { t.muted_foreground };
-                        p.rect_filled(r, 5.0, if on { pk::soft(&t, t.primary, 1.4) } else { kit::hover_fill(&t, h * 1.5) });
-                        p.rect_stroke(r, 5.0, Stroke::new(1.0, if on { with_alpha(t.primary, 0.5) } else { t.border }), StrokeKind::Inside);
-                        pk::mono(&p, r.center(), Align2::CENTER_CENTER, &qq.name, 10.5, if on { pk::tone_fg(&t, c) } else { t.muted_foreground.lerp_to_gamma(t.foreground, h) }, r.width());
+                        p.rect_filled(
+                            r,
+                            5.0,
+                            if on { pk::soft(&t, t.primary, 1.4) } else { kit::hover_fill(&t, h * 1.5) },
+                        );
+                        p.rect_stroke(
+                            r,
+                            5.0,
+                            Stroke::new(1.0, if on { with_alpha(t.primary, 0.5) } else { t.border }),
+                            StrokeKind::Inside,
+                        );
+                        pk::mono(
+                            &p,
+                            r.center(),
+                            Align2::CENTER_CENTER,
+                            &qq.name,
+                            10.5,
+                            if on { pk::tone_fg(&t, c) } else { t.muted_foreground.lerp_to_gamma(t.foreground, h) },
+                            r.width(),
+                        );
                         if qq.downloaded {
                             p.circle_filled(pos2(r.max.x - 2.0, r.min.y + 2.0), 2.5, t.success);
                         }
-                        kit::tip(&resp, &format!("{} · {}{}", qq.name, pk::gb(qq.size_gb), if qq.downloaded { " · downloaded" } else { "" }), None);
+                        kit::tip(
+                            &resp,
+                            &format!(
+                                "{} · {}{}",
+                                qq.name,
+                                pk::gb(qq.size_gb),
+                                if qq.downloaded { " · downloaded" } else { "" }
+                            ),
+                            None,
+                        );
                         if resp.clicked() && m.download.is_none() {
                             actions.push((mi, "quant", qi));
                         }
                     }
                     // name block
                     let nx = tile.max.x + 12.0;
-                    let nr = kit::text_at(&p, pos2(nx, cy - 9.0), Align2::LEFT_CENTER, &m.name, 13.5, t.foreground, name_w);
+                    let nr =
+                        kit::text_at(&p, pos2(nx, cy - 9.0), Align2::LEFT_CENTER, &m.name, 13.5, t.foreground, name_w);
                     let mut tx = nr.max.x + 8.0;
                     for tg in m.tags.iter().take(2) {
                         if tx + 50.0 > nx + name_w {
@@ -738,11 +1074,25 @@ impl LocalLlmApp {
                         let r = pk::tag(&p, pos2(tx, cy - 9.0), false, tg, t.muted_foreground, &t, false);
                         tx = r.max.x + 4.0;
                     }
-                    kit::text_at(&p, pos2(nx, cy + 11.0), Align2::LEFT_CENTER, &format!("{} · {}k context", m.family, m.context / 1024), 11.5, t.muted_foreground, name_w);
+                    kit::text_at(
+                        &p,
+                        pos2(nx, cy + 11.0),
+                        Align2::LEFT_CENTER,
+                        &format!("{} · {}k context", m.family, m.context / 1024),
+                        11.5,
+                        t.muted_foreground,
+                        name_w,
+                    );
                 }
                 if vis.is_empty() {
                     let (er, _) = ui.allocate_exact_size(vec2(w, 120.0), Sense::hover());
-                    ui.painter().text(er.center(), Align2::CENTER_CENTER, "No models match", egui::FontId::proportional(13.0), t.muted_foreground);
+                    ui.painter().text(
+                        er.center(),
+                        Align2::CENTER_CENTER,
+                        "No models match",
+                        egui::FontId::proportional(13.0),
+                        t.muted_foreground,
+                    );
                 }
             });
         });

@@ -135,7 +135,15 @@ impl egui::Widget for LogStream<'_> {
         let header = 46.0;
         let hy = rect.min.y + header / 2.0;
         icon(&p, Icon::Terminal, pos2(rect.min.x + pad + 7.0, hy), 14.0, dim(&t));
-        let tr = text(&p, pos2(rect.min.x + pad + 22.0, hy), Align2::LEFT_CENTER, &self.title, font(13.5), t.foreground, 120.0);
+        let tr = text(
+            &p,
+            pos2(rect.min.x + pad + 22.0, hy),
+            Align2::LEFT_CENTER,
+            &self.title,
+            font(13.5),
+            t.foreground,
+            120.0,
+        );
         let k = (now * 1.2).fract();
         let dc = pos2(tr.max.x + 12.0, hy);
         if st.follow {
@@ -159,7 +167,13 @@ impl egui::Widget for LogStream<'_> {
             let on = !st.hidden[li];
             let c = lv.color(&t);
             let fill = if on { tint(&t, c) } else { Color32::TRANSPARENT };
-            p.rect(r, cr(6.0), fill, Stroke::new(1.0, if on { with_alpha(c, 0.3) } else { hair(&t) }), StrokeKind::Inside);
+            p.rect(
+                r,
+                cr(6.0),
+                fill,
+                Stroke::new(1.0, if on { with_alpha(c, 0.3) } else { hair(&t) }),
+                StrokeKind::Inside,
+            );
             p.text(r.center(), Align2::CENTER_CENTER, &label, mono(10.5), if on { ink(&t, c) } else { faint(&t) });
             x = r.max.x + 6.0;
         }
@@ -173,9 +187,14 @@ impl egui::Widget for LogStream<'_> {
         text(&p, pos2(sw.min.x - 8.0, hy), Align2::RIGHT_CENTER, "Follow", font(11.5), dim(&t), 60.0);
         hline(&p, &t, rect.min.x, rect.max.x, rect.min.y + header);
         // body
-        let body = Rect::from_min_max(pos2(rect.min.x + 1.0, rect.min.y + header + 1.0), pos2(rect.max.x - 1.0, rect.max.y - 1.0));
+        let body = Rect::from_min_max(
+            pos2(rect.min.x + 1.0, rect.min.y + header + 1.0),
+            pos2(rect.max.x - 1.0, rect.max.y - 1.0),
+        );
         let lh = 21.0;
-        let visible: Vec<usize> = (0..self.lines.len()).filter(|i| !st.hidden[LogLevel::ALL.iter().position(|l| *l == self.lines[*i].level).unwrap_or(0)]).collect();
+        let visible: Vec<usize> = (0..self.lines.len())
+            .filter(|i| !st.hidden[LogLevel::ALL.iter().position(|l| *l == self.lines[*i].level).unwrap_or(0)])
+            .collect();
         // arrivals
         if self.lines.len() > st.seen {
             for i in st.seen..self.lines.len() {
@@ -226,12 +245,27 @@ impl egui::Widget for LogStream<'_> {
             }
             let pa = faded(&pc, 1.0 - slide);
             let cy = lr.center().y;
-            let ts = format!("{:02}:{:02}.{:01}", (l.at / 60.0) as u32, l.at as u32 % 60, ((l.at.fract()) * 10.0) as u32);
+            let ts =
+                format!("{:02}:{:02}.{:01}", (l.at / 60.0) as u32, l.at as u32 % 60, ((l.at.fract()) * 10.0) as u32);
             pa.text(pos2(lr.min.x + pad, cy), Align2::LEFT_CENTER, ts, mono(10.5), faint(&t));
             let c = l.level.color(&t);
             pa.text(pos2(lr.min.x + pad + 66.0, cy), Align2::LEFT_CENTER, l.level.label(), mono(10.5), ink(&t, c));
-            let sr = text(&pa, pos2(lr.min.x + pad + 116.0, cy), Align2::LEFT_CENTER, &l.source, mono(10.5), mix(dim(&t), t.foreground, 0.3), 90.0);
-            let mc = if l.level == LogLevel::Error { ink(&t, t.destructive) } else if l.level == LogLevel::Debug { dim(&t) } else { t.foreground };
+            let sr = text(
+                &pa,
+                pos2(lr.min.x + pad + 116.0, cy),
+                Align2::LEFT_CENTER,
+                &l.source,
+                mono(10.5),
+                mix(dim(&t), t.foreground, 0.3),
+                90.0,
+            );
+            let mc = if l.level == LogLevel::Error {
+                ink(&t, t.destructive)
+            } else if l.level == LogLevel::Debug {
+                dim(&t)
+            } else {
+                t.foreground
+            };
             let mx = (lr.min.x + pad + 214.0).max(sr.max.x + 10.0);
             text(&pa, pos2(mx, cy), Align2::LEFT_CENTER, &l.msg, mono(11.0), mc, lr.max.x - mx - pad);
         }
@@ -240,10 +274,18 @@ impl egui::Widget for LogStream<'_> {
         grad_rect(&pc, fade, surface(&t), Color32::TRANSPARENT, true);
         // jump pill
         if !st.follow {
-            let label = if new_below > 0 { format!("{new_below} newer · Jump to latest") } else { "Jump to latest".into() };
+            let label =
+                if new_below > 0 { format!("{new_below} newer · Jump to latest") } else { "Jump to latest".into() };
             let w = button_w(&p, &label, true);
             let b = Rect::from_center_size(pos2(body.center().x, body.max.y - 22.0), vec2(w, 28.0));
-            paint::soft_shadow(&p, b, 14.0, 10.0, vec2(0.0, 2.0), Color32::from_black_alpha(if t.dark { 80 } else { 24 }));
+            paint::soft_shadow(
+                &p,
+                b,
+                14.0,
+                10.0,
+                vec2(0.0, 2.0),
+                Color32::from_black_alpha(if t.dark { 80 } else { 24 }),
+            );
             if button(ui, b, id.with("jump"), &label, Some(Icon::ArrowDown), Btn::Primary).clicked() {
                 st.follow = true;
                 st.offset = 0.0;
@@ -359,7 +401,13 @@ fn gauge(p: &egui::Painter, t: &Theme, c: egui::Pos2, r: f32, frac: f32, label: 
     let a0 = PI * 0.75;
     let sweep = PI * 1.5;
     paint::arc(p, c, r, a0, a0 + sweep, 6.0, track(t));
-    let col = if frac > 0.9 { t.destructive } else if frac > 0.75 { t.warning } else { t.foreground };
+    let col = if frac > 0.9 {
+        t.destructive
+    } else if frac > 0.75 {
+        t.warning
+    } else {
+        t.foreground
+    };
     let col = if t.dark && col == t.foreground { mix(t.foreground, t.info, 0.4) } else { col };
     if frac > 0.005 {
         paint::arc(p, c, r, a0, a0 + sweep * frac.clamp(0.0, 1.0), 6.0, col);
@@ -391,11 +439,35 @@ impl egui::Widget for SandboxStatus {
             p.circle_filled(pos2(ib.max.x - 4.0, ib.min.y + 4.0), 4.0, surface(&t));
             p.circle_filled(pos2(ib.max.x - 4.0, ib.min.y + 4.0), 2.8, t.success);
         }
-        text(&p, pos2(ib.max.x + 12.0, ib.min.y + 11.0), Align2::LEFT_CENTER, &self.name, mono(13.0), t.foreground, 200.0);
-        text(&p, pos2(ib.max.x + 12.0, ib.min.y + 28.0), Align2::LEFT_CENTER, &self.image, font(11.5), dim(&t), rect.width() - 220.0);
+        text(
+            &p,
+            pos2(ib.max.x + 12.0, ib.min.y + 11.0),
+            Align2::LEFT_CENTER,
+            &self.name,
+            mono(13.0),
+            t.foreground,
+            200.0,
+        );
+        text(
+            &p,
+            pos2(ib.max.x + 12.0, ib.min.y + 28.0),
+            Align2::LEFT_CENTER,
+            &self.image,
+            font(11.5),
+            dim(&t),
+            rect.width() - 220.0,
+        );
         let sb = state_badge(&p, &t, pos2(rect.max.x - pad, ib.min.y + 11.0), Align2::RIGHT_CENTER, self.state, now);
         let _ = sb;
-        text(&p, pos2(rect.max.x - pad, ib.min.y + 30.0), Align2::RIGHT_CENTER, &format!("up {}", fmt_secs(self.uptime)), mono(11.0), faint(&t), 120.0);
+        text(
+            &p,
+            pos2(rect.max.x - pad, ib.min.y + 30.0),
+            Align2::RIGHT_CENTER,
+            &format!("up {}", fmt_secs(self.uptime)),
+            mono(11.0),
+            faint(&t),
+            120.0,
+        );
         hline(&p, &t, rect.min.x, rect.max.x, rect.min.y + 70.0);
         // gauges
         let gy = rect.min.y + 128.0;
@@ -420,11 +492,21 @@ impl egui::Widget for SandboxStatus {
         let spark = Rect::from_min_max(pos2(sr.min.x, sr.min.y + 10.0), sr.max);
         sparkline(&p, spark, &self.history, if t.dark { t.info } else { t.foreground });
         let nx = rect.center().x + 64.0;
-        for (k, (label, v, ic)) in [("in", self.net.0, Icon::ArrowDown), ("out", self.net.1, Icon::ArrowUp)].iter().enumerate() {
+        for (k, (label, v, ic)) in
+            [("in", self.net.0, Icon::ArrowDown), ("out", self.net.1, Icon::ArrowUp)].iter().enumerate()
+        {
             let y = hy + 20.0 + k as f32 * 20.0;
             icon(&p, *ic, pos2(nx + 6.0, y), 11.0, dim(&t));
             text(&p, pos2(nx + 18.0, y), Align2::LEFT_CENTER, label, font(11.0), faint(&t), 30.0);
-            text(&p, pos2(rect.max.x - pad, y), Align2::RIGHT_CENTER, &format!("{v:.1} MB/s"), mono(11.0), t.foreground, 90.0);
+            text(
+                &p,
+                pos2(rect.max.x - pad, y),
+                Align2::RIGHT_CENTER,
+                &format!("{v:.1} MB/s"),
+                mono(11.0),
+                t.foreground,
+                90.0,
+            );
         }
         // footer: ports + actions
         let fy = rect.max.y - 26.0;
@@ -437,7 +519,9 @@ impl egui::Widget for SandboxStatus {
         }
         let bw = 30.0;
         let mut bx = rect.max.x - pad;
-        for (k, (ic, tip)) in [(Icon::Stop, "Stop"), (Icon::Refresh, "Restart"), (Icon::Terminal, "Terminal")].iter().enumerate() {
+        for (k, (ic, tip)) in
+            [(Icon::Stop, "Stop"), (Icon::Refresh, "Restart"), (Icon::Terminal, "Terminal")].iter().enumerate()
+        {
             let b = Rect::from_min_size(pos2(bx - bw, fy - 14.0), vec2(bw, 28.0));
             let r = button(ui, b, id.with(("act", k)), "", Some(*ic), Btn::Secondary);
             r.on_hover_text(*tip);

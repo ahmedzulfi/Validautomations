@@ -2,7 +2,9 @@
 //! trading terminal, inspector): section labels, live dots, meters, mini tabs, chips and small
 //! buttons with hover states.
 
-use egui::{pos2, vec2, Align2, Color32, CursorIcon, FontId, Id, Painter, Pos2, Rect, Response, Sense, Stroke, StrokeKind, Ui};
+use egui::{
+    pos2, vec2, Align2, Color32, CursorIcon, FontId, Id, Painter, Pos2, Rect, Response, Sense, Stroke, StrokeKind, Ui,
+};
 use glowkit_components::{ControlSize, Input, UiIcon};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::Theme;
@@ -186,7 +188,6 @@ pub(crate) fn search(ui: &mut Ui, rect: Rect, text: &mut String, hint: &str, sal
     )
 }
 
-
 /// A one-line monospace text painted left-center at `pos`, clipped to `max_w`.
 pub(crate) fn mono(p: &Painter, pos: Pos2, align: Align2, text: &str, size: f32, col: Color32, max_w: f32) -> Rect {
     kit::mono_at(p, pos, align, text, size, col, max_w)
@@ -213,10 +214,7 @@ pub(crate) fn spark(p: &Painter, rect: Rect, values: &[f64], col: Color32, fill:
         .iter()
         .enumerate()
         .map(|(i, v)| {
-            pos2(
-                rect.min.x + rect.width() * i as f32 / n as f32,
-                rect.max.y - ((v - lo) / span) as f32 * rect.height(),
-            )
+            pos2(rect.min.x + rect.width() * i as f32 / n as f32, rect.max.y - ((v - lo) / span) as f32 * rect.height())
         })
         .collect();
     if fill {
@@ -260,7 +258,6 @@ pub(crate) fn hints(p: &Painter, pos: Pos2, items: &[(&str, &str)], t: &Theme, m
     x
 }
 
-
 /// A framed single-line text field painted at `rect` (frameless `TextEdit` inside, focus ring).
 /// Returns `(submitted with Enter, focused)`.
 pub(crate) fn text_line(ui: &mut Ui, rect: Rect, id: Id, text: &mut String, hint: &str, mono: bool) -> (bool, bool) {
@@ -275,7 +272,10 @@ pub(crate) fn text_line(ui: &mut Ui, rect: Rect, id: Id, text: &mut String, hint
     }
     let font = if mono { FontId::monospace(12.5) } else { FontId::proportional(13.0) };
     let h = font.size + 6.0;
-    let er = Rect::from_min_max(pos2(rect.min.x + 12.0, rect.center().y - h / 2.0), pos2(rect.max.x - 10.0, rect.center().y + h / 2.0));
+    let er = Rect::from_min_max(
+        pos2(rect.min.x + 12.0, rect.center().y - h / 2.0),
+        pos2(rect.max.x - 10.0, rect.center().y + h / 2.0),
+    );
     let mut submitted = false;
     kit::child(ui, er, |ui| {
         let te = egui::TextEdit::singleline(text)

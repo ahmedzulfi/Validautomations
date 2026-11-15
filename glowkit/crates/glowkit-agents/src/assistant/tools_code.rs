@@ -85,7 +85,12 @@ impl<'a> CodeResult<'a> {
             (true, true) => ("running", t.info),
             _ => ("exit 0", t.success),
         };
-        let head = ToolHead { icon: Icon::Terminal, title: self.filename.unwrap_or("run_code"), subtitle: Some(self.lang), status: Some(status) };
+        let head = ToolHead {
+            icon: Icon::Terminal,
+            title: self.filename.unwrap_or("run_code"),
+            subtitle: Some(self.lang),
+            status: Some(status),
+        };
         let time = glowkit_core::time(ui);
         let code = self.code;
         let lang = self.lang;
@@ -96,7 +101,13 @@ impl<'a> CodeResult<'a> {
             ui.add(CodeBlock::new(code).language(lang).size(12.5).header(false).line_numbers(true));
             // action row
             let (r, _) = ui.allocate_exact_size(vec2(w, 32.0), Sense::hover());
-            let label = if running { "Running" } else if st.started.is_some() { "Run again" } else { "Run" };
+            let label = if running {
+                "Running"
+            } else if st.started.is_some() {
+                "Run again"
+            } else {
+                "Run"
+            };
             let bw = button_w(ui, label, 32.0, true);
             let br = Rect::from_min_size(pos2(r.max.x - bw, r.min.y), vec2(bw, 32.0));
             run_rect = br;
@@ -108,7 +119,14 @@ impl<'a> CodeResult<'a> {
             } else if button(ui, id.with("run_b"), br, label, Btn::Primary, Some(Icon::Play)).clicked() {
                 start = true;
             }
-            text(ui.painter(), pos2(r.min.x, r.center().y), Align2::LEFT_CENTER, "Sandboxed · no network", 11.5, t.muted_foreground);
+            text(
+                ui.painter(),
+                pos2(r.min.x, r.center().y),
+                Align2::LEFT_CENTER,
+                "Sandboxed · no network",
+                11.5,
+                t.muted_foreground,
+            );
             // console
             if console_k > 0.01 {
                 let shown = run_e.map(|r| ((r / line_time) as usize).min(output.len())).unwrap_or(0);
@@ -132,20 +150,45 @@ impl<'a> CodeResult<'a> {
                     } else {
                         fg
                     };
-                    mono(&p, pos2(box_r.min.x + 12.0 + (1.0 - k) * 6.0, y), Align2::LEFT_CENTER, l, 11.5, with_alpha(col, k));
+                    mono(
+                        &p,
+                        pos2(box_r.min.x + 12.0 + (1.0 - k) * 6.0, y),
+                        Align2::LEFT_CENTER,
+                        l,
+                        11.5,
+                        with_alpha(col, k),
+                    );
                     y += line_h;
                 }
                 if running {
                     let blink = ((time * 2.0).fract() < 0.5) as u8 as f32;
-                    p.rect_filled(Rect::from_min_size(pos2(box_r.min.x + 12.0, y - 7.0), vec2(7.0, 14.0)), cr(1.0), with_alpha(fg, blink));
+                    p.rect_filled(
+                        Rect::from_min_size(pos2(box_r.min.x + 12.0, y - 7.0), vec2(7.0, 14.0)),
+                        cr(1.0),
+                        with_alpha(fg, blink),
+                    );
                 } else if let Some(r) = run_e {
                     let k = ((r - total) * 4.0).clamp(0.0, 1.0);
                     let s = format!("exit 0 · {:.2}s", total - 0.5);
                     let g = p.layout_no_wrap(s.clone(), FontId::monospace(10.5), hex("#4ADE80"));
-                    let chip = Rect::from_min_size(pos2(box_r.max.x - 12.0 - g.size().x - 26.0, box_r.max.y - 26.0), vec2(g.size().x + 26.0, 18.0));
+                    let chip = Rect::from_min_size(
+                        pos2(box_r.max.x - 12.0 - g.size().x - 26.0, box_r.max.y - 26.0),
+                        vec2(g.size().x + 26.0, 18.0),
+                    );
                     p.rect_filled(chip, cr(9.0), with_alpha(hex("#22C55E"), 0.16 * k));
-                    check_disc(&p, pos2(chip.min.x + 10.0, chip.center().y), 5.0, Color32::TRANSPARENT, with_alpha(hex("#4ADE80"), k), k);
-                    p.galley(pos2(chip.min.x + 19.0, chip.center().y - g.size().y / 2.0), g, with_alpha(hex("#4ADE80"), k));
+                    check_disc(
+                        &p,
+                        pos2(chip.min.x + 10.0, chip.center().y),
+                        5.0,
+                        Color32::TRANSPARENT,
+                        with_alpha(hex("#4ADE80"), k),
+                        k,
+                    );
+                    p.galley(
+                        pos2(chip.min.x + 19.0, chip.center().y - g.size().y / 2.0),
+                        g,
+                        with_alpha(hex("#4ADE80"), k),
+                    );
                 }
             }
         });

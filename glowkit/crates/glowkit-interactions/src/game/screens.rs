@@ -60,7 +60,16 @@ pub struct GameLoadingScreen<'a> {
 impl<'a> GameLoadingScreen<'a> {
     /// A loading screen at `progress` (0..1).
     pub fn new(progress: f32) -> Self {
-        Self { progress, level: "", chapter: "", tips: &[], tip_secs: 4.5, height: 360.0, style: GameStyle::SciFi, palette: None }
+        Self {
+            progress,
+            level: "",
+            chapter: "",
+            tips: &[],
+            tip_secs: 4.5,
+            height: 360.0,
+            style: GameStyle::SciFi,
+            palette: None,
+        }
     }
     /// Level name and a small line above it.
     pub fn level(mut self, name: &'a str, chapter: &'a str) -> Self {
@@ -109,15 +118,41 @@ impl egui::Widget for GameLoadingScreen<'_> {
         let id = resp.id;
         let time = glowkit_core::time(ui);
         let p = follow(ui, id.with("p"), self.progress.clamp(0.0, 1.0), 5.0);
-        GameBackdrop::new(self.style).palette(pal).parallax(vec2((time * 0.1).sin(), 0.0) * 2.0).paint_at(ui.painter(), rect, time * 0.25);
+        GameBackdrop::new(self.style).palette(pal).parallax(vec2((time * 0.1).sin(), 0.0) * 2.0).paint_at(
+            ui.painter(),
+            rect,
+            time * 0.25,
+        );
         let painter = &ui.painter_at(rect);
-        paint::gradient_rect(painter, rect, 18.0, 90.0, &[Color32::from_black_alpha(20), Color32::from_black_alpha(200)]);
+        paint::gradient_rect(
+            painter,
+            rect,
+            18.0,
+            90.0,
+            &[Color32::from_black_alpha(20), Color32::from_black_alpha(200)],
+        );
         // level name
         let lx = rect.min.x + 32.0;
         if !self.chapter.is_empty() {
-            outlined(painter, pos2(lx, rect.max.y - 128.0), Align2::LEFT_CENTER, &self.chapter.to_uppercase(), FontId::monospace(12.0), with_alpha(pal.accent, 0.95), Color32::from_black_alpha(120));
+            outlined(
+                painter,
+                pos2(lx, rect.max.y - 128.0),
+                Align2::LEFT_CENTER,
+                &self.chapter.to_uppercase(),
+                FontId::monospace(12.0),
+                with_alpha(pal.accent, 0.95),
+                Color32::from_black_alpha(120),
+            );
         }
-        glow_text(painter, pos2(lx, rect.max.y - 98.0), Align2::LEFT_CENTER, self.level, level_f, Color32::WHITE, with_alpha(pal.accent, 0.35));
+        glow_text(
+            painter,
+            pos2(lx, rect.max.y - 98.0),
+            Align2::LEFT_CENTER,
+            self.level,
+            level_f,
+            Color32::WHITE,
+            with_alpha(pal.accent, 0.35),
+        );
         // tip
         if !self.tips.is_empty() {
             let cyc = time / self.tip_secs;
@@ -128,8 +163,18 @@ impl egui::Widget for GameLoadingScreen<'_> {
             let tw = (w * 0.5).min(460.0);
             let tr = Rect::from_min_size(pos2(lx + dx, rect.max.y - 72.0), vec2(tw, 30.0));
             let g = painter.layout(self.tips[i].to_string(), tip_f, with_alpha(Color32::WHITE, 0.9 * a), tw - 50.0);
-            painter.rect_filled(Rect::from_min_size(tr.min, vec2(3.0, g.size().y.max(18.0))), 1.0, with_alpha(pal.accent, a));
-            painter.text(pos2(tr.min.x + 12.0, tr.min.y + 1.0), Align2::LEFT_TOP, "TIP", FontId::monospace(10.0), with_alpha(pal.accent, a));
+            painter.rect_filled(
+                Rect::from_min_size(tr.min, vec2(3.0, g.size().y.max(18.0))),
+                1.0,
+                with_alpha(pal.accent, a),
+            );
+            painter.text(
+                pos2(tr.min.x + 12.0, tr.min.y + 1.0),
+                Align2::LEFT_TOP,
+                "TIP",
+                FontId::monospace(10.0),
+                with_alpha(pal.accent, a),
+            );
             painter.galley(pos2(tr.min.x + 42.0, tr.min.y), g, Color32::WHITE);
         }
         // bar
@@ -140,17 +185,40 @@ impl egui::Widget for GameLoadingScreen<'_> {
         let sheen = (time * 0.7).fract();
         let sx = fill.min.x + fill.width() * sheen;
         if fill.width() > 30.0 {
-            let band = Rect::from_min_max(pos2((sx - 30.0).max(fill.min.x), fill.min.y), pos2((sx + 30.0).min(fill.max.x), fill.max.y));
-            paint::gradient_rect(painter, band, 0.0, 0.0, &[with_alpha(Color32::WHITE, 0.0), with_alpha(Color32::WHITE, 0.7), with_alpha(Color32::WHITE, 0.0)]);
+            let band = Rect::from_min_max(
+                pos2((sx - 30.0).max(fill.min.x), fill.min.y),
+                pos2((sx + 30.0).min(fill.max.x), fill.max.y),
+            );
+            paint::gradient_rect(
+                painter,
+                band,
+                0.0,
+                0.0,
+                &[with_alpha(Color32::WHITE, 0.0), with_alpha(Color32::WHITE, 0.7), with_alpha(Color32::WHITE, 0.0)],
+            );
         }
         paint::glow(painter, fill.right_center(), 12.0, with_alpha(pal.accent, 0.8));
         let done = p > 0.995;
         if done {
             let pulse = 0.5 + 0.5 * (time * 4.0).sin();
             paint::soft_shadow(painter, bar, 2.0, 14.0, Vec2::ZERO, with_alpha(pal.accent, 0.6 * pulse));
-            outlined(painter, pos2(rect.center().x, rect.max.y - 50.0), Align2::CENTER_CENTER, "PRESS ANY KEY", FontId::monospace(13.0), with_alpha(Color32::WHITE, 0.4 + 0.6 * pulse), Color32::from_black_alpha(150));
+            outlined(
+                painter,
+                pos2(rect.center().x, rect.max.y - 50.0),
+                Align2::CENTER_CENTER,
+                "PRESS ANY KEY",
+                FontId::monospace(13.0),
+                with_alpha(Color32::WHITE, 0.4 + 0.6 * pulse),
+                Color32::from_black_alpha(150),
+            );
         }
-        painter.text(pos2(bar.max.x + 12.0, bar.center().y), Align2::LEFT_CENTER, format!("{:.0}%", p * 100.0), FontId::monospace(12.0), Color32::WHITE);
+        painter.text(
+            pos2(bar.max.x + 12.0, bar.center().y),
+            Align2::LEFT_CENTER,
+            format!("{:.0}%", p * 100.0),
+            FontId::monospace(12.0),
+            Color32::WHITE,
+        );
         spinner(painter, pos2(rect.max.x - 40.0, rect.max.y - 60.0), 16.0, time, self.style, &pal);
         resp
     }
@@ -182,7 +250,17 @@ pub struct GameLevelUpScreen<'a> {
 impl<'a> GameLevelUpScreen<'a> {
     /// Celebrate reaching `level`.
     pub fn new(level: u32) -> Self {
-        Self { level, stats: &[], started_at: None, note: "+1 Skill Point", height: 360.0, style: GameStyle::Fantasy, palette: None, backdrop: true, cues: None }
+        Self {
+            level,
+            stats: &[],
+            started_at: None,
+            note: "+1 Skill Point",
+            height: 360.0,
+            style: GameStyle::Fantasy,
+            palette: None,
+            backdrop: true,
+            cues: None,
+        }
     }
     /// Sync the animation to a game clock: the egui time (`ui.input(|i| i.time)`) at which it
     /// started. By default it starts when first shown or when its content changes.
@@ -242,14 +320,19 @@ impl egui::Widget for GameLevelUpScreen<'_> {
         glowkit_core::animate(ui);
         let now = ui.input(|i| i.time);
         let lvl = self.level;
-        let (t, fresh) = glowkit_core::with_state(ui, id.with("lv"), || (lvl, now, false), |s| {
-            if s.0 != lvl {
-                *s = (lvl, now, false);
-            }
-            let fresh = !s.2;
-            s.2 = true;
-            ((now - s.1) as f32, fresh)
-        });
+        let (t, fresh) = glowkit_core::with_state(
+            ui,
+            id.with("lv"),
+            || (lvl, now, false),
+            |s| {
+                if s.0 != lvl {
+                    *s = (lvl, now, false);
+                }
+                let fresh = !s.2;
+                s.2 = true;
+                ((now - s.1) as f32, fresh)
+            },
+        );
         let t = self.started_at.map(|s| (now - s) as f32).unwrap_or(t);
         if fresh {
             push_cue(&mut self.cues, GameCue::Unlock);
@@ -277,7 +360,9 @@ impl egui::Widget for GameLevelUpScreen<'_> {
             let a = -std::f32::consts::FRAC_PI_2 + (hash01(i * 3 + 1) - 0.5) * 2.4;
             let sp = 260.0 + 260.0 * hash01(i * 7 + 2);
             let drag = 1.0 - (-tt * 2.5).exp();
-            let p = c + vec2(a.cos(), a.sin()) * sp * drag / 2.5 + vec2((tt * 3.0 + i as f32).sin() * 12.0, 90.0 * tt * tt * 0.5 + 40.0 * tt);
+            let p = c
+                + vec2(a.cos(), a.sin()) * sp * drag / 2.5
+                + vec2((tt * 3.0 + i as f32).sin() * 12.0, 90.0 * tt * tt * 0.5 + 40.0 * tt);
             if !rect.shrink(4.0).contains(p) {
                 continue;
             }
@@ -287,7 +372,12 @@ impl egui::Widget for GameLevelUpScreen<'_> {
             let corner = |x: f32, y: f32| p + vec2(x * cs - y * sn, x * sn + y * cs);
             let fa = (1.0 - (tt - 2.4).max(0.0) / 0.8).clamp(0.0, 1.0);
             painter.add(Shape::convex_polygon(
-                vec![corner(-s.x / 2.0, -s.y / 2.0), corner(s.x / 2.0, -s.y / 2.0), corner(s.x / 2.0, s.y / 2.0), corner(-s.x / 2.0, s.y / 2.0)],
+                vec![
+                    corner(-s.x / 2.0, -s.y / 2.0),
+                    corner(s.x / 2.0, -s.y / 2.0),
+                    corner(s.x / 2.0, s.y / 2.0),
+                    corner(-s.x / 2.0, s.y / 2.0),
+                ],
                 with_alpha(conf[i as usize % conf.len()], fa),
                 Stroke::NONE,
             ));
@@ -295,7 +385,8 @@ impl egui::Widget for GameLevelUpScreen<'_> {
         // LEVEL UP letters
         let text = "LEVEL UP";
         let chars: Vec<char> = text.chars().collect();
-        let widths: Vec<f32> = chars.iter().map(|ch| text_w(painter, &ch.to_string(), &big) + big.size * 0.06).collect();
+        let widths: Vec<f32> =
+            chars.iter().map(|ch| text_w(painter, &ch.to_string(), &big) + big.size * 0.06).collect();
         let total: f32 = widths.iter().sum();
         let mut x = c.x - total / 2.0;
         for (i, ch) in chars.iter().enumerate() {
@@ -310,7 +401,9 @@ impl egui::Widget for GameLevelUpScreen<'_> {
                 for d in [vec2(0.0, 3.0), vec2(2.0, 0.0), vec2(-2.0, 0.0), vec2(0.0, -2.0)] {
                     painter.galley_with_override_text_color(r.min + d, g.clone(), with_alpha(hex("#2A1600"), k));
                 }
-                paint::galley_with(painter, r.min, &g, |q| with_alpha(mix(Color32::WHITE, gold, ((q.y - r.min.y) / r.height()).clamp(0.0, 1.0)), k));
+                paint::galley_with(painter, r.min, &g, |q| {
+                    with_alpha(mix(Color32::WHITE, gold, ((q.y - r.min.y) / r.height()).clamp(0.0, 1.0)), k)
+                });
             }
             x += widths[i];
         }
@@ -323,13 +416,29 @@ impl egui::Widget for GameLevelUpScreen<'_> {
         let old = format!("{}", lvl.saturating_sub(1));
         let new = format!("{lvl}");
         if nk < 1.0 {
-            outlined(&pc, nc - vec2(0.0, num_f.size * ne), Align2::CENTER_CENTER, &old, num_f.clone(), with_alpha(Color32::WHITE, 0.6 * (1.0 - nk)), Color32::from_black_alpha(180));
+            outlined(
+                &pc,
+                nc - vec2(0.0, num_f.size * ne),
+                Align2::CENTER_CENTER,
+                &old,
+                num_f.clone(),
+                with_alpha(Color32::WHITE, 0.6 * (1.0 - nk)),
+                Color32::from_black_alpha(180),
+            );
         }
         if nk > 0.0 {
             let g = pc.layout_no_wrap(new.clone(), num_f.clone(), Color32::WHITE);
             let r = Align2::CENTER_CENTER.anchor_size(nc + vec2(0.0, num_f.size * (1.0 - ne)), g.size());
             blur(&pc, r.min, &g, with_alpha(gold, 0.6), 6.0);
-            outlined(&pc, nc + vec2(0.0, num_f.size * (1.0 - ne)), Align2::CENTER_CENTER, &new, num_f.clone(), Color32::WHITE, Color32::from_black_alpha(200));
+            outlined(
+                &pc,
+                nc + vec2(0.0, num_f.size * (1.0 - ne)),
+                Align2::CENTER_CENTER,
+                &new,
+                num_f.clone(),
+                Color32::WHITE,
+                Color32::from_black_alpha(200),
+            );
         }
         // stats
         let sy0 = nc.y + num_f.size * 0.75;
@@ -345,26 +454,59 @@ impl egui::Widget for GameLevelUpScreen<'_> {
             let col = i % cols;
             let cc = pos2(x0 + (col as f32 + 0.5) * colw, sy0 + row as f32 * 44.0 + (1.0 - k) * 14.0);
             let a = k;
-            outlined(painter, cc - vec2(0.0, 9.0), Align2::CENTER_CENTER, &name.to_uppercase(), FontId::monospace(10.5), with_alpha(pal.hud, 0.8 * a), with_alpha(Color32::BLACK, 0.6 * a));
+            outlined(
+                painter,
+                cc - vec2(0.0, 9.0),
+                Align2::CENTER_CENTER,
+                &name.to_uppercase(),
+                FontId::monospace(10.5),
+                with_alpha(pal.hud, 0.8 * a),
+                with_alpha(Color32::BLACK, 0.6 * a),
+            );
             let val = format!("{}", *after as i64);
             let d = after - before;
             let vw = text_w(painter, &val, &stat_f);
-            outlined(painter, cc + vec2(-6.0, 9.0), Align2::CENTER_CENTER, &val, stat_f.clone(), with_alpha(Color32::WHITE, a), with_alpha(Color32::BLACK, 0.7 * a));
+            outlined(
+                painter,
+                cc + vec2(-6.0, 9.0),
+                Align2::CENTER_CENTER,
+                &val,
+                stat_f.clone(),
+                with_alpha(Color32::WHITE, a),
+                with_alpha(Color32::BLACK, 0.7 * a),
+            );
             let pk = glowkit_core::anim::stagger(t - 1.2, i, 0.12, 0.25);
             let ps = 1.0 + 0.5 * (1.0 - pk) * (pk > 0.0) as i32 as f32;
             if pk > 0.0 {
-                outlined(painter, cc + vec2(vw / 2.0 - 2.0, 9.0), Align2::LEFT_CENTER, &format!("+{}", d as i64), FontId::proportional(12.5 * ps), with_alpha(hex("#6BF59A"), pk), with_alpha(Color32::BLACK, 0.7 * pk));
+                outlined(
+                    painter,
+                    cc + vec2(vw / 2.0 - 2.0, 9.0),
+                    Align2::LEFT_CENTER,
+                    &format!("+{}", d as i64),
+                    FontId::proportional(12.5 * ps),
+                    with_alpha(hex("#6BF59A"), pk),
+                    with_alpha(Color32::BLACK, 0.7 * pk),
+                );
             }
         }
         if !self.note.is_empty() {
             let k = ((t - 1.8) / 0.4).clamp(0.0, 1.0);
             let pulse = 0.75 + 0.25 * (time * 3.0).sin();
-            let nr = Rect::from_center_size(pos2(rect.center().x, rect.max.y - 26.0), vec2(text_w(painter, self.note, &FontId::monospace(12.0)) + 36.0, 26.0));
+            let nr = Rect::from_center_size(
+                pos2(rect.center().x, rect.max.y - 26.0),
+                vec2(text_w(painter, self.note, &FontId::monospace(12.0)) + 36.0, 26.0),
+            );
             let mut p2 = painter.clone();
             p2.set_opacity(k);
             p2.rect_filled(nr, 13.0, with_alpha(gold, 0.18 * pulse));
             p2.rect_stroke(nr, 13.0, Stroke::new(1.0, with_alpha(gold, 0.8)), egui::StrokeKind::Inside);
-            p2.text(nr.center(), Align2::CENTER_CENTER, self.note.to_uppercase(), FontId::monospace(12.0), mix(gold, Color32::WHITE, 0.4));
+            p2.text(
+                nr.center(),
+                Align2::CENTER_CENTER,
+                self.note.to_uppercase(),
+                FontId::monospace(12.0),
+                mix(gold, Color32::WHITE, 0.4),
+            );
         }
         resp
     }
@@ -393,7 +535,14 @@ pub struct GameCharacter {
 impl GameCharacter {
     /// A character.
     pub fn new(name: impl Into<String>, class: impl Into<String>, portrait: GamePortrait) -> Self {
-        Self { name: name.into(), class: class.into(), bio: String::new(), color: portrait.trim, portrait, stats: Vec::new() }
+        Self {
+            name: name.into(),
+            class: class.into(),
+            bio: String::new(),
+            color: portrait.trim,
+            portrait,
+            stats: Vec::new(),
+        }
     }
     /// Bio text.
     pub fn bio(mut self, b: impl Into<String>) -> Self {
@@ -438,7 +587,16 @@ pub struct GameCharacterSelect<'a> {
 impl<'a> GameCharacterSelect<'a> {
     /// A carousel over `roster`, editing `selected`.
     pub fn new(roster: &'a [GameCharacter], selected: &'a mut usize) -> Self {
-        Self { roster, selected, height: 400.0, style: GameStyle::SciFi, palette: None, autoplay: false, confirmed: None, cues: None }
+        Self {
+            roster,
+            selected,
+            height: 400.0,
+            style: GameStyle::SciFi,
+            palette: None,
+            autoplay: false,
+            confirmed: None,
+            cues: None,
+        }
     }
     /// Height in points.
     pub fn height(mut self, h: f32) -> Self {
@@ -488,12 +646,18 @@ impl egui::Widget for GameCharacterSelect<'_> {
         let n = self.roster.len();
         let mut sel = (*self.selected).min(n - 1);
         let wide = w > 640.0;
-        let stage = if wide { Rect::from_min_max(rect.min, pos2(rect.min.x + w * 0.62, rect.max.y)) } else { Rect::from_min_max(rect.min, pos2(rect.max.x, rect.min.y + self.height * 0.62)) };
+        let stage = if wide {
+            Rect::from_min_max(rect.min, pos2(rect.min.x + w * 0.62, rect.max.y))
+        } else {
+            Rect::from_min_max(rect.min, pos2(rect.max.x, rect.min.y + self.height * 0.62))
+        };
         let card_h = (stage.height() * 0.72).min(300.0);
         let card_w = card_h * 0.66;
         let spacing = card_w * 0.78;
         // input
-        let (left, right, enter) = ui.input(|i| (i.key_pressed(egui::Key::ArrowLeft), i.key_pressed(egui::Key::ArrowRight), i.key_pressed(egui::Key::Enter)));
+        let (left, right, enter) = ui.input(|i| {
+            (i.key_pressed(egui::Key::ArrowLeft), i.key_pressed(egui::Key::ArrowRight), i.key_pressed(egui::Key::Enter))
+        });
         if left {
             sel = (sel + n - 1) % n;
         }
@@ -524,15 +688,20 @@ impl egui::Widget for GameCharacterSelect<'_> {
         // card clicks
         // unbounded target so wrapping from the last hero to the first keeps moving forward
         let prev_sel: usize = glowkit_core::state(ui, id.with("prev_sel"), || sel);
-        let target = glowkit_core::with_state(ui, id.with("target"), || sel as f32, |t| {
-            let nf = n as f32;
-            let mut d = (sel as f32 - prev_sel as f32).rem_euclid(nf);
-            if d > nf / 2.0 {
-                d -= nf;
-            }
-            *t += d;
-            *t
-        });
+        let target = glowkit_core::with_state(
+            ui,
+            id.with("target"),
+            || sel as f32,
+            |t| {
+                let nf = n as f32;
+                let mut d = (sel as f32 - prev_sel as f32).rem_euclid(nf);
+                if d > nf / 2.0 {
+                    d -= nf;
+                }
+                *t += d;
+                *t
+            },
+        );
         glowkit_core::set_state(ui, id.with("prev_sel"), sel);
         let pos_f = spring(ui, id.with("pos"), target, 170.0, 20.0) - drag_now / spacing;
         let card_rect = |i: usize| {
@@ -542,7 +711,10 @@ impl egui::Widget for GameCharacterSelect<'_> {
                 d -= nf;
             }
             let s = 1.0 / (1.0 + d.abs() * 0.32);
-            let c = pos2(stage.center().x + d * spacing * (1.0 - d.abs().min(2.0) * 0.08), stage.center().y + d.abs() * 10.0 - 6.0);
+            let c = pos2(
+                stage.center().x + d * spacing * (1.0 - d.abs().min(2.0) * 0.08),
+                stage.center().y + d.abs() * 10.0 - 6.0,
+            );
             (Rect::from_center_size(c, vec2(card_w, card_h) * s), d, s)
         };
         let mut any = lr.hovered() || rr.hovered() || resp.dragged();
@@ -558,7 +730,10 @@ impl egui::Widget for GameCharacterSelect<'_> {
         }
         // confirm button
         let btn = if wide {
-            Rect::from_min_size(pos2(stage.max.x + 20.0, rect.max.y - 66.0), vec2(rect.max.x - stage.max.x - 44.0, 44.0))
+            Rect::from_min_size(
+                pos2(stage.max.x + 20.0, rect.max.y - 66.0),
+                vec2(rect.max.x - stage.max.x - 44.0, 44.0),
+            )
         } else {
             Rect::from_center_size(pos2(rect.center().x, rect.max.y - 30.0), vec2(220.0, 40.0))
         };
@@ -587,7 +762,12 @@ impl egui::Widget for GameCharacterSelect<'_> {
         bp.sky = [pal.sky[0], mix(pal.sky[1], hero.color, 0.25), mix(pal.sky[2], hero.color, 0.4)];
         GameBackdrop::new(self.style).palette(bp).dim(0.35).paint_at(ui.painter(), rect, time * 0.2);
         let painter = &ui.painter_at(rect);
-        paint::glow_ellipse(painter, pos2(stage.center().x, stage.center().y + card_h * 0.45), vec2(card_w * 1.3, 26.0), with_alpha(hero.color, 0.55));
+        paint::glow_ellipse(
+            painter,
+            pos2(stage.center().x, stage.center().y + card_h * 0.45),
+            vec2(card_w * 1.3, 26.0),
+            with_alpha(hero.color, 0.55),
+        );
         // cards back to front
         let mut order: Vec<usize> = (0..n).collect();
         order.sort_by(|a, b| card_rect(*b).1.abs().total_cmp(&card_rect(*a).1.abs()));
@@ -605,18 +785,45 @@ impl egui::Widget for GameCharacterSelect<'_> {
             }
             paint::soft_shadow(painter, r, 12.0, 24.0, vec2(0.0, 10.0), Color32::from_black_alpha(160));
             let pts = paint::rounded_rect_points(r, 12.0 * s, 4);
-            paint::fill_convex_fn(painter, &pts, 3, paint::linear_fn(r, 90.0, &[mix(ch.portrait.bg[0], hex("#000000"), 0.2), ch.portrait.bg[1]]));
-            let pr = Rect::from_min_max(r.min + vec2(0.0, r.height() * 0.06), pos2(r.max.x, r.max.y - r.height() * 0.2));
+            paint::fill_convex_fn(
+                painter,
+                &pts,
+                3,
+                paint::linear_fn(r, 90.0, &[mix(ch.portrait.bg[0], hex("#000000"), 0.2), ch.portrait.bg[1]]),
+            );
+            let pr =
+                Rect::from_min_max(r.min + vec2(0.0, r.height() * 0.06), pos2(r.max.x, r.max.y - r.height() * 0.2));
             let pp = Rect::from_center_size(pr.center(), vec2(pr.height().min(r.width()), pr.height()));
             ch.portrait.paint(painter, pp.intersect(r), time + i as f32, false);
             // name band
             let band = Rect::from_min_max(pos2(r.min.x, r.max.y - r.height() * 0.2), r.max);
-            painter.rect_filled(band, egui::CornerRadius { nw: 0, ne: 0, sw: (12.0 * s) as u8, se: (12.0 * s) as u8 }, hex("#05070CE0"));
+            painter.rect_filled(
+                band,
+                egui::CornerRadius { nw: 0, ne: 0, sw: (12.0 * s) as u8, se: (12.0 * s) as u8 },
+                hex("#05070CE0"),
+            );
             painter.rect_filled(Rect::from_min_size(band.min, vec2(band.width(), 2.0)), 0.0, ch.color);
-            painter.text(band.center() - vec2(0.0, 6.0 * s), Align2::CENTER_CENTER, ch.name.to_uppercase(), FontId::new(card_f.size * s, card_f.family.clone()), Color32::WHITE);
-            painter.text(band.center() + vec2(0.0, 10.0 * s), Align2::CENTER_CENTER, &ch.class, FontId::proportional(10.5 * s), with_alpha(ch.color, 0.95));
+            painter.text(
+                band.center() - vec2(0.0, 6.0 * s),
+                Align2::CENTER_CENTER,
+                ch.name.to_uppercase(),
+                FontId::new(card_f.size * s, card_f.family.clone()),
+                Color32::WHITE,
+            );
+            painter.text(
+                band.center() + vec2(0.0, 10.0 * s),
+                Align2::CENTER_CENTER,
+                &ch.class,
+                FontId::proportional(10.5 * s),
+                with_alpha(ch.color, 0.95),
+            );
             let edge = if center { mix(ch.color, Color32::WHITE, 0.3) } else { with_alpha(Color32::WHITE, 0.15) };
-            painter.rect_stroke(r, 12.0 * s, Stroke::new(if center { 2.5 } else { 1.0 }, edge), egui::StrokeKind::Inside);
+            painter.rect_stroke(
+                r,
+                12.0 * s,
+                Stroke::new(if center { 2.5 } else { 1.0 }, edge),
+                egui::StrokeKind::Inside,
+            );
             if dim > 0.0 {
                 painter.rect_filled(r, 12.0 * s, Color32::from_black_alpha((dim * 230.0) as u8));
             }
@@ -625,19 +832,43 @@ impl egui::Widget for GameCharacterSelect<'_> {
         for (r, dir, hov) in [(la, -1.0, lr.hovered()), (ra, 1.0, rr.hovered())] {
             let c = r.center() + vec2(dir * if hov { 3.0 } else { 0.0 }, 0.0);
             let col = if hov { pal.accent } else { with_alpha(Color32::WHITE, 0.7) };
-            painter.add(Shape::line(vec![c + vec2(-dir * 7.0, -14.0), c + vec2(dir * 7.0, 0.0), c + vec2(-dir * 7.0, 14.0)], Stroke::new(3.0, col)));
+            painter.add(Shape::line(
+                vec![c + vec2(-dir * 7.0, -14.0), c + vec2(dir * 7.0, 0.0), c + vec2(-dir * 7.0, 14.0)],
+                Stroke::new(3.0, col),
+            ));
         }
         // details
-        let det = if wide { Rect::from_min_max(pos2(stage.max.x + 20.0, rect.min.y + 36.0), pos2(rect.max.x - 24.0, btn.min.y - 12.0)) } else { Rect::from_min_max(pos2(rect.min.x + 24.0, stage.max.y), pos2(rect.max.x - 24.0, btn.min.y - 6.0)) };
+        let det = if wide {
+            Rect::from_min_max(pos2(stage.max.x + 20.0, rect.min.y + 36.0), pos2(rect.max.x - 24.0, btn.min.y - 12.0))
+        } else {
+            Rect::from_min_max(pos2(rect.min.x + 24.0, stage.max.y), pos2(rect.max.x - 24.0, btn.min.y - 6.0))
+        };
         let e = glowkit_core::ease(glowkit_core::Easing::OutCubic, (since / 0.4).min(1.0));
         let mut p2 = painter.clone();
         p2.set_opacity(e);
         let dx = (1.0 - e) * 30.0;
-        outlined(&p2, pos2(det.min.x + dx, det.min.y + 6.0), Align2::LEFT_TOP, &hero.class.to_uppercase(), FontId::monospace(11.0), hero.color, Color32::from_black_alpha(150));
-        let nr = glow_text(&p2, pos2(det.min.x + dx, det.min.y + 22.0), Align2::LEFT_TOP, &hero.name.to_uppercase(), name_f, Color32::WHITE, with_alpha(hero.color, 0.5));
+        outlined(
+            &p2,
+            pos2(det.min.x + dx, det.min.y + 6.0),
+            Align2::LEFT_TOP,
+            &hero.class.to_uppercase(),
+            FontId::monospace(11.0),
+            hero.color,
+            Color32::from_black_alpha(150),
+        );
+        let nr = glow_text(
+            &p2,
+            pos2(det.min.x + dx, det.min.y + 22.0),
+            Align2::LEFT_TOP,
+            &hero.name.to_uppercase(),
+            name_f,
+            Color32::WHITE,
+            with_alpha(hero.color, 0.5),
+        );
         let mut y = nr.max.y + 8.0;
         if wide && !hero.bio.is_empty() {
-            let g = p2.layout(hero.bio.clone(), FontId::proportional(12.0), with_alpha(Color32::WHITE, 0.8), det.width());
+            let g =
+                p2.layout(hero.bio.clone(), FontId::proportional(12.0), with_alpha(Color32::WHITE, 0.8), det.width());
             let gh = g.size().y;
             p2.galley(pos2(det.min.x + dx, y), g, Color32::WHITE);
             y += gh + 14.0;
@@ -647,7 +878,13 @@ impl egui::Widget for GameCharacterSelect<'_> {
                 break;
             }
             let k = glowkit_core::anim::stagger(since - 0.1, i, 0.07, 0.5);
-            p2.text(pos2(det.min.x, y), Align2::LEFT_CENTER, name.to_uppercase(), FontId::monospace(10.0), with_alpha(Color32::WHITE, 0.75));
+            p2.text(
+                pos2(det.min.x, y),
+                Align2::LEFT_CENTER,
+                name.to_uppercase(),
+                FontId::monospace(10.0),
+                with_alpha(Color32::WHITE, 0.75),
+            );
             let bar = Rect::from_min_size(pos2(det.min.x + 80.0, y - 3.0), vec2(det.width() - 80.0, 6.0));
             let segs = 10;
             let sw = bar.width() / segs as f32;
@@ -655,7 +892,11 @@ impl egui::Widget for GameCharacterSelect<'_> {
             for s in 0..segs {
                 let sr = Rect::from_min_size(pos2(bar.min.x + s as f32 * sw, bar.min.y), vec2(sw - 2.0, bar.height()));
                 let on = (s as f32 + 0.5) / segs as f32 <= fill;
-                p2.rect_filled(sr, 1.0, if on { mix(hero.color, Color32::WHITE, 0.15) } else { with_alpha(Color32::WHITE, 0.12) });
+                p2.rect_filled(
+                    sr,
+                    1.0,
+                    if on { mix(hero.color, Color32::WHITE, 0.15) } else { with_alpha(Color32::WHITE, 0.12) },
+                );
             }
             y += 20.0;
         }
@@ -664,10 +905,28 @@ impl egui::Widget for GameCharacterSelect<'_> {
         let ct = glowkit_core::anim::Clock::elapsed(ui, id.with("confirm"));
         let press = if ct < 0.25 { 1.0 - ct / 0.25 } else { 0.0 };
         let b = btn.shrink(press * 3.0);
-        paint::soft_shadow(painter, b, 6.0, 18.0, Vec2::ZERO, with_alpha(hero.color, 0.35 + 0.35 * pulse + 0.3 * br.hovered() as i32 as f32));
+        paint::soft_shadow(
+            painter,
+            b,
+            6.0,
+            18.0,
+            Vec2::ZERO,
+            with_alpha(hero.color, 0.35 + 0.35 * pulse + 0.3 * br.hovered() as i32 as f32),
+        );
         let bpts = chamfer_points(b, 10.0);
-        paint::fill_convex_fn(painter, &bpts, 2, paint::linear_fn(b, 0.0, &[hero.color, mix(hero.color, Color32::WHITE, 0.3)]));
-        painter.text(b.center(), Align2::CENTER_CENTER, "SELECT", display_font(ui, 16.0), glowkit_core::color::contrast_text(hero.color));
+        paint::fill_convex_fn(
+            painter,
+            &bpts,
+            2,
+            paint::linear_fn(b, 0.0, &[hero.color, mix(hero.color, Color32::WHITE, 0.3)]),
+        );
+        painter.text(
+            b.center(),
+            Align2::CENTER_CENTER,
+            "SELECT",
+            display_font(ui, 16.0),
+            glowkit_core::color::contrast_text(hero.color),
+        );
         if ct < 0.6 {
             ring(painter, b.center(), ct, 0.6, 20.0, 140.0, hero.color, 3.0);
         }
@@ -676,7 +935,11 @@ impl egui::Widget for GameCharacterSelect<'_> {
         for i in 0..n {
             let on = i == sel;
             let c = pos2(stage.center().x + (i as f32 - (n as f32 - 1.0) / 2.0) * 14.0, py);
-            painter.circle_filled(c, if on { 4.0 } else { 2.5 }, if on { hero.color } else { with_alpha(Color32::WHITE, 0.35) });
+            painter.circle_filled(
+                c,
+                if on { 4.0 } else { 2.5 },
+                if on { hero.color } else { with_alpha(Color32::WHITE, 0.35) },
+            );
         }
         resp
     }

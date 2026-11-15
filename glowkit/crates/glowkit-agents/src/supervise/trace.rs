@@ -204,7 +204,8 @@ impl egui::Widget for TraceWaterfall<'_> {
         // header
         let hy = rect.min.y + header / 2.0;
         icon(&p, Icon::Sparkle, pos2(rect.min.x + pad + 6.0, hy), 13.0, t.accent);
-        let tr = text(&p, pos2(rect.min.x + pad + 20.0, hy), Align2::LEFT_CENTER, "Trace", font(13.5), t.foreground, 80.0);
+        let tr =
+            text(&p, pos2(rect.min.x + pad + 20.0, hy), Align2::LEFT_CENTER, "Trace", font(13.5), t.foreground, 80.0);
         text(&p, pos2(tr.max.x + 8.0, hy), Align2::LEFT_CENTER, &self.title, font(12.5), dim(&t), rect.width() - 220.0);
         if live {
             state_badge(&p, &t, pos2(rect.max.x - pad, hy), Align2::RIGHT_CENTER, RunState::Running, now);
@@ -250,7 +251,10 @@ impl egui::Widget for TraceWaterfall<'_> {
         let mut k = 0.0;
         while k <= span_t {
             let x = x_of(k);
-            p.line_segment([pos2(x, sy + stats + 4.0), pos2(x, rect.max.y - 10.0)], Stroke::new(1.0, with_alpha(hair(&t), 0.7)));
+            p.line_segment(
+                [pos2(x, sy + stats + 4.0), pos2(x, rect.max.y - 10.0)],
+                Stroke::new(1.0, with_alpha(hair(&t), 0.7)),
+            );
             text(&p, pos2(x + 4.0, ay), Align2::LEFT_CENTER, &format!("{}s", k), font(10.5), faint(&t), 40.0);
             k += step;
         }
@@ -290,7 +294,8 @@ impl egui::Widget for TraceWaterfall<'_> {
             p.rect_filled(ib, cr(5.0), tint(&t, kc));
             icon(&p, s.kind.icon(), ib.center(), 11.0, ink(&t, kc));
             let name_font = if s.depth == 0 || s.kind == SpanKind::Agent { font(12.5) } else { font(12.0) };
-            let nr = text(&p, pos2(x + 36.0, cy), Align2::LEFT_CENTER, &s.name, name_font, t.foreground, split - x - 46.0);
+            let nr =
+                text(&p, pos2(x + 36.0, cy), Align2::LEFT_CENTER, &s.name, name_font, t.foreground, split - x - 46.0);
             let room = split - nr.max.x - 14.0;
             if room > 24.0 {
                 text(&p, pos2(nr.max.x + 6.0, cy), Align2::LEFT_CENTER, &s.detail, font(11.0), faint(&t), room);
@@ -301,7 +306,8 @@ impl egui::Widget for TraceWaterfall<'_> {
             let x1 = x_of(e).max(x0 + 3.0);
             let bar = Rect::from_min_max(pos2(x0, cy - 6.0), pos2(x1, cy + 6.0));
             let parent = has_kids(i);
-            let base = if parent { mix(track(&t), kc, 0.15) } else { mix(surface(&t), kc, if t.dark { 0.35 } else { 0.22 }) };
+            let base =
+                if parent { mix(track(&t), kc, 0.15) } else { mix(surface(&t), kc, if t.dark { 0.35 } else { 0.22 }) };
             p.rect_filled(bar, cr(4.0), base);
             if !parent {
                 p.rect_stroke(bar, cr(4.0), Stroke::new(1.0, with_alpha(kc, 0.45)), StrokeKind::Inside);
@@ -314,7 +320,11 @@ impl egui::Widget for TraceWaterfall<'_> {
                 spinner(&p, pos2(bar.max.x + 9.0, cy), 4.5, kc, now, 1.5);
             }
             let lx = if s.dur.is_none() { bar.max.x + 20.0 } else { bar.max.x + 6.0 };
-            let label = if s.cost > 0.0 { format!("{} · {}", fmt_secs(e - s.start), fmt_usd(s.cost)) } else { fmt_secs(e - s.start) };
+            let label = if s.cost > 0.0 {
+                format!("{} · {}", fmt_secs(e - s.start), fmt_usd(s.cost))
+            } else {
+                fmt_secs(e - s.start)
+            };
             let lr = text(&p, pos2(lx, cy), Align2::LEFT_CENTER, &label, font(10.5), dim(&t), rect.max.x - lx - 8.0);
             if slowest == Some(i) && s.dur.is_some() && lr.max.x + 60.0 < rect.max.x {
                 badge(&p, &t, pos2(lr.max.x + 6.0, cy), Align2::LEFT_CENTER, "SLOWEST", t.warning, false);
@@ -325,7 +335,10 @@ impl egui::Widget for TraceWaterfall<'_> {
         }
         if live {
             let x = x_of(now);
-            p.line_segment([pos2(x, sy + stats + 4.0), pos2(x, rect.max.y - 10.0)], Stroke::new(1.2, with_alpha(t.info, 0.8)));
+            p.line_segment(
+                [pos2(x, sy + stats + 4.0), pos2(x, rect.max.y - 10.0)],
+                Stroke::new(1.2, with_alpha(t.info, 0.8)),
+            );
             p.circle_filled(pos2(x, sy + stats + axis), 3.0, t.info);
             glowkit_core::animate(ui);
         }
@@ -351,7 +364,15 @@ impl egui::Widget for TraceWaterfall<'_> {
             let card = Rect::from_min_size(pos2(cx, cy), vec2(w, ch));
             let lp = ui.ctx().layer_painter(egui::LayerId::new(egui::Order::Tooltip, id.with("tip")));
             panel_fill(&lp, &t, card, 10.0, if t.dark { t.popover } else { t.card }, 1.4);
-            text(&lp, pos2(card.min.x + 12.0, card.min.y + 16.0), Align2::LEFT_CENTER, &s.name, font(12.5), t.foreground, w - 24.0);
+            text(
+                &lp,
+                pos2(card.min.x + 12.0, card.min.y + 16.0),
+                Align2::LEFT_CENTER,
+                &s.name,
+                font(12.5),
+                t.foreground,
+                w - 24.0,
+            );
             for (k, (a, b)) in lines.iter().enumerate() {
                 let y = card.min.y + 38.0 + k as f32 * 19.0;
                 lp.text(pos2(card.min.x + 12.0, y), Align2::LEFT_CENTER, *a, font(11.0), dim(&t));
@@ -536,7 +557,15 @@ impl<'a> RunTimeline<'a> {
         let pad = 16.0;
         let done = steps.iter().filter(|s| s.state == RunState::Done).count();
         let cur = steps.iter().position(|s| s.state != RunState::Done).unwrap_or(steps.len());
-        text(&p, pos2(rect.min.x + pad, rect.min.y + 22.0), Align2::LEFT_CENTER, &self.task, font(14.0), t.foreground, rect.width() - 120.0);
+        text(
+            &p,
+            pos2(rect.min.x + pad, rect.min.y + 22.0),
+            Align2::LEFT_CENTER,
+            &self.task,
+            font(14.0),
+            t.foreground,
+            rect.width() - 120.0,
+        );
         text(
             &p,
             pos2(rect.max.x - pad, rect.min.y + 22.0),
@@ -548,8 +577,20 @@ impl<'a> RunTimeline<'a> {
         );
         let frac = glowkit_core::anim::follow(ui, id.with("frac"), done as f32 / steps.len().max(1) as f32, 6.0);
         let any_fail = steps.iter().any(|s| s.state == RunState::Failed);
-        let bar_c = if any_fail { t.destructive } else if done == steps.len() { t.success } else { t.foreground };
-        meter(&p, &t, Rect::from_min_size(pos2(rect.min.x + pad, rect.min.y + 42.0), vec2(rect.width() - pad * 2.0, 4.0)), frac, bar_c);
+        let bar_c = if any_fail {
+            t.destructive
+        } else if done == steps.len() {
+            t.success
+        } else {
+            t.foreground
+        };
+        meter(
+            &p,
+            &t,
+            Rect::from_min_size(pos2(rect.min.x + pad, rect.min.y + 42.0), vec2(rect.width() - pad * 2.0, 4.0)),
+            frac,
+            bar_c,
+        );
         hline(&p, &t, rect.min.x, rect.max.x, rect.min.y + header - 10.0);
         let rail_x = rect.min.x + pad + 9.0;
         let mut y = rect.min.y + header;
@@ -566,7 +607,8 @@ impl<'a> RunTimeline<'a> {
             state_icon(&p, &t, pos2(rail_x, cy), 8.5, s.state, now);
             let tx = rail_x + 20.0;
             let title_c = if s.state == RunState::Queued { dim(&t) } else { t.foreground };
-            let tr = text(&p, pos2(tx, cy), Align2::LEFT_CENTER, &s.title, font(13.0), title_c, rect.max.x - tx - 110.0);
+            let tr =
+                text(&p, pos2(tx, cy), Align2::LEFT_CENTER, &s.title, font(13.0), title_c, rect.max.x - tx - 110.0);
             if s.state != RunState::Queued {
                 text(&p, pos2(tr.max.x + 8.0, cy), Align2::LEFT_CENTER, &fmt_secs(s.secs), font(11.0), faint(&t), 60.0);
             }
@@ -594,10 +636,22 @@ impl<'a> RunTimeline<'a> {
                         }
                     });
                 }
-                p.rect(br, cr(9.0), if hresp.hovered() { mix(well(&t), t.foreground, 0.02) } else { well(&t) }, Stroke::new(1.0, hair(&t)), StrokeKind::Inside);
+                p.rect(
+                    br,
+                    cr(9.0),
+                    if hresp.hovered() { mix(well(&t), t.foreground, 0.02) } else { well(&t) },
+                    Stroke::new(1.0, hair(&t)),
+                    StrokeKind::Inside,
+                );
                 let pc = faded(&p, 1.0 - o);
                 let n = s.tools.len();
-                pc.text(pos2(br.min.x + 11.0, br.min.y + 14.0), Align2::LEFT_CENTER, format!("{n} tool call{}", if n == 1 { "" } else { "s" }), font(11.5), dim(&t));
+                pc.text(
+                    pos2(br.min.x + 11.0, br.min.y + 14.0),
+                    Align2::LEFT_CENTER,
+                    format!("{n} tool call{}", if n == 1 { "" } else { "s" }),
+                    font(11.5),
+                    dim(&t),
+                );
                 let ic = if o > 0.5 { Icon::ChevronDown } else { Icon::ChevronRight };
                 icon(&p, ic, pos2(br.max.x - 14.0, br.min.y + 14.0), 11.0, dim(&t));
                 if o > 0.02 {
@@ -607,19 +661,53 @@ impl<'a> RunTimeline<'a> {
                         let trr = Rect::from_min_size(pos2(br.min.x + 6.0, ty), vec2(br.width() - 34.0, tool_h));
                         po.rect(trr, cr(7.0), surface(&t), Stroke::new(1.0, hair(&t)), StrokeKind::Inside);
                         icon(&po, tool.icon, pos2(trr.min.x + 13.0, trr.center().y), 12.0, dim(&t));
-                        let nr = text(&po, pos2(trr.min.x + 26.0, trr.center().y), Align2::LEFT_CENTER, &tool.name, mono(11.0), t.foreground, 150.0);
+                        let nr = text(
+                            &po,
+                            pos2(trr.min.x + 26.0, trr.center().y),
+                            Align2::LEFT_CENTER,
+                            &tool.name,
+                            mono(11.0),
+                            t.foreground,
+                            150.0,
+                        );
                         let sr = if tool.state == RunState::Done {
                             let label = fmt_secs(tool.secs);
-                            let r = text(&po, pos2(trr.max.x - 10.0, trr.center().y), Align2::RIGHT_CENTER, &label, font(10.5), faint(&t), 60.0);
+                            let r = text(
+                                &po,
+                                pos2(trr.max.x - 10.0, trr.center().y),
+                                Align2::RIGHT_CENTER,
+                                &label,
+                                font(10.5),
+                                faint(&t),
+                                60.0,
+                            );
                             icon(&po, Icon::Check, pos2(r.min.x - 9.0, trr.center().y), 11.0, t.success);
                             r.min.x - 18.0
                         } else if tool.state == RunState::Running {
                             spinner(&po, pos2(trr.max.x - 14.0, trr.center().y), 5.0, t.info, now, 1.6);
                             trr.max.x - 26.0
                         } else {
-                            badge(&po, &t, pos2(trr.max.x - 8.0, trr.center().y), Align2::RIGHT_CENTER, tool.state.label(), tool.state.color(&t), false).min.x - 6.0
+                            badge(
+                                &po,
+                                &t,
+                                pos2(trr.max.x - 8.0, trr.center().y),
+                                Align2::RIGHT_CENTER,
+                                tool.state.label(),
+                                tool.state.color(&t),
+                                false,
+                            )
+                            .min
+                            .x - 6.0
                         };
-                        text(&po, pos2(nr.max.x + 10.0, trr.center().y), Align2::LEFT_CENTER, &tool.detail, font(11.0), faint(&t), sr - nr.max.x - 16.0);
+                        text(
+                            &po,
+                            pos2(nr.max.x + 10.0, trr.center().y),
+                            Align2::LEFT_CENTER,
+                            &tool.detail,
+                            font(11.0),
+                            faint(&t),
+                            sr - nr.max.x - 16.0,
+                        );
                     }
                 }
                 yy += br.height() + 6.0;
@@ -630,7 +718,15 @@ impl<'a> RunTimeline<'a> {
                 p.rect(nr, cr(9.0), tint(&t, c), Stroke::new(1.0, with_alpha(c, 0.35)), StrokeKind::Inside);
                 icon(&p, Icon::AlertCircle, pos2(nr.min.x + 15.0, nr.min.y + 16.0), 13.0, ink(&t, c));
                 let bw = 92.0;
-                para(&p, pos2(nr.min.x + 28.0, nr.min.y + 8.0), &s.note, font(11.5), ink(&t, c), nr.width() - 44.0 - bw, 2);
+                para(
+                    &p,
+                    pos2(nr.min.x + 28.0, nr.min.y + 8.0),
+                    &s.note,
+                    font(11.5),
+                    ink(&t, c),
+                    nr.width() - 44.0 - bw,
+                    2,
+                );
                 if s.state == RunState::Failed {
                     let b = Rect::from_min_size(pos2(nr.max.x - bw - 10.0, nr.center().y - 13.0), vec2(bw, 26.0));
                     if button(ui, b, id.with(("retry", i)), "Retry step", Some(Icon::Refresh), Btn::Primary).clicked() {

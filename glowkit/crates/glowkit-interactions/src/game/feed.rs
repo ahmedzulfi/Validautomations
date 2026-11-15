@@ -141,17 +141,31 @@ impl<'a> GameDamageNumbers<'a> {
                     let e = 1.0 - (-t * 4.0).exp();
                     let p = base + vec2(side * 20.0 * e, -46.0 * e) + shake(t, 6.0, h.seed as f32 % 50.0);
                     let s = if t < 0.1 { 2.6 - 1.0 * (t / 0.1) } else { 1.6 - 0.2 * ((t - 0.1) / 0.3).min(1.0) };
-                    (format!("{}!", thousands(h.amount)), mix(hex("#FFE14D"), hex("#FF7A1F"), (t * 3.0).min(1.0)), 24.0 * s, p, side * 0.12)
+                    (
+                        format!("{}!", thousands(h.amount)),
+                        mix(hex("#FFE14D"), hex("#FF7A1F"), (t * 3.0).min(1.0)),
+                        24.0 * s,
+                        p,
+                        side * 0.12,
+                    )
                 }
                 GameDamageKind::Heal => {
                     let e = 1.0 - (-t * 3.0).exp();
-                    (format!("+{}", thousands(h.amount)), hex("#5BF08F"), 20.0 * (1.0 + 0.4 * (1.0 - (t / 0.15).min(1.0))), base + vec2(0.0, -70.0 * e), 0.0)
+                    (
+                        format!("+{}", thousands(h.amount)),
+                        hex("#5BF08F"),
+                        20.0 * (1.0 + 0.4 * (1.0 - (t / 0.15).min(1.0))),
+                        base + vec2(0.0, -70.0 * e),
+                        0.0,
+                    )
                 }
                 GameDamageKind::Miss => {
                     let e = 1.0 - (-t * 4.0).exp();
                     ("MISS".to_string(), hex("#B8C0CC"), 16.0, base + vec2(side.signum() * 50.0 * e, -20.0 * e), 0.0)
                 }
-                GameDamageKind::Poison => (thousands(h.amount), hex("#A8F05A"), 14.0, base + vec2(side * 10.0, -40.0 * k), 0.0),
+                GameDamageKind::Poison => {
+                    (thousands(h.amount), hex("#A8F05A"), 14.0, base + vec2(side * 10.0, -40.0 * k), 0.0)
+                }
                 GameDamageKind::Shield => {
                     let e = 1.0 - (-t * 5.0).exp();
                     (thousands(h.amount), hex("#7DF0FF"), 18.0, base + vec2(side * 30.0 * e, -50.0 * e), 0.0)
@@ -159,7 +173,15 @@ impl<'a> GameDamageNumbers<'a> {
             };
             if h.kind == GameDamageKind::Crit && t < 0.5 {
                 let bk = t / 0.5;
-                paint::star(painter, pos, 46.0 * (0.6 + bk), 18.0 * (0.6 + bk), 8, t * 2.0, with_alpha(hex("#FF9A1F"), 0.45 * (1.0 - bk)));
+                paint::star(
+                    painter,
+                    pos,
+                    46.0 * (0.6 + bk),
+                    18.0 * (0.6 + bk),
+                    8,
+                    t * 2.0,
+                    with_alpha(hex("#FF9A1F"), 0.45 * (1.0 - bk)),
+                );
                 paint::glow(painter, pos, 60.0, with_alpha(hex("#FFC94A"), 0.4 * (1.0 - bk)));
                 burst(painter, pos, t, 12, h.seed, 260.0, 120.0, hex("#FFC94A"), 2.6);
             }
@@ -213,7 +235,15 @@ pub struct GameKillEntry {
 impl GameKillEntry {
     /// `killer` got `victim` with `weapon`, `age` seconds ago.
     pub fn new(killer: impl Into<String>, victim: impl Into<String>, weapon: GameIcon, age: f32) -> Self {
-        Self { killer: killer.into(), victim: victim.into(), weapon, headshot: false, killer_ally: true, own: false, age }
+        Self {
+            killer: killer.into(),
+            victim: victim.into(),
+            weapon,
+            headshot: false,
+            killer_ally: true,
+            own: false,
+            age,
+        }
     }
     /// Headshot.
     pub fn headshot(mut self, h: bool) -> Self {
@@ -287,7 +317,8 @@ impl egui::Widget for GameKillFeed<'_> {
             return resp;
         }
         let id = resp.id;
-        let live: Vec<&GameKillEntry> = self.entries.iter().filter(|e| e.age >= 0.0 && e.age < self.life + 0.4).collect();
+        let live: Vec<&GameKillEntry> =
+            self.entries.iter().filter(|e| e.age >= 0.0 && e.age < self.life + 0.4).collect();
         let live = &live[live.len().saturating_sub(self.max_rows)..];
         if !live.is_empty() {
             glowkit_core::animate(ui);
@@ -309,7 +340,12 @@ impl egui::Widget for GameKillFeed<'_> {
             let r = Rect::from_min_max(pos2(x1 - total, y + 2.0), pos2(x1, y + row_h - 2.0));
             painter.rect_filled(r, 4.0, Color32::from_black_alpha((150.0 * a) as u8));
             if e.own {
-                painter.rect_stroke(r, 4.0, Stroke::new(1.5, with_alpha(Color32::WHITE, 0.85 * a)), egui::StrokeKind::Inside);
+                painter.rect_stroke(
+                    r,
+                    4.0,
+                    Stroke::new(1.5, with_alpha(Color32::WHITE, 0.85 * a)),
+                    egui::StrokeKind::Inside,
+                );
                 paint::soft_shadow(painter, r, 4.0, 10.0, Vec2::ZERO, with_alpha(hex("#FF3B4A"), 0.35 * a));
             }
             if e.age < 0.3 {
@@ -414,7 +450,14 @@ pub struct GameScoreboard<'a> {
 impl<'a> GameScoreboard<'a> {
     /// A scoreboard over `rows`.
     pub fn new(rows: &'a [GameScoreRow]) -> Self {
-        Self { rows, teams: ["Alpha", "Bravo"], team_scores: None, colors: [hex("#4DA6FF"), hex("#FF5A5A")], style: GameStyle::SciFi, palette: None }
+        Self {
+            rows,
+            teams: ["Alpha", "Bravo"],
+            team_scores: None,
+            colors: [hex("#4DA6FF"), hex("#FF5A5A")],
+            style: GameStyle::SciFi,
+            palette: None,
+        }
     }
     /// Team names.
     pub fn teams(mut self, t: [&'a str; 2]) -> Self {
@@ -478,14 +521,34 @@ impl egui::Widget for GameScoreboard<'_> {
             let mut rows: Vec<&GameScoreRow> = self.rows.iter().filter(|r| r.team == team).collect();
             rows.sort_by_key(|r| std::cmp::Reverse(r.score));
             let total = self.team_scores.map(|s| s[team]).unwrap_or_else(|| rows.iter().map(|r| r.score).sum());
-            painter.text(pos2(tr.min.x + 16.0, tr.min.y + 24.0), Align2::LEFT_CENTER, self.teams[team].to_uppercase(), head_f.clone(), tc);
-            glow_text(painter, pos2(tr.max.x - 16.0, tr.min.y + 24.0), Align2::RIGHT_CENTER, &thousands(total as i64), head_f.clone(), pal.text, with_alpha(tc, 0.5));
+            painter.text(
+                pos2(tr.min.x + 16.0, tr.min.y + 24.0),
+                Align2::LEFT_CENTER,
+                self.teams[team].to_uppercase(),
+                head_f.clone(),
+                tc,
+            );
+            glow_text(
+                painter,
+                pos2(tr.max.x - 16.0, tr.min.y + 24.0),
+                Align2::RIGHT_CENTER,
+                &thousands(total as i64),
+                head_f.clone(),
+                pal.text,
+                with_alpha(tc, 0.5),
+            );
             // columns
             let cols = [("K", 0.52), ("D", 0.6), ("A", 0.68), ("SCORE", 0.82), ("PING", 0.95)];
             let hy = tr.min.y + 48.0;
             painter.text(pos2(tr.min.x + 40.0, hy), Align2::LEFT_CENTER, "PLAYER", FontId::monospace(10.0), pal.dim);
             for (c, fx) in cols {
-                painter.text(pos2(tr.min.x + tr.width() * fx, hy), Align2::CENTER_CENTER, c, FontId::monospace(10.0), pal.dim);
+                painter.text(
+                    pos2(tr.min.x + tr.width() * fx, hy),
+                    Align2::CENTER_CENTER,
+                    c,
+                    FontId::monospace(10.0),
+                    pal.dim,
+                );
             }
             for (rank, r) in rows.iter().enumerate() {
                 let rid = id.with(("row", &r.name));
@@ -493,35 +556,85 @@ impl egui::Widget for GameScoreboard<'_> {
                 let y = spring(ui, rid.with("y"), target_y, 260.0, 20.0);
                 let k = glowkit_core::anim::stagger(appear, rank + team * 2, 0.06, 0.4);
                 let e = glowkit_core::ease(glowkit_core::Easing::OutCubic, k);
-                let rr = Rect::from_min_size(pos2(tr.min.x + 8.0 + (1.0 - e) * 30.0, y), vec2(tr.width() - 16.0, row_h - 3.0));
+                let rr = Rect::from_min_size(
+                    pos2(tr.min.x + 8.0 + (1.0 - e) * 30.0, y),
+                    vec2(tr.width() - 16.0, row_h - 3.0),
+                );
                 let a = e * if r.dead { 0.5 } else { 1.0 };
                 if r.local {
                     let p = 0.6 + 0.4 * (time * 3.0).sin();
-                    paint::gradient_rect(painter, rr, 3.0, 0.0, &[with_alpha(pal.accent, 0.35 * e), with_alpha(pal.accent, 0.08 * e)]);
-                    painter.rect_stroke(rr, 3.0, Stroke::new(1.0, with_alpha(pal.accent, 0.7 * p * e)), egui::StrokeKind::Inside);
+                    paint::gradient_rect(
+                        painter,
+                        rr,
+                        3.0,
+                        0.0,
+                        &[with_alpha(pal.accent, 0.35 * e), with_alpha(pal.accent, 0.08 * e)],
+                    );
+                    painter.rect_stroke(
+                        rr,
+                        3.0,
+                        Stroke::new(1.0, with_alpha(pal.accent, 0.7 * p * e)),
+                        egui::StrokeKind::Inside,
+                    );
                     ui.ctx().request_repaint();
                 } else if rank % 2 == 0 {
-                    painter.rect_filled(rr, 3.0, with_alpha(if self.style == GameStyle::Fantasy { pal.dim } else { Color32::WHITE }, 0.05 * e));
+                    painter.rect_filled(
+                        rr,
+                        3.0,
+                        with_alpha(if self.style == GameStyle::Fantasy { pal.dim } else { Color32::WHITE }, 0.05 * e),
+                    );
                 }
                 let cy = rr.center().y;
-                painter.text(pos2(rr.min.x + 14.0, cy), Align2::CENTER_CENTER, (rank + 1).to_string(), FontId::monospace(11.0), with_alpha(pal.dim, e));
+                painter.text(
+                    pos2(rr.min.x + 14.0, cy),
+                    Align2::CENTER_CENTER,
+                    (rank + 1).to_string(),
+                    FontId::monospace(11.0),
+                    with_alpha(pal.dim, e),
+                );
                 if r.dead {
                     GameIcon::Skull.paint(painter, pos2(rr.min.x + 36.0, cy), 13.0, with_alpha(pal.dim, e));
                 }
                 let nx = rr.min.x + if r.dead { 48.0 } else { 32.0 };
-                painter.text(pos2(nx, cy), Align2::LEFT_CENTER, &r.name, name_f.clone(), with_alpha(if r.local { pal.text } else { mix(pal.text, pal.dim, 0.2) }, a));
+                painter.text(
+                    pos2(nx, cy),
+                    Align2::LEFT_CENTER,
+                    &r.name,
+                    name_f.clone(),
+                    with_alpha(if r.local { pal.text } else { mix(pal.text, pal.dim, 0.2) }, a),
+                );
                 let vals = [r.kills.to_string(), r.deaths.to_string(), r.assists.to_string()];
                 for (i, v) in vals.iter().enumerate() {
-                    painter.text(pos2(tr.min.x + tr.width() * cols[i].1, cy), Align2::CENTER_CENTER, v, FontId::monospace(12.0), with_alpha(pal.text, a));
+                    painter.text(
+                        pos2(tr.min.x + tr.width() * cols[i].1, cy),
+                        Align2::CENTER_CENTER,
+                        v,
+                        FontId::monospace(12.0),
+                        with_alpha(pal.text, a),
+                    );
                 }
                 let (since, prev, _) = changed(ui, rid.with("score"), r.score as f32);
                 let popk = if since < 0.5 && (r.score as f32) > prev { 1.0 - since / 0.5 } else { 0.0 };
                 if popk > 0.0 {
                     ui.ctx().request_repaint();
                 }
-                painter.text(pos2(tr.min.x + tr.width() * cols[3].1, cy), Align2::CENTER_CENTER, thousands(r.score as i64), FontId::monospace(12.5 * (1.0 + 0.35 * popk)), with_alpha(mix(pal.text, pal.warn, popk), a));
+                painter.text(
+                    pos2(tr.min.x + tr.width() * cols[3].1, cy),
+                    Align2::CENTER_CENTER,
+                    thousands(r.score as i64),
+                    FontId::monospace(12.5 * (1.0 + 0.35 * popk)),
+                    with_alpha(mix(pal.text, pal.warn, popk), a),
+                );
                 // ping bars
-                let bars = if r.ping < 50 { 4 } else if r.ping < 90 { 3 } else if r.ping < 150 { 2 } else { 1 };
+                let bars = if r.ping < 50 {
+                    4
+                } else if r.ping < 90 {
+                    3
+                } else if r.ping < 150 {
+                    2
+                } else {
+                    1
+                };
                 let pc = match bars {
                     4 | 3 => pal.good,
                     2 => pal.warn,
@@ -530,8 +643,15 @@ impl egui::Widget for GameScoreboard<'_> {
                 let px = tr.min.x + tr.width() * cols[4].1 - 9.0;
                 for b in 0..4 {
                     let bh = 4.0 + b as f32 * 3.0;
-                    let br = Rect::from_min_max(pos2(px + b as f32 * 5.0, cy + 7.0 - bh), pos2(px + b as f32 * 5.0 + 3.0, cy + 7.0));
-                    painter.rect_filled(br, 0.5, with_alpha(if b < bars { pc } else { pal.dim }, if b < bars { a } else { 0.25 * a }));
+                    let br = Rect::from_min_max(
+                        pos2(px + b as f32 * 5.0, cy + 7.0 - bh),
+                        pos2(px + b as f32 * 5.0 + 3.0, cy + 7.0),
+                    );
+                    painter.rect_filled(
+                        br,
+                        0.5,
+                        with_alpha(if b < bars { pc } else { pal.dim }, if b < bars { a } else { 0.25 * a }),
+                    );
                 }
             }
         }

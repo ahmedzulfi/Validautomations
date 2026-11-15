@@ -1,8 +1,6 @@
 use super::common::*;
 use egui::text::{LayoutJob, TextFormat};
-use egui::{
-    pos2, vec2, Align2, Color32, FontId, Id, Key, Modifiers, Rect, Sense, Stroke, StrokeKind, Ui, Vec2,
-};
+use egui::{pos2, vec2, Align2, Color32, FontId, Id, Key, Modifiers, Rect, Sense, Stroke, StrokeKind, Ui, Vec2};
 use glowkit_ai::Icon;
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{paint, Theme};
@@ -216,7 +214,14 @@ impl<'a> SmartComposer<'a> {
         let dt = glowkit_core::dt(ui);
         let time = glowkit_core::time(ui);
         let w = self.width.unwrap_or_else(|| ui.available_width().min(640.0));
-        let mut out = ComposerOutput { submitted: None, attach_clicked: false, menu_open: false, rect: Rect::NOTHING, send_rect: Rect::NOTHING, attach_rect: Rect::NOTHING };
+        let mut out = ComposerOutput {
+            submitted: None,
+            attach_clicked: false,
+            menu_open: false,
+            rect: Rect::NOTHING,
+            send_rect: Rect::NOTHING,
+            attach_rect: Rect::NOTHING,
+        };
 
         // simulated uploads
         let mut uploading = false;
@@ -236,7 +241,9 @@ impl<'a> SmartComposer<'a> {
                 i.raw
                     .dropped_files
                     .iter()
-                    .map(|f| f.path().file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_else(|| "file".into()))
+                    .map(|f| {
+                        f.path().file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_else(|| "file".into())
+                    })
                     .collect(),
             )
         });
@@ -333,7 +340,9 @@ impl<'a> SmartComposer<'a> {
                     .margin(egui::Margin::ZERO)
                     .desired_rows(1)
                     .desired_width(inner_w)
-                    .hint_text(egui::RichText::new(self.placeholder).color(with_alpha(t.muted_foreground, 0.8)).size(14.5))
+                    .hint_text(
+                        egui::RichText::new(self.placeholder).color(with_alpha(t.muted_foreground, 0.8)).size(14.5),
+                    )
                     .layouter(&mut layouter)
                     .show(ui);
                 let caret_end = te.galley.rows.last().map(|r| te.galley_pos + r.rect().right_center().to_vec2());
@@ -395,10 +404,20 @@ impl<'a> SmartComposer<'a> {
         let sh = egui::epaint::Shadow { offset: [0, 3], blur: 16, spread: 0, color: shadow(&t, 0.7 + 0.5 * fk) };
         shapes.push(sh.as_shape(rect, cr(22.0)).into());
         if fk > 0.01 {
-            shapes.push(egui::Shape::rect_stroke(rect.expand(3.0), cr(25.0), Stroke::new(4.0, with_alpha(t.ring, 0.13 * fk)), StrokeKind::Inside));
+            shapes.push(egui::Shape::rect_stroke(
+                rect.expand(3.0),
+                cr(25.0),
+                Stroke::new(4.0, with_alpha(t.ring, 0.13 * fk)),
+                StrokeKind::Inside,
+            ));
         }
         shapes.push(egui::Shape::rect_filled(rect, cr(22.0), surface(&t)));
-        shapes.push(egui::Shape::rect_stroke(rect, cr(22.0), Stroke::new(1.0, mix(hairline(&t).color, t.ring, 0.55 * fk)), StrokeKind::Inside));
+        shapes.push(egui::Shape::rect_stroke(
+            rect,
+            cr(22.0),
+            Stroke::new(1.0, mix(hairline(&t).color, t.ring, 0.55 * fk)),
+            StrokeKind::Inside,
+        ));
         ui.painter().set(bg_idx, egui::Shape::Vec(shapes));
         if drag > 0.01 {
             let p = ui.painter();
@@ -410,7 +429,14 @@ impl<'a> SmartComposer<'a> {
             }
             let bob = (time * 3.0).sin() * 3.0;
             icon(p, Icon::Download, r.center() - vec2(0.0, 12.0 - bob * drag), 22.0, with_alpha(t.accent, drag));
-            text(p, r.center() + vec2(0.0, 16.0), Align2::CENTER_CENTER, "Drop files to attach", 13.0, with_alpha(t.foreground, drag));
+            text(
+                p,
+                r.center() + vec2(0.0, 16.0),
+                Align2::CENTER_CENTER,
+                "Drop files to attach",
+                13.0,
+                with_alpha(t.foreground, drag),
+            );
             ui.ctx().request_repaint();
         }
 
@@ -421,7 +447,8 @@ impl<'a> SmartComposer<'a> {
             let mw = (w * 0.62).max(260.0).min(w);
             let mh = rows as f32 * 38.0 + 32.0;
             let pos = pos2(rect.min.x + 6.0, rect.min.y - 8.0 - mh + (1.0 - open_k) * 8.0);
-            let area = egui::Area::new(id.with("menu_area")).order(egui::Order::Foreground).fixed_pos(pos).interactable(true);
+            let area =
+                egui::Area::new(id.with("menu_area")).order(egui::Order::Foreground).fixed_pos(pos).interactable(true);
             let mention_list = self.mentions;
             let cmd_list = self.commands;
             let header = match &menu {
@@ -437,10 +464,14 @@ impl<'a> SmartComposer<'a> {
                 p.rect_stroke(mr, cr(14.0), hairline(&t), StrokeKind::Inside);
                 text(p, pos2(mr.min.x + 14.0, mr.min.y + 16.0), Align2::LEFT_CENTER, header, 11.0, t.muted_foreground);
                 let hi_y = glowkit_core::anim::spring(ui, id.with("hi_y"), ms.hi.min(rows - 1) as f32, 520.0, 34.0);
-                let hr = Rect::from_min_size(pos2(mr.min.x + 6.0, mr.min.y + 28.0 + hi_y * 38.0), vec2(mw - 12.0, 36.0));
+                let hr =
+                    Rect::from_min_size(pos2(mr.min.x + 6.0, mr.min.y + 28.0 + hi_y * 38.0), vec2(mw - 12.0, 36.0));
                 ui.painter().rect_filled(hr, cr(10.0), well(&t));
                 for (k, &ix) in items.iter().take(rows).enumerate() {
-                    let r = Rect::from_min_size(pos2(mr.min.x + 6.0, mr.min.y + 28.0 + k as f32 * 38.0), vec2(mw - 12.0, 36.0));
+                    let r = Rect::from_min_size(
+                        pos2(mr.min.x + 6.0, mr.min.y + 28.0 + k as f32 * 38.0),
+                        vec2(mw - 12.0, 36.0),
+                    );
                     let resp = ui.interact(r, id.with(("mi", k)), Sense::click());
                     if resp.hovered() {
                         ms.hi = k;
@@ -461,8 +492,22 @@ impl<'a> SmartComposer<'a> {
                             let c = &cmd_list[ix];
                             let ic = pos2(r.min.x + 18.0, r.center().y);
                             icon(p, c.icon, ic, 14.0, t.muted_foreground);
-                            let nr = text(p, pos2(ic.x + 16.0, ic.y), Align2::LEFT_CENTER, &format!("/{}", c.name), 13.5, t.foreground);
-                            text(p, pos2(nr.max.x + 10.0, ic.y), Align2::LEFT_CENTER, &c.description, 12.0, t.muted_foreground);
+                            let nr = text(
+                                p,
+                                pos2(ic.x + 16.0, ic.y),
+                                Align2::LEFT_CENTER,
+                                &format!("/{}", c.name),
+                                13.5,
+                                t.foreground,
+                            );
+                            text(
+                                p,
+                                pos2(nr.max.x + 10.0, ic.y),
+                                Align2::LEFT_CENTER,
+                                &c.description,
+                                12.0,
+                                t.muted_foreground,
+                            );
                             if k == ms.hi {
                                 kbd(p, &t, ui, pos2(r.max.x - 8.0, ic.y), "Enter");
                             }
@@ -591,7 +636,13 @@ fn file_tile(ui: &mut Ui, t: &Theme, id: Id, f: &StagedFile, time: f32) -> bool 
     }
     let tx = ib.max.x + 8.0;
     let clip = Rect::from_min_max(pos2(tx, r.min.y), pos2(tx + name_w, r.max.y));
-    p.with_clip_rect(clip).text(pos2(tx, r.min.y + 16.0), Align2::LEFT_CENTER, &f.name, FontId::proportional(12.5), with_alpha(t.foreground, a));
+    p.with_clip_rect(clip).text(
+        pos2(tx, r.min.y + 16.0),
+        Align2::LEFT_CENTER,
+        &f.name,
+        FontId::proportional(12.5),
+        with_alpha(t.foreground, a),
+    );
     let sub = if f.progress < 1.0 { format!("Uploading {}%", (f.progress * 100.0) as u32) } else { f.size.clone() };
     text(p, pos2(tx, r.min.y + 32.0), Align2::LEFT_CENTER, &sub, 10.5, with_alpha(t.muted_foreground, a));
     let xr = Rect::from_center_size(pos2(r.max.x - 14.0, r.center().y), Vec2::splat(20.0));

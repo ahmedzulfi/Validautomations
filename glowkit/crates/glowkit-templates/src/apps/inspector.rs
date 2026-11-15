@@ -182,7 +182,14 @@ impl Default for DevInspectorApp {
             (Lvl::Debug, "render", "pipeline cache hit rate 98.4%"),
         ];
         for (k, (l, tg, m)) in seedlogs.iter().enumerate() {
-            logs.push(LogLine { time: format!("14:31:{:02}.{:03}", 2 + k * 3, (k * 137) % 1000), lvl: *l, target: tg, msg: m.to_string(), frame: None, born: -100.0 });
+            logs.push(LogLine {
+                time: format!("14:31:{:02}.{:03}", 2 + k * 3, (k * 137) % 1000),
+                lvl: *l,
+                target: tg,
+                msg: m.to_string(),
+                frame: None,
+                born: -100.0,
+            });
         }
         Self {
             route: "profiler".into(),
@@ -262,9 +269,23 @@ impl DevInspectorApp {
                     Some(12) => "shadows: cascade 3 rebuilt (light moved)",
                     _ => "scripting: GC pause",
                 };
-                self.logs.push(LogLine { time: time.clone(), lvl: Lvl::Warn, target: "profiler", msg: format!("Frame {n} over budget: {ms:.1} ms ({what})"), frame: Some(n), born: now });
+                self.logs.push(LogLine {
+                    time: time.clone(),
+                    lvl: Lvl::Warn,
+                    target: "profiler",
+                    msg: format!("Frame {n} over budget: {ms:.1} ms ({what})"),
+                    frame: Some(n),
+                    born: now,
+                });
             } else if ms > 20.0 {
-                self.logs.push(LogLine { time: time.clone(), lvl: Lvl::Info, target: "scripting", msg: format!("GC collected 18.2 MB in {:.1} ms", ms - 11.0), frame: Some(n), born: now });
+                self.logs.push(LogLine {
+                    time: time.clone(),
+                    lvl: Lvl::Info,
+                    target: "scripting",
+                    msg: format!("GC collected 18.2 MB in {:.1} ms", ms - 11.0),
+                    frame: Some(n),
+                    born: now,
+                });
             }
             if n % 5 == 0 {
                 let opts: [(Lvl, &str, &str); 6] = [
@@ -317,7 +338,14 @@ impl DevInspectorApp {
         self.tick(now);
         ui.ctx().request_repaint_after(std::time::Duration::from_millis(40));
         if !pk::typing(ui) {
-            let (space, left, right, f) = ui.input(|i| (i.key_pressed(Key::Space), i.key_pressed(Key::ArrowLeft), i.key_pressed(Key::ArrowRight), i.key_pressed(Key::F)));
+            let (space, left, right, f) = ui.input(|i| {
+                (
+                    i.key_pressed(Key::Space),
+                    i.key_pressed(Key::ArrowLeft),
+                    i.key_pressed(Key::ArrowRight),
+                    i.key_pressed(Key::F),
+                )
+            });
             if space {
                 self.recording = !self.recording;
             }
@@ -367,9 +395,21 @@ impl DevInspectorApp {
         if self.recording {
             pk::dot(&p, pos2(rb.min.x + 14.0, cy), 4.0, t.destructive, Some(now));
         } else {
-            AppIcon::Pause.paint(&p, Rect::from_center_size(pos2(rb.min.x + 14.0, cy), vec2(12.0, 12.0)), t.muted_foreground);
+            AppIcon::Pause.paint(
+                &p,
+                Rect::from_center_size(pos2(rb.min.x + 14.0, cy), vec2(12.0, 12.0)),
+                t.muted_foreground,
+            );
         }
-        kit::text_at(&p, pos2(rb.min.x + 26.0, cy), Align2::LEFT_CENTER, if self.recording { "Recording" } else { "Paused" }, 12.5, t.foreground, 70.0);
+        kit::text_at(
+            &p,
+            pos2(rb.min.x + 26.0, cy),
+            Align2::LEFT_CENTER,
+            if self.recording { "Recording" } else { "Paused" },
+            12.5,
+            t.foreground,
+            70.0,
+        );
         pk::key_hint(&p, pos2(rb.max.x - 30.0, cy), "␣", &t);
         kit::tip(&resp, if self.recording { "Pause capture" } else { "Resume capture" }, Some("Space"));
         if resp.clicked() {
@@ -379,12 +419,31 @@ impl DevInspectorApp {
         let tr = Rect::from_min_size(pos2(rb.max.x + 10.0, cy - 14.0), vec2(214.0, 28.0));
         let (tresp, hv) = kit::row(ui, tr, id.with("target"), 7.0);
         p.rect_stroke(tr, 7.0, Stroke::new(1.0, t.border), StrokeKind::Inside);
-        UiIcon::Terminal.paint(&p, Rect::from_center_size(pos2(tr.min.x + 14.0, cy), vec2(13.0, 13.0)), t.muted_foreground);
-        let nr = kit::text_at(&p, pos2(tr.min.x + 28.0, cy), Align2::LEFT_CENTER, "harbor-client", 12.5, t.foreground, 100.0);
+        UiIcon::Terminal.paint(
+            &p,
+            Rect::from_center_size(pos2(tr.min.x + 14.0, cy), vec2(13.0, 13.0)),
+            t.muted_foreground,
+        );
+        let nr = kit::text_at(
+            &p,
+            pos2(tr.min.x + 28.0, cy),
+            Align2::LEFT_CENTER,
+            "harbor-client",
+            12.5,
+            t.foreground,
+            100.0,
+        );
         pk::mono(&p, pos2(nr.max.x + 6.0, cy), Align2::LEFT_CENTER, "pid 48213", 11.0, t.muted_foreground, 80.0);
-        AppIcon::Ui(UiIcon::ChevronDown).paint(&p, Rect::from_center_size(pos2(tr.max.x - 12.0, cy), vec2(11.0, 11.0)), t.muted_foreground.lerp_to_gamma(t.foreground, hv));
+        AppIcon::Ui(UiIcon::ChevronDown).paint(
+            &p,
+            Rect::from_center_size(pos2(tr.max.x - 12.0, cy), vec2(11.0, 11.0)),
+            t.muted_foreground.lerp_to_gamma(t.foreground, hv),
+        );
         if tresp.clicked() {
-            toast(ui.ctx(), Toast::new("Attach to process").description("3 instrumented processes found on this machine."));
+            toast(
+                ui.ctx(),
+                Toast::new("Attach to process").description("3 instrumented processes found on this machine."),
+            );
         }
         // readouts
         let recent: Vec<f32> = self.frames.iter().rev().take(30).copied().collect();
@@ -396,7 +455,17 @@ impl DevInspectorApp {
         for (val, cap, c) in [
             (format!("{:.0}", 1000.0 / avg.max(1.0)), "fps", t.foreground),
             (format!("{avg:.1} ms"), "avg frame", t.foreground),
-            (format!("{p99:.1} ms"), "max (30)", if p99 > 33.3 { t.destructive } else if p99 > 16.7 { t.warning } else { t.foreground }),
+            (
+                format!("{p99:.1} ms"),
+                "max (30)",
+                if p99 > 33.3 {
+                    t.destructive
+                } else if p99 > 16.7 {
+                    t.warning
+                } else {
+                    t.foreground
+                },
+            ),
             (kit::thousands(self.last_frame() as f64, 0), "frames", t.foreground),
         ] {
             let vr = pk::mono(&p, pos2(x, cy - 6.0), Align2::LEFT_CENTER, &val, 12.5, c, 90.0);
@@ -407,8 +476,16 @@ impl DevInspectorApp {
             }
         }
         let ex = Rect::from_min_max(pos2(r.max.x - 122.0, cy - 14.0), pos2(r.max.x - 14.0, cy + 14.0));
-        if pk::small_btn(ui, ex, id.with("export"), "Export trace", Some(UiIcon::Download.into()), None, None).clicked() {
-            toast(ui.ctx(), Toast::success("Trace exported").description(format!("harbor-{}.trace.json · {} frames", self.last_frame(), self.frames.len())));
+        if pk::small_btn(ui, ex, id.with("export"), "Export trace", Some(UiIcon::Download.into()), None, None).clicked()
+        {
+            toast(
+                ui.ctx(),
+                Toast::success("Trace exported").description(format!(
+                    "harbor-{}.trace.json · {} frames",
+                    self.last_frame(),
+                    self.frames.len()
+                )),
+            );
         }
         let cap = Rect::from_min_max(pos2(ex.min.x - 98.0, cy - 14.0), pos2(ex.min.x - 8.0, cy + 14.0));
         if pk::small_btn(ui, cap, id.with("snap"), "Snapshot", Some(AppIcon::Bookmark), None, None).clicked() {
@@ -427,23 +504,44 @@ impl DevInspectorApp {
             let y = y_of(ms);
             let mut xx = area.min.x;
             while xx < area.max.x {
-                p.line_segment([pos2(xx, y), pos2((xx + 4.0).min(area.max.x), y)], Stroke::new(1.0, with_alpha(c, 0.55)));
+                p.line_segment(
+                    [pos2(xx, y), pos2((xx + 4.0).min(area.max.x), y)],
+                    Stroke::new(1.0, with_alpha(c, 0.55)),
+                );
                 xx += 7.0;
             }
             pk::mono(&p, pos2(area.min.x - 8.0, y), Align2::RIGHT_CENTER, label, 10.0, with_alpha(c, 0.9), 40.0);
         }
-        pk::mono(&p, pos2(area.min.x - 8.0, area.max.y - 4.0), Align2::RIGHT_CENTER, "0", 10.0, t.muted_foreground, 40.0);
+        pk::mono(
+            &p,
+            pos2(area.min.x - 8.0, area.max.y - 4.0),
+            Align2::RIGHT_CENTER,
+            "0",
+            10.0,
+            t.muted_foreground,
+            40.0,
+        );
         let bw = 5.0;
         let n_vis = ((area.width() / bw) as usize).min(self.frames.len());
         let start = self.frames.len() - n_vis;
         let resp = ui.interact(area, id.with("hit"), Sense::click());
         let left = area.max.x - n_vis as f32 * bw;
-        let hover_k = resp.hover_pos().filter(|q| q.x >= left).map(|q| ((q.x - left) / bw).floor() as usize).filter(|k| *k < n_vis);
+        let hover_k = resp
+            .hover_pos()
+            .filter(|q| q.x >= left)
+            .map(|q| ((q.x - left) / bw).floor() as usize)
+            .filter(|k| *k < n_vis);
         let cur = self.cur_frame();
         for k in 0..n_vis {
             let ms = self.frames[start + k];
             let n = self.first_frame + (start + k) as u64;
-            let c = if ms > 33.3 { t.destructive } else if ms > 16.7 { t.warning } else { t.success };
+            let c = if ms > 33.3 {
+                t.destructive
+            } else if ms > 16.7 {
+                t.warning
+            } else {
+                t.success
+            };
             let x = left + k as f32 * bw;
             let br = Rect::from_min_max(pos2(x + 0.5, y_of(ms)), pos2(x + bw - 0.5, area.max.y));
             let sel = n == cur;
@@ -460,7 +558,10 @@ impl DevInspectorApp {
             let x = left + k as f32 * bw + bw / 2.0;
             let txt = format!("Frame {n} · {ms:.1} ms");
             let w = kit::text_w(&p, &txt, 11.0) + 14.0;
-            let tr = Rect::from_min_size(pos2((x - w / 2.0).clamp(area.min.x, area.max.x - w), area.min.y - 4.0), vec2(w, 20.0));
+            let tr = Rect::from_min_size(
+                pos2((x - w / 2.0).clamp(area.min.x, area.max.x - w), area.min.y - 4.0),
+                vec2(w, 20.0),
+            );
             p.rect_filled(tr, 5.0, t.foreground);
             p.text(tr.center(), Align2::CENTER_CENTER, txt, FontId::proportional(11.0), t.background);
             if resp.clicked() {
@@ -477,8 +578,24 @@ impl DevInspectorApp {
         let t = Theme::of(ui);
         let p = ui.painter().clone();
         pk::label(&p, pos2(r.min.x + 14.0, r.min.y + 18.0), &format!("Frame {}", self.cur_frame()), &t, 120.0);
-        kit::text_at(&p, pos2(r.max.x - 60.0, r.min.y + 18.0), Align2::RIGHT_CENTER, "total", 10.5, t.muted_foreground, 40.0);
-        kit::text_at(&p, pos2(r.max.x - 12.0, r.min.y + 18.0), Align2::RIGHT_CENTER, "self", 10.5, t.muted_foreground, 40.0);
+        kit::text_at(
+            &p,
+            pos2(r.max.x - 60.0, r.min.y + 18.0),
+            Align2::RIGHT_CENTER,
+            "total",
+            10.5,
+            t.muted_foreground,
+            40.0,
+        );
+        kit::text_at(
+            &p,
+            pos2(r.max.x - 12.0, r.min.y + 18.0),
+            Align2::RIGHT_CENTER,
+            "self",
+            10.5,
+            t.muted_foreground,
+            40.0,
+        );
         let lr = Rect::from_min_max(pos2(r.min.x, r.min.y + 32.0), r.max);
         let mut select = None;
         let mut toggle = None;
@@ -511,16 +628,41 @@ impl DevInspectorApp {
                         let cr = Rect::from_center_size(pos2(x + 5.0, cy), vec2(14.0, 14.0));
                         let icon = if self.collapsed[i] { UiIcon::ChevronRight } else { UiIcon::ChevronDown };
                         icon.paint(p, cr.shrink(2.0), t.muted_foreground);
-                        if resp.clicked() && ui.input(|inp| inp.pointer.interact_pos().is_some_and(|q| q.x < x + 14.0)) {
+                        if resp.clicked() && ui.input(|inp| inp.pointer.interact_pos().is_some_and(|q| q.x < x + 14.0))
+                        {
                             toggle = Some(i);
                         }
                     }
                     let col = t.chart[SHAPE[s.shape].3 % 6];
                     p.rect_filled(Rect::from_center_size(pos2(x + 18.0, cy), vec2(3.0, 12.0)), 1.0, col);
                     let pct = s.dur / spans[0].dur.max(1e-3);
-                    let tx = pk::mono(p, pos2(rr.max.x - 54.0, cy), Align2::RIGHT_CENTER, &format!("{:.2}", s.dur), 11.0, if pct > 0.25 && s.depth > 0 { pk::tone_fg(&t, t.warning) } else { t.foreground }, 50.0);
-                    pk::mono(p, pos2(rr.max.x - 12.0, cy), Align2::RIGHT_CENTER, &format!("{:.2}", s.self_ms), 11.0, t.muted_foreground, 40.0);
-                    kit::text_at(p, pos2(x + 26.0, cy), Align2::LEFT_CENTER, SHAPE[s.shape].0, 12.0, if sel { t.foreground } else { mix(t.foreground, t.muted_foreground, 0.25) }, tx.min.x - x - 32.0);
+                    let tx = pk::mono(
+                        p,
+                        pos2(rr.max.x - 54.0, cy),
+                        Align2::RIGHT_CENTER,
+                        &format!("{:.2}", s.dur),
+                        11.0,
+                        if pct > 0.25 && s.depth > 0 { pk::tone_fg(&t, t.warning) } else { t.foreground },
+                        50.0,
+                    );
+                    pk::mono(
+                        p,
+                        pos2(rr.max.x - 12.0, cy),
+                        Align2::RIGHT_CENTER,
+                        &format!("{:.2}", s.self_ms),
+                        11.0,
+                        t.muted_foreground,
+                        40.0,
+                    );
+                    kit::text_at(
+                        p,
+                        pos2(x + 26.0, cy),
+                        Align2::LEFT_CENTER,
+                        SHAPE[s.shape].0,
+                        12.0,
+                        if sel { t.foreground } else { mix(t.foreground, t.muted_foreground, 0.25) },
+                        tx.min.x - x - 32.0,
+                    );
                     if resp.clicked() && toggle != Some(i) {
                         select = Some(i);
                     }
@@ -581,17 +723,49 @@ impl DevInspectorApp {
         let vb = kit::follow(ui.ctx(), id.with("vb"), b, 16.0).max(va + 1e-4);
         let x_of = |ms: f32| area.min.x + ((ms / total) - va) / (vb - va) * area.width();
         // header + ruler
-        kit::text_at(&p, pos2(r.min.x + 14.0, r.min.y + 16.0), Align2::LEFT_CENTER, "Flame graph · main thread", 12.5, t.foreground, 220.0);
-        pk::hints(&p, pos2(r.min.x + 210.0, r.min.y + 16.0), &[("Wheel", "zoom"), ("Drag", "pan"), ("F", "reset")], &t, r.max.x - 70.0);
-        kit::text_at(&p, pos2(r.max.x - 14.0, r.min.y + 16.0), Align2::RIGHT_CENTER, &format!("{:.0}%", 100.0 / (vb - va)), 11.0, t.muted_foreground, 50.0);
+        kit::text_at(
+            &p,
+            pos2(r.min.x + 14.0, r.min.y + 16.0),
+            Align2::LEFT_CENTER,
+            "Flame graph · main thread",
+            12.5,
+            t.foreground,
+            220.0,
+        );
+        pk::hints(
+            &p,
+            pos2(r.min.x + 210.0, r.min.y + 16.0),
+            &[("Wheel", "zoom"), ("Drag", "pan"), ("F", "reset")],
+            &t,
+            r.max.x - 70.0,
+        );
+        kit::text_at(
+            &p,
+            pos2(r.max.x - 14.0, r.min.y + 16.0),
+            Align2::RIGHT_CENTER,
+            &format!("{:.0}%", 100.0 / (vb - va)),
+            11.0,
+            t.muted_foreground,
+            50.0,
+        );
         let vis_ms = (vb - va) * total;
-        let step = [0.01f32, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0].into_iter().find(|s| vis_ms / s <= 8.0).unwrap_or(10.0);
+        let step =
+            [0.01f32, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0].into_iter().find(|s| vis_ms / s <= 8.0).unwrap_or(10.0);
         let mut ms = (va * total / step).floor() * step;
         let p_clip = p.with_clip_rect(Rect::from_min_max(pos2(area.min.x, r.min.y + 30.0), area.max));
         while ms <= vb * total {
             let x = x_of(ms);
-            p_clip.line_segment([pos2(x, area.min.y - 6.0), pos2(x, area.max.y)], Stroke::new(1.0, with_alpha(t.border, 0.55)));
-            p_clip.text(pos2(x + 3.0, area.min.y - 4.0), Align2::LEFT_BOTTOM, format!("{ms:.2} ms"), FontId::monospace(9.5), t.muted_foreground);
+            p_clip.line_segment(
+                [pos2(x, area.min.y - 6.0), pos2(x, area.max.y)],
+                Stroke::new(1.0, with_alpha(t.border, 0.55)),
+            );
+            p_clip.text(
+                pos2(x + 3.0, area.min.y - 4.0),
+                Align2::LEFT_BOTTOM,
+                format!("{ms:.2} ms"),
+                FontId::monospace(9.5),
+                t.muted_foreground,
+            );
             ms += step;
         }
         let rh = 22.0;
@@ -620,20 +794,40 @@ impl DevInspectorApp {
                 let fg = if t.dark { Color32::WHITE } else { glowkit_core::color::shade(base, -0.45) };
                 let lx = br.min.x.max(area.min.x) + 6.0;
                 let label = format!("{} {:.2}ms", SHAPE[s.shape].0, s.dur);
-                kit::text_at(&p_clip, pos2(lx, br.center().y), Align2::LEFT_CENTER, &label, 11.0, fg, br.max.x.min(area.max.x) - lx - 4.0);
+                kit::text_at(
+                    &p_clip,
+                    pos2(lx, br.center().y),
+                    Align2::LEFT_CENTER,
+                    &label,
+                    11.0,
+                    fg,
+                    br.max.x.min(area.max.x) - lx - 4.0,
+                );
             }
         }
         if let Some(i) = hovered {
             let s = &spans[i];
             ui.ctx().set_cursor_icon(if resp.dragged() { CursorIcon::Grabbing } else { CursorIcon::PointingHand });
             if let Some(q) = hp {
-                let txt = format!("{}  {:.3} ms · {:.1}% of frame · self {:.3} ms", SHAPE[s.shape].0, s.dur, s.dur / total * 100.0, s.self_ms);
+                let txt = format!(
+                    "{}  {:.3} ms · {:.1}% of frame · self {:.3} ms",
+                    SHAPE[s.shape].0,
+                    s.dur,
+                    s.dur / total * 100.0,
+                    s.self_ms
+                );
                 let w = kit::text_w(&p, &txt, 11.5) + 16.0;
                 let tr = Rect::from_min_size(pos2((q.x + 12.0).min(r.max.x - w - 4.0), q.y + 16.0), vec2(w, 24.0));
                 glowkit_core::paint::soft_shadow(&p, tr, 6.0, 8.0, vec2(0.0, 2.0), kit::shadow(&t));
                 p.rect_filled(tr, 6.0, t.popover);
                 p.rect_stroke(tr, 6.0, Stroke::new(1.0, t.border), StrokeKind::Inside);
-                p.text(pos2(tr.min.x + 8.0, tr.center().y), Align2::LEFT_CENTER, txt, FontId::proportional(11.5), t.foreground);
+                p.text(
+                    pos2(tr.min.x + 8.0, tr.center().y),
+                    Align2::LEFT_CENTER,
+                    txt,
+                    FontId::proportional(11.5),
+                    t.foreground,
+                );
             }
             if resp.clicked() {
                 self.selected_span = i;
@@ -669,7 +863,15 @@ impl DevInspectorApp {
             v.reverse();
             v
         };
-        kit::text_at(&p, pos2(x0, r.min.y + 64.0), Align2::LEFT_CENTER, &if path.is_empty() { "root".to_string() } else { path.join(" › ") }, 11.0, t.muted_foreground, x1 - x0);
+        kit::text_at(
+            &p,
+            pos2(x0, r.min.y + 64.0),
+            Align2::LEFT_CENTER,
+            &if path.is_empty() { "root".to_string() } else { path.join(" › ") },
+            11.0,
+            t.muted_foreground,
+            x1 - x0,
+        );
         let total = spans[0].dur.max(1e-3);
         let calls = match name {
             "draw_meshes" => "1,284",
@@ -698,9 +900,25 @@ impl DevInspectorApp {
         let sr = Rect::from_min_max(pos2(x0, y), pos2(x1, y + 28.0));
         let (sresp, hv) = kit::row(ui, sr, id.with("src"), 6.0);
         p.rect_stroke(sr, 6.0, Stroke::new(1.0, t.border), StrokeKind::Inside);
-        UiIcon::Code.paint(&p, Rect::from_center_size(pos2(sr.min.x + 13.0, sr.center().y), vec2(12.0, 12.0)), t.muted_foreground);
-        pk::mono(&p, pos2(sr.min.x + 26.0, sr.center().y), Align2::LEFT_CENTER, src, 11.0, t.foreground.lerp_to_gamma(t.primary, hv * 0.5), sr.width() - 50.0);
-        AppIcon::External.paint(&p, Rect::from_center_size(pos2(sr.max.x - 13.0, sr.center().y), vec2(11.0, 11.0)), t.muted_foreground);
+        UiIcon::Code.paint(
+            &p,
+            Rect::from_center_size(pos2(sr.min.x + 13.0, sr.center().y), vec2(12.0, 12.0)),
+            t.muted_foreground,
+        );
+        pk::mono(
+            &p,
+            pos2(sr.min.x + 26.0, sr.center().y),
+            Align2::LEFT_CENTER,
+            src,
+            11.0,
+            t.foreground.lerp_to_gamma(t.primary, hv * 0.5),
+            sr.width() - 50.0,
+        );
+        AppIcon::External.paint(
+            &p,
+            Rect::from_center_size(pos2(sr.max.x - 13.0, sr.center().y), vec2(11.0, 11.0)),
+            t.muted_foreground,
+        );
         kit::tip(&sresp, "Open in editor", None);
         if sresp.clicked() {
             toast(ui.ctx(), Toast::new("Opening in editor").description(src));
@@ -709,13 +927,26 @@ impl DevInspectorApp {
         // history of this span over recent frames
         pk::label(&p, pos2(x0, y), "Last 60 frames", &t, 140.0);
         let n_last = self.last_frame();
-        let hist: Vec<f32> = (0..60u64).rev().map(|k| n_last.saturating_sub(k)).filter(|n| *n >= self.first_frame).map(|n| {
-            let sp = self.spans_for(n);
-            sp.get(i).map_or(0.0, |x| x.dur)
-        }).collect();
+        let hist: Vec<f32> = (0..60u64)
+            .rev()
+            .map(|k| n_last.saturating_sub(k))
+            .filter(|n| *n >= self.first_frame)
+            .map(|n| {
+                let sp = self.spans_for(n);
+                sp.get(i).map_or(0.0, |x| x.dur)
+            })
+            .collect();
         let hmax = hist.iter().copied().fold(0.01, f32::max);
         let avg = hist.iter().sum::<f32>() / hist.len().max(1) as f32;
-        kit::text_at(&p, pos2(x1, y), Align2::RIGHT_CENTER, &format!("avg {avg:.2} · max {hmax:.2} ms"), 10.5, t.muted_foreground, 160.0);
+        kit::text_at(
+            &p,
+            pos2(x1, y),
+            Align2::RIGHT_CENTER,
+            &format!("avg {avg:.2} · max {hmax:.2} ms"),
+            10.5,
+            t.muted_foreground,
+            160.0,
+        );
         y += 12.0;
         let hr = Rect::from_min_max(pos2(x0, y), pos2(x1, (y + 52.0).min(r.max.y - 10.0)));
         if hr.height() > 10.0 {
@@ -724,7 +955,10 @@ impl DevInspectorApp {
             for (k, v) in hist.iter().enumerate() {
                 let n = n_last + 1 + k as u64 - hist.len() as u64;
                 let h = (v / hmax) * hr.height();
-                let br = Rect::from_min_max(pos2(hr.min.x + k as f32 * bw + 0.5, hr.max.y - h.max(1.0)), pos2(hr.min.x + (k + 1) as f32 * bw - 0.5, hr.max.y));
+                let br = Rect::from_min_max(
+                    pos2(hr.min.x + k as f32 * bw + 0.5, hr.max.y - h.max(1.0)),
+                    pos2(hr.min.x + (k + 1) as f32 * bw - 0.5, hr.max.y),
+                );
                 p.rect_filled(br, 1.0, with_alpha(col, if n == cur { 1.0 } else { 0.5 }));
             }
             let ay = hr.max.y - avg / hmax * hr.height();
@@ -762,14 +996,19 @@ impl DevInspectorApp {
             pk::text_line(ui, fr, id.with("q"), &mut self.log_query, "Filter target or message", false);
         }
         let fb = Rect::from_min_max(pos2(r.max.x - 14.0 - 88.0, cy - 13.0), pos2(r.max.x - 14.0, cy + 13.0));
-        if pk::chip(ui, fb, id.with("follow"), if self.follow { "Following" } else { "Follow" }, self.follow, t.primary).clicked() {
+        if pk::chip(ui, fb, id.with("follow"), if self.follow { "Following" } else { "Follow" }, self.follow, t.primary)
+            .clicked()
+        {
             self.follow = !self.follow;
         }
         let q = self.log_query.to_lowercase();
         let vis: Vec<&LogLine> = self
             .logs
             .iter()
-            .filter(|l| self.levels[l.lvl as usize] && (q.is_empty() || l.msg.to_lowercase().contains(&q) || l.target.contains(&q)))
+            .filter(|l| {
+                self.levels[l.lvl as usize]
+                    && (q.is_empty() || l.msg.to_lowercase().contains(&q) || l.target.contains(&q))
+            })
             .collect();
         let lr = Rect::from_min_max(pos2(r.min.x, cy + 20.0), r.max);
         let mut jump = None;
@@ -798,14 +1037,38 @@ impl DevInspectorApp {
                     let cy = rr.center().y;
                     let x = rr.min.x + 14.0;
                     pk::mono(p, pos2(x, cy), Align2::LEFT_CENTER, &l.time, 11.0, t.muted_foreground, 100.0);
-                    pk::mono(p, pos2(x + 96.0, cy), Align2::LEFT_CENTER, &names[l.lvl as usize].to_uppercase(), 11.0, pk::tone_fg(&t, lc), 50.0);
-                    pk::mono(p, pos2(x + 146.0, cy), Align2::LEFT_CENTER, l.target, 11.0, mix(t.foreground, t.muted_foreground, 0.4), 120.0);
+                    pk::mono(
+                        p,
+                        pos2(x + 96.0, cy),
+                        Align2::LEFT_CENTER,
+                        &names[l.lvl as usize].to_uppercase(),
+                        11.0,
+                        pk::tone_fg(&t, lc),
+                        50.0,
+                    );
+                    pk::mono(
+                        p,
+                        pos2(x + 146.0, cy),
+                        Align2::LEFT_CENTER,
+                        l.target,
+                        11.0,
+                        mix(t.foreground, t.muted_foreground, 0.4),
+                        120.0,
+                    );
                     let mx = x + 270.0;
                     let right = if l.frame.is_some() { rr.max.x - 80.0 } else { rr.max.x - 14.0 };
                     pk::mono(p, pos2(mx, cy), Align2::LEFT_CENTER, &l.msg, 11.5, t.foreground, right - mx);
                     if let Some(f) = l.frame {
                         if f >= self.first_frame {
-                            pk::mono(p, pos2(rr.max.x - 14.0, cy), Align2::RIGHT_CENTER, &format!("#{f}"), 10.5, if resp.hovered() { t.primary } else { t.muted_foreground }, 70.0);
+                            pk::mono(
+                                p,
+                                pos2(rr.max.x - 14.0, cy),
+                                Align2::RIGHT_CENTER,
+                                &format!("#{f}"),
+                                10.5,
+                                if resp.hovered() { t.primary } else { t.muted_foreground },
+                                70.0,
+                            );
                             if resp.clicked() {
                                 jump = Some(f);
                             }
@@ -815,7 +1078,13 @@ impl DevInspectorApp {
                 }
                 if vis.is_empty() {
                     let (er, _) = ui.allocate_exact_size(vec2(w, 60.0), Sense::hover());
-                    ui.painter().text(er.center(), Align2::CENTER_CENTER, "No log lines match the filters", FontId::proportional(12.0), t.muted_foreground);
+                    ui.painter().text(
+                        er.center(),
+                        Align2::CENTER_CENTER,
+                        "No log lines match the filters",
+                        FontId::proportional(12.0),
+                        t.muted_foreground,
+                    );
                 }
             });
         });

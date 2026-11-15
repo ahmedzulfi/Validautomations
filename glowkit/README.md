@@ -28,7 +28,7 @@ the polish web apps get from React component libraries:
 
 ## What's inside
 
-* **603 showcased blocks and components** across AI agents, dashboards, game UI, micro-interactions,
+* **682 showcased blocks and components** across AI agents, dashboards, game UI, micro-interactions,
   transitions, charts, canvas editors, 3D, text effects, backgrounds and full app templates.
 * **A real motion engine.** Springs, keyframes, GSAP-style timelines, variants with stagger, enter/exit presence, layout animations, drag with inertia.
 * **3D without the setup.** A built-in software 3D renderer draws lit, depth-sorted meshes straight into egui: no wgpu boilerplate.

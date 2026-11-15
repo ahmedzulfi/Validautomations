@@ -15,13 +15,13 @@ mod crm;
 mod devconsole;
 mod docs;
 mod files;
+mod finance;
 mod inspector;
 mod local_llm;
-mod finance;
 mod mail;
 mod music;
-mod prokit;
 mod projects;
+mod prokit;
 mod settings;
 mod trading;
 

@@ -75,9 +75,19 @@ impl<'a> UsageLimitBanner<'a> {
         let (rect, resp) = ui.allocate_exact_size(vec2(w, 74.0), Sense::hover());
         let frac = self.used as f32 / self.limit as f32;
         let f = glowkit_core::anim::spring(ui, id.with("f"), frac.min(1.0), 120.0, 20.0);
-        let level = if frac >= 1.0 { 2.0 } else if frac >= self.warn_at { 1.0 } else { 0.0 };
+        let level = if frac >= 1.0 {
+            2.0
+        } else if frac >= self.warn_at {
+            1.0
+        } else {
+            0.0
+        };
         let lv = glowkit_core::anim::spring(ui, id.with("lv"), level, 160.0, 24.0);
-        let tone = if lv <= 1.0 { mix(t.info, t.warning, lv.clamp(0.0, 1.0)) } else { mix(t.warning, t.destructive, (lv - 1.0).clamp(0.0, 1.0)) };
+        let tone = if lv <= 1.0 {
+            mix(t.info, t.warning, lv.clamp(0.0, 1.0))
+        } else {
+            mix(t.warning, t.destructive, (lv - 1.0).clamp(0.0, 1.0))
+        };
         let time = glowkit_core::time(ui);
         if level >= 2.0 {
             glowkit_core::animate(ui);
@@ -86,10 +96,27 @@ impl<'a> UsageLimitBanner<'a> {
         let bg = mix(surface(&t), tone, if t.dark { 0.1 } else { 0.06 } * lv.clamp(0.0, 2.0) / 2.0 + 0.02);
         paint::soft_shadow(p, rect, 14.0, 12.0, vec2(0.0, 3.0), shadow(&t, 0.6));
         p.rect_filled(rect, cr(14.0), bg);
-        p.rect_stroke(rect, cr(14.0), Stroke::new(1.0, mix(hairline(&t).color, tone, 0.35 * (lv / 2.0 + 0.2))), StrokeKind::Inside);
+        p.rect_stroke(
+            rect,
+            cr(14.0),
+            Stroke::new(1.0, mix(hairline(&t).color, tone, 0.35 * (lv / 2.0 + 0.2))),
+            StrokeKind::Inside,
+        );
         let ic = pos2(rect.min.x + 26.0, rect.min.y + 26.0);
         p.circle_filled(ic, 13.0, with_alpha(tone, 0.14));
-        icon(p, if level >= 2.0 { Icon::Lock } else if level >= 1.0 { Icon::AlertCircle } else { Icon::Bolt }, ic, 14.0, tone);
+        icon(
+            p,
+            if level >= 2.0 {
+                Icon::Lock
+            } else if level >= 1.0 {
+                Icon::AlertCircle
+            } else {
+                Icon::Bolt
+            },
+            ic,
+            14.0,
+            tone,
+        );
         let left = self.limit.saturating_sub(self.used);
         let title = if level >= 2.0 {
             "You've reached your message limit".to_owned()
@@ -100,15 +127,24 @@ impl<'a> UsageLimitBanner<'a> {
         };
         text_bold(p, pos2(rect.min.x + 48.0, rect.min.y + 20.0), Align2::LEFT_CENTER, &title, 13.5, t.foreground);
         if let Some(r) = self.resets {
-            text(p, pos2(rect.min.x + 48.0, rect.min.y + 38.0), Align2::LEFT_CENTER, &format!("Resets in {r}"), 11.5, t.muted_foreground);
+            text(
+                p,
+                pos2(rect.min.x + 48.0, rect.min.y + 38.0),
+                Align2::LEFT_CENTER,
+                &format!("Resets in {r}"),
+                11.5,
+                t.muted_foreground,
+            );
         }
         // segmented meter
         let segs = self.limit.min(25) as usize;
-        let meter = Rect::from_min_max(pos2(rect.min.x + 48.0, rect.max.y - 18.0), pos2(rect.max.x - 150.0, rect.max.y - 12.0));
+        let meter =
+            Rect::from_min_max(pos2(rect.min.x + 48.0, rect.max.y - 18.0), pos2(rect.max.x - 150.0, rect.max.y - 12.0));
         let gap = 3.0;
         let sw = (meter.width() - gap * (segs - 1) as f32) / segs as f32;
         for s in 0..segs {
-            let r = Rect::from_min_size(pos2(meter.min.x + s as f32 * (sw + gap), meter.min.y), vec2(sw, meter.height()));
+            let r =
+                Rect::from_min_size(pos2(meter.min.x + s as f32 * (sw + gap), meter.min.y), vec2(sw, meter.height()));
             p.rect_filled(r, cr(2.0), well(&t));
             let fill = (f * segs as f32 - s as f32).clamp(0.0, 1.0);
             if fill > 0.0 {
@@ -125,7 +161,17 @@ impl<'a> UsageLimitBanner<'a> {
             let sx = br.min.x + br.width() * ph;
             let sh = Rect::from_min_max(pos2(sx - 16.0, br.min.y), pos2(sx + 16.0, br.max.y)).intersect(br);
             if sh.width() > 1.0 {
-                paint::gradient_rect(ui.painter(), sh, 0.0, 0.0, &[with_alpha(Color32::WHITE, 0.0), with_alpha(Color32::WHITE, if t.dark { 0.35 } else { 0.25 }), with_alpha(Color32::WHITE, 0.0)]);
+                paint::gradient_rect(
+                    ui.painter(),
+                    sh,
+                    0.0,
+                    0.0,
+                    &[
+                        with_alpha(Color32::WHITE, 0.0),
+                        with_alpha(Color32::WHITE, if t.dark { 0.35 } else { 0.25 }),
+                        with_alpha(Color32::WHITE, 0.0),
+                    ],
+                );
             }
         }
         let xr = Rect::from_center_size(pos2(rect.max.x - 22.0, rect.center().y), Vec2::splat(26.0));
@@ -193,7 +239,12 @@ impl<'a> CitedText<'a> {
         };
         // split into runs and markers
         let mut job = LayoutJob::default();
-        let base = TextFormat { font_id: FontId::proportional(self.size), color: t.foreground, line_height: Some(self.size * 1.6), ..Default::default() };
+        let base = TextFormat {
+            font_id: FontId::proportional(self.size),
+            color: t.foreground,
+            line_height: Some(self.size * 1.6),
+            ..Default::default()
+        };
         let mut markers: Vec<(usize, usize, usize)> = Vec::new(); // (char start, char end, source)
         let mut chars = 0usize;
         let mut rest = src;
@@ -204,7 +255,12 @@ impl<'a> CitedText<'a> {
                     job.append(pre, 0.0, base.clone());
                     chars += pre.chars().count();
                     let label = format!("{n}");
-                    let fmt = TextFormat { font_id: FontId::proportional(self.size * 0.72), color: t.muted_foreground, valign: egui::Align::Center, ..base.clone() };
+                    let fmt = TextFormat {
+                        font_id: FontId::proportional(self.size * 0.72),
+                        color: t.muted_foreground,
+                        valign: egui::Align::Center,
+                        ..base.clone()
+                    };
                     job.append(&format!("\u{2009}{label}\u{2009}"), 2.0, fmt);
                     let len = label.chars().count() + 2;
                     markers.push((chars, chars + len, n.saturating_sub(1)));
@@ -258,7 +314,13 @@ impl<'a> CitedText<'a> {
                 for gr in glyphs.iter().take(b.saturating_sub(1).min(glyphs.len())).skip(a + 1) {
                     r = r.union(*gr);
                 }
-                ui.painter().text(r.center(), Align2::CENTER_CENTER, format!("{}", s + 1), FontId::proportional(self.size * 0.72), t.accent_foreground);
+                ui.painter().text(
+                    r.center(),
+                    Align2::CENTER_CENTER,
+                    format!("{}", s + 1),
+                    FontId::proportional(self.size * 0.72),
+                    t.accent_foreground,
+                );
             }
         }
         if hovered.is_some() {
@@ -322,7 +384,13 @@ impl<'a> CitationsFooter<'a> {
             let c = pos2(pill.min.x + 18.0 + i as f32 * spread, pill.center().y);
             p.circle_filled(c, 9.5, surface(&t));
             p.circle_filled(c, 8.0, s.color);
-            p.text(c, Align2::CENTER_CENTER, s.domain.chars().next().unwrap_or('?').to_uppercase().to_string(), FontId::proportional(8.5), Color32::WHITE);
+            p.text(
+                c,
+                Align2::CENTER_CENTER,
+                s.domain.chars().next().unwrap_or('?').to_uppercase().to_string(),
+                FontId::proportional(8.5),
+                Color32::WHITE,
+            );
         }
         let tx = pill.min.x + 20.0 + n.min(5) as f32 * 13.0 + 4.0 * hk * n.min(5) as f32;
         text(p, pos2(tx, pill.center().y), Align2::LEFT_CENTER, &format!("{n} sources"), 12.5, t.foreground);
@@ -345,7 +413,10 @@ impl<'a> CitationsFooter<'a> {
             let (gr, _) = ui.allocate_exact_size(vec2(w, full * ok), Sense::hover());
             for (i, s) in self.sources.iter().enumerate() {
                 let (cx, cy) = (i % cols, i / cols);
-                let r = Rect::from_min_size(pos2(gr.min.x + cx as f32 * (cw + gap), gr.min.y + 8.0 + cy as f32 * (ch + gap)), vec2(cw, ch));
+                let r = Rect::from_min_size(
+                    pos2(gr.min.x + cx as f32 * (cw + gap), gr.min.y + 8.0 + cy as f32 * (ch + gap)),
+                    vec2(cw, ch),
+                );
                 let k = ((ok - i as f32 * 0.05) * 1.4).clamp(0.0, 1.0);
                 let resp = ui.interact(r, id.with(("c", i)), Sense::click());
                 if resp.hovered() {
@@ -354,16 +425,46 @@ impl<'a> CitationsFooter<'a> {
                 let lk = toggle(ui, id.with(("ch", i)), resp.hovered() || highlight == Some(i));
                 let r = r.translate(vec2(0.0, (1.0 - k) * 8.0 - lk * 2.0));
                 let p = ui.painter().with_clip_rect(gr.intersect(ui.clip_rect()).expand2(vec2(10.0, 0.0)));
-                paint::soft_shadow(&p, r, 12.0, 6.0 + 10.0 * lk, vec2(0.0, 2.0 + 2.0 * lk), shadow(&t, (0.3 + 0.8 * lk) * k));
+                paint::soft_shadow(
+                    &p,
+                    r,
+                    12.0,
+                    6.0 + 10.0 * lk,
+                    vec2(0.0, 2.0 + 2.0 * lk),
+                    shadow(&t, (0.3 + 0.8 * lk) * k),
+                );
                 p.rect_filled(r, cr(12.0), surface(&t).gamma_multiply(k));
-                p.rect_stroke(r, cr(12.0), Stroke::new(1.0, mix(hairline(&t).color, t.accent, lk * 0.7).gamma_multiply(k)), StrokeKind::Inside);
+                p.rect_stroke(
+                    r,
+                    cr(12.0),
+                    Stroke::new(1.0, mix(hairline(&t).color, t.accent, lk * 0.7).gamma_multiply(k)),
+                    StrokeKind::Inside,
+                );
                 let nb = Rect::from_min_size(r.min + vec2(10.0, 10.0), vec2(18.0, 18.0));
                 p.rect_filled(nb, cr(5.0), mix(well(&t), t.accent, lk).gamma_multiply(k));
-                p.text(nb.center(), Align2::CENTER_CENTER, format!("{}", i + 1), FontId::proportional(10.5), mix(t.muted_foreground, t.accent_foreground, lk).gamma_multiply(k));
+                p.text(
+                    nb.center(),
+                    Align2::CENTER_CENTER,
+                    format!("{}", i + 1),
+                    FontId::proportional(10.5),
+                    mix(t.muted_foreground, t.accent_foreground, lk).gamma_multiply(k),
+                );
                 p.circle_filled(pos2(nb.max.x + 12.0, nb.center().y), 6.0, s.color.gamma_multiply(k));
-                p.text(pos2(nb.max.x + 22.0, nb.center().y), Align2::LEFT_CENTER, &s.domain, FontId::proportional(11.0), t.muted_foreground.gamma_multiply(k));
+                p.text(
+                    pos2(nb.max.x + 22.0, nb.center().y),
+                    Align2::LEFT_CENTER,
+                    &s.domain,
+                    FontId::proportional(11.0),
+                    t.muted_foreground.gamma_multiply(k),
+                );
                 let clip = Rect::from_min_max(r.min, r.max - vec2(10.0, 0.0));
-                p.with_clip_rect(clip).text(pos2(r.min.x + 10.0, r.min.y + 41.0), Align2::LEFT_CENTER, &s.title, FontId::proportional(12.5), t.foreground.gamma_multiply(k));
+                p.with_clip_rect(clip).text(
+                    pos2(r.min.x + 10.0, r.min.y + 41.0),
+                    Align2::LEFT_CENTER,
+                    &s.title,
+                    FontId::proportional(12.5),
+                    t.foreground.gamma_multiply(k),
+                );
             }
         }
         hovered

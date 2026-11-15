@@ -201,8 +201,24 @@ impl egui::Widget for AgentTree<'_> {
             let r = badge(&p, &t, pos2(x, hy), Align2::RIGHT_CENTER, &format!("{needs} need you"), t.warning, true);
             x = r.min.x - 8.0;
         }
-        let r = text(&p, pos2(x, hy), Align2::RIGHT_CENTER, &format!("{running} running"), font(12.0), ink(&t, accent), 120.0);
-        text(&p, pos2(r.min.x - 10.0, hy), Align2::RIGHT_CENTER, &format!("{} agents", root.count()), font(12.0), dim(&t), 120.0);
+        let r = text(
+            &p,
+            pos2(x, hy),
+            Align2::RIGHT_CENTER,
+            &format!("{running} running"),
+            font(12.0),
+            ink(&t, accent),
+            120.0,
+        );
+        text(
+            &p,
+            pos2(r.min.x - 10.0, hy),
+            Align2::RIGHT_CENTER,
+            &format!("{} agents", root.count()),
+            font(12.0),
+            dim(&t),
+            120.0,
+        );
 
         // place cards
         let top = rect.min.y + header;
@@ -363,8 +379,24 @@ fn card(
     // footer
     let fy = lift.max.y - pad - 5.0;
     let shown_cost = if folded { n.total_cost() } else { n.cost };
-    let cost_r = text(&pa, pos2(lift.min.x + pad, fy), Align2::LEFT_CENTER, &fmt_usd(shown_cost), mono(11.0), t.foreground, 90.0);
-    text(&pa, pos2(cost_r.max.x + 6.0, fy), Align2::LEFT_CENTER, &format!("· {}", fmt_secs(n.secs)), font(11.0), faint(t), 80.0);
+    let cost_r = text(
+        &pa,
+        pos2(lift.min.x + pad, fy),
+        Align2::LEFT_CENTER,
+        &fmt_usd(shown_cost),
+        mono(11.0),
+        t.foreground,
+        90.0,
+    );
+    text(
+        &pa,
+        pos2(cost_r.max.x + 6.0, fy),
+        Align2::LEFT_CENTER,
+        &format!("· {}", fmt_secs(n.secs)),
+        font(11.0),
+        faint(t),
+        80.0,
+    );
     let mut toggled = None;
     if has_kids {
         let label = format!("{}", n.count() - 1);
@@ -391,7 +423,10 @@ fn card(
         let a0 = s0.max(x);
         let a1 = (s0 + seg_w).min(x + w);
         if a1 > a0 {
-            pa.line_segment([pos2(a0, lift.max.y - 1.0), pos2(a1, lift.max.y - 1.0)], Stroke::new(1.5, with_alpha(accent, 0.7)));
+            pa.line_segment(
+                [pos2(a0, lift.max.y - 1.0), pos2(a1, lift.max.y - 1.0)],
+                Stroke::new(1.5, with_alpha(accent, 0.7)),
+            );
         }
     }
     toggled
@@ -517,7 +552,15 @@ impl egui::Widget for HandoffCard {
         panel(&p, &t, rect, 14.0);
         let pad = 16.0;
         // header line
-        text(&p, pos2(rect.min.x + pad, rect.min.y + 20.0), Align2::LEFT_CENTER, "Hand-off", font(13.0), t.foreground, 200.0);
+        text(
+            &p,
+            pos2(rect.min.x + pad, rect.min.y + 20.0),
+            Align2::LEFT_CENTER,
+            "Hand-off",
+            font(13.0),
+            t.foreground,
+            200.0,
+        );
         let done = prog >= 1.0;
         let st = if done { RunState::Done } else { RunState::Running };
         let label = if done { "Received" } else { "Passing" };
@@ -575,8 +618,19 @@ impl egui::Widget for HandoffCard {
         if !self.reason.is_empty() {
             let qr = Rect::from_min_size(pos2(rect.min.x + pad, yy), vec2(rect.width() - pad * 2.0, 26.0));
             p.rect_filled(qr, cr(8.0), well(&t));
-            p.line_segment([pos2(qr.min.x + 1.0, qr.min.y + 5.0), pos2(qr.min.x + 1.0, qr.max.y - 5.0)], Stroke::new(2.0, with_alpha(accent, 0.6)));
-            text(&p, pos2(qr.min.x + 12.0, qr.center().y), Align2::LEFT_CENTER, &self.reason, font(11.5), dim(&t), qr.width() - 20.0);
+            p.line_segment(
+                [pos2(qr.min.x + 1.0, qr.min.y + 5.0), pos2(qr.min.x + 1.0, qr.max.y - 5.0)],
+                Stroke::new(2.0, with_alpha(accent, 0.6)),
+            );
+            text(
+                &p,
+                pos2(qr.min.x + 12.0, qr.center().y),
+                Align2::LEFT_CENTER,
+                &self.reason,
+                font(11.5),
+                dim(&t),
+                qr.width() - 20.0,
+            );
             yy += 34.0;
         }
         // items
@@ -591,14 +645,47 @@ impl egui::Widget for HandoffCard {
             let r = Rect::from_min_size(pos2(cx, cy), vec2(colw, 24.0));
             let pa = faded(&p, appear.min(1.0));
             let fg = if it.kept { t.foreground } else { faint(&t) };
-            pa.rect(r, cr(7.0), if it.kept { surface(&t) } else { well(&t) }, Stroke::new(1.0, hair(&t)), egui::StrokeKind::Inside);
+            pa.rect(
+                r,
+                cr(7.0),
+                if it.kept { surface(&t) } else { well(&t) },
+                Stroke::new(1.0, hair(&t)),
+                egui::StrokeKind::Inside,
+            );
             icon(&pa, it.icon, pos2(r.min.x + 13.0, r.center().y), 12.0, if it.kept { dim(&t) } else { faint(&t) });
-            let tr = text(&pa, pos2(r.min.x + 25.0, r.center().y), Align2::LEFT_CENTER, &it.label, font(11.5), fg, r.width() - 90.0);
+            let tr = text(
+                &pa,
+                pos2(r.min.x + 25.0, r.center().y),
+                Align2::LEFT_CENTER,
+                &it.label,
+                font(11.5),
+                fg,
+                r.width() - 90.0,
+            );
             if !it.kept {
-                pa.line_segment([pos2(tr.min.x, tr.center().y), pos2(tr.max.x, tr.center().y)], Stroke::new(1.0, faint(&t)));
-                text(&pa, pos2(r.max.x - 8.0, r.center().y), Align2::RIGHT_CENTER, "dropped", font(10.5), ink(&t, t.destructive), 60.0);
+                pa.line_segment(
+                    [pos2(tr.min.x, tr.center().y), pos2(tr.max.x, tr.center().y)],
+                    Stroke::new(1.0, faint(&t)),
+                );
+                text(
+                    &pa,
+                    pos2(r.max.x - 8.0, r.center().y),
+                    Align2::RIGHT_CENTER,
+                    "dropped",
+                    font(10.5),
+                    ink(&t, t.destructive),
+                    60.0,
+                );
             } else {
-                text(&pa, pos2(r.max.x - 8.0, r.center().y), Align2::RIGHT_CENTER, &fmt_tok(it.tokens), mono(10.5), dim(&t), 60.0);
+                text(
+                    &pa,
+                    pos2(r.max.x - 8.0, r.center().y),
+                    Align2::RIGHT_CENTER,
+                    &fmt_tok(it.tokens),
+                    mono(10.5),
+                    dim(&t),
+                    60.0,
+                );
             }
         }
         if prog < 1.0 {

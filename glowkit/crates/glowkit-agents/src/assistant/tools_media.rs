@@ -11,7 +11,15 @@ fn tex_or_scene(ui: &Ui, tex: Option<TextureId>, scene: usize) -> TextureId {
 }
 
 /// Paint `tex` covering `rect` (center-cropped to the rect's aspect) with rounded corners.
-pub(crate) fn image_cover(ui: &Ui, rect: Rect, tex: TextureId, aspect: f32, zoom: f32, corner: egui::CornerRadius, alpha: f32) {
+pub(crate) fn image_cover(
+    ui: &Ui,
+    rect: Rect,
+    tex: TextureId,
+    aspect: f32,
+    zoom: f32,
+    corner: egui::CornerRadius,
+    alpha: f32,
+) {
     let ra = rect.width() / rect.height().max(1.0);
     let (mut uw, mut vh) = if ra > aspect { (1.0, aspect / ra) } else { (ra / aspect, 1.0) };
     uw /= zoom;
@@ -97,7 +105,14 @@ impl Widget for LinkPreviewResult<'_> {
         }
         let rect = rect.translate(vec2(0.0, (1.0 - a) * 12.0 - hov * 2.0));
         let p = ui.painter();
-        paint::soft_shadow(p, rect, 14.0, 14.0 + 10.0 * hov, vec2(0.0, 4.0 + 4.0 * hov), shadow(&t, (0.7 + 0.6 * hov) * a));
+        paint::soft_shadow(
+            p,
+            rect,
+            14.0,
+            14.0 + 10.0 * hov,
+            vec2(0.0, 4.0 + 4.0 * hov),
+            shadow(&t, (0.7 + 0.6 * hov) * a),
+        );
         p.rect_filled(rect, cr(14.0), with_alpha(surface(&t), a));
         let img = Rect::from_min_size(rect.min, vec2(w, img_h));
         let tex = tex_or_scene(ui, self.image, self.scene);
@@ -108,7 +123,14 @@ impl Widget for LinkPreviewResult<'_> {
         let y = img.max.y + 14.0;
         let fav = pos2(rect.min.x + 14.0 + 7.0, y + 7.0);
         p.circle_filled(fav, 7.0, accent);
-        text_bold(p, fav, Align2::CENTER_CENTER, &self.domain.chars().next().unwrap_or('•').to_uppercase().to_string(), 8.5, Color32::WHITE);
+        text_bold(
+            p,
+            fav,
+            Align2::CENTER_CENTER,
+            &self.domain.chars().next().unwrap_or('•').to_uppercase().to_string(),
+            8.5,
+            Color32::WHITE,
+        );
         text(p, pos2(fav.x + 12.0, fav.y), Align2::LEFT_CENTER, self.domain, 11.5, t.muted_foreground);
         let tp = pos2(rect.min.x + 14.0, y + 22.0);
         p.galley(tp, title.clone(), t.foreground);
@@ -191,7 +213,12 @@ impl Widget for ImageGalleryResult<'_> {
             }
         }
         let n = self.captions.len();
-        let head = ToolHead { icon: Icon::Image, title: self.tool, subtitle: None, status: Some((&format!("{n} images"), t.info)) };
+        let head = ToolHead {
+            icon: Icon::Image,
+            title: self.tool,
+            subtitle: None,
+            status: Some((&format!("{n} images"), t.info)),
+        };
         let status = format!("{n} images");
         let head = ToolHead { status: Some((&status, t.info)), ..head };
         let captions = self.captions;
@@ -227,7 +254,13 @@ impl Widget for ImageGalleryResult<'_> {
                 if k < 1.0 {
                     let sx = tile.min.x + ((e * 1.3 + i as f32 * 0.2).fract()) * (tile.width() + 80.0) - 40.0;
                     let sh = Rect::from_min_max(pos2(sx - 30.0, tile.min.y), pos2(sx + 30.0, tile.max.y));
-                    paint::gradient_rect(&p, sh, 0.0, 0.0, &[with_alpha(t.background, 0.0), with_alpha(t.background, 0.5), with_alpha(t.background, 0.0)]);
+                    paint::gradient_rect(
+                        &p,
+                        sh,
+                        0.0,
+                        0.0,
+                        &[with_alpha(t.background, 0.0), with_alpha(t.background, 0.5), with_alpha(t.background, 0.0)],
+                    );
                 }
                 if k > 0.0 {
                     let z = 1.0 + 0.06 * hk + (1.0 - k) * 0.08;
@@ -236,7 +269,14 @@ impl Widget for ImageGalleryResult<'_> {
                 let more = i == 4 && n > 5;
                 if more {
                     p.rect_filled(*tile, cr(10.0), Color32::from_black_alpha(110));
-                    text_bold(&ui.painter().clone(), tile.center(), Align2::CENTER_CENTER, &format!("+{}", n - 4), 18.0, Color32::WHITE);
+                    text_bold(
+                        &ui.painter().clone(),
+                        tile.center(),
+                        Align2::CENTER_CENTER,
+                        &format!("+{}", n - 4),
+                        18.0,
+                        Color32::WHITE,
+                    );
                 }
                 if r.clicked() && open_k < 0.5 {
                     clicked = Some(Some(i));
@@ -244,7 +284,8 @@ impl Widget for ImageGalleryResult<'_> {
                 if i == 0 && hk > 0.01 {
                     let p = ui.painter();
                     let g = galley(ui, captions[0], 11.5, Color32::WHITE);
-                    let cr_ = Rect::from_min_size(pos2(tile.min.x + 10.0, tile.max.y - 30.0), g.size() + vec2(16.0, 8.0));
+                    let cr_ =
+                        Rect::from_min_size(pos2(tile.min.x + 10.0, tile.max.y - 30.0), g.size() + vec2(16.0, 8.0));
                     p.rect_filled(cr_, cr(8.0), Color32::from_black_alpha((120.0 * hk) as u8));
                     p.galley(cr_.min + vec2(8.0, 4.0), g, Color32::WHITE);
                 }
@@ -254,21 +295,31 @@ impl Widget for ImageGalleryResult<'_> {
             if open_k > 0.005 {
                 if let Some(i) = src {
                     let from = tiles[i.min(4)];
-                    let r = Rect::from_min_max(
-                        from.min.lerp(area.min, open_k),
-                        from.max.lerp(area.max, open_k),
-                    );
+                    let r = Rect::from_min_max(from.min.lerp(area.min, open_k), from.max.lerp(area.max, open_k));
                     let p = ui.painter().with_clip_rect(area.intersect(ui.clip_rect()));
                     p.rect_filled(area, cr(10.0), with_alpha(surface(&t), open_k * 0.9));
                     image_cover(ui, r, tex(ui, i), PaintedScene::ASPECT, 1.0, cr(10.0), 1.0);
                     if open_k > 0.6 {
                         let a = (open_k - 0.6) / 0.4;
                         let p = ui.painter();
-                        let g = galley(ui, format!("{}  ·  {} / {}", captions.get(i).unwrap_or(&""), i + 1, n), 12.0, Color32::WHITE);
-                        let cap = Rect::from_min_size(pos2(r.min.x + 12.0, r.max.y - 36.0), g.size() + vec2(18.0, 12.0));
+                        let g = galley(
+                            ui,
+                            format!("{}  ·  {} / {}", captions.get(i).unwrap_or(&""), i + 1, n),
+                            12.0,
+                            Color32::WHITE,
+                        );
+                        let cap =
+                            Rect::from_min_size(pos2(r.min.x + 12.0, r.max.y - 36.0), g.size() + vec2(18.0, 12.0));
                         p.rect_filled(cap, cr(9.0), Color32::from_black_alpha((130.0 * a) as u8));
                         p.galley(cap.min + vec2(9.0, 6.0), g, Color32::WHITE);
-                        for (k, (ic, c)) in [(Icon::X, pos2(r.max.x - 22.0, r.min.y + 22.0)), (Icon::ChevronLeft, pos2(r.min.x + 22.0, r.center().y)), (Icon::ChevronRight, pos2(r.max.x - 22.0, r.center().y))].iter().enumerate() {
+                        for (k, (ic, c)) in [
+                            (Icon::X, pos2(r.max.x - 22.0, r.min.y + 22.0)),
+                            (Icon::ChevronLeft, pos2(r.min.x + 22.0, r.center().y)),
+                            (Icon::ChevronRight, pos2(r.max.x - 22.0, r.center().y)),
+                        ]
+                        .iter()
+                        .enumerate()
+                        {
                             let br = Rect::from_center_size(*c, Vec2::splat(30.0));
                             let b = ui.interact(br, id.with(("lbb", k)), Sense::click());
                             let hk = toggle(ui, id.with(("lbh", k)), b.hovered());
@@ -400,7 +451,10 @@ pub(crate) fn paint_sky_glyph(p: &egui::Painter, c: egui::Pos2, s: f32, sky: Sky
             for i in 0..10 {
                 let a = time * 0.4 + i as f32 / 10.0 * TAU;
                 let d = vec2(a.cos(), a.sin());
-                p.line_segment([sc + d * s * 0.36, sc + d * s * (0.48 + 0.04 * (time * 2.0 + i as f32).sin())], Stroke::new(s * 0.05, sun));
+                p.line_segment(
+                    [sc + d * s * 0.36, sc + d * s * (0.48 + 0.04 * (time * 2.0 + i as f32).sin())],
+                    Stroke::new(s * 0.05, sun),
+                );
             }
             p.circle_filled(sc, s * 0.27, sun);
             p.circle_filled(sc + vec2(-0.07, -0.07) * s, s * 0.12, with_alpha(Color32::WHITE, 0.35));
@@ -414,7 +468,10 @@ pub(crate) fn paint_sky_glyph(p: &egui::Painter, c: egui::Pos2, s: f32, sky: Sky
                 let x = c.x + (i as f32 - 3.0) * s * 0.12;
                 let ph = (time * 1.6 + i as f32 * 0.37).fract();
                 let y0 = c.y + s * 0.2 + ph * s * 0.45;
-                p.line_segment([pos2(x, y0), pos2(x - s * 0.04, y0 + s * 0.12)], Stroke::new(s * 0.035, with_alpha(hex("#3B82F6"), 1.0 - ph)));
+                p.line_segment(
+                    [pos2(x, y0), pos2(x - s * 0.04, y0 + s * 0.12)],
+                    Stroke::new(s * 0.035, with_alpha(hex("#3B82F6"), 1.0 - ph)),
+                );
             }
             cloud(p, c + vec2(0.0, -0.08) * s, s, hex("#94A3B8"));
         }
@@ -451,7 +508,12 @@ impl Widget for WeatherResult<'_> {
         let [c0, c1] = sky_colors(&t, self.sky);
         paint::soft_shadow(p, rect, 18.0, 18.0, vec2(0.0, 6.0), shadow(&t, 0.9 * a));
         paint::gradient_rect(p, rect, 18.0, 160.0, &[with_alpha(c0, a), with_alpha(c1, a)]);
-        p.rect_stroke(rect, cr(18.0), Stroke::new(1.0, with_alpha(if night { Color32::WHITE } else { t.border }, 0.25 * a)), StrokeKind::Inside);
+        p.rect_stroke(
+            rect,
+            cr(18.0),
+            Stroke::new(1.0, with_alpha(if night { Color32::WHITE } else { t.border }, 0.25 * a)),
+            StrokeKind::Inside,
+        );
         let fg = if night || t.dark { Color32::WHITE } else { hex("#0F172A") };
         let sub = with_alpha(fg, 0.62);
         let x0 = rect.min.x + 18.0;
@@ -468,11 +530,21 @@ impl Widget for WeatherResult<'_> {
         });
         text(p, pos2(x0, rect.min.y + 106.0), Align2::LEFT_CENTER, summary, 13.0, fg);
         if let Some((lo, hi)) = self.range {
-            text(p, pos2(x0, rect.min.y + 125.0), Align2::LEFT_CENTER, &format!("H {:.0}{u}  ·  L {:.0}{u}", hi, lo, u = self.unit), 11.5, sub);
+            text(
+                p,
+                pos2(x0, rect.min.y + 125.0),
+                Align2::LEFT_CENTER,
+                &format!("H {:.0}{u}  ·  L {:.0}{u}", hi, lo, u = self.unit),
+                11.5,
+                sub,
+            );
         }
         paint_sky_glyph(p, pos2(rect.max.x - 62.0, rect.min.y + 64.0), 78.0, self.sky, time);
         if has_strip {
-            let strip = Rect::from_min_max(pos2(rect.min.x + 12.0, rect.min.y + 146.0), pos2(rect.max.x - 12.0, rect.max.y - 12.0));
+            let strip = Rect::from_min_max(
+                pos2(rect.min.x + 12.0, rect.min.y + 146.0),
+                pos2(rect.max.x - 12.0, rect.max.y - 12.0),
+            );
             p.rect_filled(strip, cr(12.0), with_alpha(Color32::WHITE, if night || t.dark { 0.06 } else { 0.55 }));
             let hrs = &self.hourly[..self.hourly.len().min(8)];
             let n = hrs.len();
@@ -488,7 +560,9 @@ impl Widget for WeatherResult<'_> {
             let smooth = paint::monotone(&pts, 10);
             let cut = ((smooth.len() as f32) * draw) as usize;
             if cut > 1 {
-                paint::gradient_polyline(p, &smooth[..cut], false, 2.0, |u| mix(hex("#F59E0B"), hex("#F97316"), u).gamma_multiply(if night { 0.9 } else { 1.0 }));
+                paint::gradient_polyline(p, &smooth[..cut], false, 2.0, |u| {
+                    mix(hex("#F59E0B"), hex("#F97316"), u).gamma_multiply(if night { 0.9 } else { 1.0 })
+                });
             }
             for (i, q) in pts.iter().enumerate() {
                 let k = ((e - 0.35 - i as f32 * 0.08) * 6.0).clamp(0.0, 1.0);
@@ -497,9 +571,23 @@ impl Widget for WeatherResult<'_> {
                 }
                 p.circle_filled(*q, 3.2 * k, if night || t.dark { hex("#FDE68A") } else { Color32::WHITE });
                 p.circle_stroke(*q, 3.2 * k, Stroke::new(1.5, hex("#F59E0B")));
-                text(p, *q - vec2(0.0, 11.0), Align2::CENTER_CENTER, &format!("{:.0}°", hrs[i]), 10.5, with_alpha(fg, k));
+                text(
+                    p,
+                    *q - vec2(0.0, 11.0),
+                    Align2::CENTER_CENTER,
+                    &format!("{:.0}°", hrs[i]),
+                    10.5,
+                    with_alpha(fg, k),
+                );
                 let hour = (9 + i * 2) % 24;
-                text(p, pos2(q.x, strip.max.y - 12.0), Align2::CENTER_CENTER, &format!("{hour}:00"), 10.0, with_alpha(sub, k));
+                text(
+                    p,
+                    pos2(q.x, strip.max.y - 12.0),
+                    Align2::CENTER_CENTER,
+                    &format!("{hour}:00"),
+                    10.0,
+                    with_alpha(sub, k),
+                );
             }
         }
         resp

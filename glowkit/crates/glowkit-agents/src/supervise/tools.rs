@@ -30,7 +30,13 @@ pub struct McpServer {
 impl McpServer {
     /// An enabled server.
     pub fn new(name: impl Into<String>, transport: impl Into<String>, endpoint: impl Into<String>) -> Self {
-        Self { name: name.into(), transport: transport.into(), endpoint: endpoint.into(), enabled: true, ..Default::default() }
+        Self {
+            name: name.into(),
+            transport: transport.into(),
+            endpoint: endpoint.into(),
+            enabled: true,
+            ..Default::default()
+        }
     }
     /// Its tool names.
     pub fn tools(mut self, tools: &[&str]) -> Self {
@@ -135,7 +141,14 @@ impl egui::Widget for McpServerList<'_> {
         let mut opens = Vec::new();
         let mut body = 0.0;
         for s in self.servers.iter() {
-            let o = glowkit_core::anim::spring(ui, id.with(("open", &s.name)), if st.open.as_deref() == Some(s.name.as_str()) { 1.0 } else { 0.0 }, 300.0, 28.0).max(0.0);
+            let o = glowkit_core::anim::spring(
+                ui,
+                id.with(("open", &s.name)),
+                if st.open.as_deref() == Some(s.name.as_str()) { 1.0 } else { 0.0 },
+                300.0,
+                28.0,
+            )
+            .max(0.0);
             let chips_h = 14.0 + (s.tools.len() as f32 / 4.0).ceil() * 28.0;
             body += row_h + chips_h * o;
             opens.push((o, chips_h));
@@ -147,10 +160,19 @@ impl egui::Widget for McpServerList<'_> {
         panel(&p, &t, rect, 14.0);
         let pad = 16.0;
         let connected = self.servers.iter().filter(|s| matches!(status(s, &st), McpStatus::Connected)).count();
-        let tools: usize = self.servers.iter().filter(|s| matches!(status(s, &st), McpStatus::Connected)).map(|s| s.tools.len()).sum();
+        let tools: usize =
+            self.servers.iter().filter(|s| matches!(status(s, &st), McpStatus::Connected)).map(|s| s.tools.len()).sum();
         let hy = rect.min.y + header / 2.0;
         text(&p, pos2(rect.min.x + pad, hy - 8.0), Align2::LEFT_CENTER, "MCP servers", font(14.0), t.foreground, 200.0);
-        text(&p, pos2(rect.min.x + pad, hy + 10.0), Align2::LEFT_CENTER, &format!("{connected} connected · {tools} tools available"), font(11.5), dim(&t), 300.0);
+        text(
+            &p,
+            pos2(rect.min.x + pad, hy + 10.0),
+            Align2::LEFT_CENTER,
+            &format!("{connected} connected · {tools} tools available"),
+            font(11.5),
+            dim(&t),
+            300.0,
+        );
         let aw = button_w(&p, "Add server", true);
         let ab = Rect::from_min_size(pos2(rect.max.x - pad - aw, hy - 15.0), vec2(aw, 30.0));
         let _ = button(ui, ab, id.with("add"), "Add server", Some(Icon::Plus), Btn::Secondary);
@@ -166,7 +188,11 @@ impl egui::Widget for McpServerList<'_> {
             let hit = ui.interact(head, id.with(("row", i)), Sense::click());
             if hit.hovered() {
                 ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
-                p.rect_filled(Rect::from_min_size(rr.min, vec2(rr.width(), row_h)), cr(0.0), with_alpha(t.foreground, 0.02));
+                p.rect_filled(
+                    Rect::from_min_size(rr.min, vec2(rr.width(), row_h)),
+                    cr(0.0),
+                    with_alpha(t.foreground, 0.02),
+                );
             }
             if hit.clicked() {
                 open_click = Some(s.name.clone());
@@ -178,7 +204,13 @@ impl egui::Widget for McpServerList<'_> {
             let tile = Rect::from_center_size(pos2(rr.min.x + pad + 18.0, cy), vec2(36.0, 36.0));
             let col = series(&t, i);
             pa.rect_filled(tile, cr(10.0), tint(&t, col));
-            pa.text(tile.center(), Align2::CENTER_CENTER, s.name.chars().next().unwrap_or('?').to_string(), font(15.0), ink(&t, col));
+            pa.text(
+                tile.center(),
+                Align2::CENTER_CENTER,
+                s.name.chars().next().unwrap_or('?').to_string(),
+                font(15.0),
+                ink(&t, col),
+            );
             let tx = tile.max.x + 12.0;
             let nr = text(&pa, pos2(tx, cy - 9.0), Align2::LEFT_CENTER, &s.name, font(13.0), t.foreground, 180.0);
             chip(&pa, &t, pos2(nr.max.x + 8.0, cy - 9.0), Align2::LEFT_CENTER, &s.transport, true);
@@ -193,7 +225,15 @@ impl egui::Widget for McpServerList<'_> {
                 }
                 McpStatus::Connecting(k) => {
                     spinner(&p, pos2(sx + 4.0, cy - 9.0), 5.0, t.info, now, 1.6);
-                    text(&p, pos2(sx + 15.0, cy - 9.0), Align2::LEFT_CENTER, "Connecting…", font(12.0), ink(&t, t.info), 100.0);
+                    text(
+                        &p,
+                        pos2(sx + 15.0, cy - 9.0),
+                        Align2::LEFT_CENTER,
+                        "Connecting…",
+                        font(12.0),
+                        ink(&t, t.info),
+                        100.0,
+                    );
                     let bar = Rect::from_min_size(pos2(sx, cy + 8.0), vec2(90.0, 3.0));
                     meter(&p, &t, bar, ease(Easing::OutCubic, k), t.info);
                     glowkit_core::animate(ui);
@@ -202,14 +242,46 @@ impl egui::Widget for McpServerList<'_> {
                     let k = (now * 0.8 + i as f32 * 0.3).fract();
                     p.circle_filled(pos2(sx + 4.0, cy - 9.0), 3.5 + 4.0 * k, with_alpha(t.success, 0.25 * (1.0 - k)));
                     p.circle_filled(pos2(sx + 4.0, cy - 9.0), 3.5, t.success);
-                    text(&p, pos2(sx + 13.0, cy - 9.0), Align2::LEFT_CENTER, "Connected", font(12.0), t.foreground, 100.0);
-                    text(&p, pos2(sx, cy + 10.0), Align2::LEFT_CENTER, &format!("{} tools", s.tools.len()), font(11.0), dim(&t), 80.0);
+                    text(
+                        &p,
+                        pos2(sx + 13.0, cy - 9.0),
+                        Align2::LEFT_CENTER,
+                        "Connected",
+                        font(12.0),
+                        t.foreground,
+                        100.0,
+                    );
+                    text(
+                        &p,
+                        pos2(sx, cy + 10.0),
+                        Align2::LEFT_CENTER,
+                        &format!("{} tools", s.tools.len()),
+                        font(11.0),
+                        dim(&t),
+                        80.0,
+                    );
                     glowkit_core::animate(ui);
                 }
                 McpStatus::Error => {
                     p.circle_filled(pos2(sx + 4.0, cy - 9.0), 3.5, t.destructive);
-                    text(&p, pos2(sx + 13.0, cy - 9.0), Align2::LEFT_CENTER, "Error", font(12.0), ink(&t, t.destructive), 100.0);
-                    text(&p, pos2(sx, cy + 10.0), Align2::LEFT_CENTER, s.error.as_deref().unwrap_or(""), font(11.0), ink(&t, t.destructive), rect.width() * 0.22);
+                    text(
+                        &p,
+                        pos2(sx + 13.0, cy - 9.0),
+                        Align2::LEFT_CENTER,
+                        "Error",
+                        font(12.0),
+                        ink(&t, t.destructive),
+                        100.0,
+                    );
+                    text(
+                        &p,
+                        pos2(sx, cy + 10.0),
+                        Align2::LEFT_CENTER,
+                        s.error.as_deref().unwrap_or(""),
+                        font(11.0),
+                        ink(&t, t.destructive),
+                        rect.width() * 0.22,
+                    );
                 }
             }
             // latency
@@ -222,8 +294,15 @@ impl egui::Widget for McpServerList<'_> {
                 let hi = s.latency.iter().cloned().fold(1.0, f32::max);
                 for (k, v) in s.latency[s.latency.len() - n..].iter().enumerate() {
                     let bh = (v / hi * 12.0).max(2.0);
-                    let r = Rect::from_min_max(pos2(lx + k as f32 * 5.0, cy + 16.0 - bh), pos2(lx + k as f32 * 5.0 + 3.0, cy + 16.0));
-                    p.rect_filled(r, cr(1.0), if *v > 300.0 { with_alpha(t.warning, 0.8) } else { mix(track(&t), t.foreground, 0.35) });
+                    let r = Rect::from_min_max(
+                        pos2(lx + k as f32 * 5.0, cy + 16.0 - bh),
+                        pos2(lx + k as f32 * 5.0 + 3.0, cy + 16.0),
+                    );
+                    p.rect_filled(
+                        r,
+                        cr(1.0),
+                        if *v > 300.0 { with_alpha(t.warning, 0.8) } else { mix(track(&t), t.foreground, 0.35) },
+                    );
                 }
             } else {
                 text(&p, pos2(lx, cy - 9.0), Align2::LEFT_CENTER, "—", mono(11.5), faint(&t), 40.0);
@@ -239,10 +318,21 @@ impl egui::Widget for McpServerList<'_> {
                 let pc = faded(&p.with_clip_rect(rr.intersect(p.clip_rect())), o.min(1.0));
                 let cw = (rect.width() - pad * 2.0 - tx + rect.min.x + pad - 18.0) / 4.0;
                 for (k, tool) in s.tools.iter().enumerate() {
-                    let r = Rect::from_min_size(pos2(tx + (k % 4) as f32 * (cw + 6.0), rr.min.y + row_h - 4.0 + (k / 4) as f32 * 28.0), vec2(cw, 22.0));
+                    let r = Rect::from_min_size(
+                        pos2(tx + (k % 4) as f32 * (cw + 6.0), rr.min.y + row_h - 4.0 + (k / 4) as f32 * 28.0),
+                        vec2(cw, 22.0),
+                    );
                     pc.rect(r, cr(6.0), well(&t), Stroke::new(1.0, hair(&t)), StrokeKind::Inside);
                     icon(&pc, Icon::Gear, pos2(r.min.x + 11.0, r.center().y), 10.0, faint(&t));
-                    text(&pc, pos2(r.min.x + 21.0, r.center().y), Align2::LEFT_CENTER, tool, mono(10.5), dim(&t), r.width() - 26.0);
+                    text(
+                        &pc,
+                        pos2(r.min.x + 21.0, r.center().y),
+                        Align2::LEFT_CENTER,
+                        tool,
+                        mono(10.5),
+                        dim(&t),
+                        r.width() - 26.0,
+                    );
                 }
             }
             if i + 1 < self.servers.len() {
@@ -285,7 +375,15 @@ pub struct Skill {
 impl Skill {
     /// A skill `name` by `author` in `category`.
     pub fn new(name: impl Into<String>, author: impl Into<String>, category: impl Into<String>) -> Self {
-        Self { name: name.into(), author: author.into(), desc: String::new(), category: category.into(), icon: Icon::Sparkle, installed: false, installs: 0 }
+        Self {
+            name: name.into(),
+            author: author.into(),
+            desc: String::new(),
+            category: category.into(),
+            icon: Icon::Sparkle,
+            installed: false,
+            installs: 0,
+        }
     }
     /// Description.
     pub fn desc(mut self, s: impl Into<String>) -> Self {
@@ -395,10 +493,27 @@ impl egui::Widget for SkillsBrowser<'_> {
         let sr = Rect::from_min_size(rect.min, vec2(rect.width().min(360.0), 36.0));
         p.rect(sr, cr(10.0), surface(&t), Stroke::new(1.0, hair(&t)), StrokeKind::Inside);
         icon(&p, Icon::Search, pos2(sr.min.x + 16.0, sr.center().y), 13.0, faint(&t));
-        let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_max(pos2(sr.min.x + 30.0, sr.min.y + 9.0), pos2(sr.max.x - 10.0, sr.max.y - 4.0))));
-        child.add(egui::TextEdit::singleline(&mut st.query).frame(egui::Frame::NONE).hint_text("Search skills and plugins").font(font(12.5)).desired_width(sr.width() - 44.0));
+        let mut child = ui.new_child(UiBuilder::new().max_rect(Rect::from_min_max(
+            pos2(sr.min.x + 30.0, sr.min.y + 9.0),
+            pos2(sr.max.x - 10.0, sr.max.y - 4.0),
+        )));
+        child.add(
+            egui::TextEdit::singleline(&mut st.query)
+                .frame(egui::Frame::NONE)
+                .hint_text("Search skills and plugins")
+                .font(font(12.5))
+                .desired_width(sr.width() - 44.0),
+        );
         let inst = self.skills.iter().filter(|s| s.installed).count();
-        text(&p, pos2(rect.max.x, sr.center().y), Align2::RIGHT_CENTER, &format!("{inst} installed · {} available", self.skills.len()), font(12.0), dim(&t), 260.0);
+        text(
+            &p,
+            pos2(rect.max.x, sr.center().y),
+            Align2::RIGHT_CENTER,
+            &format!("{inst} installed · {} available", self.skills.len()),
+            font(12.0),
+            dim(&t),
+            260.0,
+        );
         // tabs
         let ty = sr.max.y + 26.0;
         let mut x = rect.min.x;
@@ -456,15 +571,40 @@ impl egui::Widget for SkillsBrowser<'_> {
             pa.rect_filled(tile, cr(10.0), tint(&t, col));
             icon(&pa, s.icon, tile.center(), 18.0, ink(&t, col));
             let tx = tile.max.x + 12.0;
-            text(&pa, pos2(tx, tile.min.y + 10.0), Align2::LEFT_CENTER, &s.name, font(13.5), t.foreground, r.max.x - tx - 12.0);
-            text(&pa, pos2(tx, tile.min.y + 28.0), Align2::LEFT_CENTER, &s.author, font(11.0), faint(&t), r.max.x - tx - 12.0);
+            text(
+                &pa,
+                pos2(tx, tile.min.y + 10.0),
+                Align2::LEFT_CENTER,
+                &s.name,
+                font(13.5),
+                t.foreground,
+                r.max.x - tx - 12.0,
+            );
+            text(
+                &pa,
+                pos2(tx, tile.min.y + 28.0),
+                Align2::LEFT_CENTER,
+                &s.author,
+                font(11.0),
+                faint(&t),
+                r.max.x - tx - 12.0,
+            );
             para(&pa, pos2(r.min.x + 14.0, tile.max.y + 10.0), &s.desc, font(12.0), dim(&t), r.width() - 28.0, 2);
             let by = r.max.y - 24.0;
             icon(&pa, Icon::Download, pos2(r.min.x + 20.0, by), 11.0, faint(&t));
-            text(&pa, pos2(r.min.x + 30.0, by), Align2::LEFT_CENTER, &fmt_tok(s.installs as f32), font(11.0), faint(&t), 60.0);
+            text(
+                &pa,
+                pos2(r.min.x + 30.0, by),
+                Align2::LEFT_CENTER,
+                &fmt_tok(s.installs as f32),
+                font(11.0),
+                faint(&t),
+                60.0,
+            );
             // install button
             let br = Rect::from_min_size(pos2(r.max.x - 14.0 - 96.0, by - 14.0), vec2(96.0, 28.0));
-            let installing = st.installing.iter().find(|(n, _)| *n == s.name).map(|(_, at)| ((now - at) / 0.9).min(1.0));
+            let installing =
+                st.installing.iter().find(|(n, _)| *n == s.name).map(|(_, at)| ((now - at) / 0.9).min(1.0));
             let bresp = ui.interact(br, cid.with("btn"), Sense::click());
             if bresp.hovered() {
                 ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
@@ -474,7 +614,13 @@ impl egui::Widget for SkillsBrowser<'_> {
                 pa.rect_filled(br, cr(9.0), track(&t));
                 let fr = Rect::from_min_size(br.min, vec2(br.width() * ease(Easing::InOutCubic, f), br.height()));
                 pa.with_clip_rect(fr).rect_filled(br, cr(9.0), t.foreground);
-                pa.text(br.center(), Align2::CENTER_CENTER, "Installing", font(12.0), if f > 0.55 { surface(&t) } else { t.foreground });
+                pa.text(
+                    br.center(),
+                    Align2::CENTER_CENTER,
+                    "Installing",
+                    font(12.0),
+                    if f > 0.55 { surface(&t) } else { t.foreground },
+                );
                 glowkit_core::animate(ui);
             } else if s.installed {
                 let rm = bh > 0.5;
@@ -489,7 +635,13 @@ impl egui::Widget for SkillsBrowser<'_> {
                     flips.push(i);
                 }
             } else {
-                pa.rect(br, cr(9.0), mix(surface(&t), well(&t), 0.5 + bh), Stroke::new(1.0, hair(&t)), StrokeKind::Inside);
+                pa.rect(
+                    br,
+                    cr(9.0),
+                    mix(surface(&t), well(&t), 0.5 + bh),
+                    Stroke::new(1.0, hair(&t)),
+                    StrokeKind::Inside,
+                );
                 let x0 = br.center().x - 30.0;
                 icon(&pa, Icon::Plus, pos2(x0 + 6.0, br.center().y), 12.0, t.foreground);
                 pa.text(pos2(x0 + 16.0, br.center().y), Align2::LEFT_CENTER, "Install", font(12.0), t.foreground);

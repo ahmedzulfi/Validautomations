@@ -111,29 +111,73 @@ impl egui::Widget for PlanBoard<'_> {
         panel(&p, &t, rect, 16.0);
         let pad = 14.0;
         let done = cols[3].len();
-        text(&p, pos2(rect.min.x + pad + 2.0, rect.min.y + 20.0), Align2::LEFT_CENTER, "Plan", font(11.5), faint(&t), 60.0);
-        text(&p, pos2(rect.min.x + pad + 2.0, rect.min.y + 38.0), Align2::LEFT_CENTER, &self.goal, font(14.0), t.foreground, rect.width() - 220.0);
+        text(
+            &p,
+            pos2(rect.min.x + pad + 2.0, rect.min.y + 20.0),
+            Align2::LEFT_CENTER,
+            "Plan",
+            font(11.5),
+            faint(&t),
+            60.0,
+        );
+        text(
+            &p,
+            pos2(rect.min.x + pad + 2.0, rect.min.y + 38.0),
+            Align2::LEFT_CENTER,
+            &self.goal,
+            font(14.0),
+            t.foreground,
+            rect.width() - 220.0,
+        );
         let frac = glowkit_core::anim::follow(ui, id.with("f"), done as f32 / self.steps.len().max(1) as f32, 5.0);
         let bar = Rect::from_min_size(pos2(rect.max.x - pad - 140.0, rect.min.y + 36.0), vec2(140.0, 4.0));
         meter(&p, &t, bar, frac, t.success);
-        text(&p, pos2(bar.max.x, rect.min.y + 22.0), Align2::RIGHT_CENTER, &format!("{done} of {} steps", self.steps.len()), font(11.5), dim(&t), 140.0);
+        text(
+            &p,
+            pos2(bar.max.x, rect.min.y + 22.0),
+            Align2::RIGHT_CENTER,
+            &format!("{done} of {} steps", self.steps.len()),
+            font(11.5),
+            dim(&t),
+            140.0,
+        );
         let cw = (rect.width() - pad * 2.0 - gap * 3.0) / 4.0;
         let top = rect.min.y + header;
         for (c, name) in names.iter().enumerate() {
-            let cr_ = Rect::from_min_max(pos2(rect.min.x + pad + c as f32 * (cw + gap), top), pos2(rect.min.x + pad + c as f32 * (cw + gap) + cw, rect.max.y - pad));
+            let cr_ = Rect::from_min_max(
+                pos2(rect.min.x + pad + c as f32 * (cw + gap), top),
+                pos2(rect.min.x + pad + c as f32 * (cw + gap) + cw, rect.max.y - pad),
+            );
             p.rect_filled(cr_, cr(12.0), well(&t));
             let dot = [t.muted_foreground, t.info, t.warning, t.success][c];
             p.circle_filled(pos2(cr_.min.x + 14.0, top + col_head / 2.0), 3.5, dot);
-            text(&p, pos2(cr_.min.x + 24.0, top + col_head / 2.0), Align2::LEFT_CENTER, name, font(12.0), t.foreground, cw - 50.0);
+            text(
+                &p,
+                pos2(cr_.min.x + 24.0, top + col_head / 2.0),
+                Align2::LEFT_CENTER,
+                name,
+                font(12.0),
+                t.foreground,
+                cw - 50.0,
+            );
             let n = glowkit_core::anim::follow(ui, id.with(("n", c)), cols[c].len() as f32, 8.0);
-            text(&p, pos2(cr_.max.x - 12.0, top + col_head / 2.0), Align2::RIGHT_CENTER, &format!("{}", n.round() as i32), mono(11.0), faint(&t), 30.0);
+            text(
+                &p,
+                pos2(cr_.max.x - 12.0, top + col_head / 2.0),
+                Align2::RIGHT_CENTER,
+                &format!("{}", n.round() as i32),
+                mono(11.0),
+                faint(&t),
+                30.0,
+            );
         }
         // cards
         let mut drawn: Vec<(f32, usize, Rect)> = Vec::new();
         for (c, list) in cols.iter().enumerate() {
             for (k, &i) in list.iter().enumerate() {
                 let s = &self.steps[i];
-                let target = pos2(rect.min.x + pad + c as f32 * (cw + gap) + 6.0, top + col_head + k as f32 * (card_h + gap));
+                let target =
+                    pos2(rect.min.x + pad + c as f32 * (cw + gap) + 6.0, top + col_head + k as f32 * (card_h + gap));
                 let cid = id.with(("card", s.id));
                 let pos = glowkit_core::anim::spring2(ui, cid.with("p"), target.to_vec2(), 170.0, 20.0);
                 let moving = (pos - target.to_vec2()).length();
@@ -162,10 +206,26 @@ impl egui::Widget for PlanBoard<'_> {
             let by = r.max.y - 13.0;
             if !s.agent.is_empty() {
                 icon(&p, s.icon, pos2(r.min.x + 17.0, by), 11.0, faint(&t));
-                text(&p, pos2(r.min.x + 27.0, by), Align2::LEFT_CENTER, &s.agent, font(10.5), faint(&t), r.width() - 80.0);
+                text(
+                    &p,
+                    pos2(r.min.x + 27.0, by),
+                    Align2::LEFT_CENTER,
+                    &s.agent,
+                    font(10.5),
+                    faint(&t),
+                    r.width() - 80.0,
+                );
             }
             if s.secs > 0.0 {
-                text(&p, pos2(r.max.x - 11.0, by), Align2::RIGHT_CENTER, &fmt_secs(s.secs), mono(10.0), faint(&t), 50.0);
+                text(
+                    &p,
+                    pos2(r.max.x - 11.0, by),
+                    Align2::RIGHT_CENTER,
+                    &fmt_secs(s.secs),
+                    mono(10.0),
+                    faint(&t),
+                    50.0,
+                );
             }
             if s.state == RunState::Running {
                 let pr = glowkit_core::anim::follow(ui, id.with(("pr", s.id)), s.progress, 5.0);
@@ -272,13 +332,59 @@ impl egui::Widget for ContextWindowViz<'_> {
         let used_t: f32 = self.parts.iter().map(|p| p.tokens).sum();
         let used = glowkit_core::anim::follow(ui, id.with("u"), used_t, 5.0);
         let frac = used / self.limit;
-        text(&p, pos2(rect.min.x + pad, rect.min.y + 22.0), Align2::LEFT_CENTER, "Context window", font(12.5), dim(&t), 200.0);
-        let big = text(&p, pos2(rect.min.x + pad, rect.min.y + 62.0), Align2::LEFT_BOTTOM, &fmt_tok(used), mono(26.0), t.foreground, 140.0);
-        text(&p, pos2(big.max.x + 6.0, big.max.y - 5.0), Align2::LEFT_BOTTOM, &format!("/ {} tokens", fmt_tok(self.limit)), font(12.0), dim(&t), 160.0);
-        let pc = if frac >= self.compact_at { t.destructive } else if frac > self.compact_at - 0.15 { t.warning } else { t.success };
-        badge(&p, &t, pos2(rect.max.x - pad, rect.min.y + 22.0), Align2::RIGHT_CENTER, &format!("{:.0}% full", frac * 100.0), pc, true);
+        text(
+            &p,
+            pos2(rect.min.x + pad, rect.min.y + 22.0),
+            Align2::LEFT_CENTER,
+            "Context window",
+            font(12.5),
+            dim(&t),
+            200.0,
+        );
+        let big = text(
+            &p,
+            pos2(rect.min.x + pad, rect.min.y + 62.0),
+            Align2::LEFT_BOTTOM,
+            &fmt_tok(used),
+            mono(26.0),
+            t.foreground,
+            140.0,
+        );
+        text(
+            &p,
+            pos2(big.max.x + 6.0, big.max.y - 5.0),
+            Align2::LEFT_BOTTOM,
+            &format!("/ {} tokens", fmt_tok(self.limit)),
+            font(12.0),
+            dim(&t),
+            160.0,
+        );
+        let pc = if frac >= self.compact_at {
+            t.destructive
+        } else if frac > self.compact_at - 0.15 {
+            t.warning
+        } else {
+            t.success
+        };
+        badge(
+            &p,
+            &t,
+            pos2(rect.max.x - pad, rect.min.y + 22.0),
+            Align2::RIGHT_CENTER,
+            &format!("{:.0}% full", frac * 100.0),
+            pc,
+            true,
+        );
         if frac > self.compact_at - 0.15 {
-            text(&p, pos2(rect.max.x - pad, big.center().y + 4.0), Align2::RIGHT_CENTER, &format!("auto-compacts at {:.0}%", self.compact_at * 100.0), font(11.0), faint(&t), 200.0);
+            text(
+                &p,
+                pos2(rect.max.x - pad, big.center().y + 4.0),
+                Align2::RIGHT_CENTER,
+                &format!("auto-compacts at {:.0}%", self.compact_at * 100.0),
+                font(11.0),
+                faint(&t),
+                200.0,
+            );
         }
         // hovered part
         let hov_part: Option<usize> = glowkit_core::state(ui, id.with("hp"), || None);
@@ -306,7 +412,10 @@ impl egui::Widget for ContextWindowViz<'_> {
             x += w;
         }
         let mx = bar.min.x + bar.width() * self.compact_at;
-        p.line_segment([pos2(mx, bar.min.y - 5.0), pos2(mx, bar.max.y + 5.0)], Stroke::new(1.5, with_alpha(t.foreground, 0.5)));
+        p.line_segment(
+            [pos2(mx, bar.min.y - 5.0), pos2(mx, bar.max.y + 5.0)],
+            Stroke::new(1.5, with_alpha(t.foreground, 0.5)),
+        );
         // cell field
         let field_top = bar.max.y + 22.0;
         let cell = (bar.width() / cols as f32).floor();
@@ -319,7 +428,10 @@ impl egui::Widget for ContextWindowViz<'_> {
         }
         for k in 0..self.cells {
             let (cx, cy) = (k % cols, k / cols);
-            let r = Rect::from_min_size(pos2(bar.min.x + cx as f32 * cell, field_top + cy as f32 * 12.0), vec2(cell - 3.0, 9.0));
+            let r = Rect::from_min_size(
+                pos2(bar.min.x + cx as f32 * cell, field_top + cy as f32 * 12.0),
+                vec2(cell - 3.0, 9.0),
+            );
             let kf = k as f32 + 0.5;
             let part = bounds.iter().position(|b| kf < *b);
             match part {
@@ -330,7 +442,12 @@ impl egui::Widget for ContextWindowViz<'_> {
                     let c = if dim_it { mix(track(&t), col, 0.25) } else { col };
                     p.rect_filled(r, cr(2.0), c);
                     if lit {
-                        p.rect_stroke(r.expand(1.0), cr(3.0), Stroke::new(1.0, with_alpha(col, 0.6)), StrokeKind::Outside);
+                        p.rect_stroke(
+                            r.expand(1.0),
+                            cr(3.0),
+                            Stroke::new(1.0, with_alpha(col, 0.6)),
+                            StrokeKind::Outside,
+                        );
                     }
                     if ui.rect_contains_pointer(r) {
                         new_hover = Some(i);
@@ -343,27 +460,58 @@ impl egui::Widget for ContextWindowViz<'_> {
             let at_mark = k == (self.compact_at * self.cells as f32).round() as usize;
             let _ = (kf, per);
             if at_mark {
-                p.line_segment([pos2(r.min.x - 1.5, r.min.y - 2.0), pos2(r.min.x - 1.5, r.max.y + 2.0)], Stroke::new(1.0, with_alpha(t.foreground, 0.4)));
+                p.line_segment(
+                    [pos2(r.min.x - 1.5, r.min.y - 2.0), pos2(r.min.x - 1.5, r.max.y + 2.0)],
+                    Stroke::new(1.0, with_alpha(t.foreground, 0.4)),
+                );
             }
         }
         // legend
         let ly0 = field_top + rows as f32 * 12.0 + 18.0;
         let lw = (rect.width() - pad * 2.0) / 2.0;
         for (i, c) in self.parts.iter().enumerate() {
-            let r = Rect::from_min_size(pos2(rect.min.x + pad + (i % 2) as f32 * lw, ly0 + (i / 2) as f32 * 24.0), vec2(lw - 12.0, 22.0));
+            let r = Rect::from_min_size(
+                pos2(rect.min.x + pad + (i % 2) as f32 * lw, ly0 + (i / 2) as f32 * 24.0),
+                vec2(lw - 12.0, 22.0),
+            );
             let hov = ui.rect_contains_pointer(r);
             if hov {
                 new_hover = Some(i);
             }
-            let k = glowkit_core::anim::follow(ui, id.with(("lh", i)), if hov_part == Some(i) { 1.0 } else { 0.0 }, 14.0);
+            let k =
+                glowkit_core::anim::follow(ui, id.with(("lh", i)), if hov_part == Some(i) { 1.0 } else { 0.0 }, 14.0);
             if k > 0.01 {
                 p.rect_filled(r.expand2(vec2(4.0, 0.0)), cr(6.0), with_alpha(t.foreground, 0.04 * k));
             }
             let col = color_of(i, c);
             p.rect_filled(Rect::from_center_size(pos2(r.min.x + 5.0, r.center().y), vec2(9.0, 9.0)), cr(2.5), col);
-            text(&p, pos2(r.min.x + 16.0, r.center().y), Align2::LEFT_CENTER, &c.label, font(12.0), t.foreground, r.width() - 110.0);
-            let pr = text(&p, pos2(r.max.x, r.center().y), Align2::RIGHT_CENTER, &format!("{:.0}%", c.tokens / self.limit * 100.0), mono(11.0), faint(&t), 40.0);
-            text(&p, pos2(pr.min.x - 8.0, r.center().y), Align2::RIGHT_CENTER, &fmt_tok(c.tokens), mono(11.0), dim(&t), 60.0);
+            text(
+                &p,
+                pos2(r.min.x + 16.0, r.center().y),
+                Align2::LEFT_CENTER,
+                &c.label,
+                font(12.0),
+                t.foreground,
+                r.width() - 110.0,
+            );
+            let pr = text(
+                &p,
+                pos2(r.max.x, r.center().y),
+                Align2::RIGHT_CENTER,
+                &format!("{:.0}%", c.tokens / self.limit * 100.0),
+                mono(11.0),
+                faint(&t),
+                40.0,
+            );
+            text(
+                &p,
+                pos2(pr.min.x - 8.0, r.center().y),
+                Align2::RIGHT_CENTER,
+                &fmt_tok(c.tokens),
+                mono(11.0),
+                dim(&t),
+                60.0,
+            );
         }
         if new_hover != hov_part {
             glowkit_core::set_state(ui, id.with("hp"), new_hover);

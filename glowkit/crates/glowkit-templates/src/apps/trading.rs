@@ -1,7 +1,9 @@
 //! Trading terminal template: live candlesticks with indicators, order book depth, trade tape,
 //! positions with PnL, order entry and a watchlist with sparklines.
 
-use egui::{pos2, vec2, Align2, Color32, CursorIcon, FontId, Id, Key, Pos2, Rect, Sense, Shape, Stroke, StrokeKind, Ui};
+use egui::{
+    pos2, vec2, Align2, Color32, CursorIcon, FontId, Id, Key, Pos2, Rect, Sense, Shape, Stroke, StrokeKind, Ui,
+};
 use glowkit_components::{toast, LineIcon, Toast, UiIcon};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{Rng, Theme};
@@ -402,12 +404,22 @@ impl TradingTerminalApp {
         for k in filled.into_iter().rev() {
             let o = self.orders.remove(k);
             self.apply_fill(o.symbol, o.buy, o.qty, o.price, now);
-            toast(ctx, Toast::success("Limit order filled").description(format!("{} {} {} @ {}", if o.buy { "Bought" } else { "Sold" }, o.qty, SYMBOLS[o.symbol].0, px(o.price))));
+            toast(
+                ctx,
+                Toast::success("Limit order filled").description(format!(
+                    "{} {} {} @ {}",
+                    if o.buy { "Bought" } else { "Sold" },
+                    o.qty,
+                    SYMBOLS[o.symbol].0,
+                    px(o.price)
+                )),
+            );
         }
     }
 
     fn apply_fill(&mut self, symbol: usize, buy: bool, qty: f64, price: f64, now: f64) {
-        self.fills.insert(0, Print { time: self.now_label(0), price, size: if buy { qty } else { -qty }, buy, born: now });
+        self.fills
+            .insert(0, Print { time: self.now_label(0), price, size: if buy { qty } else { -qty }, buy, born: now });
         if let Some(p) = self.positions.iter_mut().find(|p| p.symbol == symbol) {
             let signed = if p.long { p.qty } else { -p.qty };
             let add = if buy { qty } else { -qty };
@@ -533,26 +545,70 @@ impl TradingTerminalApp {
         let cy = r.center().y;
         let mut x = r.min.x + 16.0;
         p.circle_filled(pos2(x + 12.0, cy), 12.0, pk::soft(&t, t.chart[self.symbol % 6], 2.0));
-        kit::text_at(&p, pos2(x + 12.0, cy), Align2::CENTER_CENTER, &w.sym[..1], 12.0, pk::tone_fg(&t, t.chart[self.symbol % 6]), 20.0);
+        kit::text_at(
+            &p,
+            pos2(x + 12.0, cy),
+            Align2::CENTER_CENTER,
+            &w.sym[..1],
+            12.0,
+            pk::tone_fg(&t, t.chart[self.symbol % 6]),
+            20.0,
+        );
         x += 32.0;
-        let sr = kit::text_at(&p, pos2(x, cy - 8.0), Align2::LEFT_CENTER, &format!("{}-USD", w.sym), 14.0, t.foreground, 110.0);
-        kit::text_at(&p, pos2(x, cy + 10.0), Align2::LEFT_CENTER, &format!("{} · Perpetual", w.name), 11.0, t.muted_foreground, 140.0);
+        let sr = kit::text_at(
+            &p,
+            pos2(x, cy - 8.0),
+            Align2::LEFT_CENTER,
+            &format!("{}-USD", w.sym),
+            14.0,
+            t.foreground,
+            110.0,
+        );
+        kit::text_at(
+            &p,
+            pos2(x, cy + 10.0),
+            Align2::LEFT_CENTER,
+            &format!("{} · Perpetual", w.name),
+            11.0,
+            t.muted_foreground,
+            140.0,
+        );
         x = sr.max.x.max(x + 110.0) + 18.0;
         let fl = (1.0 - ((now - self.price_flash) / 0.6) as f32).clamp(0.0, 1.0);
         let dir_up = self.price >= self.prev_price;
         let pc = if dir_up { up } else { dn };
-        let pr = pk::mono(&p, pos2(x, cy), Align2::LEFT_CENTER, &px(self.price), 20.0, t.foreground.lerp_to_gamma(pc, 0.4 + 0.6 * fl), 180.0);
+        let pr = pk::mono(
+            &p,
+            pos2(x, cy),
+            Align2::LEFT_CENTER,
+            &px(self.price),
+            20.0,
+            t.foreground.lerp_to_gamma(pc, 0.4 + 0.6 * fl),
+            180.0,
+        );
         x = pr.max.x + 22.0;
         let chg = (w.price / w.open - 1.0) * 100.0;
         let lo = w.hist.iter().copied().fold(f64::MAX, f64::min).min(w.price);
         let hi = w.hist.iter().copied().fold(f64::MIN, f64::max).max(w.price);
         let funding_left = 3 * 3600 + 12 * 60 + 44 - (self.tick_n / 4) as i64;
         let stats = [
-            ("24h change", format!("{}{:.2}%", if chg >= 0.0 { "+" } else { "" }, chg), Some(if chg >= 0.0 { up } else { dn })),
+            (
+                "24h change",
+                format!("{}{:.2}%", if chg >= 0.0 { "+" } else { "" }, chg),
+                Some(if chg >= 0.0 { up } else { dn }),
+            ),
             ("24h high", px(hi), None),
             ("24h low", px(lo), None),
-            ("24h volume", format!("{} {}", glowkit_charts::format_compact(18_400.0 + self.tick_n as f64 * 0.7), w.sym), None),
-            ("Funding / next", format!("0.0100% · {:02}:{:02}:{:02}", funding_left / 3600, funding_left / 60 % 60, funding_left % 60), None),
+            (
+                "24h volume",
+                format!("{} {}", glowkit_charts::format_compact(18_400.0 + self.tick_n as f64 * 0.7), w.sym),
+                None,
+            ),
+            (
+                "Funding / next",
+                format!("0.0100% · {:02}:{:02}:{:02}", funding_left / 3600, funding_left / 60 % 60, funding_left % 60),
+                None,
+            ),
         ];
         let right_limit = r.max.x - 16.0;
         for (cap, val, c) in stats {
@@ -588,7 +644,13 @@ impl TradingTerminalApp {
             } else if hv > 0.01 {
                 p.rect_filled(br, 5.0, kit::hover_fill(&t, hv));
             }
-            p.text(br.center(), Align2::CENTER_CENTER, *tf, FontId::proportional(12.0), if on { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, hv) });
+            p.text(
+                br.center(),
+                Align2::CENTER_CENTER,
+                *tf,
+                FontId::proportional(12.0),
+                if on { t.foreground } else { t.muted_foreground.lerp_to_gamma(t.foreground, hv) },
+            );
             kit::tip(&resp, &format!("{tf} candles"), Some(&format!("{}", k + 1)));
             if resp.clicked() && !on {
                 self.tf = k;
@@ -623,7 +685,8 @@ impl TradingTerminalApp {
             }
         }
         if resp.dragged() {
-            self.pan = (self.pan + resp.drag_delta().x / self.zoom).clamp(0.0, (self.bars.len() as f32 - 20.0).max(0.0));
+            self.pan =
+                (self.pan + resp.drag_delta().x / self.zoom).clamp(0.0, (self.bars.len() as f32 - 20.0).max(0.0));
         }
         if resp.double_clicked() {
             self.pan = 0.0;
@@ -663,7 +726,15 @@ impl TradingTerminalApp {
                 continue;
             }
             p.line_segment([pos2(area.min.x, y), pos2(area.max.x, y)], Stroke::new(1.0, grid));
-            pk::mono(&p, pos2(area.max.x + 8.0, y), Align2::LEFT_CENTER, &px(v), 10.5, t.muted_foreground, axis_w - 10.0);
+            pk::mono(
+                &p,
+                pos2(area.max.x + 8.0, y),
+                Align2::LEFT_CENTER,
+                &px(v),
+                10.5,
+                t.muted_foreground,
+                axis_w - 10.0,
+            );
         }
         let tf_min = TF_MIN[self.tf] as i64;
         let every = ((70.0 / spacing).ceil() as usize).max(1);
@@ -697,7 +768,8 @@ impl TradingTerminalApp {
             }
             p.add(Shape::mesh(m));
             for side in 0..2 {
-                let pts: Vec<Pos2> = (start..end).map(|i| pos2(x_of(i), y_of(if side == 0 { bb[i].0 } else { bb[i].1 }))).collect();
+                let pts: Vec<Pos2> =
+                    (start..end).map(|i| pos2(x_of(i), y_of(if side == 0 { bb[i].0 } else { bb[i].1 }))).collect();
                 p.add(Shape::line(pts, Stroke::new(1.0, with_alpha(t.chart[4], 0.5))));
             }
         }
@@ -710,7 +782,11 @@ impl TradingTerminalApp {
                 let h = (b.v / vmax) as f32 * (vol_h - 6.0);
                 let c = if b.c >= b.o { up } else { dn };
                 let w = (spacing * 0.62).max(1.0);
-                p.rect_filled(Rect::from_min_max(pos2(x - w / 2.0, area.max.y - h), pos2(x + w / 2.0, area.max.y)), 0.0, with_alpha(c, 0.32));
+                p.rect_filled(
+                    Rect::from_min_max(pos2(x - w / 2.0, area.max.y - h), pos2(x + w / 2.0, area.max.y)),
+                    0.0,
+                    with_alpha(c, 0.32),
+                );
             }
         }
         // candles
@@ -725,7 +801,9 @@ impl TradingTerminalApp {
             p.rect_filled(body, 0.5, c);
         }
         // EMAs
-        for (k, (on, series, col)) in [(self.indicators[0], &e9, ind_cols[0]), (self.indicators[1], &e21, ind_cols[1])].into_iter().enumerate() {
+        for (k, (on, series, col)) in
+            [(self.indicators[0], &e9, ind_cols[0]), (self.indicators[1], &e21, ind_cols[1])].into_iter().enumerate()
+        {
             if !on || vis.len() < 2 {
                 continue;
             }
@@ -787,10 +865,22 @@ impl TradingTerminalApp {
                 lx = vr.max.x + 10.0;
             }
             let ch = (b.c / b.o - 1.0) * 100.0;
-            pk::mono(&p, pos2(lx, ly), Align2::LEFT_CENTER, &format!("{}{:.2}%", if ch >= 0.0 { "+" } else { "" }, ch), 10.5, c, 70.0);
+            pk::mono(
+                &p,
+                pos2(lx, ly),
+                Align2::LEFT_CENTER,
+                &format!("{}{:.2}%", if ch >= 0.0 { "+" } else { "" }, ch),
+                10.5,
+                c,
+                70.0,
+            );
             let mut lx = area.min.x + 4.0;
             let ly2 = ly + 16.0;
-            for (k, (on, series, col, name)) in [(self.indicators[0], &e9, ind_cols[0], "EMA 9"), (self.indicators[1], &e21, ind_cols[1], "EMA 21")].into_iter().enumerate() {
+            for (k, (on, series, col, name)) in
+                [(self.indicators[0], &e9, ind_cols[0], "EMA 9"), (self.indicators[1], &e21, ind_cols[1], "EMA 21")]
+                    .into_iter()
+                    .enumerate()
+            {
                 if !on {
                     continue;
                 }
@@ -802,7 +892,9 @@ impl TradingTerminalApp {
         }
         if self.pan > 0.5 {
             let br = Rect::from_min_size(pos2(area.max.x - 96.0, area.max.y - vol_h - 30.0), vec2(90.0, 24.0));
-            if pk::small_btn(ui, br, id.with("live"), "Go live", Some(LineIcon::ChevronRight.into()), None, None).clicked() {
+            if pk::small_btn(ui, br, id.with("live"), "Go live", Some(LineIcon::ChevronRight.into()), None, None)
+                .clicked()
+            {
                 self.pan = 0.0;
             }
         }
@@ -821,11 +913,27 @@ impl TradingTerminalApp {
         let x1 = r.max.x - 10.0;
         kit::text_at(&p, pos2(x0, r.min.y + 18.0), Align2::LEFT_CENTER, "Order book", 13.0, t.foreground, 120.0);
         let ts = tick_size(self.price);
-        kit::text_at(&p, pos2(x1, r.min.y + 18.0), Align2::RIGHT_CENTER, &format!("tick {ts}"), 11.0, t.muted_foreground, 80.0);
+        kit::text_at(
+            &p,
+            pos2(x1, r.min.y + 18.0),
+            Align2::RIGHT_CENTER,
+            &format!("tick {ts}"),
+            11.0,
+            t.muted_foreground,
+            80.0,
+        );
         let hy = r.min.y + 40.0;
         let cx2 = x0 + (x1 - x0) * 0.62;
         kit::text_at(&p, pos2(x0, hy), Align2::LEFT_CENTER, "Price (USD)", 10.5, t.muted_foreground, 80.0);
-        kit::text_at(&p, pos2(cx2, hy), Align2::RIGHT_CENTER, &format!("Size ({})", SYMBOLS[self.symbol].0), 10.5, t.muted_foreground, 80.0);
+        kit::text_at(
+            &p,
+            pos2(cx2, hy),
+            Align2::RIGHT_CENTER,
+            &format!("Size ({})", SYMBOLS[self.symbol].0),
+            10.5,
+            t.muted_foreground,
+            80.0,
+        );
         kit::text_at(&p, pos2(x1, hy), Align2::RIGHT_CENTER, "Total", 10.5, t.muted_foreground, 60.0);
         let rows_top = hy + 10.0;
         let mid_h = 30.0;
@@ -836,38 +944,73 @@ impl TradingTerminalApp {
         let spread_ticks = 1.0;
         let best_ask = self.price + ts * spread_ticks * 0.5;
         let best_bid = self.price - ts * spread_ticks * 0.5;
-        let cum_ask: Vec<f64> = self.asks.iter().scan(0.0, |a, l| {
-            *a += l.size;
-            Some(*a)
-        }).collect();
-        let cum_bid: Vec<f64> = self.bids.iter().scan(0.0, |a, l| {
-            *a += l.size;
-            Some(*a)
-        }).collect();
+        let cum_ask: Vec<f64> = self
+            .asks
+            .iter()
+            .scan(0.0, |a, l| {
+                *a += l.size;
+                Some(*a)
+            })
+            .collect();
+        let cum_bid: Vec<f64> = self
+            .bids
+            .iter()
+            .scan(0.0, |a, l| {
+                *a += l.size;
+                Some(*a)
+            })
+            .collect();
         let maxc = cum_ask[n.saturating_sub(1)].max(cum_bid[n.saturating_sub(1)]).max(1e-9);
         let mut clicked_price = None;
-        let mut row = |p: &egui::Painter, ui: &mut Ui, y: f32, price: f64, lv: Level, cum: f64, ask: bool, key: usize| {
-            let rr = Rect::from_min_max(pos2(r.min.x + 2.0, y), pos2(r.max.x - 2.0, y + rh));
-            let resp = ui.interact(rr, id.with(("lv", ask, key)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
-            let c = if ask { dn } else { up };
-            let depth_w = (cum / maxc) as f32 * rr.width();
-            p.rect_filled(Rect::from_min_max(pos2(rr.max.x - depth_w, rr.min.y + 1.0), pos2(rr.max.x, rr.max.y - 1.0)), 0.0, with_alpha(c, if t.dark { 0.13 } else { 0.1 }));
-            let fl = (1.0 - ((now - lv.flash) / 0.5) as f32).clamp(0.0, 1.0);
-            if fl > 0.0 {
-                let fc = if lv.up { up } else { dn };
-                p.rect_filled(Rect::from_min_max(pos2(cx2 - 64.0, rr.min.y + 1.0), pos2(cx2 + 2.0, rr.max.y - 1.0)), 2.0, with_alpha(fc, 0.22 * fl));
-            }
-            if resp.hovered() {
-                p.rect_filled(rr, 0.0, kit::hover_fill(&t, 1.4));
-            }
-            let fs = (rh - 3.0).clamp(10.0, 11.5);
-            pk::mono(p, pos2(x0, rr.center().y), Align2::LEFT_CENTER, &px(price), fs, c, 90.0);
-            pk::mono(p, pos2(cx2, rr.center().y), Align2::RIGHT_CENTER, &format!("{:.4}", lv.size), fs, t.foreground, 70.0);
-            pk::mono(p, pos2(x1, rr.center().y), Align2::RIGHT_CENTER, &format!("{:.3}", cum), fs, t.muted_foreground, 60.0);
-            if resp.clicked() {
-                clicked_price = Some(price);
-            }
-        };
+        let mut row =
+            |p: &egui::Painter, ui: &mut Ui, y: f32, price: f64, lv: Level, cum: f64, ask: bool, key: usize| {
+                let rr = Rect::from_min_max(pos2(r.min.x + 2.0, y), pos2(r.max.x - 2.0, y + rh));
+                let resp = ui
+                    .interact(rr, id.with(("lv", ask, key)), Sense::click())
+                    .on_hover_cursor(CursorIcon::PointingHand);
+                let c = if ask { dn } else { up };
+                let depth_w = (cum / maxc) as f32 * rr.width();
+                p.rect_filled(
+                    Rect::from_min_max(pos2(rr.max.x - depth_w, rr.min.y + 1.0), pos2(rr.max.x, rr.max.y - 1.0)),
+                    0.0,
+                    with_alpha(c, if t.dark { 0.13 } else { 0.1 }),
+                );
+                let fl = (1.0 - ((now - lv.flash) / 0.5) as f32).clamp(0.0, 1.0);
+                if fl > 0.0 {
+                    let fc = if lv.up { up } else { dn };
+                    p.rect_filled(
+                        Rect::from_min_max(pos2(cx2 - 64.0, rr.min.y + 1.0), pos2(cx2 + 2.0, rr.max.y - 1.0)),
+                        2.0,
+                        with_alpha(fc, 0.22 * fl),
+                    );
+                }
+                if resp.hovered() {
+                    p.rect_filled(rr, 0.0, kit::hover_fill(&t, 1.4));
+                }
+                let fs = (rh - 3.0).clamp(10.0, 11.5);
+                pk::mono(p, pos2(x0, rr.center().y), Align2::LEFT_CENTER, &px(price), fs, c, 90.0);
+                pk::mono(
+                    p,
+                    pos2(cx2, rr.center().y),
+                    Align2::RIGHT_CENTER,
+                    &format!("{:.4}", lv.size),
+                    fs,
+                    t.foreground,
+                    70.0,
+                );
+                pk::mono(
+                    p,
+                    pos2(x1, rr.center().y),
+                    Align2::RIGHT_CENTER,
+                    &format!("{:.3}", cum),
+                    fs,
+                    t.muted_foreground,
+                    60.0,
+                );
+                if resp.clicked() {
+                    clicked_price = Some(price);
+                }
+            };
         // asks: best at the bottom
         for k in 0..n {
             let lvl = n - 1 - k;
@@ -881,10 +1024,26 @@ impl TradingTerminalApp {
         let dir_up = self.price >= self.prev_price;
         let fl = (1.0 - ((now - self.price_flash) / 0.6) as f32).clamp(0.0, 1.0);
         let pc = if dir_up { up } else { dn };
-        let pr = pk::mono(&p, pos2(x0, mr.center().y), Align2::LEFT_CENTER, &px(self.price), 15.0, t.foreground.lerp_to_gamma(pc, 0.5 + 0.5 * fl), 120.0);
+        let pr = pk::mono(
+            &p,
+            pos2(x0, mr.center().y),
+            Align2::LEFT_CENTER,
+            &px(self.price),
+            15.0,
+            t.foreground.lerp_to_gamma(pc, 0.5 + 0.5 * fl),
+            120.0,
+        );
         let arrow = if dir_up { UiIcon::ArrowUp } else { UiIcon::ArrowDown };
         AppIcon::Ui(arrow).paint(&p, Rect::from_center_size(pos2(pr.max.x + 9.0, mr.center().y), vec2(12.0, 12.0)), pc);
-        kit::text_at(&p, pos2(x1, mr.center().y), Align2::RIGHT_CENTER, &format!("Spread {ts} · {:.3}%", ts / self.price * 100.0), 10.5, t.muted_foreground, 120.0);
+        kit::text_at(
+            &p,
+            pos2(x1, mr.center().y),
+            Align2::RIGHT_CENTER,
+            &format!("Spread {ts} · {:.3}%", ts / self.price * 100.0),
+            10.5,
+            t.muted_foreground,
+            120.0,
+        );
         // bids
         for k in 0..n {
             let y = my + mid_h + k as f32 * rh;
@@ -929,7 +1088,15 @@ impl TradingTerminalApp {
                 p.rect_filled(Rect::from_min_size(rr.min, vec2(2.0, rh)), 0.0, c);
             }
             pk::mono(&p, pos2(x0, rr.center().y), Align2::LEFT_CENTER, &px(pr.price), 11.0, c, 90.0);
-            pk::mono(&p, pos2(cx2, rr.center().y), Align2::RIGHT_CENTER, &format!("{:.4}", pr.size), 11.0, if pr.size > 1.2 { t.foreground } else { mix(t.foreground, t.muted_foreground, 0.4) }, 70.0);
+            pk::mono(
+                &p,
+                pos2(cx2, rr.center().y),
+                Align2::RIGHT_CENTER,
+                &format!("{:.4}", pr.size),
+                11.0,
+                if pr.size > 1.2 { t.foreground } else { mix(t.foreground, t.muted_foreground, 0.4) },
+                70.0,
+            );
             pk::mono(&p, pos2(x1, rr.center().y), Align2::RIGHT_CENTER, &pr.time, 11.0, t.muted_foreground, 70.0);
             y += rh;
         }
@@ -943,25 +1110,66 @@ impl TradingTerminalApp {
         let t = Theme::of(ui);
         let (up, dn) = Self::up_down(&t);
         let p = ui.painter().clone();
-        let labels = [format!("Positions ({})", self.positions.len()), format!("Open orders ({})", self.orders.len()), "Fills".to_string()];
+        let labels = [
+            format!("Positions ({})", self.positions.len()),
+            format!("Open orders ({})", self.orders.len()),
+            "Fills".to_string(),
+        ];
         let lr: Vec<&str> = labels.iter().map(|s| s.as_str()).collect();
-        pk::mini_tabs(ui, Rect::from_min_size(pos2(r.min.x + 6.0, r.min.y + 2.0), vec2(360.0, 32.0)), id.with("tabs"), &lr, &mut self.bottom_tab);
+        pk::mini_tabs(
+            ui,
+            Rect::from_min_size(pos2(r.min.x + 6.0, r.min.y + 2.0), vec2(360.0, 32.0)),
+            id.with("tabs"),
+            &lr,
+            &mut self.bottom_tab,
+        );
         // totals
         let mut upnl = 0.0;
         for ps in &self.positions {
             let m = self.watch[ps.symbol].price;
             upnl += (m - ps.entry) * ps.qty * if ps.long { 1.0 } else { -1.0 };
         }
-        let tr = pk::mono(&p, pos2(r.max.x - 12.0, r.min.y + 18.0), Align2::RIGHT_CENTER, &format!("{}{}", if upnl >= 0.0 { "+" } else { "" }, kit::money(upnl)), 12.5, if upnl >= 0.0 { up } else { dn }, 140.0);
-        kit::text_at(&p, pos2(tr.min.x - 8.0, r.min.y + 18.0), Align2::RIGHT_CENTER, "Unrealized PnL", 11.0, t.muted_foreground, 120.0);
+        let tr = pk::mono(
+            &p,
+            pos2(r.max.x - 12.0, r.min.y + 18.0),
+            Align2::RIGHT_CENTER,
+            &format!("{}{}", if upnl >= 0.0 { "+" } else { "" }, kit::money(upnl)),
+            12.5,
+            if upnl >= 0.0 { up } else { dn },
+            140.0,
+        );
+        kit::text_at(
+            &p,
+            pos2(tr.min.x - 8.0, r.min.y + 18.0),
+            Align2::RIGHT_CENTER,
+            "Unrealized PnL",
+            11.0,
+            t.muted_foreground,
+            120.0,
+        );
         kit::hline(&p, r.min.x + 1.0, r.max.x - 1.0, r.min.y + 34.0, &t);
         let x0 = r.min.x + 12.0;
         let w = r.width() - 24.0;
         let hy = r.min.y + 50.0;
         let rh = 30.0;
         let cols: Vec<(f32, &str, bool)> = match self.bottom_tab {
-            0 => vec![(0.0, "Market", false), (0.15, "Side", false), (0.3, "Size", true), (0.45, "Entry", true), (0.6, "Mark", true), (0.8, "PnL", true), (1.0, "", true)],
-            1 => vec![(0.0, "Market", false), (0.15, "Side", false), (0.35, "Size", true), (0.55, "Limit", true), (0.75, "Placed", true), (1.0, "", true)],
+            0 => vec![
+                (0.0, "Market", false),
+                (0.15, "Side", false),
+                (0.3, "Size", true),
+                (0.45, "Entry", true),
+                (0.6, "Mark", true),
+                (0.8, "PnL", true),
+                (1.0, "", true),
+            ],
+            1 => vec![
+                (0.0, "Market", false),
+                (0.15, "Side", false),
+                (0.35, "Size", true),
+                (0.55, "Limit", true),
+                (0.75, "Placed", true),
+                (1.0, "", true),
+            ],
             _ => vec![(0.0, "Time", false), (0.2, "Side", false), (0.45, "Size", true), (0.7, "Price", true)],
         };
         let col_x = |f: f32| x0 + w * f - if f >= 1.0 { 64.0 } else { 0.0 };
@@ -989,14 +1197,54 @@ impl TradingTerminalApp {
                     let m = self.watch[ps.symbol].price;
                     let pnl = (m - ps.entry) * ps.qty * if ps.long { 1.0 } else { -1.0 };
                     let pct = pnl / (ps.entry * ps.qty) * 100.0;
-                    kit::text_at(&p2, pos2(col_x(0.0), cy), Align2::LEFT_CENTER, &format!("{}-USD", SYMBOLS[ps.symbol].0), 12.0, t.foreground, w * 0.14);
-                    pk::tag(&p2, pos2(col_x(0.15), cy), false, if ps.long { "Long 5x" } else { "Short 3x" }, if ps.long { up } else { dn }, &t, false);
-                    pk::mono(&p2, pos2(col_x(0.3), cy), Align2::RIGHT_CENTER, &format!("{}", ps.qty), 11.5, t.foreground, 90.0);
+                    kit::text_at(
+                        &p2,
+                        pos2(col_x(0.0), cy),
+                        Align2::LEFT_CENTER,
+                        &format!("{}-USD", SYMBOLS[ps.symbol].0),
+                        12.0,
+                        t.foreground,
+                        w * 0.14,
+                    );
+                    pk::tag(
+                        &p2,
+                        pos2(col_x(0.15), cy),
+                        false,
+                        if ps.long { "Long 5x" } else { "Short 3x" },
+                        if ps.long { up } else { dn },
+                        &t,
+                        false,
+                    );
+                    pk::mono(
+                        &p2,
+                        pos2(col_x(0.3), cy),
+                        Align2::RIGHT_CENTER,
+                        &format!("{}", ps.qty),
+                        11.5,
+                        t.foreground,
+                        90.0,
+                    );
                     pk::mono(&p2, pos2(col_x(0.45), cy), Align2::RIGHT_CENTER, &px(ps.entry), 11.5, t.foreground, 90.0);
                     pk::mono(&p2, pos2(col_x(0.6), cy), Align2::RIGHT_CENTER, &px(m), 11.5, t.foreground, 90.0);
                     let c = if pnl >= 0.0 { up } else { dn };
-                    pk::mono(&p2, pos2(col_x(0.8), cy - 6.0), Align2::RIGHT_CENTER, &format!("{}{}", if pnl >= 0.0 { "+" } else { "" }, kit::money(pnl)), 11.5, c, 110.0);
-                    pk::mono(&p2, pos2(col_x(0.8), cy + 7.0), Align2::RIGHT_CENTER, &format!("{}{:.2}%", if pct >= 0.0 { "+" } else { "" }, pct), 10.0, c, 110.0);
+                    pk::mono(
+                        &p2,
+                        pos2(col_x(0.8), cy - 6.0),
+                        Align2::RIGHT_CENTER,
+                        &format!("{}{}", if pnl >= 0.0 { "+" } else { "" }, kit::money(pnl)),
+                        11.5,
+                        c,
+                        110.0,
+                    );
+                    pk::mono(
+                        &p2,
+                        pos2(col_x(0.8), cy + 7.0),
+                        Align2::RIGHT_CENTER,
+                        &format!("{}{:.2}%", if pct >= 0.0 { "+" } else { "" }, pct),
+                        10.0,
+                        c,
+                        110.0,
+                    );
                     let br = Rect::from_min_max(pos2(r.max.x - 70.0, cy - 11.0), pos2(r.max.x - 12.0, cy + 11.0));
                     if pk::small_btn(ui, br, id.with(("close", k)), "Close", None, None, None).clicked() {
                         close_pos = Some(k);
@@ -1004,7 +1252,15 @@ impl TradingTerminalApp {
                     y += rh;
                 }
                 if self.positions.is_empty() {
-                    kit::text_at(&p, pos2(r.center().x, y + 30.0), Align2::CENTER_CENTER, "No open positions", 12.0, t.muted_foreground, 200.0);
+                    kit::text_at(
+                        &p,
+                        pos2(r.center().x, y + 30.0),
+                        Align2::CENTER_CENTER,
+                        "No open positions",
+                        12.0,
+                        t.muted_foreground,
+                        200.0,
+                    );
                 }
             }
             1 => {
@@ -1015,11 +1271,43 @@ impl TradingTerminalApp {
                     }
                     kit::row(ui, rr, id.with(("orow", k)), 4.0);
                     let cy = rr.center().y;
-                    kit::text_at(&p2, pos2(col_x(0.0), cy), Align2::LEFT_CENTER, &format!("{}-USD", SYMBOLS[o.symbol].0), 12.0, t.foreground, w * 0.14);
-                    pk::tag(&p2, pos2(col_x(0.15), cy), false, if o.buy { "Buy limit" } else { "Sell limit" }, if o.buy { up } else { dn }, &t, false);
-                    pk::mono(&p2, pos2(col_x(0.35), cy), Align2::RIGHT_CENTER, &format!("{}", o.qty), 11.5, t.foreground, 90.0);
+                    kit::text_at(
+                        &p2,
+                        pos2(col_x(0.0), cy),
+                        Align2::LEFT_CENTER,
+                        &format!("{}-USD", SYMBOLS[o.symbol].0),
+                        12.0,
+                        t.foreground,
+                        w * 0.14,
+                    );
+                    pk::tag(
+                        &p2,
+                        pos2(col_x(0.15), cy),
+                        false,
+                        if o.buy { "Buy limit" } else { "Sell limit" },
+                        if o.buy { up } else { dn },
+                        &t,
+                        false,
+                    );
+                    pk::mono(
+                        &p2,
+                        pos2(col_x(0.35), cy),
+                        Align2::RIGHT_CENTER,
+                        &format!("{}", o.qty),
+                        11.5,
+                        t.foreground,
+                        90.0,
+                    );
                     pk::mono(&p2, pos2(col_x(0.55), cy), Align2::RIGHT_CENTER, &px(o.price), 11.5, t.foreground, 90.0);
-                    pk::mono(&p2, pos2(col_x(0.75), cy), Align2::RIGHT_CENTER, &o.placed, 11.5, t.muted_foreground, 90.0);
+                    pk::mono(
+                        &p2,
+                        pos2(col_x(0.75), cy),
+                        Align2::RIGHT_CENTER,
+                        &o.placed,
+                        11.5,
+                        t.muted_foreground,
+                        90.0,
+                    );
                     let br = Rect::from_min_max(pos2(r.max.x - 70.0, cy - 11.0), pos2(r.max.x - 12.0, cy + 11.0));
                     if pk::small_btn(ui, br, id.with(("cancel", k)), "Cancel", None, None, None).clicked() {
                         cancel = Some(k);
@@ -1027,7 +1315,15 @@ impl TradingTerminalApp {
                     y += rh;
                 }
                 if self.orders.is_empty() {
-                    kit::text_at(&p, pos2(r.center().x, y + 30.0), Align2::CENTER_CENTER, "No open orders", 12.0, t.muted_foreground, 200.0);
+                    kit::text_at(
+                        &p,
+                        pos2(r.center().x, y + 30.0),
+                        Align2::CENTER_CENTER,
+                        "No open orders",
+                        12.0,
+                        t.muted_foreground,
+                        200.0,
+                    );
                 }
             }
             _ => {
@@ -1038,16 +1334,44 @@ impl TradingTerminalApp {
                     let cy = y + 12.0;
                     let fl = (1.0 - ((now - f.born) / 1.0) as f32).clamp(0.0, 1.0);
                     if fl > 0.0 {
-                        p2.rect_filled(Rect::from_min_max(pos2(r.min.x + 4.0, y), pos2(r.max.x - 4.0, y + 24.0)), 4.0, with_alpha(if f.buy { up } else { dn }, 0.15 * fl));
+                        p2.rect_filled(
+                            Rect::from_min_max(pos2(r.min.x + 4.0, y), pos2(r.max.x - 4.0, y + 24.0)),
+                            4.0,
+                            with_alpha(if f.buy { up } else { dn }, 0.15 * fl),
+                        );
                     }
                     pk::mono(&p2, pos2(col_x(0.0), cy), Align2::LEFT_CENTER, &f.time, 11.5, t.muted_foreground, 90.0);
-                    pk::tag(&p2, pos2(col_x(0.2), cy), false, if f.buy { "Buy" } else { "Sell" }, if f.buy { up } else { dn }, &t, false);
-                    pk::mono(&p2, pos2(col_x(0.45), cy), Align2::RIGHT_CENTER, &format!("{}", f.size.abs()), 11.5, t.foreground, 90.0);
+                    pk::tag(
+                        &p2,
+                        pos2(col_x(0.2), cy),
+                        false,
+                        if f.buy { "Buy" } else { "Sell" },
+                        if f.buy { up } else { dn },
+                        &t,
+                        false,
+                    );
+                    pk::mono(
+                        &p2,
+                        pos2(col_x(0.45), cy),
+                        Align2::RIGHT_CENTER,
+                        &format!("{}", f.size.abs()),
+                        11.5,
+                        t.foreground,
+                        90.0,
+                    );
                     pk::mono(&p2, pos2(col_x(0.7), cy), Align2::RIGHT_CENTER, &px(f.price), 11.5, t.foreground, 90.0);
                     y += 24.0;
                 }
                 if self.fills.is_empty() {
-                    kit::text_at(&p, pos2(r.center().x, y + 30.0), Align2::CENTER_CENTER, "No fills this session", 12.0, t.muted_foreground, 200.0);
+                    kit::text_at(
+                        &p,
+                        pos2(r.center().x, y + 30.0),
+                        Align2::CENTER_CENTER,
+                        "No fills this session",
+                        12.0,
+                        t.muted_foreground,
+                        200.0,
+                    );
                 }
             }
         }
@@ -1057,7 +1381,14 @@ impl TradingTerminalApp {
             let pnl = (m - ps.entry) * ps.qty * if ps.long { 1.0 } else { -1.0 };
             self.apply_fill(ps.symbol, !ps.long, ps.qty, m, now);
             self.balance += pnl;
-            toast(ui.ctx(), Toast::success(format!("Closed {}-USD", SYMBOLS[ps.symbol].0)).description(format!("Realized {}{}", if pnl >= 0.0 { "+" } else { "" }, kit::money(pnl))));
+            toast(
+                ui.ctx(),
+                Toast::success(format!("Closed {}-USD", SYMBOLS[ps.symbol].0)).description(format!(
+                    "Realized {}{}",
+                    if pnl >= 0.0 { "+" } else { "" },
+                    kit::money(pnl)
+                )),
+            );
         }
         if let Some(k) = cancel {
             self.orders.remove(k);
@@ -1084,20 +1415,45 @@ impl TradingTerminalApp {
         let side_col = if self.side == 0 { up } else { dn };
         p.rect_filled(ind, 5.0, up.lerp_to_gamma(dn, k));
         for (i, (label, key)) in [("Buy", "B"), ("Sell", "S")].iter().enumerate() {
-            let resp = ui.interact(halves[i], id.with(("s", i)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
+            let resp =
+                ui.interact(halves[i], id.with(("s", i)), Sense::click()).on_hover_cursor(CursorIcon::PointingHand);
             kit::tip(&resp, &format!("{label} {}", SYMBOLS[self.symbol].0), Some(key));
             if resp.clicked() {
                 self.side = i;
             }
             let on = self.side == i;
-            p.text(halves[i].center(), Align2::CENTER_CENTER, *label, FontId::proportional(13.0), if on { Color32::WHITE } else { t.muted_foreground });
+            p.text(
+                halves[i].center(),
+                Align2::CENTER_CENTER,
+                *label,
+                FontId::proportional(13.0),
+                if on { Color32::WHITE } else { t.muted_foreground },
+            );
         }
         // type tabs
         let mut ot = self.otype;
-        pk::mini_tabs(ui, Rect::from_min_size(pos2(x0 - 8.0, r.min.y + 48.0), vec2(220.0, 30.0)), id.with("otype"), &["Limit", "Market", "Stop"], &mut ot);
+        pk::mini_tabs(
+            ui,
+            Rect::from_min_size(pos2(x0 - 8.0, r.min.y + 48.0), vec2(220.0, 30.0)),
+            id.with("otype"),
+            &["Limit", "Market", "Stop"],
+            &mut ot,
+        );
         self.otype = ot;
-        let avail = if self.side == 0 { self.balance } else { self.positions.iter().find(|p| p.symbol == self.symbol && p.long).map_or(0.0, |p| p.qty) };
-        kit::text_at(&p, pos2(x1, r.min.y + 64.0), Align2::RIGHT_CENTER, &if self.side == 0 { kit::money(avail) } else { format!("{avail} {}", SYMBOLS[self.symbol].0) }, 11.0, t.muted_foreground, 120.0);
+        let avail = if self.side == 0 {
+            self.balance
+        } else {
+            self.positions.iter().find(|p| p.symbol == self.symbol && p.long).map_or(0.0, |p| p.qty)
+        };
+        kit::text_at(
+            &p,
+            pos2(x1, r.min.y + 64.0),
+            Align2::RIGHT_CENTER,
+            &if self.side == 0 { kit::money(avail) } else { format!("{avail} {}", SYMBOLS[self.symbol].0) },
+            11.0,
+            t.muted_foreground,
+            120.0,
+        );
         let mut y = r.min.y + 88.0;
         // price
         let fh = 32.0;
@@ -1106,9 +1462,24 @@ impl TradingTerminalApp {
         let pr = Rect::from_min_max(pos2(x0 + label_w, y), pos2(x1, y + fh));
         if self.otype == 1 {
             p.rect_filled(pr, 8.0, mix(t.card, t.foreground, 0.04));
-            kit::text_at(&p, pos2(pr.min.x + 12.0, pr.center().y), Align2::LEFT_CENTER, "Market price", 12.5, t.muted_foreground, pr.width() - 20.0);
+            kit::text_at(
+                &p,
+                pos2(pr.min.x + 12.0, pr.center().y),
+                Align2::LEFT_CENTER,
+                "Market price",
+                12.5,
+                t.muted_foreground,
+                pr.width() - 20.0,
+            );
         } else {
-            pk::text_line(ui, Rect::from_min_max(pr.min, pos2(pr.max.x - 44.0, pr.max.y)), id.with("price"), &mut self.price_s, "0.00", true);
+            pk::text_line(
+                ui,
+                Rect::from_min_max(pr.min, pos2(pr.max.x - 44.0, pr.max.y)),
+                id.with("price"),
+                &mut self.price_s,
+                "0.00",
+                true,
+            );
             let lb = Rect::from_min_max(pos2(pr.max.x - 40.0, pr.min.y + 4.0), pos2(pr.max.x, pr.max.y - 4.0));
             let b = pk::small_btn(ui, lb, id.with("last"), "Last", None, None, None);
             if b.clicked() {
@@ -1119,11 +1490,23 @@ impl TradingTerminalApp {
         kit::text_at(&p, pos2(x0, y + fh / 2.0), Align2::LEFT_CENTER, "Size", 12.0, t.muted_foreground, label_w);
         let sr = Rect::from_min_max(pos2(x0 + label_w, y), pos2(x1, y + fh));
         pk::text_line(ui, sr, id.with("qty"), &mut self.qty_s, "0.00", true);
-        kit::text_at(&p, pos2(sr.max.x - 10.0, sr.center().y), Align2::RIGHT_CENTER, SYMBOLS[self.symbol].0, 11.5, t.muted_foreground, 40.0);
+        kit::text_at(
+            &p,
+            pos2(sr.max.x - 10.0, sr.center().y),
+            Align2::RIGHT_CENTER,
+            SYMBOLS[self.symbol].0,
+            11.5,
+            t.muted_foreground,
+            40.0,
+        );
         y += fh + 10.0;
         // presets
         let chips = kit::cols(Rect::from_min_max(pos2(x0 + label_w, y), pos2(x1, y + 24.0)), 4, 6.0);
-        let price_num = if self.otype == 1 { self.price } else { self.price_s.replace(',', "").parse::<f64>().unwrap_or(self.price) };
+        let price_num = if self.otype == 1 {
+            self.price
+        } else {
+            self.price_s.replace(',', "").parse::<f64>().unwrap_or(self.price)
+        };
         for (k, c) in chips.iter().enumerate() {
             let f = (k + 1) as f64 * 0.25;
             let label = format!("{}%", (k + 1) * 25);
@@ -1162,11 +1545,36 @@ impl TradingTerminalApp {
                 let fill = self.price;
                 self.apply_fill(self.symbol, self.side == 0, qty, fill, now);
                 self.bottom_tab = 0;
-                toast(ui.ctx(), Toast::success(format!("{} {qty} {}", if self.side == 0 { "Bought" } else { "Sold" }, SYMBOLS[self.symbol].0)).description(format!("Market fill at {}", px(fill))));
+                toast(
+                    ui.ctx(),
+                    Toast::success(format!(
+                        "{} {qty} {}",
+                        if self.side == 0 { "Bought" } else { "Sold" },
+                        SYMBOLS[self.symbol].0
+                    ))
+                    .description(format!("Market fill at {}", px(fill))),
+                );
             } else {
-                self.orders.insert(0, OpenOrder { symbol: self.symbol, buy: self.side == 0, qty, price: price_num, placed: self.now_label(0) });
+                self.orders.insert(
+                    0,
+                    OpenOrder {
+                        symbol: self.symbol,
+                        buy: self.side == 0,
+                        qty,
+                        price: price_num,
+                        placed: self.now_label(0),
+                    },
+                );
                 self.bottom_tab = 1;
-                toast(ui.ctx(), Toast::success("Limit order placed").description(format!("{} {qty} {} @ {}", if self.side == 0 { "Buy" } else { "Sell" }, SYMBOLS[self.symbol].0, px(price_num))));
+                toast(
+                    ui.ctx(),
+                    Toast::success("Limit order placed").description(format!(
+                        "{} {qty} {} @ {}",
+                        if self.side == 0 { "Buy" } else { "Sell" },
+                        SYMBOLS[self.symbol].0,
+                        px(price_num)
+                    )),
+                );
             }
         }
     }
@@ -1182,7 +1590,11 @@ impl TradingTerminalApp {
         let x0 = r.min.x + 12.0;
         let x1 = r.max.x - 12.0;
         kit::text_at(&p, pos2(x0, r.min.y + 18.0), Align2::LEFT_CENTER, "Watchlist", 13.0, t.foreground, 100.0);
-        AppIcon::Ui(UiIcon::Star).paint(&p, Rect::from_center_size(pos2(x1 - 6.0, r.min.y + 18.0), vec2(13.0, 13.0)), t.warning);
+        AppIcon::Ui(UiIcon::Star).paint(
+            &p,
+            Rect::from_center_size(pos2(x1 - 6.0, r.min.y + 18.0), vec2(13.0, 13.0)),
+            t.warning,
+        );
         let mut switch_to = None;
         let lr = Rect::from_min_max(pos2(r.min.x + 1.0, r.min.y + 34.0), pos2(r.max.x - 1.0, r.max.y - 4.0));
         kit::child(ui, lr, |ui| {
@@ -1202,12 +1614,47 @@ impl TradingTerminalApp {
                     let chg = (wt.price / wt.open - 1.0) * 100.0;
                     let c = if chg >= 0.0 { up } else { dn };
                     let cy = rr.center().y;
-                    kit::text_at(p, pos2(rr.min.x + 12.0, cy - 7.0), Align2::LEFT_CENTER, wt.sym, 12.5, t.foreground, 60.0);
-                    kit::text_at(p, pos2(rr.min.x + 12.0, cy + 8.0), Align2::LEFT_CENTER, wt.name, 10.5, t.muted_foreground, 70.0);
-                    let sr = Rect::from_min_max(pos2(rr.min.x + 84.0, cy - 10.0), pos2(rr.min.x + 84.0 + (w - 190.0).max(30.0), cy + 10.0));
+                    kit::text_at(
+                        p,
+                        pos2(rr.min.x + 12.0, cy - 7.0),
+                        Align2::LEFT_CENTER,
+                        wt.sym,
+                        12.5,
+                        t.foreground,
+                        60.0,
+                    );
+                    kit::text_at(
+                        p,
+                        pos2(rr.min.x + 12.0, cy + 8.0),
+                        Align2::LEFT_CENTER,
+                        wt.name,
+                        10.5,
+                        t.muted_foreground,
+                        70.0,
+                    );
+                    let sr = Rect::from_min_max(
+                        pos2(rr.min.x + 84.0, cy - 10.0),
+                        pos2(rr.min.x + 84.0 + (w - 190.0).max(30.0), cy + 10.0),
+                    );
                     pk::spark(p, sr, &wt.hist, c, true);
-                    pk::mono(p, pos2(rr.max.x - 12.0, cy - 7.0), Align2::RIGHT_CENTER, &px(wt.price), 11.5, t.foreground, 90.0);
-                    pk::mono(p, pos2(rr.max.x - 12.0, cy + 8.0), Align2::RIGHT_CENTER, &format!("{}{:.2}%", if chg >= 0.0 { "+" } else { "" }, chg), 10.5, c, 90.0);
+                    pk::mono(
+                        p,
+                        pos2(rr.max.x - 12.0, cy - 7.0),
+                        Align2::RIGHT_CENTER,
+                        &px(wt.price),
+                        11.5,
+                        t.foreground,
+                        90.0,
+                    );
+                    pk::mono(
+                        p,
+                        pos2(rr.max.x - 12.0, cy + 8.0),
+                        Align2::RIGHT_CENTER,
+                        &format!("{}{:.2}%", if chg >= 0.0 { "+" } else { "" }, chg),
+                        10.5,
+                        c,
+                        90.0,
+                    );
                     if resp.clicked() && k != self.symbol {
                         switch_to = Some(k);
                     }
@@ -1219,4 +1666,3 @@ impl TradingTerminalApp {
         }
     }
 }
-

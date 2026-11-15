@@ -39,7 +39,13 @@ fn style_tabs(ui: &mut Ui, default: usize) -> GameStyle {
             sel = i;
         }
         let on = (hx - i as f32).abs() < 0.5;
-        ui.painter().text(r.center(), Align2::CENTER_CENTER, s.label(), FontId::proportional(12.5), if on { t.background } else { t.muted_foreground });
+        ui.painter().text(
+            r.center(),
+            Align2::CENTER_CENTER,
+            s.label(),
+            FontId::proportional(12.5),
+            if on { t.background } else { t.muted_foreground },
+        );
     }
     set_mem(ui, "style_tab", sel);
     ui.add_space(6.0);
@@ -64,7 +70,9 @@ fn inside(ui: &mut Ui, r: Rect, f: impl FnOnce(&mut Ui)) {
 /// Place a widget centered in `r` without moving the parent's cursor.
 fn put(ui: &mut Ui, r: Rect, w: impl egui::Widget) {
     let salt = ("game_put", r.min.x as i32, r.min.y as i32);
-    let mut child = ui.new_child(UiBuilder::new().id_salt(salt).max_rect(r).layout(Layout::centered_and_justified(egui::Direction::TopDown)));
+    let mut child = ui.new_child(
+        UiBuilder::new().id_salt(salt).max_rect(r).layout(Layout::centered_and_justified(egui::Direction::TopDown)),
+    );
     child.add(w);
 }
 
@@ -81,48 +89,113 @@ fn controls(ui: &mut Ui, f: impl FnOnce(&mut Ui)) {
 
 fn items() -> Vec<GameItem> {
     vec![
-        GameItem::new("Dawnbreaker", GameIcon::Sword, GameRarity::Legendary).kind("Sword").stat("Damage", 148.0).stat("Crit chance", 12.0).stat("Fire damage", 40.0).flavor("Forged in the last light of a dying sun."),
-        GameItem::new("Warden's Aegis", GameIcon::Shield, GameRarity::Epic).kind("Shield").stat("Armor", 96.0).stat("Block", 24.0).flavor("Still warm from the siege of Halveth."),
-        GameItem::new("Healing Draught", GameIcon::Potion, GameRarity::Common).kind("Potion").count(12).stat("Restores", 250.0),
-        GameItem::new("Arcane Tonic", GameIcon::ManaPotion, GameRarity::Uncommon).kind("Potion").count(5).stat("Restores", 180.0),
-        GameItem::new("Stormstring", GameIcon::Bow, GameRarity::Rare).kind("Bow").stat("Damage", 92.0).stat("Range", 40.0),
+        GameItem::new("Dawnbreaker", GameIcon::Sword, GameRarity::Legendary)
+            .kind("Sword")
+            .stat("Damage", 148.0)
+            .stat("Crit chance", 12.0)
+            .stat("Fire damage", 40.0)
+            .flavor("Forged in the last light of a dying sun."),
+        GameItem::new("Warden's Aegis", GameIcon::Shield, GameRarity::Epic)
+            .kind("Shield")
+            .stat("Armor", 96.0)
+            .stat("Block", 24.0)
+            .flavor("Still warm from the siege of Halveth."),
+        GameItem::new("Healing Draught", GameIcon::Potion, GameRarity::Common)
+            .kind("Potion")
+            .count(12)
+            .stat("Restores", 250.0),
+        GameItem::new("Arcane Tonic", GameIcon::ManaPotion, GameRarity::Uncommon)
+            .kind("Potion")
+            .count(5)
+            .stat("Restores", 180.0),
+        GameItem::new("Stormstring", GameIcon::Bow, GameRarity::Rare)
+            .kind("Bow")
+            .stat("Damage", 92.0)
+            .stat("Range", 40.0),
         GameItem::new("Iron Helm", GameIcon::Helmet, GameRarity::Common).kind("Helmet").stat("Armor", 22.0),
         GameItem::new("Voidcut Gem", GameIcon::Gem, GameRarity::Epic).kind("Gem").count(3),
-        GameItem::new("Rusty Blade", GameIcon::Sword, GameRarity::Common).kind("Sword").stat("Damage", 31.0).stat("Crit chance", 2.0),
+        GameItem::new("Rusty Blade", GameIcon::Sword, GameRarity::Common)
+            .kind("Sword")
+            .stat("Damage", 31.0)
+            .stat("Crit chance", 2.0),
         GameItem::new("Gold", GameIcon::Coin, GameRarity::Common).count(240),
         GameItem::new("Ember Rune", GameIcon::Fire, GameRarity::Rare).kind("Rune").stat("Fire damage", 18.0),
         GameItem::new("Vault Key", GameIcon::Key, GameRarity::Uncommon).kind("Quest item"),
         GameItem::new("Bloodstone Ring", GameIcon::Ring, GameRarity::Rare).kind("Ring").stat("Life steal", 4.0),
         GameItem::new("Old Map", GameIcon::Map, GameRarity::Uncommon).kind("Quest item"),
-        GameItem::new("Black Powder Bomb", GameIcon::Bomb, GameRarity::Common).kind("Throwable").count(4).stat("Damage", 120.0),
-        GameItem::new("Trailstriders", GameIcon::Boots, GameRarity::Uncommon).kind("Boots").stat("Armor", 14.0).stat("Move speed", 6.0),
+        GameItem::new("Black Powder Bomb", GameIcon::Bomb, GameRarity::Common)
+            .kind("Throwable")
+            .count(4)
+            .stat("Damage", 120.0),
+        GameItem::new("Trailstriders", GameIcon::Boots, GameRarity::Uncommon)
+            .kind("Boots")
+            .stat("Armor", 14.0)
+            .stat("Move speed", 6.0),
     ]
 }
 
 fn equipped() -> Vec<GameItem> {
     vec![
-        GameItem::new("Knight's Longsword", GameIcon::Sword, GameRarity::Rare).kind("Sword").stat("Damage", 112.0).stat("Crit chance", 8.0).stat("Fire damage", 0.0),
-        GameItem::new("Oak Buckler", GameIcon::Shield, GameRarity::Uncommon).kind("Shield").stat("Armor", 61.0).stat("Block", 30.0),
-        GameItem::new("Hunter's Bow", GameIcon::Bow, GameRarity::Uncommon).kind("Bow").stat("Damage", 70.0).stat("Range", 45.0),
+        GameItem::new("Knight's Longsword", GameIcon::Sword, GameRarity::Rare)
+            .kind("Sword")
+            .stat("Damage", 112.0)
+            .stat("Crit chance", 8.0)
+            .stat("Fire damage", 0.0),
+        GameItem::new("Oak Buckler", GameIcon::Shield, GameRarity::Uncommon)
+            .kind("Shield")
+            .stat("Armor", 61.0)
+            .stat("Block", 30.0),
+        GameItem::new("Hunter's Bow", GameIcon::Bow, GameRarity::Uncommon)
+            .kind("Bow")
+            .stat("Damage", 70.0)
+            .stat("Range", 45.0),
     ]
 }
 
 fn hotbar_slots() -> Vec<Option<GameItem>> {
     let it = items();
-    vec![Some(it[0].clone()), Some(it[4].clone()), Some(it[2].clone()), Some(it[3].clone()), Some(it[13].clone()), None, Some(it[9].clone()), Some(it[10].clone())]
+    vec![
+        Some(it[0].clone()),
+        Some(it[4].clone()),
+        Some(it[2].clone()),
+        Some(it[3].clone()),
+        Some(it[13].clone()),
+        None,
+        Some(it[9].clone()),
+        Some(it[10].clone()),
+    ]
 }
 
 fn skill_nodes() -> Vec<GameSkillNode> {
     vec![
-        GameSkillNode::new("Kindle", GameIcon::Fire, vec2(0.5, 0.92)).desc("Your attacks ignite foes for 3s.").unlocked(true),
-        GameSkillNode::new("Fireball", GameIcon::Fire, vec2(0.22, 0.6)).desc("Hurl a fireball that explodes on impact.").requires(&[0]),
-        GameSkillNode::new("Frost Nova", GameIcon::Frost, vec2(0.5, 0.58)).desc("Freeze enemies around you for 2s.").requires(&[0]),
-        GameSkillNode::new("Chain Bolt", GameIcon::Bolt, vec2(0.78, 0.6)).desc("Lightning arcs between up to 4 targets.").requires(&[0]),
-        GameSkillNode::new("Inferno", GameIcon::Fire, vec2(0.12, 0.22)).desc("Fireballs leave burning ground behind.").requires(&[1]).cost(2),
+        GameSkillNode::new("Kindle", GameIcon::Fire, vec2(0.5, 0.92))
+            .desc("Your attacks ignite foes for 3s.")
+            .unlocked(true),
+        GameSkillNode::new("Fireball", GameIcon::Fire, vec2(0.22, 0.6))
+            .desc("Hurl a fireball that explodes on impact.")
+            .requires(&[0]),
+        GameSkillNode::new("Frost Nova", GameIcon::Frost, vec2(0.5, 0.58))
+            .desc("Freeze enemies around you for 2s.")
+            .requires(&[0]),
+        GameSkillNode::new("Chain Bolt", GameIcon::Bolt, vec2(0.78, 0.6))
+            .desc("Lightning arcs between up to 4 targets.")
+            .requires(&[0]),
+        GameSkillNode::new("Inferno", GameIcon::Fire, vec2(0.12, 0.22))
+            .desc("Fireballs leave burning ground behind.")
+            .requires(&[1])
+            .cost(2),
         GameSkillNode::new("Mend", GameIcon::Heal, vec2(0.36, 0.24)).desc("Kills restore 4% health.").requires(&[1, 2]),
-        GameSkillNode::new("Blink", GameIcon::Dash, vec2(0.64, 0.24)).desc("Teleport a short distance. 8s cooldown.").requires(&[2, 3]),
-        GameSkillNode::new("Tempest", GameIcon::Bolt, vec2(0.88, 0.22)).desc("Chain Bolt strikes twice.").requires(&[3]).cost(2),
-        GameSkillNode::new("Archmage", GameIcon::Star, vec2(0.5, 0.02)).desc("All spells cost 20% less mana.").requires(&[5, 6]).cost(3),
+        GameSkillNode::new("Blink", GameIcon::Dash, vec2(0.64, 0.24))
+            .desc("Teleport a short distance. 8s cooldown.")
+            .requires(&[2, 3]),
+        GameSkillNode::new("Tempest", GameIcon::Bolt, vec2(0.88, 0.22))
+            .desc("Chain Bolt strikes twice.")
+            .requires(&[3])
+            .cost(2),
+        GameSkillNode::new("Archmage", GameIcon::Star, vec2(0.5, 0.02))
+            .desc("All spells cost 20% less mana.")
+            .requires(&[5, 6])
+            .cost(3),
     ]
 }
 
@@ -158,11 +231,36 @@ fn quests(step: usize) -> Vec<GameQuest> {
 
 fn roster() -> Vec<GameCharacter> {
     vec![
-        GameCharacter::new("Aria", "Vanguard", GamePortrait::hero()).bio("A shieldbearer who never takes a step back.").stat("Power", 0.65).stat("Defense", 0.9).stat("Speed", 0.45).stat("Magic", 0.2),
-        GameCharacter::new("Thessaly", "Arcanist", GamePortrait::mage()).bio("Reads storms like scripture and writes them back.").stat("Power", 0.85).stat("Defense", 0.3).stat("Speed", 0.5).stat("Magic", 1.0),
-        GameCharacter::new("Kestrel", "Ranger", GamePortrait::rogue()).bio("Silent, patient, and never misses twice.").stat("Power", 0.6).stat("Defense", 0.4).stat("Speed", 0.95).stat("Magic", 0.3),
-        GameCharacter::new("Unit 7", "Sentinel", GamePortrait::trooper()).bio("A decommissioned guardian frame with a new purpose.").stat("Power", 0.75).stat("Defense", 0.75).stat("Speed", 0.6).stat("Magic", 0.1),
-        GameCharacter::new("Old Bram", "Smith", GamePortrait::elder()).bio("Swings a hammer heavier than most doors.").stat("Power", 1.0).stat("Defense", 0.7).stat("Speed", 0.25).stat("Magic", 0.15),
+        GameCharacter::new("Aria", "Vanguard", GamePortrait::hero())
+            .bio("A shieldbearer who never takes a step back.")
+            .stat("Power", 0.65)
+            .stat("Defense", 0.9)
+            .stat("Speed", 0.45)
+            .stat("Magic", 0.2),
+        GameCharacter::new("Thessaly", "Arcanist", GamePortrait::mage())
+            .bio("Reads storms like scripture and writes them back.")
+            .stat("Power", 0.85)
+            .stat("Defense", 0.3)
+            .stat("Speed", 0.5)
+            .stat("Magic", 1.0),
+        GameCharacter::new("Kestrel", "Ranger", GamePortrait::rogue())
+            .bio("Silent, patient, and never misses twice.")
+            .stat("Power", 0.6)
+            .stat("Defense", 0.4)
+            .stat("Speed", 0.95)
+            .stat("Magic", 0.3),
+        GameCharacter::new("Unit 7", "Sentinel", GamePortrait::trooper())
+            .bio("A decommissioned guardian frame with a new purpose.")
+            .stat("Power", 0.75)
+            .stat("Defense", 0.75)
+            .stat("Speed", 0.6)
+            .stat("Magic", 0.1),
+        GameCharacter::new("Old Bram", "Smith", GamePortrait::elder())
+            .bio("Swings a hammer heavier than most doors.")
+            .stat("Power", 1.0)
+            .stat("Defense", 0.7)
+            .stat("Speed", 0.25)
+            .stat("Magic", 0.15),
     ]
 }
 

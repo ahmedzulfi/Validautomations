@@ -3,8 +3,8 @@
 
 use egui::emath::TSTransform;
 use egui::{
-    pos2, vec2, Align2, Color32, CornerRadius, FontId, Galley, Id, Painter, Pos2, Rect, Response, Sense, Shape,
-    Stroke, StrokeKind, Ui, UiBuilder, Vec2,
+    pos2, vec2, Align2, Color32, CornerRadius, FontId, Galley, Id, Painter, Pos2, Rect, Response, Sense, Shape, Stroke,
+    StrokeKind, Ui, UiBuilder, Vec2,
 };
 use glowkit_ai::{paint_icon, Icon};
 use glowkit_core::anim::spring;
@@ -242,7 +242,9 @@ pub(crate) fn chip(p: &Painter, t: &Theme, ui: &Ui, pos: Pos2, label: &str, size
     let w = text_w(ui, label, size) + size * 1.2;
     let rect = Rect::from_min_size(pos, vec2(w, size * 1.75));
     let (bg, fg) = match tint {
-        Some(c) => (with_alpha(c, if t.dark { 0.18 } else { 0.1 }), if t.dark { shade(c, 0.25) } else { shade(c, -0.15) }),
+        Some(c) => {
+            (with_alpha(c, if t.dark { 0.18 } else { 0.1 }), if t.dark { shade(c, 0.25) } else { shade(c, -0.15) })
+        }
         None => (well(t), t.muted_foreground),
     };
     p.rect_filled(rect, cr(rect.height() / 2.0), bg);

@@ -108,15 +108,50 @@ impl egui::Widget for EvalScoreboard<'_> {
         let total: u32 = self.suites.iter().map(|s| s.total).sum();
         let rate = if done > 0 { passed as f32 / done as f32 * 100.0 } else { 0.0 };
         let rate_v = glowkit_core::anim::follow(ui, id.with("rate"), rate, 4.0);
-        text(&p, pos2(rect.min.x + pad, rect.min.y + 22.0), Align2::LEFT_CENTER, "Pass rate", font(12.0), dim(&t), 120.0);
-        let big = text(&p, pos2(rect.min.x + pad, rect.min.y + 66.0), Align2::LEFT_BOTTOM, &format!("{rate_v:.1}%"), mono(28.0), t.foreground, 160.0);
+        text(
+            &p,
+            pos2(rect.min.x + pad, rect.min.y + 22.0),
+            Align2::LEFT_CENTER,
+            "Pass rate",
+            font(12.0),
+            dim(&t),
+            120.0,
+        );
+        let big = text(
+            &p,
+            pos2(rect.min.x + pad, rect.min.y + 66.0),
+            Align2::LEFT_BOTTOM,
+            &format!("{rate_v:.1}%"),
+            mono(28.0),
+            t.foreground,
+            160.0,
+        );
         let base = self.trend.first().copied().unwrap_or(rate);
         let d = rate - self.trend.iter().rev().nth(1).copied().unwrap_or(base);
         let dc = if d >= 0.0 { t.success } else { t.destructive };
-        badge(&p, &t, pos2(big.max.x + 10.0, big.center().y), Align2::LEFT_CENTER, &format!("{}{:.1} pts", if d >= 0.0 { "+" } else { "" }, d), dc, false);
-        text(&p, pos2(rect.min.x + pad, rect.min.y + 84.0), Align2::LEFT_CENTER, &format!("{done} of {total} cases · against {}", self.baseline), font(11.5), faint(&t), 300.0);
+        badge(
+            &p,
+            &t,
+            pos2(big.max.x + 10.0, big.center().y),
+            Align2::LEFT_CENTER,
+            &format!("{}{:.1} pts", if d >= 0.0 { "+" } else { "" }, d),
+            dc,
+            false,
+        );
+        text(
+            &p,
+            pos2(rect.min.x + pad, rect.min.y + 84.0),
+            Align2::LEFT_CENTER,
+            &format!("{done} of {total} cases · against {}", self.baseline),
+            font(11.5),
+            faint(&t),
+            300.0,
+        );
         // trend
-        let tr = Rect::from_min_max(pos2(rect.center().x + 20.0, rect.min.y + 22.0), pos2(rect.max.x - pad, rect.min.y + 86.0));
+        let tr = Rect::from_min_max(
+            pos2(rect.center().x + 20.0, rect.min.y + 22.0),
+            pos2(rect.max.x - pad, rect.min.y + 86.0),
+        );
         if self.trend.len() > 1 {
             let mut v = self.trend.clone();
             if done > 0 {
@@ -130,7 +165,12 @@ impl egui::Widget for EvalScoreboard<'_> {
         let cy = rect.min.y + header + 15.0;
         let bar_x = rect.min.x + rect.width() * 0.32;
         let bar_w = rect.width() * 0.4;
-        for (label, x) in [("SUITE", rect.min.x + pad), ("RESULTS", bar_x), ("CASES", bar_x + bar_w + 16.0), ("DELTA", rect.max.x - pad - 50.0)] {
+        for (label, x) in [
+            ("SUITE", rect.min.x + pad),
+            ("RESULTS", bar_x),
+            ("CASES", bar_x + bar_w + 16.0),
+            ("DELTA", rect.max.x - pad - 50.0),
+        ] {
             text(&p, pos2(x, cy), Align2::LEFT_CENTER, label, font(9.5), faint(&t), 100.0);
         }
         hline(&p, &t, rect.min.x, rect.max.x, rect.min.y + header + 30.0);
@@ -140,9 +180,24 @@ impl egui::Widget for EvalScoreboard<'_> {
             if running {
                 spinner(&p, pos2(rect.min.x + pad + 5.0, y), 5.0, t.info, now, 1.5);
             } else {
-                state_icon(&p, &t, pos2(rect.min.x + pad + 5.0, y), 6.0, if s.failed > 0 { RunState::Failed } else { RunState::Done }, now);
+                state_icon(
+                    &p,
+                    &t,
+                    pos2(rect.min.x + pad + 5.0, y),
+                    6.0,
+                    if s.failed > 0 { RunState::Failed } else { RunState::Done },
+                    now,
+                );
             }
-            let nr = text(&p, pos2(rect.min.x + pad + 18.0, y), Align2::LEFT_CENTER, &s.name, font(12.5), t.foreground, bar_x - rect.min.x - pad - 30.0 - if s.delta < -2.0 { 70.0 } else { 0.0 });
+            let nr = text(
+                &p,
+                pos2(rect.min.x + pad + 18.0, y),
+                Align2::LEFT_CENTER,
+                &s.name,
+                font(12.5),
+                t.foreground,
+                bar_x - rect.min.x - pad - 30.0 - if s.delta < -2.0 { 70.0 } else { 0.0 },
+            );
             if s.delta < -2.0 && !running {
                 badge(&p, &t, pos2(nr.max.x + 8.0, y), Align2::LEFT_CENTER, "Regressed", t.destructive, false);
             }
@@ -150,7 +205,9 @@ impl egui::Widget for EvalScoreboard<'_> {
             let br = Rect::from_min_size(pos2(bar_x, y - 4.0), vec2(bar_w, 8.0));
             p.rect_filled(br, cr(4.0), track(&t));
             let mut x = br.min.x;
-            for (k, (n, c)) in [(s.passed, t.success), (s.flaky, t.warning), (s.failed, t.destructive)].iter().enumerate() {
+            for (k, (n, c)) in
+                [(s.passed, t.success), (s.flaky, t.warning), (s.failed, t.destructive)].iter().enumerate()
+            {
                 let f = glowkit_core::anim::follow(ui, id.with(("seg", i, k)), *n as f32 / s.total as f32, 5.0);
                 let w = br.width() * f;
                 if w > 0.5 {
@@ -167,10 +224,30 @@ impl egui::Widget for EvalScoreboard<'_> {
                 p.circle_filled(pos2(gx, y), 2.0, with_alpha(t.info, 0.7 * (1.0 - u)));
                 glowkit_core::animate(ui);
             }
-            text(&p, pos2(bar_x + bar_w + 16.0, y), Align2::LEFT_CENTER, &format!("{}/{}", s.passed, s.total), mono(11.5), t.foreground, 70.0);
+            text(
+                &p,
+                pos2(bar_x + bar_w + 16.0, y),
+                Align2::LEFT_CENTER,
+                &format!("{}/{}", s.passed, s.total),
+                mono(11.5),
+                t.foreground,
+                70.0,
+            );
             let dc = if s.delta >= 0.0 { t.success } else { t.destructive };
-            let label = if running { format!("{} left", s.total - s.done()) } else { format!("{}{:.1}", if s.delta >= 0.0 { "+" } else { "" }, s.delta) };
-            text(&p, pos2(rect.max.x - pad, y), Align2::RIGHT_CENTER, &label, mono(11.5), if running { dim(&t) } else { ink(&t, dc) }, 80.0);
+            let label = if running {
+                format!("{} left", s.total - s.done())
+            } else {
+                format!("{}{:.1}", if s.delta >= 0.0 { "+" } else { "" }, s.delta)
+            };
+            text(
+                &p,
+                pos2(rect.max.x - pad, y),
+                Align2::RIGHT_CENTER,
+                &label,
+                mono(11.5),
+                if running { dim(&t) } else { ink(&t, dc) },
+                80.0,
+            );
             if i + 1 < self.suites.len() {
                 hline(&p, &t, rect.min.x + pad, rect.max.x - pad, y + row_h / 2.0);
             }
@@ -296,7 +373,8 @@ impl egui::Widget for MemoryViewer<'_> {
         let t = Theme::of(ui);
         let id = ui.next_auto_id().with("memory");
         let filter: Option<MemoryKind> = glowkit_core::state(ui, id.with("f"), || None);
-        let mut order: Vec<usize> = (0..self.entries.len()).filter(|i| filter.is_none_or(|k| self.entries[*i].kind == k)).collect();
+        let mut order: Vec<usize> =
+            (0..self.entries.len()).filter(|i| filter.is_none_or(|k| self.entries[*i].kind == k)).collect();
         order.sort_by(|a, b| {
             let (x, y) = (&self.entries[*a], &self.entries[*b]);
             y.pinned.cmp(&x.pinned).then(x.age.total_cmp(&y.age))
@@ -311,15 +389,37 @@ impl egui::Widget for MemoryViewer<'_> {
         panel(&p, &t, rect, 14.0);
         let pad = 16.0;
         icon(&p, Icon::Brain, pos2(rect.min.x + pad + 8.0, rect.min.y + 24.0), 16.0, t.foreground);
-        text(&p, pos2(rect.min.x + pad + 24.0, rect.min.y + 24.0), Align2::LEFT_CENTER, "Memory", font(14.0), t.foreground, 120.0);
+        text(
+            &p,
+            pos2(rect.min.x + pad + 24.0, rect.min.y + 24.0),
+            Align2::LEFT_CENTER,
+            "Memory",
+            font(14.0),
+            t.foreground,
+            120.0,
+        );
         let pinned = self.entries.iter().filter(|e| e.pinned).count();
         let stale = self.entries.iter().filter(|e| e.age > 86400.0 * 20.0 && e.confidence < 0.8).count();
-        text(&p, pos2(rect.max.x - pad, rect.min.y + 24.0), Align2::RIGHT_CENTER, &format!("{} entries · {pinned} pinned · {stale} to review", self.entries.len()), font(11.5), dim(&t), 300.0);
+        text(
+            &p,
+            pos2(rect.max.x - pad, rect.min.y + 24.0),
+            Align2::RIGHT_CENTER,
+            &format!("{} entries · {pinned} pinned · {stale} to review", self.entries.len()),
+            font(11.5),
+            dim(&t),
+            300.0,
+        );
         // chips
         let mut x = rect.min.x + pad;
         let cy = rect.min.y + 62.0;
         let mut new_filter = filter;
-        let kinds = [None, Some(MemoryKind::Preference), Some(MemoryKind::Fact), Some(MemoryKind::Procedure), Some(MemoryKind::Policy)];
+        let kinds = [
+            None,
+            Some(MemoryKind::Preference),
+            Some(MemoryKind::Fact),
+            Some(MemoryKind::Procedure),
+            Some(MemoryKind::Policy),
+        ];
         for (k, kind) in kinds.iter().enumerate() {
             let label = kind.map(|k| k.label()).unwrap_or("All");
             let n = self.entries.iter().filter(|e| kind.is_none_or(|k| e.kind == k)).count();
@@ -335,7 +435,13 @@ impl egui::Widget for MemoryViewer<'_> {
             }
             let on = filter == *kind;
             let c = kind.map(|k| k.color(&t)).unwrap_or(t.foreground);
-            p.rect(r, cr(12.0), if on { tint(&t, c) } else { surface(&t) }, Stroke::new(1.0, if on { with_alpha(c, 0.35) } else { hair(&t) }), StrokeKind::Inside);
+            p.rect(
+                r,
+                cr(12.0),
+                if on { tint(&t, c) } else { surface(&t) },
+                Stroke::new(1.0, if on { with_alpha(c, 0.35) } else { hair(&t) }),
+                StrokeKind::Inside,
+            );
             p.text(r.center(), Align2::CENTER_CENTER, s, font(11.5), if on { ink(&t, c) } else { dim(&t) });
             x = r.max.x + 6.0;
         }
@@ -371,9 +477,21 @@ impl egui::Widget for MemoryViewer<'_> {
             let pin_c = mix(faint(&t), t.foreground, pk.clamp(0.0, 1.0));
             icon(&pa, Icon::Bookmark, pr.center(), 13.0 * (1.0 + 0.15 * (pk - pk.clamp(0.0, 1.0)).abs() * 4.0), pin_c);
             if e.pinned {
-                pa.rect_filled(Rect::from_center_size(pr.center() - vec2(0.0, 1.5), vec2(5.0, 6.0)), cr(1.0), with_alpha(t.foreground, 0.8));
+                pa.rect_filled(
+                    Rect::from_center_size(pr.center() - vec2(0.0, 1.5), vec2(5.0, 6.0)),
+                    cr(1.0),
+                    with_alpha(t.foreground, 0.8),
+                );
             }
-            let kb = badge(&pa, &t, pos2(rr.min.x + pad + 26.0, my - 9.0), Align2::LEFT_CENTER, e.kind.label(), e.kind.color(&t), false);
+            let kb = badge(
+                &pa,
+                &t,
+                pos2(rr.min.x + pad + 26.0, my - 9.0),
+                Align2::LEFT_CENTER,
+                e.kind.label(),
+                e.kind.color(&t),
+                false,
+            );
             let right_w = 200.0;
             let tw = rr.max.x - right_w - kb.max.x - 18.0;
             text(&pa, pos2(kb.max.x + 8.0, my - 9.0), Align2::LEFT_CENTER, &e.text, font(12.5), t.foreground, tw);
@@ -381,13 +499,29 @@ impl egui::Widget for MemoryViewer<'_> {
             let fresh = (1.0 - (e.age / (86400.0 * 14.0)).min(1.0)).powf(0.6);
             let dc = mix(mix(t.muted_foreground, surface(&t), 0.3), t.success, fresh);
             pa.circle_filled(pos2(rr.min.x + pad + 30.0, my + 10.0), 3.0, dc);
-            text(&pa, pos2(rr.min.x + pad + 38.0, my + 10.0), Align2::LEFT_CENTER, &format!("{} · {}", e.source, fmt_ago(e.age)), font(11.0), faint(&t), tw + 60.0);
+            text(
+                &pa,
+                pos2(rr.min.x + pad + 38.0, my + 10.0),
+                Align2::LEFT_CENTER,
+                &format!("{} · {}", e.source, fmt_ago(e.age)),
+                font(11.0),
+                faint(&t),
+                tw + 60.0,
+            );
             // confidence
             let bx = rr.max.x - pad - right_w + 30.0;
             let bar = Rect::from_min_size(pos2(bx, my - 2.0), vec2(90.0, 4.0));
             let cc = if e.confidence < 0.8 { t.warning } else { t.success };
             meter(&pa, &t, bar, e.confidence, cc);
-            text(&pa, pos2(bar.max.x + 8.0, my), Align2::LEFT_CENTER, &format!("{:.0}%", e.confidence * 100.0), mono(10.5), dim(&t), 40.0);
+            text(
+                &pa,
+                pos2(bar.max.x + 8.0, my),
+                Align2::LEFT_CENTER,
+                &format!("{:.0}%", e.confidence * 100.0),
+                mono(10.5),
+                dim(&t),
+                40.0,
+            );
             if e.age > 86400.0 * 20.0 && e.confidence < 0.8 {
                 badge(&pa, &t, pos2(rr.max.x - pad, my), Align2::RIGHT_CENTER, "Stale", t.warning, false);
             }
@@ -429,7 +563,14 @@ pub struct ScheduledJob {
 impl ScheduledJob {
     /// An enabled job.
     pub fn new(name: impl Into<String>, agent: impl Into<String>, schedule: impl Into<String>) -> Self {
-        Self { name: name.into(), agent: agent.into(), schedule: schedule.into(), enabled: true, period: 3600.0, ..Default::default() }
+        Self {
+            name: name.into(),
+            agent: agent.into(),
+            schedule: schedule.into(),
+            enabled: true,
+            period: 3600.0,
+            ..Default::default()
+        }
     }
     /// Seconds to the next run and the period.
     pub fn next(mut self, next_in: f32, period: f32) -> Self {
@@ -493,16 +634,35 @@ impl<'a> ScheduleList<'a> {
         panel(&p, &t, rect, 14.0);
         let pad = 16.0;
         icon(&p, Icon::Clock, pos2(rect.min.x + pad + 7.0, rect.min.y + header / 2.0), 15.0, t.foreground);
-        text(&p, pos2(rect.min.x + pad + 22.0, rect.min.y + header / 2.0), Align2::LEFT_CENTER, "Scheduled", font(14.0), t.foreground, 160.0);
+        text(
+            &p,
+            pos2(rect.min.x + pad + 22.0, rect.min.y + header / 2.0),
+            Align2::LEFT_CENTER,
+            "Scheduled",
+            font(14.0),
+            t.foreground,
+            160.0,
+        );
         let next = self.jobs.iter().filter(|j| j.enabled).map(|j| j.next_in).fold(f32::MAX, f32::min);
         if next < f32::MAX {
-            text(&p, pos2(rect.max.x - pad, rect.min.y + header / 2.0), Align2::RIGHT_CENTER, &format!("next run in {}", fmt_secs(next)), font(11.5), dim(&t), 220.0);
+            text(
+                &p,
+                pos2(rect.max.x - pad, rect.min.y + header / 2.0),
+                Align2::RIGHT_CENTER,
+                &format!("next run in {}", fmt_secs(next)),
+                font(11.5),
+                dim(&t),
+                220.0,
+            );
         }
         hline(&p, &t, rect.min.x, rect.max.x, rect.min.y + header);
         let mut run_now = None;
         let mut toggles = Vec::new();
         for (i, j) in self.jobs.iter().enumerate() {
-            let rr = Rect::from_min_size(pos2(rect.min.x, rect.min.y + header + i as f32 * row_h), vec2(rect.width(), row_h));
+            let rr = Rect::from_min_size(
+                pos2(rect.min.x, rect.min.y + header + i as f32 * row_h),
+                vec2(rect.width(), row_h),
+            );
             let cy = rr.center().y;
             let on = glowkit_core::anim::follow(ui, id.with(("on", i)), if j.enabled { 1.0 } else { 0.0 }, 8.0);
             let pa = faded(&p, 0.45 + 0.55 * on);
@@ -514,18 +674,42 @@ impl<'a> ScheduleList<'a> {
                 pa.circle_stroke(rc, 14.0, Stroke::new(2.4, track(&t)));
                 let f = 1.0 - (j.next_in / j.period).clamp(0.0, 1.0);
                 if f > 0.0 {
-                    glowkit_core::paint::arc(&pa, rc, 14.0, -FRAC_PI_2, -FRAC_PI_2 + TAU * f, 2.4, if j.enabled { t.foreground } else { t.muted_foreground });
+                    glowkit_core::paint::arc(
+                        &pa,
+                        rc,
+                        14.0,
+                        -FRAC_PI_2,
+                        -FRAC_PI_2 + TAU * f,
+                        2.4,
+                        if j.enabled { t.foreground } else { t.muted_foreground },
+                    );
                 }
                 icon(&pa, Icon::Clock, rc, 12.0, dim(&t));
             }
             let tx = rc.x + 26.0;
             text(&pa, pos2(tx, cy - 9.0), Align2::LEFT_CENTER, &j.name, font(13.0), t.foreground, rect.width() * 0.32);
-            text(&pa, pos2(tx, cy + 10.0), Align2::LEFT_CENTER, &format!("{} · {}", j.agent, j.schedule), font(11.0), faint(&t), rect.width() * 0.36);
+            text(
+                &pa,
+                pos2(tx, cy + 10.0),
+                Align2::LEFT_CENTER,
+                &format!("{} · {}", j.agent, j.schedule),
+                font(11.0),
+                faint(&t),
+                rect.width() * 0.36,
+            );
             let nx = rect.min.x + rect.width() * 0.5;
             if j.running {
                 text(&pa, pos2(nx, cy - 9.0), Align2::LEFT_CENTER, "Running now", font(12.0), ink(&t, t.info), 120.0);
             } else if j.enabled {
-                text(&pa, pos2(nx, cy - 9.0), Align2::LEFT_CENTER, &format!("in {}", fmt_secs(j.next_in)), mono(12.0), t.foreground, 120.0);
+                text(
+                    &pa,
+                    pos2(nx, cy - 9.0),
+                    Align2::LEFT_CENTER,
+                    &format!("in {}", fmt_secs(j.next_in)),
+                    mono(12.0),
+                    t.foreground,
+                    120.0,
+                );
             } else {
                 text(&pa, pos2(nx, cy - 9.0), Align2::LEFT_CENTER, "Paused", font(12.0), dim(&t), 120.0);
             }
@@ -539,7 +723,8 @@ impl<'a> ScheduleList<'a> {
                 toggles.push(i);
             }
             let rb = Rect::from_min_size(pos2(sw.min.x - 14.0 - 84.0, cy - 14.0), vec2(84.0, 28.0));
-            if !j.running && button(ui, rb, id.with(("run", i)), "Run now", Some(Icon::Play), Btn::Secondary).clicked() {
+            if !j.running && button(ui, rb, id.with(("run", i)), "Run now", Some(Icon::Play), Btn::Secondary).clicked()
+            {
                 run_now = Some(i);
             }
             if i + 1 < self.jobs.len() {

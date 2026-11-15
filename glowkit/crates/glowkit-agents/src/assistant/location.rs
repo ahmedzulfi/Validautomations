@@ -91,7 +91,8 @@ impl<'a> LocationResult<'a> {
         let map_h = self.map_height;
         let mut rows = Vec::new();
         let mut new_hover = None;
-        let head = ToolHead { icon: Icon::Globe, title: self.title, subtitle: None, status: Some(("maps.search", t.info)) };
+        let head =
+            ToolHead { icon: Icon::Globe, title: self.title, subtitle: None, status: Some(("maps.search", t.info)) };
         let rect = tool_card(ui, appear_curve(e), Some(head), width, |ui| {
             let w = ui.available_width();
             let (mr, _) = ui.allocate_exact_size(vec2(w, map_h), Sense::hover());
@@ -137,7 +138,10 @@ impl<'a> LocationResult<'a> {
                 if k > 0.0 {
                     let g = galley(ui, pl.name.as_str(), 11.5, t.foreground);
                     let br = Rect::from_center_size(tip - vec2(0.0, 44.0), g.size() + vec2(16.0, 8.0));
-                    let br = br.translate(vec2((mr.max.x - 6.0 - br.max.x).min(0.0) + (mr.min.x + 6.0 - br.min.x).max(0.0), 0.0));
+                    let br = br.translate(vec2(
+                        (mr.max.x - 6.0 - br.max.x).min(0.0) + (mr.min.x + 6.0 - br.min.x).max(0.0),
+                        0.0,
+                    ));
                     paint::soft_shadow(&p, br, 8.0, 8.0, vec2(0.0, 2.0), shadow(&t, 0.8 * k));
                     p.rect_filled(br, cr(8.0), with_alpha(surface(&t), k));
                     p.galley(br.min + vec2(8.0, 4.0), g, with_alpha(t.foreground, k));
@@ -145,12 +149,16 @@ impl<'a> LocationResult<'a> {
             }
             // zoom buttons
             for (k, ic) in [Icon::Plus, Icon::ChevronDown].iter().enumerate() {
-                let b = Rect::from_min_size(pos2(mr.max.x - 34.0, mr.min.y + 10.0 + k as f32 * 28.0), Vec2::splat(24.0));
+                let b =
+                    Rect::from_min_size(pos2(mr.max.x - 34.0, mr.min.y + 10.0 + k as f32 * 28.0), Vec2::splat(24.0));
                 p.rect_filled(b, cr(7.0), surface(&t));
                 if *ic == Icon::Plus {
                     icon(&p, *ic, b.center(), 12.0, t.muted_foreground);
                 } else {
-                    p.line_segment([b.center() - vec2(4.0, 0.0), b.center() + vec2(4.0, 0.0)], Stroke::new(1.4, t.muted_foreground));
+                    p.line_segment(
+                        [b.center() - vec2(4.0, 0.0), b.center() + vec2(4.0, 0.0)],
+                        Stroke::new(1.4, t.muted_foreground),
+                    );
                 }
             }
             ui.painter().rect_stroke(mr, cr(10.0), hairline(&t), egui::StrokeKind::Inside);
@@ -168,10 +176,24 @@ impl<'a> LocationResult<'a> {
                 }
                 let c = pos2(r.min.x + 18.0, r.center().y);
                 p.circle_filled(c, 12.0, mix(well(&t), with_alpha(t.destructive, 0.14), on));
-                text_bold(p, c, Align2::CENTER_CENTER, &((b'A' + i as u8) as char).to_string(), 11.0, mix(t.muted_foreground, t.destructive, on));
+                text_bold(
+                    p,
+                    c,
+                    Align2::CENTER_CENTER,
+                    &((b'A' + i as u8) as char).to_string(),
+                    11.0,
+                    mix(t.muted_foreground, t.destructive, on),
+                );
                 text_bold(p, pos2(c.x + 22.0, r.min.y + 15.0), Align2::LEFT_CENTER, &pl.name, 13.0, t.foreground);
                 text(p, pos2(c.x + 22.0, r.min.y + 31.0), Align2::LEFT_CENTER, &pl.detail, 11.5, t.muted_foreground);
-                text(p, pos2(r.max.x - 10.0, r.center().y), Align2::RIGHT_CENTER, &pl.meta, 11.5, mix(t.muted_foreground, t.foreground, on));
+                text(
+                    p,
+                    pos2(r.max.x - 10.0, r.center().y),
+                    Align2::RIGHT_CENTER,
+                    &pl.meta,
+                    11.5,
+                    mix(t.muted_foreground, t.foreground, on),
+                );
             }
         });
         if new_hover != hovered && new_hover.is_some() {
@@ -233,7 +255,10 @@ impl MapLayout {
             let i = rng.below(roads_v.len().saturating_sub(1).max(1));
             let j = rng.below(roads_h.len().saturating_sub(1).max(1));
             if i + 1 < roads_v.len() && j + 1 < roads_h.len() {
-                parks.push(Rect::from_min_max(pos2(roads_v[i] + 5.0, roads_h[j] + 5.0), pos2(roads_v[i + 1] - 5.0, roads_h[j + 1] - 5.0)));
+                parks.push(Rect::from_min_max(
+                    pos2(roads_v[i] + 5.0, roads_h[j] + 5.0),
+                    pos2(roads_v[i + 1] - 5.0, roads_h[j + 1] - 5.0),
+                ));
             }
         }
         let snap = |rng: &mut Rng| -> Pos2 {
@@ -246,7 +271,11 @@ impl MapLayout {
         for _ in 0..n.max(1) {
             let mut s = snap(&mut rng);
             for _ in 0..8 {
-                if (s - you).length() > 60.0 && spots.iter().all(|q: &Pos2| (*q - s).length() > 40.0) && s.x < r.max.x - 40.0 && s.y > r.min.y + 50.0 {
+                if (s - you).length() > 60.0
+                    && spots.iter().all(|q: &Pos2| (*q - s).length() > 40.0)
+                    && s.x < r.max.x - 40.0
+                    && s.y > r.min.y + 50.0
+                {
                     break;
                 }
                 s = snap(&mut rng);
@@ -272,7 +301,10 @@ impl MapLayout {
             p.line_segment([pos2(*x, r.min.y), pos2(*x, r.max.y)], Stroke::new(5.0, road));
         }
         // one diagonal avenue
-        p.line_segment([pos2(r.min.x, r.max.y - 10.0), pos2(r.min.x + r.width() * 0.6, r.min.y)], Stroke::new(7.0, if t.dark { road } else { hex("#FDF3D7") }));
+        p.line_segment(
+            [pos2(r.min.x, r.max.y - 10.0), pos2(r.min.x + r.width() * 0.6, r.min.y)],
+            Stroke::new(7.0, if t.dark { road } else { hex("#FDF3D7") }),
+        );
         let river = paint::catmull_rom(&self.river, 6);
         p.add(Shape::line(river, Stroke::new(16.0, water)));
     }

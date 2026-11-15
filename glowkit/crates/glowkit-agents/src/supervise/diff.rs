@@ -202,7 +202,13 @@ impl egui::Widget for DiffReview<'_> {
         for f in self.files.iter() {
             body += if f.note.is_empty() { 40.0 } else { 58.0 };
             for h in &f.hunks {
-                let o = glowkit_core::anim::spring(ui, id.with(("open", g)), if h.decision.is_none() { 1.0 } else { 0.0 }, 300.0, 30.0);
+                let o = glowkit_core::anim::spring(
+                    ui,
+                    id.with(("open", g)),
+                    if h.decision.is_none() { 1.0 } else { 0.0 },
+                    300.0,
+                    30.0,
+                );
                 let rows = if st.split { h.split_rows().len() } else { h.lines.len() };
                 body += 38.0 + (rows as f32 * LINE_H + 10.0) * o.max(0.0) + 10.0;
                 opens.push(o);
@@ -224,15 +230,33 @@ impl egui::Widget for DiffReview<'_> {
             (a + x, d + y)
         });
         let hy = rect.min.y + header / 2.0;
-        let tr = text(&p, pos2(rect.min.x + pad, hy), Align2::LEFT_CENTER, "Files changed", font(14.0), t.foreground, 200.0);
+        let tr =
+            text(&p, pos2(rect.min.x + pad, hy), Align2::LEFT_CENTER, "Files changed", font(14.0), t.foreground, 200.0);
         chip(&p, &t, pos2(tr.max.x + 8.0, hy), Align2::LEFT_CENTER, &format!("{}", self.files.len()), false);
-        let ar = text(&p, pos2(tr.max.x + 44.0, hy), Align2::LEFT_CENTER, &format!("+{adds}"), mono(12.0), ink(&t, t.success), 60.0);
-        text(&p, pos2(ar.max.x + 6.0, hy), Align2::LEFT_CENTER, &format!("-{dels}"), mono(12.0), ink(&t, t.destructive), 60.0);
+        let ar = text(
+            &p,
+            pos2(tr.max.x + 44.0, hy),
+            Align2::LEFT_CENTER,
+            &format!("+{adds}"),
+            mono(12.0),
+            ink(&t, t.success),
+            60.0,
+        );
+        text(
+            &p,
+            pos2(ar.max.x + 6.0, hy),
+            Align2::LEFT_CENTER,
+            &format!("-{dels}"),
+            mono(12.0),
+            ink(&t, t.destructive),
+            60.0,
+        );
         // segmented control
         let seg = Rect::from_min_size(pos2(rect.max.x - pad - 156.0, hy - 15.0), vec2(156.0, 30.0));
         p.rect_filled(seg, cr(9.0), track(&t));
         let half = seg.width() / 2.0;
-        let knob = Rect::from_min_size(pos2(seg.min.x + 3.0 + splitk * (half - 3.0), seg.min.y + 3.0), vec2(half - 3.0, 24.0));
+        let knob =
+            Rect::from_min_size(pos2(seg.min.x + 3.0 + splitk * (half - 3.0), seg.min.y + 3.0), vec2(half - 3.0, 24.0));
         p.rect_filled(knob, cr(7.0), surface(&t));
         for (k, label) in ["Unified", "Split"].iter().enumerate() {
             let r = Rect::from_min_size(pos2(seg.min.x + k as f32 * half, seg.min.y), vec2(half, seg.height()));
@@ -258,11 +282,35 @@ impl egui::Widget for DiffReview<'_> {
                 let (x, y) = h.counts();
                 (a + x, d + y)
             });
-            let r = text(&p, pos2(rect.max.x - pad, y + 10.0), Align2::RIGHT_CENTER, &format!("-{d}"), mono(11.5), ink(&t, t.destructive), 60.0);
-            text(&p, pos2(r.min.x - 6.0, y + 10.0), Align2::RIGHT_CENTER, &format!("+{a}"), mono(11.5), ink(&t, t.success), 60.0);
+            let r = text(
+                &p,
+                pos2(rect.max.x - pad, y + 10.0),
+                Align2::RIGHT_CENTER,
+                &format!("-{d}"),
+                mono(11.5),
+                ink(&t, t.destructive),
+                60.0,
+            );
+            text(
+                &p,
+                pos2(r.min.x - 6.0, y + 10.0),
+                Align2::RIGHT_CENTER,
+                &format!("+{a}"),
+                mono(11.5),
+                ink(&t, t.success),
+                60.0,
+            );
             y += 28.0;
             if !f.note.is_empty() {
-                text(&p, pos2(rect.min.x + pad, y + 6.0), Align2::LEFT_CENTER, &f.note, font(12.0), dim(&t), rect.width() - pad * 2.0);
+                text(
+                    &p,
+                    pos2(rect.min.x + pad, y + 6.0),
+                    Align2::LEFT_CENTER,
+                    &f.note,
+                    font(12.0),
+                    dim(&t),
+                    rect.width() - pad * 2.0,
+                );
                 y += 18.0;
             }
             y += 2.0;
@@ -290,10 +338,27 @@ impl egui::Widget for DiffReview<'_> {
                     p.rect_filled(hr.shrink(1.0), cr(9.0), tint(&t, c));
                 }
                 let cy = hr.center().y;
-                let lab = text(&p, pos2(hr.min.x + 12.0, cy), Align2::LEFT_CENTER, &format!("Hunk {} of {}", hi + 1, f.hunks.len()), font(12.0), t.foreground, 120.0);
-                let at = format!("@@ -{},{} +{},{} @@ {}", h.old_start, h.old_len(), h.new_start, h.new_len(), h.header);
+                let lab = text(
+                    &p,
+                    pos2(hr.min.x + 12.0, cy),
+                    Align2::LEFT_CENTER,
+                    &format!("Hunk {} of {}", hi + 1, f.hunks.len()),
+                    font(12.0),
+                    t.foreground,
+                    120.0,
+                );
+                let at =
+                    format!("@@ -{},{} +{},{} @@ {}", h.old_start, h.old_len(), h.new_start, h.new_len(), h.header);
                 let actions_w = 190.0;
-                text(&p, pos2(lab.max.x + 10.0, cy), Align2::LEFT_CENTER, &at, mono(11.0), dim(&t), hr.max.x - actions_w - lab.max.x - 10.0);
+                text(
+                    &p,
+                    pos2(lab.max.x + 10.0, cy),
+                    Align2::LEFT_CENTER,
+                    &at,
+                    mono(11.0),
+                    dim(&t),
+                    hr.max.x - actions_w - lab.max.x - 10.0,
+                );
                 let hit = ui.interact(hr, id.with(("hh", g)), Sense::click());
                 if hit.clicked() {
                     st.focus = g;
@@ -311,7 +376,15 @@ impl egui::Widget for DiffReview<'_> {
                     }
                     Some(ok) => {
                         let c = if ok { t.success } else { t.destructive };
-                        let br2 = badge(&p, &t, pos2(hr.max.x - 64.0, cy), Align2::RIGHT_CENTER, if ok { "Accepted" } else { "Rejected" }, c, true);
+                        let br2 = badge(
+                            &p,
+                            &t,
+                            pos2(hr.max.x - 64.0, cy),
+                            Align2::RIGHT_CENTER,
+                            if ok { "Accepted" } else { "Rejected" },
+                            c,
+                            true,
+                        );
                         let _ = br2;
                         let ub = Rect::from_min_size(pos2(hr.max.x - 58.0, cy - 12.0), vec2(50.0, 24.0));
                         if button(ui, ub, id.with(("undo", g)), "Undo", None, Btn::Ghost).clicked() {
@@ -320,7 +393,8 @@ impl egui::Widget for DiffReview<'_> {
                     }
                 }
                 if o > 0.01 {
-                    let body_r = Rect::from_min_max(pos2(br.min.x + 1.0, hr.max.y), pos2(br.max.x - 1.0, br.max.y - 1.0));
+                    let body_r =
+                        Rect::from_min_max(pos2(br.min.x + 1.0, hr.max.y), pos2(br.max.x - 1.0, br.max.y - 1.0));
                     let pc = faded(&p.with_clip_rect(body_r.intersect(p.clip_rect())), o.min(1.0));
                     hline(&pc, &t, body_r.min.x, body_r.max.x, body_r.min.y);
                     let ly0 = body_r.min.y + 5.0;
@@ -359,14 +433,41 @@ impl egui::Widget for DiffReview<'_> {
                                 }
                             };
                             if let Some(v) = ol {
-                                pu.text(pos2(lr.min.x + num_w - 6.0, lr.center().y), Align2::RIGHT_CENTER, v.to_string(), mono(10.5), faint(&t));
+                                pu.text(
+                                    pos2(lr.min.x + num_w - 6.0, lr.center().y),
+                                    Align2::RIGHT_CENTER,
+                                    v.to_string(),
+                                    mono(10.5),
+                                    faint(&t),
+                                );
                             }
                             if let Some(v) = nl {
-                                pu.text(pos2(lr.min.x + num_w * 2.0 - 6.0, lr.center().y), Align2::RIGHT_CENTER, v.to_string(), mono(10.5), faint(&t));
+                                pu.text(
+                                    pos2(lr.min.x + num_w * 2.0 - 6.0, lr.center().y),
+                                    Align2::RIGHT_CENTER,
+                                    v.to_string(),
+                                    mono(10.5),
+                                    faint(&t),
+                                );
                             }
-                            pu.text(pos2(lr.min.x + num_w * 2.0 + 6.0, lr.center().y), Align2::LEFT_CENTER, sign, mono(11.0), sc);
-                            let c = if h.decision == Some(false) && *kind == DiffLineKind::Add { faint(&t) } else { fg };
-                            text(&pu, pos2(lr.min.x + num_w * 2.0 + 20.0, lr.center().y), Align2::LEFT_CENTER, s, mono(11.0), c, lr.width() - num_w * 2.0 - 30.0);
+                            pu.text(
+                                pos2(lr.min.x + num_w * 2.0 + 6.0, lr.center().y),
+                                Align2::LEFT_CENTER,
+                                sign,
+                                mono(11.0),
+                                sc,
+                            );
+                            let c =
+                                if h.decision == Some(false) && *kind == DiffLineKind::Add { faint(&t) } else { fg };
+                            text(
+                                &pu,
+                                pos2(lr.min.x + num_w * 2.0 + 20.0, lr.center().y),
+                                Align2::LEFT_CENTER,
+                                s,
+                                mono(11.0),
+                                c,
+                                lr.width() - num_w * 2.0 - 30.0,
+                            );
                         }
                     } else {
                         let a = (splitk - 0.5) * 2.0;
@@ -386,14 +487,31 @@ impl egui::Widget for DiffReview<'_> {
                                         }
                                         _ => {}
                                     }
-                                    ps.text(pos2(cr_.min.x + num_w - 6.0, cr_.center().y), Align2::RIGHT_CENTER, num.to_string(), mono(10.5), faint(&t));
-                                    text(&ps, pos2(cr_.min.x + num_w + 6.0, cr_.center().y), Align2::LEFT_CENTER, s, mono(11.0), fg, half - num_w - 14.0);
+                                    ps.text(
+                                        pos2(cr_.min.x + num_w - 6.0, cr_.center().y),
+                                        Align2::RIGHT_CENTER,
+                                        num.to_string(),
+                                        mono(10.5),
+                                        faint(&t),
+                                    );
+                                    text(
+                                        &ps,
+                                        pos2(cr_.min.x + num_w + 6.0, cr_.center().y),
+                                        Align2::LEFT_CENTER,
+                                        s,
+                                        mono(11.0),
+                                        fg,
+                                        half - num_w - 14.0,
+                                    );
                                 } else {
                                     ps.rect_filled(cr_, cr(0.0), with_alpha(well(&t), 0.8));
                                 }
                             }
                         }
-                        ps.line_segment([pos2(body_r.center().x, ly0 - 5.0), pos2(body_r.center().x, body_r.max.y)], Stroke::new(1.0, hair(&t)));
+                        ps.line_segment(
+                            [pos2(body_r.center().x, ly0 - 5.0), pos2(body_r.center().x, body_r.max.y)],
+                            Stroke::new(1.0, hair(&t)),
+                        );
                     }
                 }
                 y += box_h + 10.0;
@@ -404,7 +522,15 @@ impl egui::Widget for DiffReview<'_> {
         // footer
         let fy = rect.max.y - footer / 2.0;
         hline(&p, &t, rect.min.x, rect.max.x, rect.max.y - footer);
-        let r = text(&p, pos2(rect.min.x + pad, fy), Align2::LEFT_CENTER, &format!("{reviewed} of {total_hunks} reviewed"), font(12.0), t.foreground, 160.0);
+        let r = text(
+            &p,
+            pos2(rect.min.x + pad, fy),
+            Align2::LEFT_CENTER,
+            &format!("{reviewed} of {total_hunks} reviewed"),
+            font(12.0),
+            t.foreground,
+            160.0,
+        );
         let mut kx = r.max.x + 16.0;
         for (key, what) in [("J", "next"), ("K", "prev"), ("Y", "accept"), ("N", "reject")] {
             if kx > rect.max.x - 330.0 {
@@ -420,7 +546,14 @@ impl egui::Widget for DiffReview<'_> {
         let apply_label = format!("Apply {accepted} of {total_hunks}");
         let aw = button_w(&p, &apply_label, false);
         let ab = Rect::from_min_size(pos2(rect.max.x - pad - aw, fy - 14.0), vec2(aw, 28.0));
-        let _ = button(ui, ab, id.with("apply"), &apply_label, None, if reviewed == total_hunks { Btn::Primary } else { Btn::Secondary });
+        let _ = button(
+            ui,
+            ab,
+            id.with("apply"),
+            &apply_label,
+            None,
+            if reviewed == total_hunks { Btn::Primary } else { Btn::Secondary },
+        );
         let acc = Rect::from_min_size(pos2(ab.min.x - 90.0, fy - 14.0), vec2(84.0, 28.0));
         let accept_all = button(ui, acc, id.with("accall"), "Accept all", None, Btn::Ghost).clicked();
         let rej = Rect::from_min_size(pos2(acc.min.x - 86.0, fy - 14.0), vec2(80.0, 28.0));

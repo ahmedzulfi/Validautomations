@@ -141,7 +141,8 @@ impl egui::Widget for RunMonitor<'_> {
         panel(&p, &t, rect, 14.0);
         let pad = 16.0;
         let hy = rect.min.y + header / 2.0;
-        let tr = text(&p, pos2(rect.min.x + pad, hy), Align2::LEFT_CENTER, &self.title, font(14.0), t.foreground, 120.0);
+        let tr =
+            text(&p, pos2(rect.min.x + pad, hy), Align2::LEFT_CENTER, &self.title, font(14.0), t.foreground, 120.0);
         let live = self.runs.iter().any(|r| r.state.is_active());
         if live {
             let c = pos2(tr.max.x + 12.0, hy);
@@ -182,11 +183,25 @@ impl egui::Widget for RunMonitor<'_> {
                 new_tab = *k;
             }
             let on = *k == tab;
-            let lr = text(&p, pos2(r.min.x + 9.0, r.center().y), Align2::LEFT_CENTER, labels[*k], font(12.0), if on { t.foreground } else { dim(&t) }, 90.0);
+            let lr = text(
+                &p,
+                pos2(r.min.x + 9.0, r.center().y),
+                Align2::LEFT_CENTER,
+                labels[*k],
+                font(12.0),
+                if on { t.foreground } else { dim(&t) },
+                90.0,
+            );
             let cnt = glowkit_core::anim::follow(ui, id.with(("cnt", *k)), counts[*k] as f32, 8.0);
             let alert = (*k == 2 || *k == 3) && counts[*k] > 0;
             let cc = if alert { ink(&t, if *k == 2 { t.warning } else { t.destructive }) } else { faint(&t) };
-            p.text(pos2(lr.max.x + 5.0, r.center().y), Align2::LEFT_CENTER, format!("{}", cnt.round() as i32), mono(10.5), cc);
+            p.text(
+                pos2(lr.max.x + 5.0, r.center().y),
+                Align2::LEFT_CENTER,
+                format!("{}", cnt.round() as i32),
+                mono(10.5),
+                cc,
+            );
         }
         if new_tab != tab {
             glowkit_core::set_state(ui, id.with("tab"), new_tab);
@@ -220,11 +235,19 @@ impl egui::Widget for RunMonitor<'_> {
             text(&pr, pos2(cx(0), my + 9.0), Align2::LEFT_CENTER, &r.id, mono(10.5), faint(&t), w * 0.25);
             state_badge(&pr, &t, pos2(cx(1), my), Align2::LEFT_CENTER, r.state, now);
             let sw = w * 0.24;
-            let sl = if r.steps > 0 { format!("{}/{}  {}", r.step.min(r.steps), r.steps, r.step_label) } else { r.step_label.clone() };
+            let sl = if r.steps > 0 {
+                format!("{}/{}  {}", r.step.min(r.steps), r.steps, r.step_label)
+            } else {
+                r.step_label.clone()
+            };
             text(&pr, pos2(cx(2), my - 6.0), Align2::LEFT_CENTER, &sl, font(11.5), dim(&t), sw);
             let frac = if r.steps > 0 {
                 let base = (r.step.saturating_sub(1)) as f32 / r.steps as f32;
-                if r.state == RunState::Done { 1.0 } else { base + if r.state == RunState::Running { 0.5 / r.steps as f32 } else { 0.0 } }
+                if r.state == RunState::Done {
+                    1.0
+                } else {
+                    base + if r.state == RunState::Running { 0.5 / r.steps as f32 } else { 0.0 }
+                }
             } else {
                 0.0
             };
@@ -235,7 +258,12 @@ impl egui::Widget for RunMonitor<'_> {
             let cr_ = text(&pr, pos2(cx(5), my), Align2::LEFT_CENTER, &fmt_usd(r.cost), mono(11.5), t.foreground, 70.0);
             let spark = Rect::from_min_max(pos2(cr_.max.x + 10.0, my - 9.0), pos2(rect.max.x - pad, my + 9.0));
             if spark.width() > 24.0 {
-                sparkline(&pr, spark, &r.cost_history, if r.state == RunState::Failed { t.destructive } else { t.accent });
+                sparkline(
+                    &pr,
+                    spark,
+                    &r.cost_history,
+                    if r.state == RunState::Failed { t.destructive } else { t.accent },
+                );
             }
             if slot + 1 < order.len() {
                 hline(&pr, &t, rr.min.x + pad, rr.max.x - pad, rr.max.y);
@@ -277,7 +305,14 @@ pub struct CostMeter {
 impl CostMeter {
     /// A meter with a budget of `budget` dollars.
     pub fn new(budget: f32) -> Self {
-        Self { budget: budget.max(0.01), models: Vec::new(), warn_at: 0.8, width: 380.0, title: "Spend".into(), period: "This session".into() }
+        Self {
+            budget: budget.max(0.01),
+            models: Vec::new(),
+            warn_at: 0.8,
+            width: 380.0,
+            title: "Spend".into(),
+            period: "This session".into(),
+        }
     }
     /// Add a model's input tokens, output tokens and dollars.
     pub fn model(mut self, name: impl Into<String>, tokens_in: f32, tokens_out: f32, cost: f32) -> Self {
@@ -316,21 +351,80 @@ impl egui::Widget for CostMeter {
         let p = ui.painter_at(rect.expand(14.0));
         panel(&p, &t, rect, 14.0);
         let pad = 18.0;
-        text(&p, pos2(rect.min.x + pad, rect.min.y + 22.0), Align2::LEFT_CENTER, &self.title, font(13.0), t.foreground, 160.0);
-        text(&p, pos2(rect.max.x - pad, rect.min.y + 22.0), Align2::RIGHT_CENTER, &self.period, font(11.5), faint(&t), 160.0);
+        text(
+            &p,
+            pos2(rect.min.x + pad, rect.min.y + 22.0),
+            Align2::LEFT_CENTER,
+            &self.title,
+            font(13.0),
+            t.foreground,
+            160.0,
+        );
+        text(
+            &p,
+            pos2(rect.max.x - pad, rect.min.y + 22.0),
+            Align2::RIGHT_CENTER,
+            &self.period,
+            font(11.5),
+            faint(&t),
+            160.0,
+        );
         let frac = spent / self.budget;
         let over = frac > 1.0;
         let warn = frac >= self.warn_at;
-        let c = if over { t.destructive } else if warn { t.warning } else { t.foreground };
-        let big = text(&p, pos2(rect.min.x + pad, rect.min.y + 76.0), Align2::LEFT_BOTTOM, &fmt_usd(spent), mono(28.0), if over { ink(&t, t.destructive) } else { t.foreground }, 200.0);
-        text(&p, pos2(big.max.x + 8.0, big.max.y - 5.0), Align2::LEFT_BOTTOM, &format!("of {} budget", fmt_usd(self.budget)), font(12.0), dim(&t), 180.0);
+        let c = if over {
+            t.destructive
+        } else if warn {
+            t.warning
+        } else {
+            t.foreground
+        };
+        let big = text(
+            &p,
+            pos2(rect.min.x + pad, rect.min.y + 76.0),
+            Align2::LEFT_BOTTOM,
+            &fmt_usd(spent),
+            mono(28.0),
+            if over { ink(&t, t.destructive) } else { t.foreground },
+            200.0,
+        );
+        text(
+            &p,
+            pos2(big.max.x + 8.0, big.max.y - 5.0),
+            Align2::LEFT_BOTTOM,
+            &format!("of {} budget", fmt_usd(self.budget)),
+            font(12.0),
+            dim(&t),
+            180.0,
+        );
         if over {
             let k = 0.6 + 0.4 * (now * 3.0).sin().abs();
-            let r = badge(&p, &t, pos2(rect.max.x - pad, big.center().y), Align2::RIGHT_CENTER, "over limit", t.destructive, true);
-            p.rect_stroke(r.expand(2.0 * k), cr(8.0), Stroke::new(1.0, with_alpha(t.destructive, 0.3 * k)), StrokeKind::Outside);
+            let r = badge(
+                &p,
+                &t,
+                pos2(rect.max.x - pad, big.center().y),
+                Align2::RIGHT_CENTER,
+                "over limit",
+                t.destructive,
+                true,
+            );
+            p.rect_stroke(
+                r.expand(2.0 * k),
+                cr(8.0),
+                Stroke::new(1.0, with_alpha(t.destructive, 0.3 * k)),
+                StrokeKind::Outside,
+            );
             glowkit_core::animate(ui);
         } else {
-            text(&p, pos2(rect.max.x - pad, big.center().y), Align2::RIGHT_CENTER, &format!("{:.0}%", frac * 100.0), mono(12.0), if warn { ink(&t, t.warning) } else { dim(&t) }, 60.0);
+            text(
+                &p,
+                pos2(rect.max.x - pad, big.center().y),
+                Align2::RIGHT_CENTER,
+                &format!("{:.0}%", frac * 100.0),
+                mono(12.0),
+                if warn { ink(&t, t.warning) } else { dim(&t) },
+                60.0,
+            );
         }
         let bar = Rect::from_min_size(pos2(rect.min.x + pad, rect.min.y + 88.0), vec2(rect.width() - pad * 2.0, 8.0));
         p.rect_filled(bar, cr(4.0), track(&t));
@@ -339,11 +433,16 @@ impl egui::Widget for CostMeter {
             p.rect_filled(Rect::from_min_size(bar.min, vec2(fw.max(8.0), bar.height())), cr(4.0), c);
         }
         let wx = bar.min.x + bar.width() * self.warn_at;
-        p.line_segment([pos2(wx, bar.min.y - 3.0), pos2(wx, bar.max.y + 3.0)], Stroke::new(1.0, with_alpha(t.foreground, 0.25)));
+        p.line_segment(
+            [pos2(wx, bar.min.y - 3.0), pos2(wx, bar.max.y + 3.0)],
+            Stroke::new(1.0, with_alpha(t.foreground, 0.25)),
+        );
         // tokens in/out
         let y = rect.min.y + 124.0;
         let half = (rect.width() - pad * 2.0) / 2.0;
-        for (k, (label, v, ic)) in [("Tokens in", tin, Icon::ArrowDown), ("Tokens out", tout, Icon::ArrowUp)].iter().enumerate() {
+        for (k, (label, v, ic)) in
+            [("Tokens in", tin, Icon::ArrowDown), ("Tokens out", tout, Icon::ArrowUp)].iter().enumerate()
+        {
             let x = rect.min.x + pad + k as f32 * half;
             let ib = Rect::from_center_size(pos2(x + 11.0, y + 4.0), vec2(22.0, 22.0));
             p.rect_filled(ib, cr(6.0), well(&t));
@@ -379,11 +478,31 @@ impl egui::Widget for CostMeter {
         }
         for (k, m) in self.models.iter().enumerate() {
             let ly = sy + 50.0 + k as f32 * 26.0;
-            p.rect_filled(Rect::from_center_size(pos2(rect.min.x + pad + 4.0, ly), vec2(8.0, 8.0)), cr(2.0), series(&t, k));
+            p.rect_filled(
+                Rect::from_center_size(pos2(rect.min.x + pad + 4.0, ly), vec2(8.0, 8.0)),
+                cr(2.0),
+                series(&t, k),
+            );
             text(&p, pos2(rect.min.x + pad + 16.0, ly), Align2::LEFT_CENTER, &m.0, font(12.0), t.foreground, 140.0);
             let cv = glowkit_core::anim::follow(ui, id.with(("mc", k)), m.3, 5.0);
-            let r = text(&p, pos2(rect.max.x - pad, ly), Align2::RIGHT_CENTER, &fmt_usd(cv), mono(11.5), t.foreground, 80.0);
-            text(&p, pos2(r.min.x - 14.0, ly), Align2::RIGHT_CENTER, &format!("{} tok", fmt_tok(m.1 + m.2)), font(11.0), faint(&t), 100.0);
+            let r = text(
+                &p,
+                pos2(rect.max.x - pad, ly),
+                Align2::RIGHT_CENTER,
+                &fmt_usd(cv),
+                mono(11.5),
+                t.foreground,
+                80.0,
+            );
+            text(
+                &p,
+                pos2(r.min.x - 14.0, ly),
+                Align2::RIGHT_CENTER,
+                &format!("{} tok", fmt_tok(m.1 + m.2)),
+                font(11.0),
+                faint(&t),
+                100.0,
+            );
         }
         resp
     }
@@ -519,19 +638,46 @@ impl egui::Widget for AgentFleetGrid<'_> {
         let states = [RunState::Running, RunState::NeedsInput, RunState::Failed, RunState::Done, RunState::Idle];
         let hy = rect.min.y + 18.0;
         let tr = text(&p, pos2(rect.min.x + 2.0, hy), Align2::LEFT_CENTER, "Fleet", font(15.0), t.foreground, 100.0);
-        text(&p, pos2(tr.max.x + 8.0, hy), Align2::LEFT_CENTER, &format!("{} agents", self.agents.len()), font(12.0), dim(&t), 100.0);
+        text(
+            &p,
+            pos2(tr.max.x + 8.0, hy),
+            Align2::LEFT_CENTER,
+            &format!("{} agents", self.agents.len()),
+            font(12.0),
+            dim(&t),
+            100.0,
+        );
         let mut x = rect.max.x;
         for s in states.iter().rev() {
-            let n = self.agents.iter().filter(|a| a.state == *s || (*s == RunState::Idle && a.state == RunState::Queued)).count();
+            let n = self
+                .agents
+                .iter()
+                .filter(|a| a.state == *s || (*s == RunState::Idle && a.state == RunState::Queued))
+                .count();
             let nv = glowkit_core::anim::follow(ui, id.with(("n", s.label())), n as f32, 8.0);
-            let r = text(&p, pos2(x, hy), Align2::RIGHT_CENTER, &format!("{} {}", nv.round() as i32, s.label().to_lowercase()), font(12.0), if n > 0 && matches!(s, RunState::NeedsInput | RunState::Failed) { ink(&t, s.color(&t)) } else { dim(&t) }, 140.0);
+            let r = text(
+                &p,
+                pos2(x, hy),
+                Align2::RIGHT_CENTER,
+                &format!("{} {}", nv.round() as i32, s.label().to_lowercase()),
+                font(12.0),
+                if n > 0 && matches!(s, RunState::NeedsInput | RunState::Failed) {
+                    ink(&t, s.color(&t))
+                } else {
+                    dim(&t)
+                },
+                140.0,
+            );
             p.circle_filled(pos2(r.min.x - 8.0, hy), 3.5, s.color(&t));
             x = r.min.x - 22.0;
         }
         // tiles
         for (i, a) in self.agents.iter().enumerate() {
             let (cx, cy) = (i % cols, i / cols);
-            let r0 = Rect::from_min_size(pos2(rect.min.x + cx as f32 * (tw + gap), rect.min.y + header + cy as f32 * (th + gap)), vec2(tw, th));
+            let r0 = Rect::from_min_size(
+                pos2(rect.min.x + cx as f32 * (tw + gap), rect.min.y + header + cy as f32 * (th + gap)),
+                vec2(tw, th),
+            );
             let tid = id.with(("tile", i));
             let hov = ui.rect_contains_pointer(r0);
             let resp_t = ui.interact(r0, tid, Sense::click());
@@ -539,7 +685,8 @@ impl egui::Widget for AgentFleetGrid<'_> {
                 ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
             }
             let k = glowkit_core::anim::follow(ui, tid.with("h"), if hov { 1.0 } else { 0.0 }, 12.0);
-            let appear = ease(Easing::OutCubic, glowkit_core::anim::follow(ui, tid.with("ap"), 1.0, 4.0 + (i % 7) as f32 * 0.4));
+            let appear =
+                ease(Easing::OutCubic, glowkit_core::anim::follow(ui, tid.with("ap"), 1.0, 4.0 + (i % 7) as f32 * 0.4));
             let r = r0.translate(vec2(0.0, -2.0 * k + (1.0 - appear) * 10.0));
             let pa = faded(&p, appear);
             panel_fill(&pa, &t, r, 14.0, surface(&t), 0.5 + k);
@@ -549,10 +696,19 @@ impl egui::Widget for AgentFleetGrid<'_> {
             let init: String = a.name.split_whitespace().filter_map(|w| w.chars().next()).take(2).collect();
             pa.text(ac, Align2::CENTER_CENTER, init, font(13.0), t.foreground);
             let tx = ac.x + 30.0;
-            text(&pa, pos2(tx, ac.y - 8.0), Align2::LEFT_CENTER, &a.name, font(13.0), t.foreground, r.max.x - tx - 10.0);
+            text(
+                &pa,
+                pos2(tx, ac.y - 8.0),
+                Align2::LEFT_CENTER,
+                &a.name,
+                font(13.0),
+                t.foreground,
+                r.max.x - tx - 10.0,
+            );
             text(&pa, pos2(tx, ac.y + 9.0), Align2::LEFT_CENTER, &a.role, font(11.0), faint(&t), r.max.x - tx - 10.0);
             let col = a.state.color(&t);
-            let line_c = if matches!(a.state, RunState::NeedsInput | RunState::Failed) { ink(&t, col) } else { dim(&t) };
+            let line_c =
+                if matches!(a.state, RunState::NeedsInput | RunState::Failed) { ink(&t, col) } else { dim(&t) };
             let ay = r.min.y + 76.0;
             if a.state == RunState::Running {
                 spinner(&pa, pos2(r.min.x + 19.0, ay), 4.5, col, now, 1.4);
@@ -563,11 +719,27 @@ impl egui::Widget for AgentFleetGrid<'_> {
             text(&pa, pos2(r.min.x + 30.0, ay), Align2::LEFT_CENTER, &act, font(11.5), line_c, r.width() - 42.0);
             hline(&pa, &t, r.min.x + 14.0, r.max.x - 14.0, r.min.y + 98.0);
             let sy = r.min.y + 118.0;
-            let s1 = text(&pa, pos2(r.min.x + 14.0, sy), Align2::LEFT_CENTER, &format!("{}", a.runs), mono(12.0), t.foreground, 40.0);
+            let s1 = text(
+                &pa,
+                pos2(r.min.x + 14.0, sy),
+                Align2::LEFT_CENTER,
+                &format!("{}", a.runs),
+                mono(12.0),
+                t.foreground,
+                40.0,
+            );
             text(&pa, pos2(s1.max.x + 4.0, sy), Align2::LEFT_CENTER, "runs", font(11.0), faint(&t), 40.0);
             let sc = if a.success < 0.85 { ink(&t, t.warning) } else { t.foreground };
             let s2 = text(&pa, pos2(r.max.x - 14.0, sy), Align2::RIGHT_CENTER, "ok", font(11.0), faint(&t), 40.0);
-            text(&pa, pos2(s2.min.x - 4.0, sy), Align2::RIGHT_CENTER, &format!("{:.0}%", a.success * 100.0), mono(12.0), sc, 50.0);
+            text(
+                &pa,
+                pos2(s2.min.x - 4.0, sy),
+                Align2::RIGHT_CENTER,
+                &format!("{:.0}%", a.success * 100.0),
+                mono(12.0),
+                sc,
+                50.0,
+            );
             // mini success bar between
             let mb = Rect::from_min_max(pos2(s1.max.x + 40.0, sy - 2.0), pos2(s2.min.x - 44.0, sy + 2.0));
             if mb.width() > 16.0 {

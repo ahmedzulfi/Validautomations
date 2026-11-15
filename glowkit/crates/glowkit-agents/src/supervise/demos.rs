@@ -17,10 +17,15 @@ fn set_mem<T: Clone + Send + Sync + 'static>(ui: &Ui, key: &str, v: T) {
 fn sim_clock(ui: &Ui, speed: f32) -> f32 {
     let dt = glowkit_core::dt(ui);
     glowkit_core::animate(ui);
-    glowkit_core::with_state(ui, ui.scope_id().with("sim_clock"), || 0.0_f32, |t| {
-        *t += dt * speed;
-        *t
-    })
+    glowkit_core::with_state(
+        ui,
+        ui.scope_id().with("sim_clock"),
+        || 0.0_f32,
+        |t| {
+            *t += dt * speed;
+            *t
+        },
+    )
 }
 
 /// Parameter values for a demo, persisted per demo.
@@ -29,7 +34,12 @@ fn params<const N: usize>(ui: &Ui, init: [f32; N]) -> [f32; N] {
 }
 
 /// Component on top, a centered row of parameter sliders (each `sw` wide) under it.
-fn with_controls<const N: usize>(ui: &mut Ui, p: &mut [f32; N], sw: f32, controls: impl FnOnce(&mut Ui, &mut [f32; N], f32)) {
+fn with_controls<const N: usize>(
+    ui: &mut Ui,
+    p: &mut [f32; N],
+    sw: f32,
+    controls: impl FnOnce(&mut Ui, &mut [f32; N], f32),
+) {
     ui.add_space(14.0);
     let gap = 10.0;
     let avail = ui.available_width();
@@ -42,7 +52,6 @@ fn with_controls<const N: usize>(ui: &mut Ui, p: &mut [f32; N], sw: f32, control
     });
     set_mem(ui, "params", *p);
 }
-
 
 /// State that turns on at `start`, finishes at `end` (with an optional needs-you window).
 fn phase(t: f32, start: f32, end: f32) -> RunState {
@@ -79,14 +88,25 @@ fn tree_sim(t: f32) -> AgentNode {
     }
     root.child(
         node("Researcher", "Nova 2", "Compare pricing of five competitors", 0.5, 13.0, 0.005)
-            .child(node("Scraper", "Nova Flash", "Read pricing pages of Linear, Notion and three more", 1.0, 9.0, 0.0015))
+            .child(node(
+                "Scraper",
+                "Nova Flash",
+                "Read pricing pages of Linear, Notion and three more",
+                1.0,
+                9.0,
+                0.0015,
+            ))
             .child(node("Analyst", "Nova 2", "Tabulate seats, tiers and annual discounts", 9.0, 12.5, 0.003)),
     )
     .child(writer)
-    .child(
-        node("Coder", "Orbit 5", "Build the page and wire up checkout", 3.0, 27.0, 0.006)
-            .child(node("Tester", "Nova Flash", "Run the checkout e2e suite", 18.0, 26.0, 0.002)),
-    )
+    .child(node("Coder", "Orbit 5", "Build the page and wire up checkout", 3.0, 27.0, 0.006).child(node(
+        "Tester",
+        "Nova Flash",
+        "Run the checkout e2e suite",
+        18.0,
+        26.0,
+        0.002,
+    )))
 }
 
 pub(super) fn all() -> Vec<Demo> {
@@ -156,12 +176,17 @@ fn idle(ui: &Ui) -> f32 {
     let now = glowkit_core::time(ui);
     let inside = ui.rect_contains_pointer(ui.max_rect());
     let id = ui.scope_id().with("demo_idle");
-    let since = glowkit_core::with_state(ui, id, || now - 10.0, |s| {
-        if inside {
-            *s = now;
-        }
-        *s
-    });
+    let since = glowkit_core::with_state(
+        ui,
+        id,
+        || now - 10.0,
+        |s| {
+            if inside {
+                *s = now;
+            }
+            *s
+        },
+    );
     now - since
 }
 
@@ -169,14 +194,19 @@ fn idle(ui: &Ui) -> f32 {
 fn tick(ui: &Ui, key: &str, t: f32, period: f32) -> bool {
     let n = (t / period).floor() as i64;
     let id = ui.scope_id().with(("tick", key));
-    glowkit_core::with_state(ui, id, || n, |last| {
-        if *last != n {
-            *last = n;
-            true
-        } else {
-            false
-        }
-    })
+    glowkit_core::with_state(
+        ui,
+        id,
+        || n,
+        |last| {
+            if *last != n {
+                *last = n;
+                true
+            } else {
+                false
+            }
+        },
+    )
 }
 
 fn noise(x: f32) -> f32 {
@@ -221,11 +251,41 @@ fn trace_sim(t: f32) -> Vec<TraceSpan> {
 
 fn pool_request(n: u64) -> ApprovalRequest {
     let pool = [
-        ("Deploy Fixer", "shell", "pnpm add zod@3.23.8", "server/validate.ts imports zod, which is missing", Risk::Medium),
-        ("Refund Resolver", "stripe.refunds.create", "charge=ch_3P9 amount=1240.00 reason=duplicate", "Customer was double charged on ORD-99214", Risk::High),
-        ("Docs Writer", "github.create_pr", "docs: add rate limit section", "Explains the new 429 behaviour", Risk::Low),
-        ("Data Loader", "postgres.query", "DELETE FROM leads WHERE stale = true", "1,200 stale lead records", Risk::High),
-        ("Lead Enricher", "hubspot.update", "contacts=84 fields=company,size", "Backfill titles on 84 leads", Risk::Low),
+        (
+            "Deploy Fixer",
+            "shell",
+            "pnpm add zod@3.23.8",
+            "server/validate.ts imports zod, which is missing",
+            Risk::Medium,
+        ),
+        (
+            "Refund Resolver",
+            "stripe.refunds.create",
+            "charge=ch_3P9 amount=1240.00 reason=duplicate",
+            "Customer was double charged on ORD-99214",
+            Risk::High,
+        ),
+        (
+            "Docs Writer",
+            "github.create_pr",
+            "docs: add rate limit section",
+            "Explains the new 429 behaviour",
+            Risk::Low,
+        ),
+        (
+            "Data Loader",
+            "postgres.query",
+            "DELETE FROM leads WHERE stale = true",
+            "1,200 stale lead records",
+            Risk::High,
+        ),
+        (
+            "Lead Enricher",
+            "hubspot.update",
+            "contacts=84 fields=company,size",
+            "Backfill titles on 84 leads",
+            Risk::Low,
+        ),
         ("Upgrader", "shell", "npm i react-router@7 --save", "Upgrade to the new data router", Risk::Medium),
     ];
     let p = pool[(n as usize) % pool.len()];
@@ -246,8 +306,20 @@ fn diff_files() -> Vec<DiffFile> {
 
 fn runs_sim(t: f32) -> Vec<RunInfo> {
     let spec = [
-        ("RUN-4822", "Refund Resolver", 0.0, 6, ["Plan refund", "Validate policy", "Capture refund", "Verify", "Notify", "Write back"]),
-        ("RUN-4820", "Invoice Reconciler", 7.0, 5, ["Fetch invoices", "Match payments", "Flag gaps", "Draft report", "Send", ""]),
+        (
+            "RUN-4822",
+            "Refund Resolver",
+            0.0,
+            6,
+            ["Plan refund", "Validate policy", "Capture refund", "Verify", "Notify", "Write back"],
+        ),
+        (
+            "RUN-4820",
+            "Invoice Reconciler",
+            7.0,
+            5,
+            ["Fetch invoices", "Match payments", "Flag gaps", "Draft report", "Send", ""],
+        ),
         ("RUN-4817", "Lead Enricher", 3.0, 4, ["Pull leads", "Enrich", "Approve CRM write", "Sync", "", ""]),
         ("RUN-4815", "Deploy Fixer", 12.0, 5, ["Read logs", "Patch deps", "Run tests", "Deploy", "Verify", ""]),
         ("RUN-4811", "Docs Writer", 18.0, 3, ["Outline", "Draft", "Open PR", "", "", ""]),
@@ -259,7 +331,13 @@ fn runs_sim(t: f32) -> Vec<RunInfo> {
             let local = (t - s.2).rem_euclid(44.0);
             let per = 5.5;
             let step = ((local / per) as usize + 1).min(s.3);
-            let mut state = if local < 0.8 { RunState::Queued } else if local < per * s.3 as f32 { RunState::Running } else { RunState::Done };
+            let mut state = if local < 0.8 {
+                RunState::Queued
+            } else if local < per * s.3 as f32 {
+                RunState::Running
+            } else {
+                RunState::Done
+            };
             if i == 2 && (8.0..17.0).contains(&local) {
                 state = RunState::NeedsInput;
             }
@@ -268,7 +346,9 @@ fn runs_sim(t: f32) -> Vec<RunInfo> {
             }
             let el = local.min(per * s.3 as f32);
             let el = if state == RunState::Failed { 13.0 } else { el };
-            let hist: Vec<f32> = (0..14).map(|k| noise(i as f32 * 3.1 + (el - 14.0 + k as f32) * 0.35) * (1.0 + k as f32 * 0.1)).collect();
+            let hist: Vec<f32> = (0..14)
+                .map(|k| noise(i as f32 * 3.1 + (el - 14.0 + k as f32) * 0.35) * (1.0 + k as f32 * 0.1))
+                .collect();
             RunInfo::new(s.0, s.1, state)
                 .step(step, s.3, s.4[(step - 1).min(5)])
                 .usage(el + 40.0 * i as f32, el * 310.0 + 800.0, el * 0.0042 + 0.01)
@@ -284,9 +364,18 @@ fn timeline_sim(t: f32) -> (Vec<TimelineStep>, bool) {
     let fail_to = 19.0;
     let mut steps = Vec::new();
     let mut start = 0.0;
-    let titles = ["Investigate the failed deploy", "Install the missing dependency", "Patch the deploy config", "Run the full test suite", "Deploy to production"];
+    let titles = [
+        "Investigate the failed deploy",
+        "Install the missing dependency",
+        "Patch the deploy config",
+        "Run the full test suite",
+        "Deploy to production",
+    ];
     let tools: [&[(&str, Icon, &str)]; 5] = [
-        &[("read_logs", Icon::Terminal, "service=web since=15m"), ("search_code", Icon::Search, "import { z } from \"zod\"")],
+        &[
+            ("read_logs", Icon::Terminal, "service=web since=15m"),
+            ("search_code", Icon::Search, "import { z } from \"zod\""),
+        ],
         &[("shell", Icon::Terminal, "pnpm add zod@3.23.8")],
         &[("read_file", Icon::File, "deploy/config.yaml"), ("edit_file", Icon::Pencil, "retries: 0 → 3")],
         &[("run_tests", Icon::Play, "412 tests · 3 workers")],
@@ -311,14 +400,20 @@ fn timeline_sim(t: f32) -> (Vec<TimelineStep>, bool) {
         if i == 2 && t > fail_from && t < fail_to {
             state2 = RunState::Failed;
             failed_now = true;
-            st = st.note("edit_file failed: deploy/config.yaml was changed on main since it was read. Re-read and patch again.");
+            st = st.note(
+                "edit_file failed: deploy/config.yaml was changed on main since it was read. Re-read and patch again.",
+            );
         }
         st.state = state2;
         for (k, (name, ic, det)) in tools[i].iter().enumerate() {
             let ts = k as f32 * dur / tools[i].len() as f32;
             let te = (k + 1) as f32 * dur / tools[i].len() as f32;
             let s = if state2 == RunState::Failed {
-                if k == 0 { RunState::Done } else { RunState::Failed }
+                if k == 0 {
+                    RunState::Done
+                } else {
+                    RunState::Failed
+                }
             } else if local < ts {
                 continue;
             } else if local < te && state == RunState::Running {
@@ -369,21 +464,45 @@ fn sessions_sim(t: f32) -> Vec<AgentSession> {
         AgentSession::new(1, "Fix the failing production deploy", st(0.0, 20.0, RunState::Running, RunState::Done))
             .repo("acme/web · fix/zod")
             .device(Device::Laptop, "MacBook Pro")
-            .preview(if c < 20.0 { "Running the full test suite, 312 of 412 passed…" } else { "Deployed web@prod. All checks green." })
+            .preview(if c < 20.0 {
+                "Running the full test suite, 312 of 412 passed…"
+            } else {
+                "Deployed web@prod. All checks green."
+            })
             .activity(if c < 20.0 { 0 } else { 1 }, if c < 20.0 { 5.0 } else { c * 20.0 }),
         AgentSession::new(2, "Seed the staging database", st(6.0, 24.0, RunState::NeedsInput, RunState::Running))
             .repo("acme/data · main")
             .device(Device::Cloud, "sandbox-2")
-            .preview(if (6.0..24.0).contains(&c) { "Which region should I seed first?" } else { "Loading 2.1 GB of fixtures into us-east-1…" })
+            .preview(if (6.0..24.0).contains(&c) {
+                "Which region should I seed first?"
+            } else {
+                "Loading 2.1 GB of fixtures into us-east-1…"
+            })
             .activity(if (6.0..24.0).contains(&c) { 2 } else { 0 }, 40.0),
         AgentSession::new(3, "Upgrade react-router to v7", st(14.0, 36.0, RunState::Failed, RunState::Running))
             .repo("acme/web · chore/router-7")
             .device(Device::Terminal, "codex · devbox")
-            .preview(if c >= 14.0 { "Type error in routes.tsx: loader returns Promise<void>" } else { "Migrating 23 route modules to the data router…" })
+            .preview(if c >= 14.0 {
+                "Type error in routes.tsx: loader returns Promise<void>"
+            } else {
+                "Migrating 23 route modules to the data router…"
+            })
             .activity(if c >= 14.0 { 3 } else { 0 }, 300.0),
-        AgentSession::new(4, "Write release notes for v2.4", RunState::Idle).repo("acme/docs · main").device(Device::Phone, "iPhone").preview("Draft ready for review: 23 merged PRs grouped into 5 sections").activity(0, 3600.0 * 3.0),
-        AgentSession::new(5, "Weekly metrics digest", RunState::Done).repo("acme/analytics").device(Device::Cloud, "scheduled").preview("Posted to #metrics: signups +12% week over week").activity(0, 86400.0),
-        AgentSession::new(6, "Triage new GitHub issues", st(26.0, 36.0, RunState::Running, RunState::Idle)).repo("acme/web").device(Device::Laptop, "Studio").preview("Labelled 14 issues, 2 look like duplicates").activity(0, 7200.0),
+        AgentSession::new(4, "Write release notes for v2.4", RunState::Idle)
+            .repo("acme/docs · main")
+            .device(Device::Phone, "iPhone")
+            .preview("Draft ready for review: 23 merged PRs grouped into 5 sections")
+            .activity(0, 3600.0 * 3.0),
+        AgentSession::new(5, "Weekly metrics digest", RunState::Done)
+            .repo("acme/analytics")
+            .device(Device::Cloud, "scheduled")
+            .preview("Posted to #metrics: signups +12% week over week")
+            .activity(0, 86400.0),
+        AgentSession::new(6, "Triage new GitHub issues", st(26.0, 36.0, RunState::Running, RunState::Idle))
+            .repo("acme/web")
+            .device(Device::Laptop, "Studio")
+            .preview("Labelled 14 issues, 2 look like duplicates")
+            .activity(0, 7200.0),
     ]
 }
 
@@ -416,7 +535,9 @@ fn fleet_sim(t: f32) -> Vec<FleetAgent> {
             }
             let prog = (local / (cyc * 0.75)).min(1.0);
             let act = if state == RunState::Done { "Finished, waiting for the next job" } else { n.2 };
-            FleetAgent::new(n.0, n.1, state).activity(prog, act).stats(12 + (i as u32 * 7) % 30 + (t / 10.0) as u32, 0.78 + 0.2 * noise(i as f32))
+            FleetAgent::new(n.0, n.1, state)
+                .activity(prog, act)
+                .stats(12 + (i as u32 * 7) % 30 + (t / 10.0) as u32, 0.78 + 0.2 * noise(i as f32))
         })
         .collect()
 }
@@ -435,11 +556,19 @@ fn plan_sim(t: f32) -> Vec<PlanCard> {
         .enumerate()
         .map(|(i, s)| {
             let local = t - s.3;
-            let mut state = if local < 0.0 { RunState::Queued } else if local < s.4 { RunState::Running } else { RunState::Done };
+            let mut state = if local < 0.0 {
+                RunState::Queued
+            } else if local < s.4 {
+                RunState::Running
+            } else {
+                RunState::Done
+            };
             if i == 4 && state == RunState::Running {
                 state = RunState::NeedsInput;
             }
-            PlanCard::new(i as u64, s.0, state).agent(s.1, s.2).progress((local / s.4).clamp(0.0, 1.0), local.clamp(0.0, s.4))
+            PlanCard::new(i as u64, s.0, state)
+                .agent(s.1, s.2)
+                .progress((local / s.4).clamp(0.0, 1.0), local.clamp(0.0, s.4))
         })
         .collect()
 }

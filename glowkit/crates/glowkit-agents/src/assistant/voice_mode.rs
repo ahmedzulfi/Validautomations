@@ -82,12 +82,14 @@ impl<'a> VoiceModeOverlay<'a> {
         let id = wid(ui, self.salt, "asst_voice");
         let w = ui.available_width();
         let (rect, response) = ui.allocate_exact_size(vec2(w, self.height), Sense::hover());
-        let k = glowkit_core::anim::spring(ui, id.with("k"), if *self.open { 1.0 } else { 0.0 }, 120.0, 20.0).clamp(0.0, 1.0);
+        let k = glowkit_core::anim::spring(ui, id.with("k"), if *self.open { 1.0 } else { 0.0 }, 120.0, 20.0)
+            .clamp(0.0, 1.0);
         let time = glowkit_core::time(ui);
         let p = ui.painter();
         p.rect_filled(rect, cr(18.0), stage(&t));
         p.rect_stroke(rect, cr(18.0), hairline(&t), egui::StrokeKind::Inside);
-        let mut child = ui.new_child(UiBuilder::new().max_rect(rect.shrink(18.0)).layout(egui::Layout::top_down(egui::Align::Min)));
+        let mut child =
+            ui.new_child(UiBuilder::new().max_rect(rect.shrink(18.0)).layout(egui::Layout::top_down(egui::Align::Min)));
         child.set_clip_rect(rect.intersect(ui.clip_rect()));
         host(&mut child);
         let origin = pos2(rect.max.x - 62.0, rect.max.y - 40.0);
@@ -97,7 +99,10 @@ impl<'a> VoiceModeOverlay<'a> {
         }
         glowkit_core::animate(ui);
         // circular reveal from the mic button
-        let far = [rect.left_top(), rect.right_top(), rect.left_bottom(), rect.right_bottom()].iter().map(|c| (*c - origin).length()).fold(0.0, f32::max);
+        let far = [rect.left_top(), rect.right_top(), rect.left_bottom(), rect.right_bottom()]
+            .iter()
+            .map(|c| (*c - origin).length())
+            .fold(0.0, f32::max);
         let rad = far * egui::emath::easing::cubic_in_out(k);
         let clip = rect.intersect(ui.clip_rect());
         let p = ui.painter().with_clip_rect(clip);
@@ -116,9 +121,22 @@ impl<'a> VoiceModeOverlay<'a> {
         paint::glow(&p, rect.center() + vec2(120.0, 40.0), rect.height() * 0.3, with_alpha(t.gradient[1], 0.07 * ck));
         // top bar
         bot_avatar(&p, &t, pos2(rect.min.x + 30.0, rect.min.y + 30.0), 11.0);
-        p.text(pos2(rect.min.x + 48.0, rect.min.y + 30.0), Align2::LEFT_CENTER, "Voice mode", FontId::proportional(13.0), t.foreground.gamma_multiply(ck));
+        p.text(
+            pos2(rect.min.x + 48.0, rect.min.y + 30.0),
+            Align2::LEFT_CENTER,
+            "Voice mode",
+            FontId::proportional(13.0),
+            t.foreground.gamma_multiply(ck),
+        );
         let secs = (time * 1.0) as u32 % 3600;
-        mono(&p, pos2(rect.max.x - 24.0, rect.min.y + 30.0), Align2::RIGHT_CENTER, &format!("{:02}:{:02}", secs / 60, secs % 60), 11.5, t.muted_foreground.gamma_multiply(ck));
+        mono(
+            &p,
+            pos2(rect.max.x - 24.0, rect.min.y + 30.0),
+            Align2::RIGHT_CENTER,
+            &format!("{:02}:{:02}", secs / 60, secs % 60),
+            11.5,
+            t.muted_foreground.gamma_multiply(ck),
+        );
         // orb
         let orb_s = (rect.height() * 0.3).min(150.0);
         let orb_c = pos2(rect.center().x, rect.min.y + 64.0 + orb_s / 2.0);
@@ -126,7 +144,13 @@ impl<'a> VoiceModeOverlay<'a> {
         let mut oc = ui.new_child(UiBuilder::new().max_rect(orb_r));
         oc.set_clip_rect(clip);
         oc.multiply_opacity(ck);
-        oc.add(VoiceOrb::new().state(self.state).amplitude(self.level).size(orb_s * (0.85 + 0.15 * ck)).id_salt(id.with("orb")));
+        oc.add(
+            VoiceOrb::new()
+                .state(self.state)
+                .amplitude(self.level)
+                .size(orb_s * (0.85 + 0.15 * ck))
+                .id_salt(id.with("orb")),
+        );
         // status
         let status = match self.state {
             VoiceState::Idle => "Tap to talk",
@@ -151,7 +175,15 @@ impl<'a> VoiceModeOverlay<'a> {
             for (i, wd) in words.iter().enumerate() {
                 let age = (n - i) as f32;
                 let a = (age / 3.0).clamp(0.35, 1.0);
-                job.append(&format!("{wd} "), 0.0, egui::text::TextFormat { font_id: FontId::proportional(16.0), color: t.foreground.gamma_multiply(a * ck), ..Default::default() });
+                job.append(
+                    &format!("{wd} "),
+                    0.0,
+                    egui::text::TextFormat {
+                        font_id: FontId::proportional(16.0),
+                        color: t.foreground.gamma_multiply(a * ck),
+                        ..Default::default()
+                    },
+                );
             }
             job.wrap.max_width = (w * 0.7).min(460.0);
             job.halign = egui::Align::Center;

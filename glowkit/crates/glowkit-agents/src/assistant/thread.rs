@@ -295,7 +295,8 @@ impl<'a> AssistantThread<'a> {
                     let nver = tt.versions.len();
                     let active = tt.active;
                     if editing {
-                        let (r_send, done, cancel) = edit_box(ui, &t, tid, model.editing.as_mut().map(|e| &mut e.1).unwrap());
+                        let (r_send, done, cancel) =
+                            edit_box(ui, &t, tid, model.editing.as_mut().map(|e| &mut e.1).unwrap());
                         send_edit_rect = Some(r_send);
                         if done {
                             if let Some(turn) = model.submit_edit() {
@@ -362,7 +363,9 @@ impl<'a> AssistantThread<'a> {
                                         ui.add(BranchSwitcher::new(&mut reply_ix, nrep));
                                     }
                                     let mut rr = None;
-                                    for (k, ic) in [Icon::Copy, Icon::Refresh, Icon::ThumbUp, Icon::ThumbDown].iter().enumerate() {
+                                    for (k, ic) in
+                                        [Icon::Copy, Icon::Refresh, Icon::ThumbUp, Icon::ThumbDown].iter().enumerate()
+                                    {
                                         let (r, _) = ui.allocate_exact_size(vec2(28.0, 28.0), Sense::hover());
                                         let b = icon_button(ui, tid.with(("act", k)), r.shrink(1.0), *ic, false);
                                         if k == 1 {
@@ -476,7 +479,12 @@ fn edit_box(ui: &mut Ui, t: &Theme, id: Id, buf: &mut String) -> (Rect, bool, bo
     let k = toggle(ui, id.with("open"), true);
     let p = ui.painter();
     p.rect_filled(r, egui::CornerRadius::same(16), surface(t));
-    p.rect_stroke(r, egui::CornerRadius::same(16), Stroke::new(1.0 + 0.5 * k, mix(t.border, t.ring, 0.6 * k)), StrokeKind::Inside);
+    p.rect_stroke(
+        r,
+        egui::CornerRadius::same(16),
+        Stroke::new(1.0 + 0.5 * k, mix(t.border, t.ring, 0.6 * k)),
+        StrokeKind::Inside,
+    );
     let te = Rect::from_min_max(r.min + vec2(14.0, 10.0), pos2(r.max.x - 14.0, r.max.y - 42.0));
     let resp = ui.put(
         te,
@@ -505,7 +513,11 @@ pub(crate) fn thinking_row(ui: &mut Ui, t: &Theme, time: f32) {
     let p = ui.painter();
     for i in 0..3 {
         let ph = (time * 5.0 - i as f32 * 0.7).sin() * 0.5 + 0.5;
-        p.circle_filled(pos2(r.min.x + 5.0 + i as f32 * 10.0, r.center().y - ph * 2.5), 3.0, with_alpha(t.muted_foreground, 0.35 + 0.55 * ph));
+        p.circle_filled(
+            pos2(r.min.x + 5.0 + i as f32 * 10.0, r.center().y - ph * 2.5),
+            3.0,
+            with_alpha(t.muted_foreground, 0.35 + 0.55 * ph),
+        );
     }
     let g = galley(ui, "Thinking", 13.0, t.muted_foreground);
     let x0 = r.min.x + 36.0;

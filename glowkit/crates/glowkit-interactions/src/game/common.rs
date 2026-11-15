@@ -262,7 +262,15 @@ pub struct GameItem {
 impl GameItem {
     /// A new item.
     pub fn new(name: impl Into<String>, icon: GameIcon, rarity: GameRarity) -> Self {
-        Self { name: name.into(), icon, rarity, kind: String::new(), count: 1, stats: Vec::new(), flavor: String::new() }
+        Self {
+            name: name.into(),
+            icon,
+            rarity,
+            kind: String::new(),
+            count: 1,
+            stats: Vec::new(),
+            flavor: String::new(),
+        }
     }
     /// Item type line.
     pub fn kind(mut self, k: impl Into<String>) -> Self {
@@ -331,7 +339,15 @@ pub(crate) fn outlined(
 }
 
 /// Text with a soft colored glow behind it.
-pub(crate) fn glow_text(painter: &Painter, pos: Pos2, align: Align2, text: &str, font: FontId, color: Color32, glow: Color32) -> Rect {
+pub(crate) fn glow_text(
+    painter: &Painter,
+    pos: Pos2,
+    align: Align2,
+    text: &str,
+    font: FontId,
+    color: Color32,
+    glow: Color32,
+) -> Rect {
     let g = painter.layout_no_wrap(text.to_owned(), font, color);
     let r = align.anchor_size(pos, g.size());
     if glow.a() > 0 {
@@ -405,22 +421,36 @@ pub(crate) fn frame(painter: &Painter, rect: Rect, style: GameStyle, pal: &GameP
             let r = 6.0;
             paint::soft_shadow(painter, rect, r, 16.0, vec2(0.0, 5.0), Color32::from_black_alpha(140));
             if glow > 0.01 {
-                paint::soft_shadow(painter, rect.expand(2.0), r, 20.0, Vec2::ZERO, with_alpha(pal.accent, 0.45 * glow.min(1.5)));
+                paint::soft_shadow(
+                    painter,
+                    rect.expand(2.0),
+                    r,
+                    20.0,
+                    Vec2::ZERO,
+                    with_alpha(pal.accent, 0.45 * glow.min(1.5)),
+                );
             }
             let pts = paint::rounded_rect_points(rect, r, 4);
             paint::fill_convex_fn(painter, &pts, 4, |p| {
                 let u = (p.y - rect.min.y) / rect.height().max(1.0);
                 let n = glowkit_core::noise::noise01(p.x * 0.03, p.y * 0.03, 1.7);
                 let base = mix(pal.panel, pal.panel2, u);
-                let edge_d = ((p.x - rect.min.x).min(rect.max.x - p.x).min(p.y - rect.min.y).min(rect.max.y - p.y) / 18.0).clamp(0.0, 1.0);
-                mix(mix(base, pal.panel2, n * 0.5), glowkit_core::color::shade(pal.panel2, -0.25), (1.0 - edge_d) * 0.55)
+                let edge_d = ((p.x - rect.min.x).min(rect.max.x - p.x).min(p.y - rect.min.y).min(rect.max.y - p.y)
+                    / 18.0)
+                    .clamp(0.0, 1.0);
+                mix(
+                    mix(base, pal.panel2, n * 0.5),
+                    glowkit_core::color::shade(pal.panel2, -0.25),
+                    (1.0 - edge_d) * 0.55,
+                )
             });
             let gold = pal.edge;
             painter.rect_stroke(rect, 6.0, Stroke::new(2.0, gold), StrokeKind::Inside);
             painter.rect_stroke(rect.shrink(5.0), 3.0, Stroke::new(1.0, with_alpha(gold, 0.8)), StrokeKind::Inside);
             let hi = mix(gold, Color32::WHITE, 0.45);
             for (cx, cy) in [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0)] {
-                let p = pos2(rect.min.x + 5.0 + (rect.width() - 10.0) * cx, rect.min.y + 5.0 + (rect.height() - 10.0) * cy);
+                let p =
+                    pos2(rect.min.x + 5.0 + (rect.width() - 10.0) * cx, rect.min.y + 5.0 + (rect.height() - 10.0) * cy);
                 let d = 5.0;
                 painter.add(Shape::convex_polygon(
                     vec![p + vec2(0.0, -d), p + vec2(d, 0.0), p + vec2(0.0, d), p + vec2(-d, 0.0)],
@@ -438,7 +468,12 @@ pub(crate) fn frame(painter: &Painter, rect: Rect, style: GameStyle, pal: &GameP
             }
             let pts = paint::rounded_rect_points(rect, r, 6);
             paint::fill_convex_fn(painter, &pts, 2, paint::linear_fn(rect, 90.0, &[pal.panel, pal.panel2]));
-            painter.rect_stroke(rect, r, Stroke::new(1.0, mix(pal.edge, pal.accent, glow.clamp(0.0, 1.0) * 0.6)), StrokeKind::Inside);
+            painter.rect_stroke(
+                rect,
+                r,
+                Stroke::new(1.0, mix(pal.edge, pal.accent, glow.clamp(0.0, 1.0) * 0.6)),
+                StrokeKind::Inside,
+            );
             painter.line_segment(
                 [pos2(rect.min.x + r, rect.min.y + 1.0), pos2(rect.max.x - r, rect.min.y + 1.0)],
                 Stroke::new(1.0, with_alpha(Color32::WHITE, 0.08)),
@@ -448,7 +483,14 @@ pub(crate) fn frame(painter: &Painter, rect: Rect, style: GameStyle, pal: &GameP
 }
 
 /// A slot well (inventory cell, hotbar slot, icon frame).
-pub(crate) fn slot(painter: &Painter, rect: Rect, style: GameStyle, pal: &GamePalette, rarity: Option<GameRarity>, lit: f32) {
+pub(crate) fn slot(
+    painter: &Painter,
+    rect: Rect,
+    style: GameStyle,
+    pal: &GamePalette,
+    rarity: Option<GameRarity>,
+    lit: f32,
+) {
     let rc = rarity.map(|r| r.color());
     match style {
         GameStyle::SciFi => {
@@ -465,7 +507,12 @@ pub(crate) fn slot(painter: &Painter, rect: Rect, style: GameStyle, pal: &GamePa
             let top = rc.map(|c| mix(base, c, 0.28)).unwrap_or(hex("#3A2918"));
             let pts = paint::rounded_rect_points(rect, r, 3);
             paint::fill_convex_fn(painter, &pts, 2, paint::radial_fn(rect.center(), rect.width() * 0.75, &[top, base]));
-            painter.rect_stroke(rect, r, Stroke::new(2.0, mix(pal.edge, Color32::WHITE, lit.min(1.0) * 0.4)), StrokeKind::Inside);
+            painter.rect_stroke(
+                rect,
+                r,
+                Stroke::new(2.0, mix(pal.edge, Color32::WHITE, lit.min(1.0) * 0.4)),
+                StrokeKind::Inside,
+            );
             if let Some(c) = rc {
                 painter.rect_stroke(rect.shrink(3.0), 2.0, Stroke::new(1.0, with_alpha(c, 0.8)), StrokeKind::Inside);
             }
@@ -475,12 +522,22 @@ pub(crate) fn slot(painter: &Painter, rect: Rect, style: GameStyle, pal: &GamePa
             let base = hex("#1C1E25E8");
             painter.rect_filled(rect, r, rc.map(|c| mix(base, c, 0.14)).unwrap_or(base));
             let ec = rc.map(|c| with_alpha(c, 0.7)).unwrap_or(hex("#FFFFFF1E"));
-            painter.rect_stroke(rect, r, Stroke::new(1.0 + lit, mix(ec, pal.accent, lit.min(1.0) * 0.5)), StrokeKind::Inside);
+            painter.rect_stroke(
+                rect,
+                r,
+                Stroke::new(1.0 + lit, mix(ec, pal.accent, lit.min(1.0) * 0.5)),
+                StrokeKind::Inside,
+            );
         }
     }
     if let Some(c) = rc {
         if rarity.unwrap_or_default() >= GameRarity::Rare {
-            paint::glow_ellipse(painter, rect.center() + vec2(0.0, rect.height() * 0.3), vec2(rect.width() * 0.45, rect.height() * 0.25), with_alpha(c, 0.35));
+            paint::glow_ellipse(
+                painter,
+                rect.center() + vec2(0.0, rect.height() * 0.3),
+                vec2(rect.width() * 0.45, rect.height() * 0.25),
+                with_alpha(c, 0.35),
+            );
         }
     }
 }
@@ -495,15 +552,24 @@ pub(crate) fn bar_fill(painter: &Painter, track: Rect, from: f32, to: f32, color
     if b - a <= 0.0005 {
         return;
     }
-    let r = Rect::from_min_max(pos2(track.min.x + track.width() * a, track.min.y), pos2(track.min.x + track.width() * b, track.max.y));
+    let r = Rect::from_min_max(
+        pos2(track.min.x + track.width() * a, track.min.y),
+        pos2(track.min.x + track.width() * b, track.max.y),
+    );
     let rad = match style {
         GameStyle::Minimal => (track.height() / 2.0).min(r.width() / 2.0),
         GameStyle::Fantasy => 2.0f32.min(r.width() / 2.0),
         GameStyle::SciFi => 0.0,
     };
     let pts = paint::rounded_rect_points(r, rad, 3);
-    paint::fill_convex_fn(painter, &pts, 1, paint::linear_fn(r, 90.0, &[colors[1], colors[0], glowkit_core::color::shade(colors[0], -0.25)]));
-    let gloss = Rect::from_min_max(r.min + vec2(rad * 0.5, 1.0), pos2(r.max.x - rad * 0.5, r.min.y + r.height() * 0.38));
+    paint::fill_convex_fn(
+        painter,
+        &pts,
+        1,
+        paint::linear_fn(r, 90.0, &[colors[1], colors[0], glowkit_core::color::shade(colors[0], -0.25)]),
+    );
+    let gloss =
+        Rect::from_min_max(r.min + vec2(rad * 0.5, 1.0), pos2(r.max.x - rad * 0.5, r.min.y + r.height() * 0.38));
     if gloss.width() > 1.0 {
         painter.rect_filled(gloss, rad.min(gloss.height() / 2.0), with_alpha(Color32::WHITE, 0.16));
     }
@@ -616,7 +682,12 @@ impl GameBackdrop {
                 paint::gradient_circle(painter, planet, pr, &[hex("#FF7AC6"), hex("#7A2C8F"), hex("#2A0F3D")]);
                 paint::arc(painter, planet, pr * 1.55, PI * 0.95, PI * 2.05, 2.0, with_alpha(hex("#FFC2EA"), 0.5));
                 let horizon = rect.min.y + h * 0.66;
-                paint::glow_ellipse(painter, pos2(rect.center().x, horizon), vec2(w * 0.55, h * 0.1), with_alpha(pal.accent2, 0.35));
+                paint::glow_ellipse(
+                    painter,
+                    pos2(rect.center().x, horizon),
+                    vec2(w * 0.55, h * 0.1),
+                    with_alpha(pal.accent2, 0.35),
+                );
                 // far skyline
                 let o1 = t * 8.0 + px.x * 10.0;
                 silhouette(painter, rect, rad, hex("#1A1440"), hex("#120E30"), |x| {
@@ -641,7 +712,11 @@ impl GameBackdrop {
                             let wx = bx + 8.0 + c as f32 * 9.0;
                             if on && wx > inner.min.x && wx < inner.max.x - 4.0 {
                                 let col = if hash01(k as u64 + j + c * 3) > 0.7 { pal.accent2 } else { pal.accent };
-                                painter.rect_filled(Rect::from_min_size(pos2(wx, wy), vec2(4.0, 3.0)), 0.0, with_alpha(col, 0.55));
+                                painter.rect_filled(
+                                    Rect::from_min_size(pos2(wx, wy), vec2(4.0, 3.0)),
+                                    0.0,
+                                    with_alpha(col, 0.55),
+                                );
                             }
                         }
                         wy += 9.0;
@@ -659,7 +734,8 @@ impl GameBackdrop {
                     let y = horizon + (rect.max.y - horizon) * z * z;
                     if y < rect.max.y - rad * 0.3 {
                         let (x0, x1) = row_bounds(rect, rad, y);
-                        painter.line_segment([pos2(x0, y), pos2(x1, y)], Stroke::new(1.0, with_alpha(gc, 0.15 + 0.5 * z)));
+                        painter
+                            .line_segment([pos2(x0, y), pos2(x1, y)], Stroke::new(1.0, with_alpha(gc, 0.15 + 0.5 * z)));
                     }
                 }
                 let vp = pos2(rect.center().x - px.x * 30.0, horizon);
@@ -673,7 +749,10 @@ impl GameBackdrop {
                         painter.line_segment([vp + (end - vp) * 0.02, e], Stroke::new(1.0, with_alpha(gc, 0.28)));
                     }
                 }
-                painter.line_segment([pos2(rect.min.x + 1.0, horizon), pos2(rect.max.x - 1.0, horizon)], Stroke::new(1.5, with_alpha(hex("#FF9AD8"), 0.7)));
+                painter.line_segment(
+                    [pos2(rect.min.x + 1.0, horizon), pos2(rect.max.x - 1.0, horizon)],
+                    Stroke::new(1.5, with_alpha(hex("#FF9AD8"), 0.7)),
+                );
             }
             GameStyle::Fantasy => {
                 stars(painter, Rect::from_min_max(inner.min, pos2(inner.max.x, rect.min.y + h * 0.5)), t, 50, 0.6);
@@ -701,11 +780,19 @@ impl GameBackdrop {
                     let r = Rect::from_min_max(pos2(cx + dx, base_y - th), pos2(cx + dx + tw, base_y + 10.0));
                     painter.rect_filled(r, 0.0, castle);
                     painter.add(Shape::convex_polygon(
-                        vec![pos2(r.min.x - 2.0, r.min.y), pos2(r.center().x, r.min.y - tw * 1.1), pos2(r.max.x + 2.0, r.min.y)],
+                        vec![
+                            pos2(r.min.x - 2.0, r.min.y),
+                            pos2(r.center().x, r.min.y - tw * 1.1),
+                            pos2(r.max.x + 2.0, r.min.y),
+                        ],
                         castle,
                         Stroke::NONE,
                     ));
-                    painter.rect_filled(Rect::from_center_size(r.center() - vec2(0.0, th * 0.2), vec2(2.5, 4.0)), 0.0, hex("#FFC25A"));
+                    painter.rect_filled(
+                        Rect::from_center_size(r.center() - vec2(0.0, th * 0.2), vec2(2.5, 4.0)),
+                        0.0,
+                        hex("#FFC25A"),
+                    );
                 }
                 let o2 = t * 26.0 + px.x * 30.0;
                 silhouette(painter, rect, rad, hex("#120A16"), hex("#0B060E"), |x| {
@@ -730,8 +817,18 @@ impl GameBackdrop {
             }
             GameStyle::Minimal => {
                 stars(painter, inner, t, 40, 0.35);
-                paint::glow(painter, pos2(rect.min.x + w * 0.7, rect.min.y + h * 0.3), h * 0.6, with_alpha(pal.accent, 0.12));
-                paint::glow(painter, pos2(rect.min.x + w * 0.2, rect.min.y + h * 0.7), h * 0.5, with_alpha(pal.accent2, 0.08));
+                paint::glow(
+                    painter,
+                    pos2(rect.min.x + w * 0.7, rect.min.y + h * 0.3),
+                    h * 0.6,
+                    with_alpha(pal.accent, 0.12),
+                );
+                paint::glow(
+                    painter,
+                    pos2(rect.min.x + w * 0.2, rect.min.y + h * 0.7),
+                    h * 0.5,
+                    with_alpha(pal.accent2, 0.08),
+                );
                 for (k, (c, amp, base, sp)) in [
                     (hex("#20263A"), 0.12, 0.62, 5.0),
                     (hex("#1A1F2E"), 0.1, 0.74, 12.0),
@@ -743,7 +840,10 @@ impl GameBackdrop {
                     let o = t * sp + px.x * (8.0 + 10.0 * k as f32);
                     silhouette(painter, rect, rad, c, c, |x| {
                         let u = (x + o) / w;
-                        rect.min.y + h * base - ((u * 4.0 + k as f32).sin() * 0.5 + (u * 9.3 + k as f32 * 2.0).sin() * 0.25 + 0.75) * h * amp
+                        rect.min.y + h * base
+                            - ((u * 4.0 + k as f32).sin() * 0.5 + (u * 9.3 + k as f32 * 2.0).sin() * 0.25 + 0.75)
+                                * h
+                                * amp
                     });
                 }
             }
@@ -793,7 +893,14 @@ pub(crate) fn col_bounds(rect: Rect, r: f32, x: f32) -> (f32, f32) {
 }
 
 /// Fill from the curve `top(x)` down to the bottom of the rounded `rect` (terrain layers).
-pub(crate) fn silhouette(painter: &Painter, rect: Rect, r: f32, c_top: Color32, c_bot: Color32, top: impl Fn(f32) -> f32) {
+pub(crate) fn silhouette(
+    painter: &Painter,
+    rect: Rect,
+    r: f32,
+    c_top: Color32,
+    c_bot: Color32,
+    top: impl Fn(f32) -> f32,
+) {
     let mut m = Mesh::default();
     let step = 3.0;
     let n = (rect.width() / step).ceil() as usize;
@@ -818,7 +925,17 @@ pub(crate) fn silhouette(painter: &Painter, rect: Rect, r: f32, c_top: Color32, 
 /// A stateless particle burst `t` seconds after it started: `n` sparks fly out from `center`
 /// with gravity, shrink and fade. Returns true while still visible.
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn burst(painter: &Painter, center: Pos2, t: f32, n: usize, seed: u64, speed: f32, gravity: f32, color: Color32, size: f32) -> bool {
+pub(crate) fn burst(
+    painter: &Painter,
+    center: Pos2,
+    t: f32,
+    n: usize,
+    seed: u64,
+    speed: f32,
+    gravity: f32,
+    color: Color32,
+    size: f32,
+) -> bool {
     let life = 1.1;
     if !(0.0..life).contains(&t) {
         return false;
@@ -852,7 +969,11 @@ pub(crate) fn ring(painter: &Painter, center: Pos2, t: f32, dur: f32, r0: f32, r
     }
     let k = t / dur;
     let e = 1.0 - (1.0 - k).powi(3);
-    painter.circle_stroke(center, r0 + (r1 - r0) * e, Stroke::new(width * (1.0 - k) + 0.5, with_alpha(color, (1.0 - k) * color.a() as f32 / 255.0)));
+    painter.circle_stroke(
+        center,
+        r0 + (r1 - r0) * e,
+        Stroke::new(width * (1.0 - k) + 0.5, with_alpha(color, (1.0 - k) * color.a() as f32 / 255.0)),
+    );
 }
 
 /// Rotating light rays (loot reveals, level ups).
@@ -936,7 +1057,11 @@ pub(crate) fn ghost_cursor(painter: &Painter, tip: Pos2, alpha: f32, pressed: bo
         .collect();
     let c = tip + vec2(3.5, 9.0) * s;
     for i in 0..pts.len() {
-        painter.add(Shape::convex_polygon(vec![c, pts[i], pts[(i + 1) % pts.len()]], with_alpha(Color32::WHITE, alpha), Stroke::NONE));
+        painter.add(Shape::convex_polygon(
+            vec![c, pts[i], pts[(i + 1) % pts.len()]],
+            with_alpha(Color32::WHITE, alpha),
+            Stroke::NONE,
+        ));
     }
     closed(painter, &pts, Stroke::new(1.2, with_alpha(Color32::BLACK, alpha)));
 }
@@ -1067,10 +1192,12 @@ impl GameIcon {
                 painter.line_segment([p(0.85, -0.3), p(0.6, 0.15)], st(0.08, lite));
             }
             Bow => {
-                let pts: Vec<Pos2> = (0..=20).map(|i| {
-                    let a = -1.15 + 2.3 * i as f32 / 20.0;
-                    p(-0.55 + a.cos() * 0.95 - 0.35, a.sin() * 0.85)
-                }).collect();
+                let pts: Vec<Pos2> = (0..=20)
+                    .map(|i| {
+                        let a = -1.15 + 2.3 * i as f32 / 20.0;
+                        p(-0.55 + a.cos() * 0.95 - 0.35, a.sin() * 0.85)
+                    })
+                    .collect();
                 painter.add(Shape::line(pts, st(0.14, color)));
                 painter.line_segment([p(0.05, -0.77), p(0.05, 0.77)], st(0.04, lite));
                 painter.line_segment([p(-0.6, 0.0), p(0.85, 0.0)], st(0.06, hex("#D8DEE9")));
@@ -1090,17 +1217,26 @@ impl GameIcon {
                 paint::star(painter, p(0.0, -0.1), 0.3 * s, 0.13 * s, 4, 0.0, hex("#FFD36A"));
             }
             Helmet => {
-                let dome: Vec<Pos2> = (0..=16).map(|i| {
-                    let a = PI + PI * i as f32 / 16.0;
-                    p(a.cos() * 0.7, 0.1 + a.sin() * 0.75)
-                }).collect();
+                let dome: Vec<Pos2> = (0..=16)
+                    .map(|i| {
+                        let a = PI + PI * i as f32 / 16.0;
+                        p(a.cos() * 0.7, 0.1 + a.sin() * 0.75)
+                    })
+                    .collect();
                 poly(dome, color);
                 poly(vec![p(-0.7, 0.1), p(0.7, 0.1), p(0.6, 0.7), p(0.15, 0.7), p(-0.15, 0.7), p(-0.6, 0.7)], color);
-                painter.rect_filled(Rect::from_min_max(p(-0.5, 0.05), p(0.5, 0.22)), 1.0, Color32::from_black_alpha(220));
+                painter.rect_filled(
+                    Rect::from_min_max(p(-0.5, 0.05), p(0.5, 0.22)),
+                    1.0,
+                    Color32::from_black_alpha(220),
+                );
                 painter.line_segment([p(0.0, -0.6), p(0.0, 0.7)], st(0.08, lite));
             }
             Armor => {
-                poly(vec![p(-0.75, -0.5), p(-0.3, -0.75), p(0.3, -0.75), p(0.75, -0.5), p(0.55, 0.0), p(-0.55, 0.0)], color);
+                poly(
+                    vec![p(-0.75, -0.5), p(-0.3, -0.75), p(0.3, -0.75), p(0.75, -0.5), p(0.55, 0.0), p(-0.55, 0.0)],
+                    color,
+                );
                 poly(vec![p(-0.5, -0.1), p(0.5, -0.1), p(0.45, 0.8), p(-0.45, 0.8)], color);
                 poly(vec![p(-0.25, -0.75), p(0.25, -0.75), p(0.0, -0.45)], dark);
                 painter.line_segment([p(0.0, -0.4), p(0.0, 0.75)], st(0.06, dark));
@@ -1119,13 +1255,19 @@ impl GameIcon {
             }
             Potion | ManaPotion => {
                 painter.circle_filled(p(0.0, 0.25), 0.6 * s, with_alpha(Color32::WHITE, 0.25));
-                let liquid: Vec<Pos2> = (0..=16).map(|i| {
-                    let a = -0.15 + (PI + 0.3) * i as f32 / 16.0;
-                    p(a.cos() * 0.55, 0.25 + a.sin() * 0.55)
-                }).collect();
+                let liquid: Vec<Pos2> = (0..=16)
+                    .map(|i| {
+                        let a = -0.15 + (PI + 0.3) * i as f32 / 16.0;
+                        p(a.cos() * 0.55, 0.25 + a.sin() * 0.55)
+                    })
+                    .collect();
                 poly(liquid, color);
                 painter.circle_stroke(p(0.0, 0.25), 0.6 * s, st(0.07, lite));
-                painter.rect_filled(Rect::from_min_max(p(-0.2, -0.65), p(0.2, -0.3)), 1.0, with_alpha(Color32::WHITE, 0.3));
+                painter.rect_filled(
+                    Rect::from_min_max(p(-0.2, -0.65), p(0.2, -0.3)),
+                    1.0,
+                    with_alpha(Color32::WHITE, 0.3),
+                );
                 painter.rect_filled(Rect::from_min_max(p(-0.26, -0.85), p(0.26, -0.6)), 2.0, hex("#9A6A3A"));
                 painter.circle_filled(p(-0.22, 0.05), 0.1 * s, with_alpha(Color32::WHITE, 0.7));
             }
@@ -1174,9 +1316,21 @@ impl GameIcon {
                 paint::sparkle(painter, p(0.42, -0.88), 0.25 * s, 0.3, hex("#FFD36A"));
             }
             Fire => {
-                let outer = vec![p(0.0, -0.9), p(0.45, -0.3), p(0.62, 0.2), p(0.45, 0.65), p(0.0, 0.82), p(-0.45, 0.65), p(-0.62, 0.2), p(-0.35, -0.2)];
+                let outer = vec![
+                    p(0.0, -0.9),
+                    p(0.45, -0.3),
+                    p(0.62, 0.2),
+                    p(0.45, 0.65),
+                    p(0.0, 0.82),
+                    p(-0.45, 0.65),
+                    p(-0.62, 0.2),
+                    p(-0.35, -0.2),
+                ];
                 poly(outer, color);
-                poly(vec![p(0.0, -0.3), p(0.3, 0.2), p(0.25, 0.55), p(0.0, 0.7), p(-0.25, 0.55), p(-0.3, 0.2)], hex("#FFC14D"));
+                poly(
+                    vec![p(0.0, -0.3), p(0.3, 0.2), p(0.25, 0.55), p(0.0, 0.7), p(-0.25, 0.55), p(-0.3, 0.2)],
+                    hex("#FFC14D"),
+                );
                 poly(vec![p(0.0, 0.1), p(0.15, 0.4), p(0.0, 0.6), p(-0.15, 0.4)], hex("#FFF2C2"));
             }
             Frost => {
@@ -1254,12 +1408,27 @@ impl GameIcon {
                 }
             }
             Poison => {
-                poly(vec![p(0.0, -0.85), p(0.45, -0.1), p(0.55, 0.25), p(0.35, 0.65), p(0.0, 0.8), p(-0.35, 0.65), p(-0.55, 0.25), p(-0.45, -0.1)], color);
+                poly(
+                    vec![
+                        p(0.0, -0.85),
+                        p(0.45, -0.1),
+                        p(0.55, 0.25),
+                        p(0.35, 0.65),
+                        p(0.0, 0.8),
+                        p(-0.35, 0.65),
+                        p(-0.55, 0.25),
+                        p(-0.45, -0.1),
+                    ],
+                    color,
+                );
                 painter.circle_filled(p(-0.18, 0.15), 0.12 * s, lite);
                 painter.circle_filled(p(0.15, 0.4), 0.08 * s, dark);
             }
             Trophy => {
-                poly(vec![p(-0.55, -0.75), p(0.55, -0.75), p(0.45, -0.1), p(0.15, 0.15), p(-0.15, 0.15), p(-0.45, -0.1)], color);
+                poly(
+                    vec![p(-0.55, -0.75), p(0.55, -0.75), p(0.45, -0.1), p(0.15, 0.15), p(-0.15, 0.15), p(-0.45, -0.1)],
+                    color,
+                );
                 painter.circle_stroke(p(-0.55, -0.4), 0.22 * s, st(0.08, color));
                 painter.circle_stroke(p(0.55, -0.4), 0.22 * s, st(0.08, color));
                 painter.rect_filled(Rect::from_min_max(p(-0.1, 0.1), p(0.1, 0.5)), 0.0, dark);
@@ -1294,6 +1463,10 @@ pub(crate) fn blur(painter: &Painter, pos: Pos2, galley: &std::sync::Arc<egui::G
     for i in 0..taps {
         let ang = i as f32 / taps as f32 * TAU;
         let rr = radius * if i % 2 == 0 { 1.0 } else { 0.5 };
-        painter.galley_with_override_text_color(pos + vec2(ang.cos(), ang.sin()) * rr, galley.clone(), color.gamma_multiply(a));
+        painter.galley_with_override_text_color(
+            pos + vec2(ang.cos(), ang.sin()) * rr,
+            galley.clone(),
+            color.gamma_multiply(a),
+        );
     }
 }

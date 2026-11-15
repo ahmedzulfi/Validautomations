@@ -1,6 +1,9 @@
 use super::common::*;
 use egui::text::{LayoutJob, TextFormat};
-use egui::{pos2, vec2, Align2, Color32, FontId, Galley, Key, Modifiers, Pos2, Rect, Response, Sense, Stroke, StrokeKind, Ui, Vec2};
+use egui::{
+    pos2, vec2, Align2, Color32, FontId, Galley, Key, Modifiers, Pos2, Rect, Response, Sense, Stroke, StrokeKind, Ui,
+    Vec2,
+};
 use glowkit_ai::{Icon, Markdown};
 use glowkit_core::color::{mix, with_alpha};
 use glowkit_core::{paint, Theme};
@@ -52,7 +55,17 @@ pub struct InlineSuggestion<'a> {
 impl<'a> InlineSuggestion<'a> {
     /// A field editing `text` that offers `suggestion` as a continuation.
     pub fn new(text: &'a mut String, suggestion: Option<&'a str>) -> Self {
-        Self { text, suggestion, delay: 0.45, width: None, rows: 4, size: 15.0, accept_now: false, placeholder: "Start writing…", salt: None }
+        Self {
+            text,
+            suggestion,
+            delay: 0.45,
+            width: None,
+            rows: 4,
+            size: 15.0,
+            accept_now: false,
+            placeholder: "Start writing…",
+            salt: None,
+        }
     }
     /// Pause after typing before the ghost appears (default 0.45 s).
     pub fn delay(mut self, s: f32) -> Self {
@@ -155,12 +168,21 @@ impl<'a> InlineSuggestion<'a> {
         let mut layouter = move |ui: &Ui, buf: &dyn egui::TextBuffer, wrap: f32| -> Arc<Galley> {
             let s = buf.as_str();
             let mut job = LayoutJob::default();
-            let base = TextFormat { font_id: FontId::proportional(size), color: tc.foreground, line_height: Some(size * 1.55), ..Default::default() };
+            let base = TextFormat {
+                font_id: FontId::proportional(size),
+                color: tc.foreground,
+                line_height: Some(size * 1.55),
+                ..Default::default()
+            };
             if flash > 0.0 && acc.1 <= s.chars().count() && acc.0 < acc.1 {
                 let b0 = s.char_indices().nth(acc.0).map(|x| x.0).unwrap_or(s.len());
                 let b1 = s.char_indices().nth(acc.1).map(|x| x.0).unwrap_or(s.len());
                 job.append(&s[..b0], 0.0, base.clone());
-                let hl = TextFormat { background: with_alpha(tc.accent, 0.18 * flash), color: mix(tc.foreground, tc.accent, 0.6 * flash), ..base.clone() };
+                let hl = TextFormat {
+                    background: with_alpha(tc.accent, 0.18 * flash),
+                    color: mix(tc.foreground, tc.accent, 0.6 * flash),
+                    ..base.clone()
+                };
                 job.append(&s[b0..b1], 0.0, hl);
                 job.append(&s[b1..], 0.0, base);
             } else {
@@ -174,7 +196,9 @@ impl<'a> InlineSuggestion<'a> {
         let rows = self.rows;
         let te = ui
             .scope_builder(
-                egui::UiBuilder::new().max_rect(Rect::from_min_size(start + pad, vec2(inner_w, 4000.0))).layout(egui::Layout::top_down(egui::Align::Min)),
+                egui::UiBuilder::new()
+                    .max_rect(Rect::from_min_size(start + pad, vec2(inner_w, 4000.0)))
+                    .layout(egui::Layout::top_down(egui::Align::Min)),
                 |ui| {
                     egui::TextEdit::multiline(text)
                         .id(te_id)
@@ -183,7 +207,9 @@ impl<'a> InlineSuggestion<'a> {
                         .desired_rows(rows)
                         .desired_width(inner_w)
                         .lock_focus(true)
-                        .hint_text(egui::RichText::new(placeholder).size(size).color(with_alpha(t.muted_foreground, 0.7)))
+                        .hint_text(
+                            egui::RichText::new(placeholder).size(size).color(with_alpha(t.muted_foreground, 0.7)),
+                        )
                         .layouter(&mut layouter)
                         .show(ui)
                 },
@@ -195,12 +221,18 @@ impl<'a> InlineSuggestion<'a> {
         if gk > 0.0 {
             if let Some(s) = sugg {
                 let mut job = LayoutJob::default();
-                let invis = TextFormat { font_id: FontId::proportional(size), color: Color32::TRANSPARENT, line_height: Some(size * 1.55), ..Default::default() };
+                let invis = TextFormat {
+                    font_id: FontId::proportional(size),
+                    color: Color32::TRANSPARENT,
+                    line_height: Some(size * 1.55),
+                    ..Default::default()
+                };
                 job.append(self.text.as_str(), 0.0, invis.clone());
                 job.append(s, 0.0, TextFormat { color: with_alpha(t.muted_foreground, 0.75 * gk), ..invis });
                 job.wrap.max_width = te.galley.job.wrap.max_width;
                 let g = ui.painter().layout_job(job);
-                let end = g.rows.last().map(|r| te.galley_pos + vec2(r.pos.x + r.row.size.x, r.pos.y + r.row.size.y / 2.0));
+                let end =
+                    g.rows.last().map(|r| te.galley_pos + vec2(r.pos.x + r.row.size.x, r.pos.y + r.row.size.y / 2.0));
                 ui.painter().galley(te.galley_pos, g, Color32::TRANSPARENT);
                 if let Some(e) = end {
                     let p = ui.painter();
@@ -214,7 +246,12 @@ impl<'a> InlineSuggestion<'a> {
         let sh = egui::epaint::Shadow { offset: [0, 3], blur: 16, spread: 0, color: shadow(&t, 0.6 + 0.6 * fk) };
         shapes.push(sh.as_shape(rect, cr(16.0)).into());
         shapes.push(egui::Shape::rect_filled(rect, cr(16.0), surface(&t)));
-        shapes.push(egui::Shape::rect_stroke(rect, cr(16.0), Stroke::new(1.0, mix(hairline(&t).color, t.ring, 0.5 * fk)), StrokeKind::Inside));
+        shapes.push(egui::Shape::rect_stroke(
+            rect,
+            cr(16.0),
+            Stroke::new(1.0, mix(hairline(&t).color, t.ring, 0.5 * fk)),
+            StrokeKind::Inside,
+        ));
         p.set(bg, egui::Shape::Vec(shapes));
         glowkit_core::set_state(ui, id.with("g"), gs);
         InlineSuggestionOutput { response: te.response.response, accepted: accept, showing: gk > 0.0 }
@@ -332,7 +369,10 @@ impl<'a> SelectionAskBar<'a> {
                 glyphs.push(gl.logical_rect().translate(row.pos.to_vec2() + text_rect.min.to_vec2()));
             }
             if row.ends_with_newline {
-                glyphs.push(Rect::from_min_size(text_rect.min + row.pos.to_vec2() + vec2(row.row.size.x, 0.0), vec2(0.0, row.row.size.y)));
+                glyphs.push(Rect::from_min_size(
+                    text_rect.min + row.pos.to_vec2() + vec2(row.row.size.x, 0.0),
+                    vec2(0.0, row.row.size.y),
+                ));
             }
         }
         let char_at = |p: Pos2| -> usize { g.cursor_from_pos(p - text_rect.min).index.0 };
@@ -388,7 +428,11 @@ impl<'a> SelectionAskBar<'a> {
             }
             let k = ((now - st.shown_at) as f32 * 8.0).clamp(0.0, 1.0);
             for r in &sel_rects {
-                p.rect_filled(r.expand2(vec2(1.0, 0.0)), cr(3.0), with_alpha(t.accent, (if t.dark { 0.32 } else { 0.18 }) * k));
+                p.rect_filled(
+                    r.expand2(vec2(1.0, 0.0)),
+                    cr(3.0),
+                    with_alpha(t.accent, (if t.dark { 0.32 } else { 0.18 }) * k),
+                );
             }
         }
         p.galley(text_rect.min, g.clone(), t.foreground);
@@ -396,7 +440,9 @@ impl<'a> SelectionAskBar<'a> {
         let tb_k = toggle(ui, id.with("tb"), st.sel.is_some() && st.anchor.is_none());
         if let (Some(first), true) = (sel_rects.first().copied(), tb_k > 0.01) {
             // toolbar above the selection
-            let labels: Vec<(String, Icon)> = std::iter::once(("Ask AI".to_owned(), Icon::Sparkle)).chain(self.actions.iter().map(|a| (a.label.clone(), a.icon))).collect();
+            let labels: Vec<(String, Icon)> = std::iter::once(("Ask AI".to_owned(), Icon::Sparkle))
+                .chain(self.actions.iter().map(|a| (a.label.clone(), a.icon)))
+                .collect();
             let widths: Vec<f32> = labels.iter().map(|(l, _)| text_w(ui, l, 12.5) + 36.0).collect();
             let tw: f32 = widths.iter().sum::<f32>() + 8.0;
             let x = (first.min.x - 6.0).clamp(rect.min.x, rect.max.x - tw);
@@ -415,15 +461,35 @@ impl<'a> SelectionAskBar<'a> {
                 let p = ui.painter();
                 if k == 0 {
                     let fill = [t.gradient[0], t.gradient[1]];
-                    paint::gradient_rect(p, br, 9.0, 0.0, &[with_alpha(fill[0], 0.12 + 0.1 * hk), with_alpha(fill[1], 0.12 + 0.1 * hk)]);
+                    paint::gradient_rect(
+                        p,
+                        br,
+                        9.0,
+                        0.0,
+                        &[with_alpha(fill[0], 0.12 + 0.1 * hk), with_alpha(fill[1], 0.12 + 0.1 * hk)],
+                    );
                     icon(p, *ic, pos2(br.min.x + 15.0, br.center().y), 13.0, t.accent.gamma_multiply(tb_k));
-                    text_bold(p, pos2(br.min.x + 26.0, br.center().y), Align2::LEFT_CENTER, l, 12.5, mix(t.foreground, t.accent, 0.5).gamma_multiply(tb_k));
+                    text_bold(
+                        p,
+                        pos2(br.min.x + 26.0, br.center().y),
+                        Align2::LEFT_CENTER,
+                        l,
+                        12.5,
+                        mix(t.foreground, t.accent, 0.5).gamma_multiply(tb_k),
+                    );
                 } else {
                     if hk > 0.01 {
                         p.rect_filled(br, cr(9.0), with_alpha(well(&t), hk * tb_k));
                     }
                     icon(p, *ic, pos2(br.min.x + 15.0, br.center().y), 13.0, t.muted_foreground.gamma_multiply(tb_k));
-                    text(p, pos2(br.min.x + 26.0, br.center().y), Align2::LEFT_CENTER, l, 12.5, t.foreground.gamma_multiply(tb_k));
+                    text(
+                        p,
+                        pos2(br.min.x + 26.0, br.center().y),
+                        Align2::LEFT_CENTER,
+                        l,
+                        12.5,
+                        t.foreground.gamma_multiply(tb_k),
+                    );
                 }
                 if b.clicked() && !self.actions.is_empty() {
                     st.action = Some(if k == 0 { 0 } else { k - 1 });
@@ -449,17 +515,34 @@ impl<'a> SelectionAskBar<'a> {
                 let p = ui.painter();
                 paint::soft_shadow(p, card, 14.0, 22.0, vec2(0.0, 8.0), shadow(&t, 1.4 * ak));
                 p.rect_filled(card, cr(14.0), t.popover.gamma_multiply(ak));
-                p.rect_stroke(card, cr(14.0), Stroke::new(1.0, hairline(&t).color.gamma_multiply(ak)), StrokeKind::Inside);
+                p.rect_stroke(
+                    card,
+                    cr(14.0),
+                    Stroke::new(1.0, hairline(&t).color.gamma_multiply(ak)),
+                    StrokeKind::Inside,
+                );
                 bot_avatar(p, &t, pos2(card.min.x + 20.0, card.min.y + 20.0), 9.0);
-                text_bold(p, pos2(card.min.x + 36.0, card.min.y + 20.0), Align2::LEFT_CENTER, &act.label, 12.5, t.foreground.gamma_multiply(ak));
+                text_bold(
+                    p,
+                    pos2(card.min.x + 36.0, card.min.y + 20.0),
+                    Align2::LEFT_CENTER,
+                    &act.label,
+                    12.5,
+                    t.foreground.gamma_multiply(ak),
+                );
                 let body = Rect::from_min_max(card.min + vec2(14.0, 36.0), card.max - vec2(14.0, 40.0));
-                let mut child = ui.new_child(egui::UiBuilder::new().max_rect(body).layout(egui::Layout::top_down(egui::Align::Min)));
+                let mut child = ui
+                    .new_child(egui::UiBuilder::new().max_rect(body).layout(egui::Layout::top_down(egui::Align::Min)));
                 child.set_clip_rect(body.intersect(ui.clip_rect()));
                 child.multiply_opacity(ak);
                 if shown.is_empty() {
                     super::thread::thinking_row(&mut child, &t, glowkit_core::time(ui));
                 } else {
-                    child.add(Markdown::new(shown).size(13.0).caret(streaming).fade_tail(if streaming { 20 } else { 0 }));
+                    child.add(Markdown::new(shown).size(13.0).caret(streaming).fade_tail(if streaming {
+                        20
+                    } else {
+                        0
+                    }));
                 }
                 if !streaming {
                     let by = card.max.y - 22.0;

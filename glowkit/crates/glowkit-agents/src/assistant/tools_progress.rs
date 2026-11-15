@@ -117,7 +117,13 @@ impl Widget for PlanResult<'_> {
             if fill.width() > 1.0 {
                 paint::gradient_rect(p, fill, 2.5, 0.0, &[mix(t.primary, t.accent, 0.2), t.accent]);
             }
-            icon(p, if collapsed { Icon::ChevronDown } else { Icon::ChevronUp }, pos2(br.max.x - 7.0, br.center().y), 12.0, t.muted_foreground);
+            icon(
+                p,
+                if collapsed { Icon::ChevronDown } else { Icon::ChevronUp },
+                pos2(br.max.x - 7.0, br.center().y),
+                12.0,
+                t.muted_foreground,
+            );
             let vis = 1.0 - ck;
             if vis < 0.01 {
                 return;
@@ -151,7 +157,10 @@ impl Widget for PlanResult<'_> {
                     }
                     PlanStatus::Skipped => {
                         p.circle_stroke(c, 7.0, Stroke::new(1.3, with_alpha(t.muted_foreground, 0.4 * k_in)));
-                        p.line_segment([c + vec2(-3.5, 0.0), c + vec2(3.5, 0.0)], Stroke::new(1.4, with_alpha(t.muted_foreground, 0.6 * k_in)));
+                        p.line_segment(
+                            [c + vec2(-3.5, 0.0), c + vec2(3.5, 0.0)],
+                            Stroke::new(1.4, with_alpha(t.muted_foreground, 0.6 * k_in)),
+                        );
                     }
                 }
                 let tc = match s.status {
@@ -164,10 +173,20 @@ impl Widget for PlanResult<'_> {
                     text(&p, pos2(c.x + 16.0, c.y), Align2::LEFT_CENTER, &s.title, 13.0, with_alpha(tc, k_in))
                 };
                 if s.status == PlanStatus::Skipped {
-                    p.line_segment([pos2(tr.min.x, tr.center().y), pos2(tr.max.x, tr.center().y)], Stroke::new(1.0, with_alpha(t.muted_foreground, 0.7)));
+                    p.line_segment(
+                        [pos2(tr.min.x, tr.center().y), pos2(tr.max.x, tr.center().y)],
+                        Stroke::new(1.0, with_alpha(t.muted_foreground, 0.7)),
+                    );
                 }
                 if show_detail && dk > 0.01 {
-                    text(&p, pos2(c.x + 16.0, c.y + 17.0), Align2::LEFT_CENTER, &s.detail, 11.5, with_alpha(t.muted_foreground, dk * k_in));
+                    text(
+                        &p,
+                        pos2(c.x + 16.0, c.y + 17.0),
+                        Align2::LEFT_CENTER,
+                        &s.detail,
+                        11.5,
+                        with_alpha(t.muted_foreground, dk * k_in),
+                    );
                 }
             }
         });
@@ -269,7 +288,11 @@ impl Widget for ProgressSteps<'_> {
             }
             let fill = if reached { mix(surface(&t), acc, done_k) } else { surface(&t) };
             p.circle_filled(c, 12.0, fill);
-            p.circle_stroke(c, 12.0, Stroke::new(1.5, if reached { acc } else { mix(t.border, t.muted_foreground, 0.3) }));
+            p.circle_stroke(
+                c,
+                12.0,
+                Stroke::new(1.5, if reached { acc } else { mix(t.border, t.muted_foreground, 0.3) }),
+            );
             if done_k > 0.02 {
                 check_disc(p, c, 12.0, with_alpha(acc, done_k), Color32::WHITE, done_k);
             } else if current {

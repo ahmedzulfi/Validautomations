@@ -38,23 +38,63 @@ pub struct GamePortrait {
 impl GamePortrait {
     /// A sword-and-board hero.
     pub fn hero() -> Self {
-        Self { skin: hex("#E8B48F"), hair: hex("#6B3A1E"), outfit: hex("#3D6FB6"), trim: hex("#E8B64A"), bg: [hex("#4C7BD9"), hex("#1A2752")], headgear: 0, beard: false }
+        Self {
+            skin: hex("#E8B48F"),
+            hair: hex("#6B3A1E"),
+            outfit: hex("#3D6FB6"),
+            trim: hex("#E8B64A"),
+            bg: [hex("#4C7BD9"), hex("#1A2752")],
+            headgear: 0,
+            beard: false,
+        }
     }
     /// A hooded mage.
     pub fn mage() -> Self {
-        Self { skin: hex("#D9A27E"), hair: hex("#5B2A86"), outfit: hex("#3B1F5C"), trim: hex("#B97CFF"), bg: [hex("#9D5CFF"), hex("#251038")], headgear: 2, beard: true }
+        Self {
+            skin: hex("#D9A27E"),
+            hair: hex("#5B2A86"),
+            outfit: hex("#3B1F5C"),
+            trim: hex("#B97CFF"),
+            bg: [hex("#9D5CFF"), hex("#251038")],
+            headgear: 2,
+            beard: true,
+        }
     }
     /// A long-haired ranger / rogue.
     pub fn rogue() -> Self {
-        Self { skin: hex("#C68A62"), hair: hex("#1E1A1A"), outfit: hex("#2F5A3A"), trim: hex("#7EE08A"), bg: [hex("#3FAE6A"), hex("#0F2A1A")], headgear: 1, beard: false }
+        Self {
+            skin: hex("#C68A62"),
+            hair: hex("#1E1A1A"),
+            outfit: hex("#2F5A3A"),
+            trim: hex("#7EE08A"),
+            bg: [hex("#3FAE6A"), hex("#0F2A1A")],
+            headgear: 1,
+            beard: false,
+        }
     }
     /// A helmeted soldier / android.
     pub fn trooper() -> Self {
-        Self { skin: hex("#BFC7D2"), hair: hex("#5D6B7E"), outfit: hex("#36404F"), trim: hex("#3FE0FF"), bg: [hex("#2BB5D8"), hex("#0A1A2A")], headgear: 3, beard: false }
+        Self {
+            skin: hex("#BFC7D2"),
+            hair: hex("#5D6B7E"),
+            outfit: hex("#36404F"),
+            trim: hex("#3FE0FF"),
+            bg: [hex("#2BB5D8"), hex("#0A1A2A")],
+            headgear: 3,
+            beard: false,
+        }
     }
     /// A grizzled blacksmith / quest giver.
     pub fn elder() -> Self {
-        Self { skin: hex("#E2A983"), hair: hex("#D8D2C8"), outfit: hex("#7A4A28"), trim: hex("#E8B64A"), bg: [hex("#E0873A"), hex("#3A1A0A")], headgear: 0, beard: true }
+        Self {
+            skin: hex("#E2A983"),
+            hair: hex("#D8D2C8"),
+            outfit: hex("#7A4A28"),
+            trim: hex("#E8B64A"),
+            bg: [hex("#E0873A"), hex("#3A1A0A")],
+            headgear: 0,
+            beard: true,
+        }
     }
 
     /// Paint into `rect` (best square). `time` drives blinking; `talking` animates the mouth.
@@ -65,27 +105,40 @@ impl GamePortrait {
         let bg_pts = paint::rounded_rect_points(rect, s * 0.08, 4);
         paint::fill_convex_fn(painter, &bg_pts, 4, paint::radial_fn(u(0.0, -0.1), s * 0.75, &self.bg));
         // shoulders
-        let sh: Vec<Pos2> = (0..=20).map(|i| {
-            let a = PI + PI * i as f32 / 20.0;
-            u(a.cos() * 0.46, 0.5 + a.sin() * 0.26)
-        }).collect();
+        let sh: Vec<Pos2> = (0..=20)
+            .map(|i| {
+                let a = PI + PI * i as f32 / 20.0;
+                u(a.cos() * 0.46, 0.5 + a.sin() * 0.26)
+            })
+            .collect();
         let mut sh2 = sh.clone();
         sh2.push(u(0.46, 0.5));
         sh2.push(u(-0.46, 0.5));
         let clip_bottom = rect.max.y;
-        let sh2: Vec<Pos2> = sh2.into_iter().map(|p| pos2(p.x.clamp(rect.min.x, rect.max.x), p.y.min(clip_bottom))).collect();
+        let sh2: Vec<Pos2> =
+            sh2.into_iter().map(|p| pos2(p.x.clamp(rect.min.x, rect.max.x), p.y.min(clip_bottom))).collect();
         painter.add(Shape::convex_polygon(sh2, self.outfit, Stroke::NONE));
-        painter.add(Shape::convex_polygon(vec![u(-0.12, 0.25), u(0.12, 0.25), u(0.0, 0.42)], shade(self.outfit, -0.3), Stroke::NONE));
+        painter.add(Shape::convex_polygon(
+            vec![u(-0.12, 0.25), u(0.12, 0.25), u(0.0, 0.42)],
+            shade(self.outfit, -0.3),
+            Stroke::NONE,
+        ));
         painter.add(Shape::line(vec![u(-0.2, 0.27), u(0.0, 0.42), u(0.2, 0.27)], Stroke::new(s * 0.025, self.trim)));
         // long hair behind
         if self.headgear == 1 {
-            painter.add(Shape::convex_polygon(vec![u(-0.22, -0.15), u(0.22, -0.15), u(0.26, 0.3), u(-0.26, 0.3)], self.hair, Stroke::NONE));
+            painter.add(Shape::convex_polygon(
+                vec![u(-0.22, -0.15), u(0.22, -0.15), u(0.26, 0.3), u(-0.26, 0.3)],
+                self.hair,
+                Stroke::NONE,
+            ));
         }
         if self.headgear == 2 {
-            let hood: Vec<Pos2> = (0..=24).map(|i| {
-                let a = PI * 0.85 + PI * 1.3 * i as f32 / 24.0;
-                u(a.cos() * 0.27, -0.06 + a.sin() * 0.3)
-            }).collect();
+            let hood: Vec<Pos2> = (0..=24)
+                .map(|i| {
+                    let a = PI * 0.85 + PI * 1.3 * i as f32 / 24.0;
+                    u(a.cos() * 0.27, -0.06 + a.sin() * 0.3)
+                })
+                .collect();
             let mut hp = hood;
             hp.push(u(0.3, 0.3));
             hp.push(u(-0.3, 0.3));
@@ -93,11 +146,13 @@ impl GamePortrait {
         }
         // neck + head
         painter.rect_filled(Rect::from_min_max(u(-0.07, 0.05), u(0.07, 0.28)), 0.0, shade(self.skin, -0.12));
-        let head: Vec<Pos2> = (0..32).map(|i| {
-            let a = i as f32 / 32.0 * TAU;
-            let squash = if a.sin() > 0.0 { 1.12 } else { 1.0 };
-            u(a.cos() * 0.17, -0.06 + a.sin() * 0.21 * squash)
-        }).collect();
+        let head: Vec<Pos2> = (0..32)
+            .map(|i| {
+                let a = i as f32 / 32.0 * TAU;
+                let squash = if a.sin() > 0.0 { 1.12 } else { 1.0 };
+                u(a.cos() * 0.17, -0.06 + a.sin() * 0.21 * squash)
+            })
+            .collect();
         painter.add(Shape::convex_polygon(head, self.skin, Stroke::NONE));
         // ears
         painter.circle_filled(u(-0.17, -0.04), s * 0.035, shade(self.skin, -0.08));
@@ -105,25 +160,40 @@ impl GamePortrait {
         // hair / headgear
         match self.headgear {
             0 | 1 => {
-                let cap: Vec<Pos2> = (0..=16).map(|i| {
-                    let a = PI + PI * i as f32 / 16.0;
-                    u(a.cos() * 0.185, -0.1 + a.sin() * 0.2)
-                }).collect();
+                let cap: Vec<Pos2> = (0..=16)
+                    .map(|i| {
+                        let a = PI + PI * i as f32 / 16.0;
+                        u(a.cos() * 0.185, -0.1 + a.sin() * 0.2)
+                    })
+                    .collect();
                 let mut cp = cap;
                 cp.push(u(0.16, -0.04));
                 cp.push(u(-0.16, -0.04));
                 painter.add(Shape::convex_polygon(cp, self.hair, Stroke::NONE));
-                painter.add(Shape::convex_polygon(vec![u(-0.12, -0.22), u(0.1, -0.24), u(0.02, -0.1)], shade(self.hair, 0.12), Stroke::NONE));
+                painter.add(Shape::convex_polygon(
+                    vec![u(-0.12, -0.22), u(0.1, -0.24), u(0.02, -0.1)],
+                    shade(self.hair, 0.12),
+                    Stroke::NONE,
+                ));
             }
             2 => {
-                painter.add(Shape::convex_polygon(vec![u(-0.2, -0.2), u(0.0, -0.33), u(0.2, -0.2), u(0.15, -0.12), u(-0.15, -0.12)], self.hair, Stroke::NONE));
-                painter.add(Shape::line(vec![u(-0.21, 0.1), u(-0.2, -0.18), u(0.0, -0.31), u(0.2, -0.18), u(0.21, 0.1)], Stroke::new(s * 0.02, self.trim)));
+                painter.add(Shape::convex_polygon(
+                    vec![u(-0.2, -0.2), u(0.0, -0.33), u(0.2, -0.2), u(0.15, -0.12), u(-0.15, -0.12)],
+                    self.hair,
+                    Stroke::NONE,
+                ));
+                painter.add(Shape::line(
+                    vec![u(-0.21, 0.1), u(-0.2, -0.18), u(0.0, -0.31), u(0.2, -0.18), u(0.21, 0.1)],
+                    Stroke::new(s * 0.02, self.trim),
+                ));
             }
             _ => {
-                let dome: Vec<Pos2> = (0..=20).map(|i| {
-                    let a = PI * 0.92 + PI * 1.16 * i as f32 / 20.0;
-                    u(a.cos() * 0.2, -0.05 + a.sin() * 0.25)
-                }).collect();
+                let dome: Vec<Pos2> = (0..=20)
+                    .map(|i| {
+                        let a = PI * 0.92 + PI * 1.16 * i as f32 / 20.0;
+                        u(a.cos() * 0.2, -0.05 + a.sin() * 0.25)
+                    })
+                    .collect();
                 let mut dp = dome;
                 dp.push(u(0.16, 0.12));
                 dp.push(u(-0.16, 0.12));
@@ -131,8 +201,16 @@ impl GamePortrait {
                 let visor = Rect::from_min_max(u(-0.16, -0.08), u(0.16, 0.0));
                 painter.rect_filled(visor, s * 0.02, hex("#05080D"));
                 let blink = 0.6 + 0.4 * (time * 3.0).sin().abs();
-                paint::glow_ellipse(painter, visor.center(), vec2(visor.width() * 0.6, visor.height()), with_alpha(self.trim, 0.6 * blink));
-                painter.line_segment([visor.left_center() + vec2(s * 0.02, 0.0), visor.right_center() - vec2(s * 0.02, 0.0)], Stroke::new(s * 0.015, mix(self.trim, Color32::WHITE, 0.4)));
+                paint::glow_ellipse(
+                    painter,
+                    visor.center(),
+                    vec2(visor.width() * 0.6, visor.height()),
+                    with_alpha(self.trim, 0.6 * blink),
+                );
+                painter.line_segment(
+                    [visor.left_center() + vec2(s * 0.02, 0.0), visor.right_center() - vec2(s * 0.02, 0.0)],
+                    Stroke::new(s * 0.015, mix(self.trim, Color32::WHITE, 0.4)),
+                );
                 painter.line_segment([u(-0.2, -0.14), u(0.2, -0.14)], Stroke::new(s * 0.012, shade(self.hair, 0.2)));
                 if talking {
                     let k = (time * 18.0).sin().abs();
@@ -151,22 +229,35 @@ impl GamePortrait {
         for sx in [-1.0, 1.0] {
             let e = u(sx * 0.07, -0.03);
             if closed {
-                painter.line_segment([e - vec2(s * 0.025, 0.0), e + vec2(s * 0.025, 0.0)], Stroke::new(s * 0.012, hex("#2A1A12")));
+                painter.line_segment(
+                    [e - vec2(s * 0.025, 0.0), e + vec2(s * 0.025, 0.0)],
+                    Stroke::new(s * 0.012, hex("#2A1A12")),
+                );
             } else {
                 painter.circle_filled(e, s * 0.022, hex("#1E1410"));
                 painter.circle_filled(e + vec2(-s * 0.007, -s * 0.008), s * 0.007, Color32::WHITE);
             }
-            painter.line_segment([u(sx * 0.1, -0.08), u(sx * 0.04, -0.09)], Stroke::new(s * 0.014, shade(self.hair, -0.1)));
+            painter.line_segment(
+                [u(sx * 0.1, -0.08), u(sx * 0.04, -0.09)],
+                Stroke::new(s * 0.014, shade(self.hair, -0.1)),
+            );
         }
         if self.beard {
-            painter.add(Shape::convex_polygon(vec![u(-0.16, 0.0), u(0.16, 0.0), u(0.12, 0.13), u(0.0, 0.2), u(-0.12, 0.13)], self.hair, Stroke::NONE));
+            painter.add(Shape::convex_polygon(
+                vec![u(-0.16, 0.0), u(0.16, 0.0), u(0.12, 0.13), u(0.0, 0.2), u(-0.12, 0.13)],
+                self.hair,
+                Stroke::NONE,
+            ));
         }
         let open = if talking { (time * 16.0).sin().abs() * 0.035 + 0.005 } else { 0.0 };
         let mouth = u(0.0, 0.07);
         if open > 0.004 {
             painter.add(Shape::ellipse_filled(mouth, vec2(s * 0.035, s * open), hex("#4A1A18")));
         } else {
-            painter.line_segment([mouth - vec2(s * 0.03, 0.0), mouth + vec2(s * 0.03, 0.0)], Stroke::new(s * 0.012, shade(self.skin, -0.45)));
+            painter.line_segment(
+                [mouth - vec2(s * 0.03, 0.0), mouth + vec2(s * 0.03, 0.0)],
+                Stroke::new(s * 0.012, shade(self.skin, -0.45)),
+            );
         }
     }
 }
@@ -234,7 +325,16 @@ pub struct GameDialogueBox<'a> {
 impl<'a> GameDialogueBox<'a> {
     /// A box showing `line`. A new line (different text) restarts the typewriter.
     pub fn new(line: &'a GameDialogueLine) -> Self {
-        Self { line, chosen: None, advance: None, cps: 38.0, style: GameStyle::Fantasy, palette: None, autoplay: false, cues: None }
+        Self {
+            line,
+            chosen: None,
+            advance: None,
+            cps: 38.0,
+            style: GameStyle::Fantasy,
+            palette: None,
+            autoplay: false,
+            cues: None,
+        }
     }
     /// Receives the picked choice index.
     pub fn chosen(mut self, c: &'a mut Option<usize>) -> Self {
@@ -328,7 +428,10 @@ impl egui::Widget for GameDialogueBox<'_> {
         let mut clicked_choice = None;
         if done && nchoice > 0 {
             for i in 0..nchoice {
-                let r = Rect::from_min_size(pos2(rect.max.x - ch_w, box_rect.max.y + 10.0 + i as f32 * ch_h), vec2(ch_w, ch_h - 6.0));
+                let r = Rect::from_min_size(
+                    pos2(rect.max.x - ch_w, box_rect.max.y + 10.0 + i as f32 * ch_h),
+                    vec2(ch_w, ch_h - 6.0),
+                );
                 let cr = ui.interact(r, id.with(("choice", i)), Sense::click());
                 if cr.hovered() {
                     hovered_choice = Some(i);
@@ -337,7 +440,13 @@ impl egui::Widget for GameDialogueBox<'_> {
                     clicked_choice = Some(i);
                 }
             }
-            let (up, down, enter) = ui.input(|i| (i.key_pressed(egui::Key::ArrowUp), i.key_pressed(egui::Key::ArrowDown), i.key_pressed(egui::Key::Enter)));
+            let (up, down, enter) = ui.input(|i| {
+                (
+                    i.key_pressed(egui::Key::ArrowUp),
+                    i.key_pressed(egui::Key::ArrowDown),
+                    i.key_pressed(egui::Key::Enter),
+                )
+            });
             if up {
                 st.sel = (st.sel + nchoice - 1) % nchoice;
             }
@@ -378,7 +487,8 @@ impl egui::Widget for GameDialogueBox<'_> {
         // box
         frame(painter, box_rect, self.style, &pal, 0.0);
         let por_s = 132.0;
-        let por = Rect::from_min_size(pos2(box_rect.min.x + 16.0, box_rect.max.y - por_s - 12.0 - 16.0), Vec2::splat(por_s));
+        let por =
+            Rect::from_min_size(pos2(box_rect.min.x + 16.0, box_rect.max.y - por_s - 12.0 - 16.0), Vec2::splat(por_s));
         let bob = if !done { (time * 9.0).sin() * 0.8 } else { 0.0 };
         let por = por.translate(vec2(0.0, bob));
         paint::soft_shadow(painter, por, 8.0, 14.0, vec2(0.0, 4.0), Color32::from_black_alpha(140));
@@ -390,7 +500,10 @@ impl egui::Widget for GameDialogueBox<'_> {
             GameStyle::SciFi => {
                 painter.rect_stroke(por, 10.0, Stroke::new(1.5, pal.accent), egui::StrokeKind::Outside);
                 let y = por.min.y + por.height() * ((time * 0.6).fract());
-                painter.line_segment([pos2(por.min.x + 2.0, y), pos2(por.max.x - 2.0, y)], Stroke::new(1.0, with_alpha(pal.accent, 0.35)));
+                painter.line_segment(
+                    [pos2(por.min.x + 2.0, y), pos2(por.max.x - 2.0, y)],
+                    Stroke::new(1.0, with_alpha(pal.accent, 0.35)),
+                );
             }
             GameStyle::Minimal => {
                 painter.rect_stroke(por, 10.0, Stroke::new(1.0, hex("#FFFFFF30")), egui::StrokeKind::Outside);
@@ -409,7 +522,13 @@ impl egui::Widget for GameDialogueBox<'_> {
             GameStyle::SciFi => {
                 let pts = chamfer_points(plate, 8.0);
                 painter.add(Shape::convex_polygon(pts, pal.accent, Stroke::NONE));
-                painter.text(plate.center(), Align2::CENTER_CENTER, self.line.speaker.to_uppercase(), name_f, hex("#03121C"));
+                painter.text(
+                    plate.center(),
+                    Align2::CENTER_CENTER,
+                    self.line.speaker.to_uppercase(),
+                    name_f,
+                    hex("#03121C"),
+                );
             }
             GameStyle::Minimal => {
                 painter.rect_filled(plate, 14.0, Color32::WHITE);
@@ -422,8 +541,21 @@ impl egui::Widget for GameDialogueBox<'_> {
         let split = self.line.text.char_indices().nth(typed).map(|(b, _)| b).unwrap_or(self.line.text.len());
         let mut job = LayoutJob::default();
         let tc = pal.text;
-        job.append(&self.line.text[..split], 0.0, TextFormat { font_id: body_f.clone(), color: tc, line_height: Some(24.0), ..Default::default() });
-        job.append(&self.line.text[split..], 0.0, TextFormat { font_id: body_f.clone(), color: Color32::TRANSPARENT, line_height: Some(24.0), ..Default::default() });
+        job.append(
+            &self.line.text[..split],
+            0.0,
+            TextFormat { font_id: body_f.clone(), color: tc, line_height: Some(24.0), ..Default::default() },
+        );
+        job.append(
+            &self.line.text[split..],
+            0.0,
+            TextFormat {
+                font_id: body_f.clone(),
+                color: Color32::TRANSPARENT,
+                line_height: Some(24.0),
+                ..Default::default()
+            },
+        );
         job.wrap.max_width = wrap;
         let galley = painter.layout_job(job);
         let tpos = pos2(tx, box_rect.min.y + 26.0);
@@ -436,7 +568,11 @@ impl egui::Widget for GameDialogueBox<'_> {
         } else if nchoice == 0 {
             let b = (time * 5.0).sin() * 3.0;
             let p = pos2(box_rect.max.x - 26.0, box_rect.max.y - 22.0 + b);
-            painter.add(Shape::convex_polygon(vec![p + vec2(-7.0, -4.0), p + vec2(7.0, -4.0), p + vec2(0.0, 5.0)], pal.accent, Stroke::NONE));
+            painter.add(Shape::convex_polygon(
+                vec![p + vec2(-7.0, -4.0), p + vec2(7.0, -4.0), p + vec2(0.0, 5.0)],
+                pal.accent,
+                Stroke::NONE,
+            ));
         }
         // choices
         if done {
@@ -448,15 +584,30 @@ impl egui::Widget for GameDialogueBox<'_> {
                 let e = glowkit_core::ease(glowkit_core::Easing::OutBack, k);
                 let on = st.sel == i;
                 let slide = spring(ui, id.with(("cs", i)), if on { 1.0 } else { 0.0 }, 420.0, 22.0);
-                let r = Rect::from_min_size(pos2(rect.max.x - ch_w + (1.0 - e) * 50.0 - slide * 10.0, box_rect.max.y + 10.0 + i as f32 * ch_h), vec2(ch_w, ch_h - 6.0));
+                let r = Rect::from_min_size(
+                    pos2(rect.max.x - ch_w + (1.0 - e) * 50.0 - slide * 10.0, box_rect.max.y + 10.0 + i as f32 * ch_h),
+                    vec2(ch_w, ch_h - 6.0),
+                );
                 let mut p2 = painter.clone();
                 p2.set_opacity(k);
                 frame(&p2, r, self.style, &pal, slide);
                 let num = format!("{}", i + 1);
                 let badge = pos2(r.min.x + 20.0, r.center().y);
                 p2.circle_filled(badge, 10.0, if on { pal.accent } else { with_alpha(pal.dim, 0.35) });
-                p2.text(badge, Align2::CENTER_CENTER, num, FontId::proportional(11.0), if on { hex("#111111") } else { pal.text });
-                p2.text(pos2(r.min.x + 40.0, r.center().y), Align2::LEFT_CENTER, text, choice_f.clone(), if on { pal.text } else { with_alpha(pal.text, 0.75) });
+                p2.text(
+                    badge,
+                    Align2::CENTER_CENTER,
+                    num,
+                    FontId::proportional(11.0),
+                    if on { hex("#111111") } else { pal.text },
+                );
+                p2.text(
+                    pos2(r.min.x + 40.0, r.center().y),
+                    Align2::LEFT_CENTER,
+                    text,
+                    choice_f.clone(),
+                    if on { pal.text } else { with_alpha(pal.text, 0.75) },
+                );
             }
         }
         resp
