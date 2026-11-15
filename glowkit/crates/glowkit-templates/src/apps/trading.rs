@@ -83,7 +83,7 @@ const TICK_SECS: f64 = 0.25;
 const TICKS_PER_BAR: u64 = 10;
 
 fn tick_size(p: f64) -> f64 {
-    10f64.powi(p.log10().floor() as i32 - 4) * 5.0
+    10f64.powi(p.log10().floor() as i32 - 4) * 5.0 / 10.0
 }
 
 fn decimals(p: f64) -> usize {
@@ -259,9 +259,19 @@ impl Default for TradingTerminalApp {
             balance: 48_210.55,
         };
         app.load_symbol(0);
+        let wp = |i: usize, k: f64| {
+            let v = app.watch[i].price * k;
+            let ts = tick_size(v);
+            (v / ts).round() * ts
+        };
+        app.positions = vec![
+            TermPosition { symbol: 0, long: true, qty: 0.85, entry: wp(0, 0.988) },
+            TermPosition { symbol: 1, long: false, qty: 12.0, entry: wp(1, 1.006) },
+            TermPosition { symbol: 2, long: true, qty: 140.0, entry: wp(2, 1.012) },
+        ];
         app.orders = vec![
-            OpenOrder { symbol: 0, buy: true, qty: 0.4, price: 63_850.0, placed: "13:42:10".into() },
-            OpenOrder { symbol: 1, buy: false, qty: 5.0, price: 3_520.0, placed: "12:08:55".into() },
+            OpenOrder { symbol: 0, buy: true, qty: 0.4, price: wp(0, 0.985), placed: "13:42:10".into() },
+            OpenOrder { symbol: 1, buy: false, qty: 5.0, price: wp(1, 1.02), placed: "12:08:55".into() },
         ];
         app
     }
@@ -811,7 +821,7 @@ impl TradingTerminalApp {
         let x1 = r.max.x - 10.0;
         kit::text_at(&p, pos2(x0, r.min.y + 18.0), Align2::LEFT_CENTER, "Order book", 13.0, t.foreground, 120.0);
         let ts = tick_size(self.price);
-        kit::text_at(&p, pos2(x1, r.min.y + 18.0), Align2::RIGHT_CENTER, &format!("tick {}", px(ts).trim_start_matches('0')), 11.0, t.muted_foreground, 80.0);
+        kit::text_at(&p, pos2(x1, r.min.y + 18.0), Align2::RIGHT_CENTER, &format!("tick {ts}"), 11.0, t.muted_foreground, 80.0);
         let hy = r.min.y + 40.0;
         let cx2 = x0 + (x1 - x0) * 0.62;
         kit::text_at(&p, pos2(x0, hy), Align2::LEFT_CENTER, "Price (USD)", 10.5, t.muted_foreground, 80.0);
@@ -874,7 +884,7 @@ impl TradingTerminalApp {
         let pr = pk::mono(&p, pos2(x0, mr.center().y), Align2::LEFT_CENTER, &px(self.price), 15.0, t.foreground.lerp_to_gamma(pc, 0.5 + 0.5 * fl), 120.0);
         let arrow = if dir_up { UiIcon::ArrowUp } else { UiIcon::ArrowDown };
         AppIcon::Ui(arrow).paint(&p, Rect::from_center_size(pos2(pr.max.x + 9.0, mr.center().y), vec2(12.0, 12.0)), pc);
-        kit::text_at(&p, pos2(x1, mr.center().y), Align2::RIGHT_CENTER, &format!("Spread {} ({:.3}%)", px(ts), ts / self.price * 100.0), 10.5, t.muted_foreground, 120.0);
+        kit::text_at(&p, pos2(x1, mr.center().y), Align2::RIGHT_CENTER, &format!("Spread {ts} · {:.3}%", ts / self.price * 100.0), 10.5, t.muted_foreground, 120.0);
         // bids
         for k in 0..n {
             let y = my + mid_h + k as f32 * rh;
