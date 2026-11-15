@@ -12,7 +12,7 @@ use super::prokit as pk;
 use crate::shells::kit;
 use crate::shells::{AppIcon, AppShell, NavItem, NavSection, ShellLayout, ShellNotification, Workspace};
 
-/// Run state of an [`AgentSession`].
+/// Run state of an [`CodingSession`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AgentRunState {
     /// The agent is working (streaming text, running tools).
@@ -81,7 +81,7 @@ impl DiffFile {
 
 /// One coding-agent session in the [`AgentSessionsApp`].
 #[derive(Clone, Debug)]
-pub struct AgentSession {
+pub struct CodingSession {
     /// Short task title.
     pub title: String,
     /// Repository / project name.
@@ -143,8 +143,8 @@ fn session(
     state: AgentRunState,
     age: &str,
     tokens: f64,
-) -> AgentSession {
-    AgentSession {
+) -> CodingSession {
+    CodingSession {
         title: title.into(),
         project: project.into(),
         branch: branch.into(),
@@ -168,7 +168,7 @@ fn st(x: &str) -> String {
     x.to_string()
 }
 
-fn default_sessions() -> Vec<AgentSession> {
+fn default_sessions() -> Vec<CodingSession> {
     let mut v = Vec::new();
     // ---- forge: the live one ------------------------------------------------------------
     let mut a = session(
@@ -324,7 +324,7 @@ pub struct AgentSessionsApp {
     /// Bell entries.
     pub notifications: Vec<ShellNotification>,
     /// All sessions.
-    pub sessions: Vec<AgentSession>,
+    pub sessions: Vec<CodingSession>,
     /// Index of the selected session.
     pub selected: usize,
     /// Apply theme changes only inside the app (for embedding).

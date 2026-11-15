@@ -812,12 +812,6 @@ pub(crate) fn silhouette(painter: &Painter, rect: Rect, r: f32, c_top: Color32, 
     painter.add(Shape::mesh(m));
 }
 
-/// Stage helper for demos and full-screen blocks: paint a backdrop and return its rect.
-pub(crate) fn scene_rect(ui: &mut Ui, height: f32) -> Rect {
-    let w = ui.available_width();
-    ui.allocate_exact_size(vec2(w, height), egui::Sense::hover()).0
-}
-
 // ---------------------------------------------------------------------------------------------
 // Particles and shake
 
@@ -851,6 +845,7 @@ pub(crate) fn burst(painter: &Painter, center: Pos2, t: f32, n: usize, seed: u64
 }
 
 /// An expanding shock ring.
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn ring(painter: &Painter, center: Pos2, t: f32, dur: f32, r0: f32, r1: f32, color: Color32, width: f32) {
     if !(0.0..dur).contains(&t) {
         return;
@@ -1146,7 +1141,7 @@ impl GameIcon {
                 painter.rect_filled(Rect::from_min_max(p(-0.75, -0.75), p(0.75, -0.55)), 3.0, dark);
                 painter.rect_filled(Rect::from_min_max(p(-0.75, 0.55), p(0.75, 0.75)), 3.0, dark);
                 if self == Map {
-                    let route = vec![p(-0.4, 0.35), p(-0.1, 0.1), p(-0.3, -0.15), p(0.15, -0.3)];
+                    let route = [p(-0.4, 0.35), p(-0.1, 0.1), p(-0.3, -0.15), p(0.15, -0.3)];
                     for w in route.windows(2) {
                         painter.line_segment([w[0], w[1]], st(0.05, hex("#8E2F25")));
                     }

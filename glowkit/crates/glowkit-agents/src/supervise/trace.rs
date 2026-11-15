@@ -609,7 +609,7 @@ impl<'a> RunTimeline<'a> {
                         icon(&po, tool.icon, pos2(trr.min.x + 13.0, trr.center().y), 12.0, dim(&t));
                         let nr = text(&po, pos2(trr.min.x + 26.0, trr.center().y), Align2::LEFT_CENTER, &tool.name, mono(11.0), t.foreground, 150.0);
                         let sr = if tool.state == RunState::Done {
-                            let label = format!("{}", fmt_secs(tool.secs));
+                            let label = fmt_secs(tool.secs);
                             let r = text(&po, pos2(trr.max.x - 10.0, trr.center().y), Align2::RIGHT_CENTER, &label, font(10.5), faint(&t), 60.0);
                             icon(&po, Icon::Check, pos2(r.min.x - 9.0, trr.center().y), 11.0, t.success);
                             r.min.x - 18.0

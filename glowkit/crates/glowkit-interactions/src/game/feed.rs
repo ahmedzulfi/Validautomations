@@ -476,7 +476,7 @@ impl egui::Widget for GameScoreboard<'_> {
             frame(painter, tr, self.style, &pal, 0.0);
             painter.rect_filled(Rect::from_min_size(tr.min + vec2(2.0, 2.0), vec2(tr.width() - 4.0, 3.0)), 1.0, tc);
             let mut rows: Vec<&GameScoreRow> = self.rows.iter().filter(|r| r.team == team).collect();
-            rows.sort_by(|a, b| b.score.cmp(&a.score));
+            rows.sort_by_key(|r| std::cmp::Reverse(r.score));
             let total = self.team_scores.map(|s| s[team]).unwrap_or_else(|| rows.iter().map(|r| r.score).sum());
             painter.text(pos2(tr.min.x + 16.0, tr.min.y + 24.0), Align2::LEFT_CENTER, self.teams[team].to_uppercase(), head_f.clone(), tc);
             glow_text(painter, pos2(tr.max.x - 16.0, tr.min.y + 24.0), Align2::RIGHT_CENTER, &thousands(total as i64), head_f.clone(), pal.text, with_alpha(tc, 0.5));

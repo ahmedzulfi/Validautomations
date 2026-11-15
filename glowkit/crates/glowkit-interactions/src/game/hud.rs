@@ -527,7 +527,7 @@ impl egui::Widget for GameAmmoCounter<'_> {
         let text_c = if matches!(self.style, GameStyle::Fantasy) { pal.text } else { pal.hud };
         // weapon line
         self.icon.paint(painter, pos2(rect.min.x + 30.0, rect.min.y + 24.0), 34.0, if self.style == GameStyle::Fantasy { hex("#4A3A2A") } else { self.icon.tint() });
-        painter.text(pos2(rect.min.x + 54.0, rect.min.y + 24.0), Align2::LEFT_CENTER, self.weapon.to_uppercase(), FontId::proportional(11.0), if self.style == GameStyle::Fantasy { pal.dim } else { pal.dim });
+        painter.text(pos2(rect.min.x + 54.0, rect.min.y + 24.0), Align2::LEFT_CENTER, self.weapon.to_uppercase(), FontId::proportional(11.0), pal.dim);
         // count
         let kick = if shot { (1.0 - since / 0.18).max(0.0) } else { 0.0 };
         let mag_c = if self.mag == 0 {

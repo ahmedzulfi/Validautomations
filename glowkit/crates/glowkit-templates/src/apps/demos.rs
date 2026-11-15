@@ -295,5 +295,15 @@ app.show(ui);"##,
 app.show(ui);"##,
         show: |ui| run_demo(ui, || embedded::<TradingTerminalApp>(|a| a.scoped_theme = true), TradingTerminalApp::show),
     },
+    Demo {
+        id: "app-dev-inspector",
+        name: "Profiler / Inspector",
+        category: Category::Templates,
+        description: "A developer profiler for a running process: live frame-time chart with budget lines, a collapsible span tree, a zoomable flame graph (wheel, drag, double-click to fit, F resets), a property inspector with per-frame history and a filterable log console (Space pauses, ← → step frames).",
+        covers: &[],
+        code: r##"let mut app = DevInspectorApp::default();
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<DevInspectorApp>(|a| a.scoped_theme = true), DevInspectorApp::show),
+    },
     ]
 }

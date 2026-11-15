@@ -74,10 +74,6 @@ pub(super) fn ghost(ui: &Ui, key: &str, target: Pos2, visible: bool, pressed: bo
     p
 }
 
-pub(super) fn label(ui: &mut Ui, s: &str) {
-    let t = Theme::of(ui);
-    ui.label(egui::RichText::new(s).size(11.5).color(t.muted_foreground));
-}
 
 // ---------------------------------------------------------------------------------------------
 
@@ -218,6 +214,7 @@ fn demo_thread(ui: &mut Ui) {
 
 pub(super) fn all() -> Vec<Demo> {
     let mut v = thread_demos();
+    v.extend(super::demos_chrome::all());
     v.extend(super::demos_tools::all());
     v
 }

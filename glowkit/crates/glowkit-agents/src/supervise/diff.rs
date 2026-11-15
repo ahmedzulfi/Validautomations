@@ -61,7 +61,7 @@ impl DiffHunk {
         self.lines.iter().filter(|l| l.0 != DiffLineKind::Del).count()
     }
     /// Rows for side-by-side view: (old line, new line) pairs.
-    fn split_rows(&self) -> Vec<(Option<(u32, &str, DiffLineKind)>, Option<(u32, &str, DiffLineKind)>)> {
+    fn split_rows(&self) -> Vec<(SideCell<'_>, SideCell<'_>)> {
         let mut out = Vec::new();
         let (mut o, mut n) = (self.old_start, self.new_start);
         let mut i = 0;
@@ -99,6 +99,8 @@ impl DiffHunk {
         out
     }
 }
+
+type SideCell<'a> = Option<(u32, &'a str, DiffLineKind)>;
 
 /// One changed file in a [`DiffReview`].
 #[derive(Clone, Debug)]

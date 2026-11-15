@@ -473,7 +473,7 @@ impl Widget for WeatherResult<'_> {
         paint_sky_glyph(p, pos2(rect.max.x - 62.0, rect.min.y + 64.0), 78.0, self.sky, time);
         if has_strip {
             let strip = Rect::from_min_max(pos2(rect.min.x + 12.0, rect.min.y + 146.0), pos2(rect.max.x - 12.0, rect.max.y - 12.0));
-            p.rect_filled(strip, cr(12.0), with_alpha(if night || t.dark { Color32::WHITE } else { Color32::WHITE }, if night || t.dark { 0.06 } else { 0.55 }));
+            p.rect_filled(strip, cr(12.0), with_alpha(Color32::WHITE, if night || t.dark { 0.06 } else { 0.55 }));
             let hrs = &self.hourly[..self.hourly.len().min(8)];
             let n = hrs.len();
             let (lo, hi) = hrs.iter().fold((f32::MAX, f32::MIN), |(a, b), v| (a.min(*v), b.max(*v)));

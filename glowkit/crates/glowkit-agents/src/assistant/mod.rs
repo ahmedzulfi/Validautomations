@@ -7,8 +7,16 @@ pub(crate) mod common;
 #[cfg(feature = "demos")]
 mod demos;
 #[cfg(feature = "demos")]
+mod demos_chrome;
+#[cfg(feature = "demos")]
 mod demos_tools;
+mod banners;
 mod composer;
+mod copilot;
+mod inline;
+mod pickers;
+mod thread_list;
+mod voice_mode;
 mod location;
 mod thread;
 mod tools_code;
@@ -17,6 +25,12 @@ mod tools_hitl;
 mod tools_media;
 mod tools_progress;
 
+pub use banners::{Citation, CitationsFooter, CitedText, UsageBannerOutput, UsageLimitBanner};
+pub use copilot::{CopilotPopup, CopilotSidebar, WelcomeScreen, WelcomeSuggestion};
+pub use inline::{InlineSuggestion, InlineSuggestionOutput, SelectionAction, SelectionAskBar, SelectionOutput};
+pub use pickers::{AgentMode, AgentModeSwitcher, ModelPickerRich, ModelSpec};
+pub use thread_list::{ThreadEntry, ThreadListOutput, ThreadListSidebar, ThreadListState};
+pub use voice_mode::{VoiceModeOutput, VoiceModeOverlay};
 pub use composer::{ComposerOutput, ComposerState, ContextChip, MentionItem, SlashCommand, SmartComposer, StagedFile};
 pub use location::{LocationResult, Place};
 pub use tools_code::CodeResult;

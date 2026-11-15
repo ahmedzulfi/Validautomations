@@ -59,15 +59,6 @@ pub(crate) fn shadow(t: &Theme, k: f32) -> Color32 {
     }
 }
 
-/// Paint a raised card: soft shadow, fill and hairline.
-pub(crate) fn card(p: &Painter, t: &Theme, rect: Rect, radius: f32, lift: f32) {
-    if lift > 0.0 {
-        paint::soft_shadow(p, rect, radius, 10.0 + 14.0 * lift, vec2(0.0, 3.0 + 5.0 * lift), shadow(t, 0.5 + lift));
-    }
-    p.rect_filled(rect, cr(radius), surface(t));
-    p.rect_stroke(rect, cr(radius), hairline(t), StrokeKind::Inside);
-}
-
 /// Lay out a single line of text.
 pub(crate) fn galley(ui: &Ui, s: impl Into<String>, size: f32, color: Color32) -> Arc<Galley> {
     ui.painter().layout_no_wrap(s.into(), FontId::proportional(size), color)

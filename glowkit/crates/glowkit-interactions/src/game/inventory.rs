@@ -480,13 +480,13 @@ impl egui::Widget for GameInventoryGrid<'_> {
         let painter = ui.painter();
         frame(painter, rect, self.style, &pal, 0.0);
         if !self.title.is_empty() {
-            let tc = if self.style == GameStyle::Fantasy { pal.text } else { pal.text };
+            let tc = pal.text;
             painter.text(pos2(rect.min.x + pad, rect.min.y + 24.0), Align2::LEFT_CENTER, self.title.to_uppercase(), title_f, tc);
             let used = self.items.iter().filter(|i| i.is_some()).count();
             painter.text(pos2(rect.max.x - pad, rect.min.y + 24.0), Align2::RIGHT_CENTER, format!("{used} / {n}"), FontId::monospace(12.0), pal.dim);
             painter.line_segment([pos2(rect.min.x + pad, rect.min.y + 40.0), pos2(rect.max.x - pad, rect.min.y + 40.0)], Stroke::new(1.0, with_alpha(pal.dim, 0.3)));
         }
-        let drop_target = st.drag.and_then(|_| drag_pos).and_then(|p| (0..n).find(|j| cell_at(*j).expand(gap / 2.0).contains(p)));
+        let drop_target = st.drag.and(drag_pos).and_then(|p| (0..n).find(|j| cell_at(*j).expand(gap / 2.0).contains(p)));
         for i in 0..n {
             let cell = cell_at(i);
             let item = self.items[i].as_ref();

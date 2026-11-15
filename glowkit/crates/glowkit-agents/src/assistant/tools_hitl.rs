@@ -152,7 +152,7 @@ impl<'a> FormResult<'a> {
                     let v = match (&f.kind, st.values[i].as_str()) {
                         (FieldKind::Toggle, "true") => "Yes",
                         (FieldKind::Toggle, _) => "No",
-                        (_, v) if v.is_empty() => "—",
+                        (_, "") => "—",
                         (_, v) => v,
                     };
                     text(p, pos2(r.max.x, r.center().y), Align2::RIGHT_CENTER, v, 12.5, t.foreground);

@@ -179,7 +179,7 @@ impl egui::Widget for AgentTree<'_> {
         let deep = col_h.iter().cloned().fold(0.0, f32::max);
         let header = 46.0;
         let level_gap = 46.0;
-        let body_h = CARD_H + (level_gap + deep) * root_open + if root_open < 0.5 { 0.0 } else { 0.0 };
+        let body_h = CARD_H + (level_gap + deep) * root_open;
         let total_h = header + body_h + 30.0;
         let (rect, resp) = alloc_centered(ui, avail, total_h, Sense::hover());
         if !ui.is_rect_visible(rect) {
@@ -193,7 +193,7 @@ impl egui::Widget for AgentTree<'_> {
         text(&p, pos2(hx + 20.0, hy), Align2::LEFT_CENTER, &self.title, font(14.0), t.foreground, 200.0);
         let running = root.count_state(RunState::Running);
         let needs = root.count_state(RunState::NeedsInput);
-        let total = format!("{}", fmt_usd(root.total_cost()));
+        let total = fmt_usd(root.total_cost());
         let mut x = rect.max.x - 14.0;
         let r = text(&p, pos2(x, hy), Align2::RIGHT_CENTER, &total, mono(12.5), t.foreground, 120.0);
         x = r.min.x - 14.0;
@@ -282,7 +282,7 @@ impl egui::Widget for AgentTree<'_> {
             let id = base_id.with(("card", &pl.key));
             let n = pl.node;
             let has_kids = !n.children.is_empty() && pl.depth <= 1;
-            let folded = collapsed.iter().any(|k| *k == pl.key);
+            let folded = collapsed.contains(&pl.key);
             if let Some(k) = card(ui, &p, &t, pl, id, now, accent, has_kids, folded) {
                 toggled = Some(k);
             }

@@ -95,7 +95,7 @@ pub struct ComposerState {
 }
 
 /// What happened in a [`SmartComposer`] this frame.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct ComposerOutput {
     /// The submitted text (the draft is cleared).
     pub submitted: Option<String>,
@@ -216,7 +216,7 @@ impl<'a> SmartComposer<'a> {
         let dt = glowkit_core::dt(ui);
         let time = glowkit_core::time(ui);
         let w = self.width.unwrap_or_else(|| ui.available_width().min(640.0));
-        let mut out = ComposerOutput::default();
+        let mut out = ComposerOutput { submitted: None, attach_clicked: false, menu_open: false, rect: Rect::NOTHING, send_rect: Rect::NOTHING, attach_rect: Rect::NOTHING };
 
         // simulated uploads
         let mut uploading = false;

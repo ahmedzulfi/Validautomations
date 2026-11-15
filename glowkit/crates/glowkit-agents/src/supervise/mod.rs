@@ -9,6 +9,8 @@
 mod common;
 mod approval;
 mod diff;
+mod evals;
+mod plan;
 mod logs;
 mod sessions;
 mod tools;
@@ -19,6 +21,8 @@ mod tree;
 pub use common::{fmt_ago, fmt_secs, fmt_tok, fmt_usd, RunState};
 pub use approval::{ApprovalQueue, ApprovalRequest, Decision, ErrorRecoveryCard, HitlAnswer, HumanInTheLoopPrompt, Recovery, Risk};
 pub use diff::{DiffFile, DiffHunk, DiffLineKind, DiffReview};
+pub use evals::{EvalScoreboard, EvalSuite, MemoryEntry, MemoryKind, MemoryViewer, ScheduleList, ScheduleOutput, ScheduledJob};
+pub use plan::{ContextPart, ContextWindowViz, PlanBoard, PlanCard};
 pub use logs::{LogLevel, LogLine, LogStream, SandboxStatus};
 pub use sessions::{AgentSession, AgentSessionList, Device, SessionAction, SessionDetailHeader};
 pub use tools::{McpServer, McpServerList, Skill, SkillsBrowser};

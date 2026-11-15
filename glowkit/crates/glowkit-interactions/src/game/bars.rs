@@ -162,7 +162,7 @@ fn paint_bar(painter: &Painter, track: Rect, a: &BarNow, v: f32, colors: [Color3
 }
 
 fn ticks(painter: &Painter, track: Rect, n: usize) {
-    if n < 2 || n > 60 {
+    if !(2..=60).contains(&n) {
         return;
     }
     for i in 1..n {

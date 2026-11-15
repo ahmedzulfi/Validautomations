@@ -15,18 +15,18 @@ mod crm;
 mod devconsole;
 mod docs;
 mod files;
+mod inspector;
 mod local_llm;
 mod finance;
 mod mail;
 mod music;
-#[allow(dead_code)]
 mod prokit;
 mod projects;
 mod settings;
 mod trading;
 
 pub use agent_fleet::{AgentFleetApp, FleetItem, FleetKind, McpHealth};
-pub use agent_sessions::{AgentRunState, AgentSession, AgentSessionsApp};
+pub use agent_sessions::{AgentRunState, AgentSessionsApp, CodingSession};
 pub use analytics::AnalyticsApp;
 pub use assistant::{AssistantApp, AssistantChat};
 pub use auth::AuthGateApp;
@@ -38,6 +38,7 @@ pub use devconsole::{ApiKey, DevConsoleApp};
 pub use docs::DocsApp;
 pub use files::{FileManagerApp, FsEntry};
 pub use finance::{FinanceAccount, FinanceApp, FinanceTxn};
+pub use inspector::DevInspectorApp;
 pub use local_llm::{LocalLlmApp, LocalModel, ModelQuant};
 pub use mail::{MailApp, MailMessage};
 pub use music::{MusicApp, MusicTrack};

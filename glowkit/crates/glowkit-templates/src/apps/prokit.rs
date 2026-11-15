@@ -186,14 +186,6 @@ pub(crate) fn search(ui: &mut Ui, rect: Rect, text: &mut String, hint: &str, sal
     )
 }
 
-/// A plain text field placed at `rect` (height ~32) with an optional suffix.
-pub(crate) fn field(ui: &mut Ui, rect: Rect, text: &mut String, suffix: &str, salt: &str) -> Response {
-    let mut i = Input::new(text).size(ControlSize::Sm).width(rect.width()).id_salt(salt);
-    if !suffix.is_empty() {
-        i = i.suffix(suffix);
-    }
-    kit::put(ui, rect, i)
-}
 
 /// A one-line monospace text painted left-center at `pos`, clipped to `max_w`.
 pub(crate) fn mono(p: &Painter, pos: Pos2, align: Align2, text: &str, size: f32, col: Color32, max_w: f32) -> Rect {
@@ -268,11 +260,6 @@ pub(crate) fn hints(p: &Painter, pos: Pos2, items: &[(&str, &str)], t: &Theme, m
     x
 }
 
-/// A clipped panel surface with the chrome tint and a border.
-pub(crate) fn panel(p: &Painter, rect: Rect, t: &Theme) {
-    p.rect_filled(rect, t.radius, t.card);
-    p.rect_stroke(rect, t.radius, Stroke::new(1.0, t.border), StrokeKind::Inside);
-}
 
 /// A framed single-line text field painted at `rect` (frameless `TextEdit` inside, focus ring).
 /// Returns `(submitted with Enter, focused)`.

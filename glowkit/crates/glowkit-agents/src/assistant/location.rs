@@ -91,7 +91,7 @@ impl<'a> LocationResult<'a> {
         let map_h = self.map_height;
         let mut rows = Vec::new();
         let mut new_hover = None;
-        let head = ToolHead { icon: Icon::Globe, title: self.title, subtitle: None, status: Some((&"maps.search"[..], t.info)) };
+        let head = ToolHead { icon: Icon::Globe, title: self.title, subtitle: None, status: Some(("maps.search", t.info)) };
         let rect = tool_card(ui, appear_curve(e), Some(head), width, |ui| {
             let w = ui.available_width();
             let (mr, _) = ui.allocate_exact_size(vec2(w, map_h), Sense::hover());
@@ -241,7 +241,7 @@ impl MapLayout {
             let y = roads_h[rng.below(roads_h.len())];
             pos2(x, y)
         };
-        let you = pos2(roads_v[0.max(roads_v.len() / 4)], roads_h[roads_h.len() * 3 / 4]);
+        let you = pos2(roads_v[roads_v.len() / 4], roads_h[roads_h.len() * 3 / 4]);
         let mut spots = Vec::new();
         for _ in 0..n.max(1) {
             let mut s = snap(&mut rng);

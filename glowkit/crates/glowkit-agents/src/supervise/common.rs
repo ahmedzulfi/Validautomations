@@ -429,23 +429,6 @@ pub(crate) fn sparkline(painter: &Painter, rect: Rect, values: &[f32], color: Co
     }
 }
 
-/// Seconds since the widget was last interacted with (or first shown).
-pub(crate) fn idle_for(ui: &Ui, id: Id, interacting: bool) -> f32 {
-    let now = glowkit_core::time(ui);
-    let since = glowkit_core::with_state(
-        ui,
-        id.with("sup_idle"),
-        || now,
-        |t| {
-            if interacting {
-                *t = now;
-            }
-            *t
-        },
-    );
-    now - since
-}
-
 /// Center a box of `w` (clamped to the available width) in a freshly allocated row of height `h`.
 pub(crate) fn alloc_centered(ui: &mut Ui, w: f32, h: f32, sense: Sense) -> (Rect, Response) {
     let avail = ui.available_width();

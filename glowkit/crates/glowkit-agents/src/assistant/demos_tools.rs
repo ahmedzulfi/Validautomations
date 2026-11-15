@@ -199,7 +199,7 @@ fn demo_gallery(ui: &mut Ui) {
         let close = pos2(tile_pos.min.x + w - 8.0, tile_pos.min.y + 62.0);
         let (target, vis, press) = if e > 3.6 && e < 5.2 {
             (tile, true, e > 4.8)
-        } else if e >= 5.2 && e < 8.7 {
+        } else if (5.2..8.7).contains(&e) {
             (close, true, e > 8.3)
         } else {
             (tile, false, false)
