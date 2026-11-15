@@ -110,7 +110,7 @@ impl egui::Widget for GameLoadingScreen<'_> {
         let time = glowkit_core::time(ui);
         let p = follow(ui, id.with("p"), self.progress.clamp(0.0, 1.0), 5.0);
         GameBackdrop::new(self.style).palette(pal).parallax(vec2((time * 0.1).sin(), 0.0) * 2.0).paint_at(ui.painter(), rect, time * 0.25);
-        let painter = ui.painter();
+        let painter = &ui.painter_at(rect);
         paint::gradient_rect(painter, rect, 18.0, 90.0, &[Color32::from_black_alpha(20), Color32::from_black_alpha(200)]);
         // level name
         let lx = rect.min.x + 32.0;
@@ -170,6 +170,7 @@ impl egui::Widget for GameLoadingScreen<'_> {
 pub struct GameLevelUpScreen<'a> {
     level: u32,
     stats: &'a [(&'a str, f32, f32)],
+    started_at: Option<f64>,
     note: &'a str,
     height: f32,
     style: GameStyle,
@@ -181,7 +182,13 @@ pub struct GameLevelUpScreen<'a> {
 impl<'a> GameLevelUpScreen<'a> {
     /// Celebrate reaching `level`.
     pub fn new(level: u32) -> Self {
-        Self { level, stats: &[], note: "+1 Skill Point", height: 360.0, style: GameStyle::Fantasy, palette: None, backdrop: true, cues: None }
+        Self { level, stats: &[], started_at: None, note: "+1 Skill Point", height: 360.0, style: GameStyle::Fantasy, palette: None, backdrop: true, cues: None }
+    }
+    /// Sync the animation to a game clock: the egui time (`ui.input(|i| i.time)`) at which it
+    /// started. By default it starts when first shown or when its content changes.
+    pub fn started_at(mut self, time: f64) -> Self {
+        self.started_at = Some(time);
+        self
     }
     /// Stat rows: (name, before, after).
     pub fn stats(mut self, s: &'a [(&'a str, f32, f32)]) -> Self {
@@ -243,6 +250,7 @@ impl egui::Widget for GameLevelUpScreen<'_> {
             s.2 = true;
             ((now - s.1) as f32, fresh)
         });
+        let t = self.started_at.map(|s| (now - s) as f32).unwrap_or(t);
         if fresh {
             push_cue(&mut self.cues, GameCue::Unlock);
         }
@@ -252,7 +260,7 @@ impl egui::Widget for GameLevelUpScreen<'_> {
         if self.backdrop {
             GameBackdrop::new(self.style).palette(pal).dim(0.55).paint_at(ui.painter(), rect, time * 0.2);
         }
-        let painter = ui.painter();
+        let painter = &ui.painter_at(rect);
         let c = pos2(rect.center().x, rect.min.y + self.height * 0.3) + sh;
         let open = glowkit_core::ease(glowkit_core::Easing::OutCubic, (t / 0.8).min(1.0));
         rays(painter, c, self.height * 0.9 * open, 14, time * 0.3, with_alpha(gold, 0.18));
@@ -514,9 +522,25 @@ impl egui::Widget for GameCharacterSelect<'_> {
             sel = (sel + 1) % n;
         }
         // card clicks
-        let pos_f = spring(ui, id.with("pos"), sel as f32, 170.0, 20.0) - drag_now / spacing;
+        // unbounded target so wrapping from the last hero to the first keeps moving forward
+        let prev_sel: usize = glowkit_core::state(ui, id.with("prev_sel"), || sel);
+        let target = glowkit_core::with_state(ui, id.with("target"), || sel as f32, |t| {
+            let nf = n as f32;
+            let mut d = (sel as f32 - prev_sel as f32).rem_euclid(nf);
+            if d > nf / 2.0 {
+                d -= nf;
+            }
+            *t += d;
+            *t
+        });
+        glowkit_core::set_state(ui, id.with("prev_sel"), sel);
+        let pos_f = spring(ui, id.with("pos"), target, 170.0, 20.0) - drag_now / spacing;
         let card_rect = |i: usize| {
-            let d = i as f32 - pos_f;
+            let nf = n as f32;
+            let mut d = (i as f32 - pos_f).rem_euclid(nf);
+            if d > nf / 2.0 {
+                d -= nf;
+            }
             let s = 1.0 / (1.0 + d.abs() * 0.32);
             let c = pos2(stage.center().x + d * spacing * (1.0 - d.abs().min(2.0) * 0.08), stage.center().y + d.abs() * 10.0 - 6.0);
             (Rect::from_center_size(c, vec2(card_w, card_h) * s), d, s)
@@ -562,7 +586,7 @@ impl egui::Widget for GameCharacterSelect<'_> {
         let mut bp = pal;
         bp.sky = [pal.sky[0], mix(pal.sky[1], hero.color, 0.25), mix(pal.sky[2], hero.color, 0.4)];
         GameBackdrop::new(self.style).palette(bp).dim(0.35).paint_at(ui.painter(), rect, time * 0.2);
-        let painter = ui.painter();
+        let painter = &ui.painter_at(rect);
         paint::glow_ellipse(painter, pos2(stage.center().x, stage.center().y + card_h * 0.45), vec2(card_w * 1.3, 26.0), with_alpha(hero.color, 0.55));
         // cards back to front
         let mut order: Vec<usize> = (0..n).collect();

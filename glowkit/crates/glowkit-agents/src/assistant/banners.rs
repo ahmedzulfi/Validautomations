@@ -235,7 +235,7 @@ impl<'a> CitedText<'a> {
         let p = ui.painter();
         for (k, (a, b, s)) in markers.iter().enumerate() {
             let mut r = Rect::NOTHING;
-            for gr in glyphs.iter().take((*b).min(glyphs.len())).skip(*a) {
+            for gr in glyphs.iter().take(b.saturating_sub(1).min(glyphs.len())).skip(a + 1) {
                 r = r.union(*gr);
             }
             if !r.is_positive() {
@@ -247,7 +247,7 @@ impl<'a> CitedText<'a> {
                 hovered = Some(*s);
             }
             let on = toggle(ui, ui.scope_id().with(("cite", k)), over || highlight == Some(*s));
-            p.rect_filled(pill, cr(pill.height() / 2.0), mix(well(&t), with_alpha(t.accent, 0.9), on));
+            p.rect_filled(pill, cr(pill.height() / 2.0), mix(track(&t), with_alpha(t.accent, 0.9), on));
         }
         p.galley(rect.min, g.clone(), t.foreground);
         // redraw marker digits in contrasting color when lit
@@ -255,7 +255,7 @@ impl<'a> CitedText<'a> {
             let on = toggle(ui, ui.scope_id().with(("cite", k)), hovered == Some(*s) || highlight == Some(*s));
             if on > 0.5 {
                 let mut r = Rect::NOTHING;
-                for gr in glyphs.iter().take((*b).min(glyphs.len())).skip(*a) {
+                for gr in glyphs.iter().take(b.saturating_sub(1).min(glyphs.len())).skip(a + 1) {
                     r = r.union(*gr);
                 }
                 ui.painter().text(r.center(), Align2::CENTER_CENTER, format!("{}", s + 1), FontId::proportional(self.size * 0.72), t.accent_foreground);

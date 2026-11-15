@@ -37,11 +37,24 @@ fn device_glyph(p: &Painter, d: Device, c: Pos2, s: f32, col: Color32) {
             p.line_segment([pos2(c.x - s * 0.06, r.max.y - s * 0.12), pos2(c.x + s * 0.06, r.max.y - s * 0.12)], st);
         }
         Device::Cloud => {
-            let pts: Vec<Pos2> = (0..=28)
+            let circles = [(-0.2, 0.06, 0.17), (0.04, -0.06, 0.24), (0.26, 0.07, 0.16)];
+            let base = c.y + s * 0.22;
+            let pts: Vec<Pos2> = (0..48)
                 .map(|i| {
-                    let a = i as f32 / 28.0 * TAU;
-                    let bump = 1.0 + 0.18 * (a * 3.0).cos().max(0.0);
-                    c + vec2(a.cos() * s * 0.4, a.sin() * s * 0.24 - s * 0.02) * bump
+                    let a = i as f32 / 48.0 * TAU;
+                    let dir = vec2(a.cos(), a.sin());
+                    let mut r: f32 = 0.0;
+                    for (x, y, rr) in circles {
+                        // distance along `dir` from the center to the far side of this circle
+                        let o = vec2(x, y);
+                        let b = o.dot(dir);
+                        let disc = b * b - (o.length_sq() - rr * rr);
+                        if disc >= 0.0 {
+                            r = r.max(b + disc.sqrt());
+                        }
+                    }
+                    let q = c + dir * r * s;
+                    pos2(q.x, q.y.min(base))
                 })
                 .collect();
             p.add(egui::Shape::closed_line(pts, st));
@@ -124,7 +137,7 @@ fn session_rank(s: RunState) -> u8 {
     }
 }
 
-/// A session manager for coding agents running on several devices, like a Claude / Codex
+/// A session manager for coding agents running on several devices, like a Quill / Forge
 /// sessions sidebar. A search field and filter tabs (All, Needs input, Live) with counts sit
 /// above sections ("Needs you", "Live", "Recent"); each row has a device tile, the title, repo
 /// and branch, a last-message preview, an unread pill and the time. Live sessions show a
@@ -327,7 +340,7 @@ impl egui::Widget for AgentSessionList<'_> {
         }
         // bottom fade
         let fade = Rect::from_min_max(pos2(rect.min.x + 1.0, rect.max.y - 24.0), pos2(rect.max.x - 1.0, rect.max.y - 2.0));
-        paint::gradient_rect(&p, fade, 0.0, 90.0, &[with_alpha(surface(&t), 0.0), surface(&t)]);
+        grad_rect(&p, fade, Color32::TRANSPARENT, surface(&t), true);
         glowkit_core::animate(ui);
         resp
     }
@@ -360,7 +373,7 @@ pub enum SessionAction {
 /// let action = SessionDetailHeader::new("Deploy Fixer", "Fix the failing production deploy")
 ///     .meta("acme/web", "fix/missing-zod", "MacBook Pro")
 ///     .state(RunState::Running, 142.0).step(3, 5, "Running the test suite")
-///     .budget(18_400.0, 50_000.0).needs_you(2).model("Sonnet 4.5")
+///     .budget(18_400.0, 50_000.0).needs_you(2).model("Nova 2")
 ///     .show(ui);
 /// ```
 #[must_use = "call `.show(ui)`"]

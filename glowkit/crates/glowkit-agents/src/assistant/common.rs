@@ -36,6 +36,15 @@ pub(crate) fn well(t: &Theme) -> Color32 {
     }
 }
 
+/// Recessed track for segmented controls (visible against light stages).
+pub(crate) fn track(t: &Theme) -> Color32 {
+    if t.dark {
+        shade(t.muted, 0.06)
+    } else {
+        mix(t.muted, t.border, 0.45)
+    }
+}
+
 /// The stage behind cards: a barely-warm off-white in light themes.
 pub(crate) fn stage(t: &Theme) -> Color32 {
     if t.dark {

@@ -425,7 +425,6 @@ impl egui::Widget for GamePauseMenu<'_> {
         let ok = open_k.clamp(0.0, 1.0);
         if ok > 0.001 {
             painter.rect_filled(rect, 18.0, Color32::from_black_alpha((150.0 * ok) as u8));
-            paint::vignette(painter, rect.shrink(2.0), Color32::from_black_alpha((200.0 * ok) as u8), 1.0);
         }
         let mut sel = (*self.selected).min(self.items.len().max(1) - 1);
         if open_k > 0.02 {

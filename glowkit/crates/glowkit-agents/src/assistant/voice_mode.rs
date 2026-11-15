@@ -120,8 +120,8 @@ impl<'a> VoiceModeOverlay<'a> {
         let secs = (time * 1.0) as u32 % 3600;
         mono(&p, pos2(rect.max.x - 24.0, rect.min.y + 30.0), Align2::RIGHT_CENTER, &format!("{:02}:{:02}", secs / 60, secs % 60), 11.5, t.muted_foreground.gamma_multiply(ck));
         // orb
-        let orb_s = (rect.height() * 0.42).min(200.0);
-        let orb_c = pos2(rect.center().x, rect.min.y + 60.0 + orb_s / 2.0);
+        let orb_s = (rect.height() * 0.3).min(150.0);
+        let orb_c = pos2(rect.center().x, rect.min.y + 64.0 + orb_s / 2.0);
         let orb_r = Rect::from_center_size(orb_c, Vec2::splat(orb_s));
         let mut oc = ui.new_child(UiBuilder::new().max_rect(orb_r));
         oc.set_clip_rect(clip);
@@ -134,7 +134,7 @@ impl<'a> VoiceModeOverlay<'a> {
             VoiceState::Thinking => "Thinking",
             VoiceState::Speaking => "Speaking",
         };
-        let sy = orb_r.max.y + 22.0;
+        let sy = orb_r.max.y + 62.0;
         let g = p.layout_no_wrap(status.to_owned(), FontId::proportional(13.0), Color32::WHITE);
         let x0 = rect.center().x - g.size().x / 2.0;
         let sweep = (time * 0.7).fract() * 1.6 - 0.3;

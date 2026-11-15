@@ -314,6 +314,7 @@ struct SkillState {
     query: String,
     tab: usize,
     installing: Vec<(String, f32)>,
+    known: Vec<(String, bool)>,
 }
 
 /// A browser for agent skills and plugins: a search field, category tabs, and a grid of cards
@@ -325,7 +326,7 @@ struct SkillState {
 /// # let ui: &mut egui::Ui = todo!();
 /// use glowkit_agents::{Skill, SkillsBrowser};
 /// let mut skills = vec![
-///     Skill::new("PDF tools", "Anthropic", "Documents").desc("Read, fill and merge PDFs").installs(48_200),
+///     Skill::new("PDF tools", "Lumen Labs", "Documents").desc("Read, fill and merge PDFs").installs(48_200),
 ///     Skill::new("Postgres", "Community", "Data").desc("Query and migrate databases").installed(true),
 /// ];
 /// ui.add(SkillsBrowser::new(&mut skills));
@@ -425,6 +426,19 @@ impl egui::Widget for SkillsBrowser<'_> {
         let mut flips: Vec<usize> = Vec::new();
         let mut start: Vec<String> = Vec::new();
         st.installing.retain(|(_, at)| now - at < 1.2);
+        // installs flipped from outside still play the fill
+        let first = st.known.is_empty();
+        for s in self.skills.iter() {
+            match st.known.iter_mut().find(|k| k.0 == s.name) {
+                Some(k) => {
+                    if s.installed && !k.1 && !first && !st.installing.iter().any(|x| x.0 == s.name) {
+                        st.installing.push((s.name.clone(), now));
+                    }
+                    k.1 = s.installed;
+                }
+                None => st.known.push((s.name.clone(), s.installed)),
+            }
+        }
         for (slot, &i) in shown.iter().enumerate() {
             let s = &self.skills[i];
             let target = pos2(rect.min.x + (slot % cols) as f32 * (cw + gap), top + (slot / cols) as f32 * (ch + gap));

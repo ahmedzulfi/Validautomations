@@ -169,18 +169,28 @@ impl<'a> InlineSuggestion<'a> {
             job.wrap.max_width = wrap;
             ui.fonts_mut(|f| f.layout_job(job))
         };
-        let te = egui::TextEdit::multiline(self.text)
-            .id(te_id)
-            .frame(egui::Frame::NONE)
-            .margin(egui::Margin::symmetric(pad.x as i8, pad.y as i8))
-            .desired_rows(self.rows)
-            .desired_width(inner_w)
-            .lock_focus(true)
-            .hint_text(egui::RichText::new(self.placeholder).size(size).color(with_alpha(t.muted_foreground, 0.7)))
-            .layouter(&mut layouter)
-            .show(ui);
-        let rect = te.response.response.rect;
-        let rect = Rect::from_min_max(start, pos2(start.x + w, rect.max.y));
+        let text = &mut *self.text;
+        let placeholder = self.placeholder;
+        let rows = self.rows;
+        let te = ui
+            .scope_builder(
+                egui::UiBuilder::new().max_rect(Rect::from_min_size(start + pad, vec2(inner_w, 4000.0))).layout(egui::Layout::top_down(egui::Align::Min)),
+                |ui| {
+                    egui::TextEdit::multiline(text)
+                        .id(te_id)
+                        .frame(egui::Frame::NONE)
+                        .margin(egui::Margin::ZERO)
+                        .desired_rows(rows)
+                        .desired_width(inner_w)
+                        .lock_focus(true)
+                        .hint_text(egui::RichText::new(placeholder).size(size).color(with_alpha(t.muted_foreground, 0.7)))
+                        .layouter(&mut layouter)
+                        .show(ui)
+                },
+            )
+            .inner;
+        let rect = Rect::from_min_max(start, pos2(start.x + w, te.response.response.rect.max.y + pad.y));
+        ui.allocate_rect(rect, Sense::hover());
         // ghost text
         if gk > 0.0 {
             if let Some(s) = sugg {
@@ -435,7 +445,7 @@ impl<'a> SelectionAskBar<'a> {
                 if streaming || el < 0.6 {
                     ui.ctx().request_repaint();
                 }
-                let card = Rect::from_min_size(pos2(x, last.max.y + 10.0 + (1.0 - ak) * 8.0), vec2(cw, 132.0));
+                let card = Rect::from_min_size(pos2(x, text_rect.max.y + 12.0 + (1.0 - ak) * 8.0), vec2(cw, 140.0));
                 let p = ui.painter();
                 paint::soft_shadow(p, card, 14.0, 22.0, vec2(0.0, 8.0), shadow(&t, 1.4 * ak));
                 p.rect_filled(card, cr(14.0), t.popover.gamma_multiply(ak));

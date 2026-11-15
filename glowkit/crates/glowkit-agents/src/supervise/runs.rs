@@ -260,9 +260,9 @@ impl egui::Widget for RunMonitor<'_> {
 /// # let ui: &mut egui::Ui = todo!();
 /// use glowkit_agents::CostMeter;
 /// ui.add(CostMeter::new(10.0)
-///     .model("Opus 4.1", 42_000.0, 6_100.0, 2.41)
-///     .model("Sonnet 4.5", 120_000.0, 18_000.0, 1.62)
-///     .model("Haiku 4.5", 300_000.0, 22_000.0, 0.38));
+///     .model("Nova Ultra", 42_000.0, 6_100.0, 2.41)
+///     .model("Nova 2", 120_000.0, 18_000.0, 1.62)
+///     .model("Nova Flash", 300_000.0, 22_000.0, 0.38));
 /// ```
 #[must_use = "add it with `ui.add(...)`"]
 pub struct CostMeter {
@@ -311,7 +311,7 @@ impl egui::Widget for CostMeter {
         let tin: f32 = self.models.iter().map(|m| m.1).sum();
         let tout: f32 = self.models.iter().map(|m| m.2).sum();
         let spent = glowkit_core::anim::follow(ui, id.with("s"), spent_t, 5.0);
-        let h = 214.0 + self.models.len() as f32 * 26.0;
+        let h = 226.0 + self.models.len() as f32 * 26.0;
         let (rect, resp) = alloc_centered(ui, self.width, h, Sense::hover());
         let p = ui.painter_at(rect.expand(14.0));
         panel(&p, &t, rect, 14.0);
@@ -322,7 +322,7 @@ impl egui::Widget for CostMeter {
         let over = frac > 1.0;
         let warn = frac >= self.warn_at;
         let c = if over { t.destructive } else if warn { t.warning } else { t.foreground };
-        let big = text(&p, pos2(rect.min.x + pad, rect.min.y + 62.0), Align2::LEFT_BOTTOM, &fmt_usd(spent), mono(28.0), if over { ink(&t, t.destructive) } else { t.foreground }, 200.0);
+        let big = text(&p, pos2(rect.min.x + pad, rect.min.y + 76.0), Align2::LEFT_BOTTOM, &fmt_usd(spent), mono(28.0), if over { ink(&t, t.destructive) } else { t.foreground }, 200.0);
         text(&p, pos2(big.max.x + 8.0, big.max.y - 5.0), Align2::LEFT_BOTTOM, &format!("of {} budget", fmt_usd(self.budget)), font(12.0), dim(&t), 180.0);
         if over {
             let k = 0.6 + 0.4 * (now * 3.0).sin().abs();
@@ -332,7 +332,7 @@ impl egui::Widget for CostMeter {
         } else {
             text(&p, pos2(rect.max.x - pad, big.center().y), Align2::RIGHT_CENTER, &format!("{:.0}%", frac * 100.0), mono(12.0), if warn { ink(&t, t.warning) } else { dim(&t) }, 60.0);
         }
-        let bar = Rect::from_min_size(pos2(rect.min.x + pad, rect.min.y + 76.0), vec2(rect.width() - pad * 2.0, 8.0));
+        let bar = Rect::from_min_size(pos2(rect.min.x + pad, rect.min.y + 88.0), vec2(rect.width() - pad * 2.0, 8.0));
         p.rect_filled(bar, cr(4.0), track(&t));
         let fw = bar.width() * frac.min(1.0);
         if fw > 1.0 {
@@ -341,7 +341,7 @@ impl egui::Widget for CostMeter {
         let wx = bar.min.x + bar.width() * self.warn_at;
         p.line_segment([pos2(wx, bar.min.y - 3.0), pos2(wx, bar.max.y + 3.0)], Stroke::new(1.0, with_alpha(t.foreground, 0.25)));
         // tokens in/out
-        let y = rect.min.y + 112.0;
+        let y = rect.min.y + 124.0;
         let half = (rect.width() - pad * 2.0) / 2.0;
         for (k, (label, v, ic)) in [("Tokens in", tin, Icon::ArrowDown), ("Tokens out", tout, Icon::ArrowUp)].iter().enumerate() {
             let x = rect.min.x + pad + k as f32 * half;
@@ -353,7 +353,7 @@ impl egui::Widget for CostMeter {
             text(&p, pos2(x + 30.0, y + 12.0), Align2::LEFT_CENTER, &fmt_tok(vv), mono(13.0), t.foreground, 100.0);
         }
         // by model
-        let sy = rect.min.y + 148.0;
+        let sy = rect.min.y + 160.0;
         hline(&p, &t, rect.min.x + pad, rect.max.x - pad, sy - 6.0);
         text(&p, pos2(rect.min.x + pad, sy + 8.0), Align2::LEFT_CENTER, "BY MODEL", font(9.5), faint(&t), 100.0);
         let sb = Rect::from_min_size(pos2(rect.min.x + pad, sy + 22.0), vec2(rect.width() - pad * 2.0, 10.0));

@@ -56,7 +56,16 @@ fn scene(ui: &mut Ui, h: f32, style: GameStyle) -> Rect {
 
 /// Run `f` in a child ui laid out top-down and centered within `r`.
 fn inside(ui: &mut Ui, r: Rect, f: impl FnOnce(&mut Ui)) {
-    ui.scope_builder(UiBuilder::new().max_rect(r).layout(Layout::top_down(Align::Center)), f);
+    let salt = ("game_inside", r.min.x as i32, r.min.y as i32);
+    let mut child = ui.new_child(UiBuilder::new().id_salt(salt).max_rect(r).layout(Layout::top_down(Align::Center)));
+    f(&mut child);
+}
+
+/// Place a widget centered in `r` without moving the parent's cursor.
+fn put(ui: &mut Ui, r: Rect, w: impl egui::Widget) {
+    let salt = ("game_put", r.min.x as i32, r.min.y as i32);
+    let mut child = ui.new_child(UiBuilder::new().id_salt(salt).max_rect(r).layout(Layout::centered_and_justified(egui::Direction::TopDown)));
+    child.add(w);
 }
 
 fn controls(ui: &mut Ui, f: impl FnOnce(&mut Ui)) {
@@ -198,7 +207,7 @@ fn step_bars(ui: &Ui, s: &mut BarSim, dmg: f32) {
         }
         s.next = t + 0.9 + 0.8 * hash01(s.n * 13) as f64;
     }
-    s.sp = (s.sp + glowkit_core::dt(ui) * 25.0).min(200.0);
+    s.sp = (s.sp + 25.0 / 60.0).min(200.0);
     glowkit_core::animate(ui);
 }
 
@@ -276,7 +285,7 @@ ui.add(GameCrosshair::new(GameCrosshairShape::Cross).spread(spread));"##,
                     ui.add(GameResourceBar::new(bars.mp, 600.0).kind(GameResourceKind::Mana).style(style).width(210.0).height(12.0).numbers(false));
                 });
                 // cooldowns bottom-center
-                let cds = [(GameIcon::Fire, 6.0, "Q"), (GameIcon::Frost, 9.0, "E"), (GameIcon::Dash, 4.0, "⇧"), (GameIcon::Heal, 14.0, "R")];
+                let cds = [(GameIcon::Fire, 6.0, "Q"), (GameIcon::Frost, 9.0, "E"), (GameIcon::Dash, 4.0, "SH"), (GameIcon::Heal, 14.0, "R")];
                 let cw = 4.0 * 60.0;
                 let cr = Rect::from_min_size(pos2(rect.center().x - cw / 2.0, rect.max.y - 74.0), vec2(cw, 64.0));
                 inside(ui, cr, |ui| {
@@ -291,7 +300,7 @@ ui.add(GameCrosshair::new(GameCrosshairShape::Cross).spread(spread));"##,
                     });
                 });
                 // ammo bottom-right
-                ui.put(Rect::from_min_size(pos2(rect.max.x - 280.0, rect.max.y - 118.0), vec2(270.0, 108.0)), GameAmmoCounter::new(gun.mag, 30, gun.reserve).reloading(reload).weapon("AR-7 Vanguard").style(style));
+                put(ui, Rect::from_min_size(pos2(rect.max.x - 280.0, rect.max.y - 118.0), vec2(270.0, 108.0)), GameAmmoCounter::new(gun.mag, 30, gun.reserve).reloading(reload).weapon("AR-7 Vanguard").style(style));
                 // minimap top-right
                 let path = |k: f64| vec2((k * 0.3).cos() as f32 * 160.0 + (k * 0.11).sin() as f32 * 60.0, (k * 0.23).sin() as f32 * 140.0);
                 let player = path(t);
@@ -304,7 +313,7 @@ ui.add(GameCrosshair::new(GameCrosshairShape::Cross).spread(spread));"##,
                     GameMapMarker::new(GameMarkerKind::Ally, player + vec2(30.0, 50.0)),
                     GameMapMarker::new(GameMarkerKind::Ping, player + vec2(-40.0, -90.0)).age((t as f32) % 4.5),
                 ];
-                ui.put(Rect::from_min_size(pos2(rect.max.x - 170.0, rect.min.y + 10.0), vec2(160.0, 160.0)), GameMinimap::new(player, heading).markers(&markers).size(140.0).style(style).zoom(260.0));
+                put(ui, Rect::from_min_size(pos2(rect.max.x - 170.0, rect.min.y + 10.0), vec2(160.0, 160.0)), GameMinimap::new(player, heading).markers(&markers).size(140.0).style(style).zoom(260.0));
                 // kill feed top-left
                 let names = ["Vex", "Halcyon", "Nyx", "Brannoc", "Quill", "Sable", "Orrin", "Talon"];
                 let weapons = [GameIcon::Rifle, GameIcon::Pistol, GameIcon::Bomb, GameIcon::Sword];
@@ -320,11 +329,11 @@ ui.add(GameCrosshair::new(GameCrosshairShape::Cross).spread(spread));"##,
                             .own(k % 5 == 0)
                     })
                     .collect();
-                ui.put(Rect::from_min_size(rect.min + vec2(14.0, 12.0), vec2(330.0, 130.0)), GameKillFeed::new(&kills).width(330.0).max_rows(4).life(6.0));
+                put(ui, Rect::from_min_size(rect.min + vec2(14.0, 12.0), vec2(330.0, 130.0)), GameKillFeed::new(&kills).width(330.0).max_rows(4).life(6.0));
                 // crosshair
                 let firing = reload.is_none() && (t - (gun.next_shot - 0.11)).abs() < 0.3;
                 let hit_age = ((t * 1.3).fract() / 1.3) as f32;
-                ui.put(Rect::from_center_size(rect.center(), Vec2::splat(96.0)), GameCrosshair::new(GameCrosshairShape::Cross).spread(if firing { 0.7 } else { 0.1 }).hit(Some(hit_age), (t as u64) % 4 == 0));
+                put(ui, Rect::from_center_size(rect.center(), Vec2::splat(96.0)), GameCrosshair::new(GameCrosshairShape::Cross).spread(if firing { 0.7 } else { 0.1 }).hit(Some(hit_age), (t as u64) % 4 == 0));
             },
         },
         Demo {
@@ -392,7 +401,8 @@ for cue in cues { audio.play(cue); }"##,
                 let style = style_tabs(ui, 1);
                 let mut sel: usize = mem(ui, "sel", || 0);
                 let t = now(ui);
-                let open = (t % 7.0) > 1.6;
+                let start: f64 = mem(ui, "start", || t);
+                let open = ((t - start + 3.0) % 7.0) > 0.8;
                 let mut chosen = None;
                 ui.add(
                     GamePauseMenu::new(open, &mut sel, &["Resume", "Settings", "Load Game", "Quit to Title"])
@@ -490,7 +500,7 @@ ui.add(GameResourceBar::new(mp, 600.0).kind(GameResourceKind::Mana).style(GameSt
                 set_mem(ui, "boss", st);
                 glowkit_core::animate(ui);
                 let armor = ((st.0 - 60_000.0) / 20_000.0).clamp(0.0, 1.0) * 0.6;
-                ui.put(Rect::from_min_size(rect.min + vec2(20.0, 26.0), vec2(rect.width() - 40.0, 90.0)), GameBossBar::new("Vorrhak", st.0, 80_000.0).title("The Ashen Tyrant").phases(&[0.66, 0.33]).armor(armor).style(style).width((rect.width() - 80.0).min(640.0)));
+                put(ui, Rect::from_min_size(rect.min + vec2(20.0, 26.0), vec2(rect.width() - 40.0, 90.0)), GameBossBar::new("Vorrhak", st.0, 80_000.0).title("The Ashen Tyrant").phases(&[0.66, 0.33]).armor(armor).style(style).width((rect.width() - 80.0).min(640.0)));
                 controls(ui, |ui| {
                     ui.add(ControlSlider::new("Hit size", &mut p[0], 500.0..=12000.0).width(260.0));
                 });
@@ -537,7 +547,7 @@ ui.add(GameResourceBar::new(mp, 600.0).kind(GameResourceKind::Mana).style(GameSt
                 let configs = [(GameStyle::SciFi, true, true), (GameStyle::Fantasy, false, false), (GameStyle::Minimal, true, false)];
                 for (i, (style, round, rotate)) in configs.iter().enumerate() {
                     let r = Rect::from_min_size(pos2(rect.min.x + i as f32 * cw, rect.min.y), vec2(cw, rect.height()));
-                    ui.put(r, GameMinimap::new(player, heading).markers(&markers).explored(&trail, 80.0).round(*round).rotate(*rotate).style(*style).zoom(p[0]).size(190.0f32.min(cw - 30.0)));
+                    put(ui, r, GameMinimap::new(player, heading).markers(&markers).explored(&trail, 80.0).round(*round).rotate(*rotate).style(*style).zoom(p[0]).size(190.0f32.min(cw - 30.0)));
                 }
                 controls(ui, |ui| {
                     ui.add(ControlSlider::new("Zoom", &mut p[0], 100.0..=500.0).suffix(" m").width(240.0));
@@ -565,7 +575,7 @@ ui.add(GameResourceBar::new(mp, 600.0).kind(GameResourceKind::Mana).style(GameSt
                     let reload = step_gun(ui, &mut g, *size, i as u64 * 7);
                     set_mem(ui, &key, g.clone());
                     let r = Rect::from_min_size(pos2(rect.min.x + i as f32 * cw, rect.min.y), vec2(cw, rect.height()));
-                    ui.put(r, GameAmmoCounter::new(g.mag, *size, g.reserve).reloading(reload).icon(*icon).weapon(name).style(*style));
+                    put(ui, r, GameAmmoCounter::new(g.mag, *size, g.reserve).reloading(reload).icon(*icon).weapon(name).style(*style));
                 }
             },
         },
@@ -580,7 +590,7 @@ ui.add(GameResourceBar::new(mp, 600.0).kind(GameResourceKind::Mana).style(GameSt
                 let mut p: [f32; 1] = mem(ui, "p", || [60.0]);
                 let rect = scene(ui, 300.0, GameStyle::Minimal);
                 let t = now(ui) as f32;
-                let abil = [(GameIcon::Fire, 5.0, "Q"), (GameIcon::Frost, 8.0, "E"), (GameIcon::Bolt, 3.5, "R"), (GameIcon::Dash, 2.5, "⇧"), (GameIcon::Heal, 11.0, "F"), (GameIcon::Bomb, 6.5, "G")];
+                let abil = [(GameIcon::Fire, 5.0, "Q"), (GameIcon::Frost, 8.0, "E"), (GameIcon::Bolt, 3.5, "R"), (GameIcon::Dash, 2.5, "SH"), (GameIcon::Heal, 11.0, "F"), (GameIcon::Bomb, 6.5, "G")];
                 let rows = rect.height() / 3.0;
                 for (si, style) in GameStyle::ALL.iter().enumerate() {
                     let r = Rect::from_min_size(pos2(rect.min.x, rect.min.y + si as f32 * rows), vec2(rect.width(), rows));
@@ -632,7 +642,7 @@ ui.add(GameResourceBar::new(mp, 600.0).kind(GameResourceKind::Mana).style(GameSt
                     if !hovered {
                         sel = auto;
                     }
-                    ui.put(r, GameHotbar::new(&mut sel, &slots).slot_size(48.0).style(*style));
+                    put(ui, r, GameHotbar::new(&mut sel, &slots).slot_size(48.0).style(*style));
                     set_mem(ui, &key, sel);
                 }
                 glowkit_core::animate(ui);
@@ -661,7 +671,7 @@ ui.add(GameResourceBar::new(mp, 600.0).kind(GameResourceKind::Mana).style(GameSt
                 });
                 let eq = equipped();
                 let r = Rect::from_min_size(rect.min + vec2(20.0, 0.0), vec2(rect.width() * 0.62, rect.height()));
-                ui.put(r, GameInventoryGrid::new(&mut bag, 6).title("Backpack").equipped(&eq).style(style).autoplay(true).cell_size(50.0));
+                put(ui, r, GameInventoryGrid::new(&mut bag, 6).title("Backpack").equipped(&eq).style(style).autoplay(true).cell_size(50.0));
                 set_mem(ui, "bag", bag);
             },
         },
@@ -680,7 +690,7 @@ ui.add(GameResourceBar::new(mp, 600.0).kind(GameResourceKind::Mana).style(GameSt
                 let cw = rect.width() / 3.0;
                 for (i, style) in GameStyle::ALL.iter().enumerate() {
                     let r = Rect::from_min_size(pos2(rect.min.x + i as f32 * cw, rect.min.y), vec2(cw, rect.height()));
-                    ui.put(r, GameItemTooltip::new(pairs[i].0).compare(Some(pairs[i].1)).style(*style));
+                    put(ui, r, GameItemTooltip::new(pairs[i].0).compare(Some(pairs[i].1)).style(*style));
                 }
             },
         },
@@ -718,9 +728,9 @@ ui.add(GameResourceBar::new(mp, 600.0).kind(GameResourceKind::Mana).style(GameSt
                 let rect = scene(ui, 340.0, style);
                 let lines = dialogue();
                 let t = now(ui);
-                let mut st: (usize, f64) = mem(ui, "line", || (0, t));
+                let mut st: (usize, f64) = mem(ui, "line", || (1, t - 1.0));
                 let line = &lines[st.0 % lines.len()];
-                let dur = line.text.chars().count() as f64 / 38.0 + if line.choices.is_empty() { 2.0 } else { 4.0 };
+                let dur = line.text.chars().count() as f64 / 38.0 + if line.choices.is_empty() { 3.0 } else { 5.0 };
                 let mut next = false;
                 let mut chosen = None;
                 inside(ui, Rect::from_min_max(pos2(rect.min.x + 20.0, rect.min.y + 20.0), rect.max - vec2(20.0, 10.0)), |ui| {
@@ -744,7 +754,7 @@ ui.add(GameResourceBar::new(mp, 600.0).kind(GameResourceKind::Mana).style(GameSt
                 let t = now(ui);
                 let step = ((t / 1.4) as usize) % 13;
                 let q = quests(step);
-                ui.put(Rect::from_min_size(pos2(rect.max.x - 360.0, rect.min.y + 10.0), vec2(340.0, rect.height() - 20.0)), GameQuestTracker::new(&q).width(330.0).style(GameStyle::Fantasy));
+                put(ui, Rect::from_min_size(pos2(rect.max.x - 360.0, rect.min.y + 10.0), vec2(340.0, rect.height() - 20.0)), GameQuestTracker::new(&q).width(330.0).style(GameStyle::Fantasy));
                 glowkit_core::animate(ui);
             },
         },
@@ -779,8 +789,10 @@ ui.add(GameResourceBar::new(mp, 600.0).kind(GameResourceKind::Mana).style(GameSt
                 let it = items();
                 let order = [4usize, 1, 0, 14, 11];
                 let t = now(ui);
-                let k = ((t / 4.0) as usize) % order.len();
-                ui.put(rect, GameLootPopup::new(&it[order[k]]).style(style).height(rect.height()));
+                let start: f64 = mem(ui, "start", || t);
+                let cyc = ((t - start + 2.0) / 4.5).floor();
+                let k = cyc as usize % order.len();
+                put(ui, rect, GameLootPopup::new(&it[order[k]]).started_at(start - 2.0 + cyc * 4.5).style(style).height(rect.height()));
             },
         },
         Demo {
@@ -796,7 +808,9 @@ ui.add(GameResourceBar::new(mp, 600.0).kind(GameResourceKind::Mana).style(GameSt
     .age(seconds_since_unlock));"##,
             show: |ui| {
                 let rect = scene(ui, 340.0, GameStyle::Minimal);
-                let t = now(ui) as f32;
+                let t0 = now(ui);
+                let start: f64 = mem(ui, "start", || t0);
+                let t = (t0 - start) as f32;
                 let list = [
                     ("Dragonslayer", "Defeat Vorrhak on Veteran", GameIcon::Trophy, GameRarity::Legendary, 50, 2.4),
                     ("Hoarder", "Fill every inventory slot", GameIcon::Coin, GameRarity::Rare, 20, 18.1),
@@ -804,9 +818,9 @@ ui.add(GameResourceBar::new(mp, 600.0).kind(GameResourceKind::Mana).style(GameSt
                 ];
                 for (i, style) in GameStyle::ALL.iter().enumerate() {
                     let (title, desc, icon, rar, pts, pct) = list[i];
-                    let age = (t + 6.5 - i as f32 * 0.6) % 6.5;
+                    let age = (t + 2.0 - i as f32 * 0.5).rem_euclid(7.0);
                     let r = Rect::from_min_size(pos2(rect.center().x - 200.0, rect.min.y + 12.0 + i as f32 * 106.0), vec2(400.0, 104.0));
-                    ui.put(r, GameAchievementToast::new(title, desc, icon).points(pts).rarity(rar).percent(pct).age(age).duration(5.0).style(*style).width(400.0));
+                    put(ui, r, GameAchievementToast::new(title, desc, icon).points(pts).rarity(rar).percent(pct).age(age).duration(5.0).style(*style).width(400.0));
                 }
             },
         },
@@ -828,6 +842,13 @@ GameDamageNumbers::new(&feed).paint(ui, viewport_rect);"##,
                 let mut st: (f64, u64, f64) = mem(ui, "st", || (0.0, 0, -10.0));
                 let target = pos2(rect.center().x, rect.min.y + rect.height() * 0.62);
                 let local = target - rect.min;
+                if feed.is_empty() && st.1 == 0 {
+                    // open with a volley so the effect is visible straight away
+                    for (dx, dy, amt, kind) in [(-50.0, -50.0, 312, GameDamageKind::Normal), (40.0, -60.0, 1488, GameDamageKind::Crit), (60.0, -20.0, 245, GameDamageKind::Normal), (-30.0, -10.0, 160, GameDamageKind::Heal)] {
+                        feed.spawn(ui, (local + vec2(dx, dy)).to_pos2(), amt, kind);
+                    }
+                    st.1 = 1;
+                }
                 if t >= st.0 {
                     st.1 += 1;
                     let r = hash01(st.1 * 3);
@@ -845,7 +866,7 @@ GameDamageNumbers::new(&feed).paint(ui, viewport_rect);"##,
                     if kind != GameDamageKind::Miss && kind != GameDamageKind::Heal {
                         st.2 = t;
                     }
-                    st.0 = t + (0.35 + 0.45 * hash01(st.1 * 11) as f64) / p[1] as f64;
+                    st.0 = t + (0.18 + 0.3 * hash01(st.1 * 11) as f64) / p[1] as f64;
                 }
                 if resp.clicked() {
                     if let Some(pp) = resp.interact_pointer_pos() {
@@ -906,7 +927,7 @@ GameDamageNumbers::new(&feed).paint(ui, viewport_rect);"##,
                 let rh = rect.height() / 2.0;
                 for (i, shape) in GameCrosshairShape::ALL.iter().enumerate() {
                     let r = Rect::from_min_size(pos2(rect.min.x + (i % 3) as f32 * cw, rect.min.y + (i / 3) as f32 * rh), vec2(cw, rh));
-                    ui.put(r, GameCrosshair::new(*shape).spread(spread).hit(if firing > 0.0 { Some(hit_age) } else { None }, kill).color(colors[i]).thickness(p[1]).size(rh - 16.0));
+                    put(ui, r, GameCrosshair::new(*shape).spread(spread).hit(if firing > 0.0 { Some(hit_age) } else { None }, kill).color(colors[i]).thickness(p[1]).size(rh - 16.0));
                 }
                 glowkit_core::animate(ui);
                 controls(ui, |ui| {
@@ -951,8 +972,10 @@ GameDamageNumbers::new(&feed).paint(ui, viewport_rect);"##,
             show: |ui| {
                 let style = style_tabs(ui, 1);
                 let t = now(ui);
-                let lvl = 23 + ((t / 6.0) as u32) % 20;
-                ui.add(GameLevelUpScreen::new(lvl).stats(&[("Strength", 31.0, 34.0), ("Vitality", 22.0, 25.0), ("Agility", 18.0, 19.0), ("Intellect", 12.0, 14.0)]).style(style).height(380.0));
+                let start: f64 = mem(ui, "start", || t);
+                let cyc = ((t - start + 2.4) / 6.0).floor();
+                let lvl = 23 + (cyc as u32) % 20;
+                ui.add(GameLevelUpScreen::new(lvl).started_at(start - 2.4 + cyc * 6.0).stats(&[("Strength", 31.0, 34.0), ("Vitality", 22.0, 25.0), ("Agility", 18.0, 19.0), ("Intellect", 12.0, 14.0)]).style(style).height(380.0));
             },
         },
         Demo {
@@ -979,7 +1002,7 @@ GameDamageNumbers::new(&feed).paint(ui, viewport_rect);"##,
                             .own(k % 4 == 1)
                     })
                     .collect();
-                ui.put(Rect::from_min_size(pos2(rect.max.x - 400.0, rect.min.y + 14.0), vec2(380.0, 230.0)), GameKillFeed::new(&kills).width(380.0).max_rows(7).life(7.0));
+                put(ui, Rect::from_min_size(pos2(rect.max.x - 400.0, rect.min.y + 14.0), vec2(380.0, 230.0)), GameKillFeed::new(&kills).width(380.0).max_rows(7).life(7.0));
             },
         },
         Demo {

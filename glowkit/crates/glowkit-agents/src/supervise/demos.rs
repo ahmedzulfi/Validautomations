@@ -68,24 +68,24 @@ fn tree_sim(t: f32) -> AgentNode {
         let (c, secs) = spent(t, s, e, rate);
         AgentNode::new(name, model).task(task).state(phase(t, s, e)).cost(c).secs(secs)
     };
-    let mut writer = node("Writer", "Sonnet 4.5", "Draft copy for the three plans", 6.0, 24.0, 0.004);
+    let mut writer = node("Writer", "Nova 2", "Draft copy for the three plans", 6.0, 24.0, 0.004);
     if (14.0..18.0).contains(&t) {
         writer.state = RunState::NeedsInput;
         writer.task = "Asks: keep the annual discount at 20%?".into();
     }
-    let mut root = node("Orchestrator", "Opus 4.1", "Launch the new pricing page by Friday", 0.0, 28.0, 0.012);
+    let mut root = node("Orchestrator", "Nova Ultra", "Launch the new pricing page by Friday", 0.0, 28.0, 0.012);
     if t >= 28.0 {
         root.task = "All sub-agents reported back. Page is live.".into();
     }
     root.child(
-        node("Researcher", "Sonnet 4.5", "Compare pricing of five competitors", 0.5, 13.0, 0.005)
-            .child(node("Scraper", "Haiku 4.5", "Read pricing pages of Linear, Notion and three more", 1.0, 9.0, 0.0015))
-            .child(node("Analyst", "Sonnet 4.5", "Tabulate seats, tiers and annual discounts", 9.0, 12.5, 0.003)),
+        node("Researcher", "Nova 2", "Compare pricing of five competitors", 0.5, 13.0, 0.005)
+            .child(node("Scraper", "Nova Flash", "Read pricing pages of Linear, Notion and three more", 1.0, 9.0, 0.0015))
+            .child(node("Analyst", "Nova 2", "Tabulate seats, tiers and annual discounts", 9.0, 12.5, 0.003)),
     )
     .child(writer)
     .child(
-        node("Coder", "GPT-5", "Build the page and wire up checkout", 3.0, 27.0, 0.006)
-            .child(node("Tester", "Haiku 4.5", "Run the checkout e2e suite", 18.0, 26.0, 0.002)),
+        node("Coder", "Orbit 5", "Build the page and wire up checkout", 3.0, 27.0, 0.006)
+            .child(node("Tester", "Nova Flash", "Run the checkout e2e suite", 18.0, 26.0, 0.002)),
     )
 }
 
@@ -97,11 +97,11 @@ pub(super) fn all() -> Vec<Demo> {
             category: C,
             description: "An orchestrator and its sub-agents as a live tree of cards: status, model, task, cost and time on each, lights running along connectors to working agents, branches that fold.",
             covers: &["affectUI: Agent Tree", "affectUI: Agent Crew"],
-            code: r##"let root = AgentNode::new("Orchestrator", "Opus 4.1").state(RunState::Running)
+            code: r##"let root = AgentNode::new("Orchestrator", "Nova Ultra").state(RunState::Running)
     .task("Launch the new pricing page")
-    .child(AgentNode::new("Researcher", "Sonnet 4.5").state(RunState::Running).cost(0.06)
-        .child(AgentNode::new("Scraper", "Haiku 4.5").state(RunState::Done)))
-    .child(AgentNode::new("Writer", "Sonnet 4.5").state(RunState::NeedsInput));
+    .child(AgentNode::new("Researcher", "Nova 2").state(RunState::Running).cost(0.06)
+        .child(AgentNode::new("Scraper", "Nova Flash").state(RunState::Done)))
+    .child(AgentNode::new("Writer", "Nova 2").state(RunState::NeedsInput));
 ui.add(AgentTree::new(&root).title("Agents"));"##,
             show: |ui| {
                 let mut p = params(ui, [1.0, 210.0]);
@@ -120,7 +120,7 @@ ui.add(AgentTree::new(&root).title("Agents"));"##,
             category: C,
             description: "A relay hand-off between two agents: a baton travels the track, the receiver lights up, and the context that went along drops in while what got lost is struck through.",
             covers: &["affectUI: Agent Handoff", "Creance: AgentHandoffBanner"],
-            code: r##"ui.add(HandoffCard::new(("Researcher", "Sonnet 4.5"), ("Writer", "Haiku 4.5"))
+            code: r##"ui.add(HandoffCard::new(("Researcher", "Nova 2"), ("Writer", "Nova Flash"))
     .reason("Compared 5 competitors; Notion and Linear are closest to us")
     .item(HandoffItem::new("competitors.md", 2400.0))
     .item(HandoffItem::new("raw page HTML", 18200.0).dropped())
@@ -130,7 +130,7 @@ ui.add(AgentTree::new(&root).title("Agents"));"##,
                 let t = sim_clock(ui, p[0]);
                 let prog = ((t % 7.0) / 3.6).min(1.0);
                 ui.add(
-                    HandoffCard::new(("Researcher", "Sonnet 4.5"), ("Writer", "Haiku 4.5"))
+                    HandoffCard::new(("Researcher", "Nova 2"), ("Writer", "Nova Flash"))
                         .reason("Compared 5 competitors: Notion and Linear are closest to our tiers")
                         .item(HandoffItem::new("competitors.md", 2400.0))
                         .item(HandoffItem::new("pricing-table.csv", 860.0).icon(Icon::Code))
@@ -188,18 +188,18 @@ type SpanSpec = (&'static str, &'static str, SpanKind, usize, f32, f32, f32, f32
 fn trace_sim(t: f32) -> Vec<TraceSpan> {
     let t = t % 22.0;
     let spec: [SpanSpec; 12] = [
-        ("Orchestrator", "Opus 4.1", SpanKind::Agent, 0, 0.0, 17.5, 0.0, 0.0),
-        ("Plan the launch", "Opus 4.1", SpanKind::Llm, 1, 0.3, 4.2, 3900.0, 0.092),
-        ("Researcher", "Sonnet 4.5", SpanKind::Agent, 1, 4.7, 7.4, 0.0, 0.0),
+        ("Orchestrator", "Nova Ultra", SpanKind::Agent, 0, 0.0, 17.5, 0.0, 0.0),
+        ("Plan the launch", "Nova Ultra", SpanKind::Llm, 1, 0.3, 4.2, 3900.0, 0.092),
+        ("Researcher", "Nova 2", SpanKind::Agent, 1, 4.7, 7.4, 0.0, 0.0),
         ("web_search", "linear pricing", SpanKind::Tool, 2, 5.0, 2.6, 0.0, 0.004),
         ("web_search", "notion pricing", SpanKind::Tool, 2, 5.2, 3.1, 0.0, 0.004),
         ("vector_search", "past launches", SpanKind::Retrieval, 2, 8.4, 1.2, 600.0, 0.001),
-        ("Summarize findings", "Sonnet 4.5", SpanKind::Llm, 2, 9.8, 2.2, 2100.0, 0.018),
-        ("Writer", "Haiku 4.5", SpanKind::Agent, 1, 12.2, 5.0, 0.0, 0.0),
+        ("Summarize findings", "Nova 2", SpanKind::Llm, 2, 9.8, 2.2, 2100.0, 0.018),
+        ("Writer", "Nova Flash", SpanKind::Agent, 1, 12.2, 5.0, 0.0, 0.0),
         ("read_file", "brand-voice.md", SpanKind::Tool, 2, 12.4, 0.6, 0.0, 0.0),
         ("figma.get_frames", "pricing v3", SpanKind::Tool, 2, 12.6, 1.8, 0.0, 0.0),
-        ("Draft copy", "Haiku 4.5", SpanKind::Llm, 2, 14.5, 2.5, 1600.0, 0.006),
-        ("Review copy", "Opus 4.1", SpanKind::Llm, 1, 17.0, 0.4, 900.0, 0.021),
+        ("Draft copy", "Nova Flash", SpanKind::Llm, 2, 14.5, 2.5, 1600.0, 0.006),
+        ("Review copy", "Nova Ultra", SpanKind::Llm, 1, 17.0, 0.4, 900.0, 0.021),
     ];
     spec.iter()
         .filter(|s| t >= s.4)
@@ -317,14 +317,15 @@ fn timeline_sim(t: f32) -> (Vec<TimelineStep>, bool) {
         for (k, (name, ic, det)) in tools[i].iter().enumerate() {
             let ts = k as f32 * dur / tools[i].len() as f32;
             let te = (k + 1) as f32 * dur / tools[i].len() as f32;
-            let s = if local < ts {
+            let s = if state2 == RunState::Failed {
+                if k == 0 { RunState::Done } else { RunState::Failed }
+            } else if local < ts {
                 continue;
             } else if local < te && state == RunState::Running {
                 RunState::Running
             } else {
                 RunState::Done
             };
-            let s = if state2 == RunState::Failed && k == 1 { RunState::Failed } else { s };
             st = st.tool(StepTool::new(*name, *ic, s).secs((local - ts).clamp(0.0, te - ts)).detail(*det));
         }
         steps.push(st);
@@ -460,8 +461,8 @@ ui.add(TraceWaterfall::new(&spans).title("Launch the pricing page").now(t));"##,
             show: |ui| {
                 let mut p = params(ui, [1.0, 30.0]);
                 let t = sim_clock(ui, p[0]);
-                let spans = trace_sim(t);
-                ui.add(TraceWaterfall::new(&spans).title("Launch the new pricing page by Friday").now(t % 22.0).row_height(p[1]));
+                let spans = trace_sim(t + 11.0);
+                ui.add(TraceWaterfall::new(&spans).title("Launch the new pricing page by Friday").now((t + 11.0) % 22.0).row_height(p[1]));
                 with_controls(ui, &mut p, 200.0, |ui, p, w| {
                     ui.add(ControlSlider::new("Speed", &mut p[0], 0.0..=3.0).decimals(1).suffix("x").width(w));
                     ui.add(ControlSlider::new("Row", &mut p[1], 24.0..=40.0).suffix("px").width(w));
@@ -560,7 +561,7 @@ ui.add(RunMonitor::new(&runs));"##,
             show: |ui| {
                 let mut p = params(ui, [1.0, 6.0]);
                 let t = sim_clock(ui, p[0]);
-                let runs = runs_sim(t);
+                let runs = runs_sim(t + 14.0);
                 ui.add(RunMonitor::new(&runs).max_rows(p[1] as usize));
                 with_controls(ui, &mut p, 200.0, |ui, p, w| {
                     ui.add(ControlSlider::new("Speed", &mut p[0], 0.0..=3.0).decimals(1).suffix("x").width(w));
@@ -584,13 +585,13 @@ let out = RunTimeline::new("Fix the failing deploy", &steps).show(ui);"##,
             show: |ui| {
                 let mut p = params(ui, [1.0, 560.0]);
                 let t = sim_clock(ui, p[0]);
-                let (steps, _) = timeline_sim(t);
+                let (steps, _) = timeline_sim(t + 13.0);
                 let out = RunTimeline::new("Fix the failing production deploy", &steps).width(p[1]).show(ui);
                 if out.retry.is_some() {
                     // jump past the failure window
                     glowkit_core::with_state(ui, ui.scope_id().with("sim_clock"), || 0.0_f32, |c| {
                         let base = (*c / 34.0).floor() * 34.0;
-                        *c = base + 19.0;
+                        *c = base + 6.0;
                     });
                 }
                 with_controls(ui, &mut p, 200.0, |ui, p, w| {
@@ -606,23 +607,23 @@ let out = RunTimeline::new("Fix the failing deploy", &steps).show(ui);"##,
             description: "Spend against a budget: a big gliding total, a budget bar that turns amber and then red with a pulsing over-limit tag, tokens in and out, and spend split by model.",
             covers: &["Creance: BudgetMeter"],
             code: r##"ui.add(CostMeter::new(10.0)
-    .model("Opus 4.1", 42_000.0, 6_100.0, 2.41)
-    .model("Sonnet 4.5", 120_000.0, 18_000.0, 1.62)
-    .model("Haiku 4.5", 300_000.0, 22_000.0, 0.38));"##,
+    .model("Nova Ultra", 42_000.0, 6_100.0, 2.41)
+    .model("Nova 2", 120_000.0, 18_000.0, 1.62)
+    .model("Nova Flash", 300_000.0, 22_000.0, 0.38));"##,
             show: |ui| {
                 let mut p = params(ui, [1.0, 6.0]);
-                let t = sim_clock(ui, p[0]) % 40.0;
+                let t = (sim_clock(ui, p[0]) + 26.0) % 40.0;
                 let k = t / 40.0;
                 ui.add(
                     CostMeter::new(p[1])
                         .title("Spend", "Today")
-                        .model("Opus 4.1", 42_000.0 * k, 6_100.0 * k, 4.1 * k)
-                        .model("Sonnet 4.5", 120_000.0 * k, 18_000.0 * k, 2.2 * k + 0.2)
-                        .model("Haiku 4.5", 300_000.0 * k, 22_000.0 * k, 0.6 * k + 0.05),
+                        .model("Nova Ultra", 42_000.0 * k, 6_100.0 * k, 4.1 * k)
+                        .model("Nova 2", 120_000.0 * k, 18_000.0 * k, 2.2 * k + 0.2)
+                        .model("Nova Flash", 300_000.0 * k, 22_000.0 * k, 0.6 * k + 0.05),
                 );
                 with_controls(ui, &mut p, 200.0, |ui, p, w| {
                     ui.add(ControlSlider::new("Speed", &mut p[0], 0.0..=3.0).decimals(1).suffix("x").width(w));
-                    ui.add(ControlSlider::new("Budget", &mut p[1], 2.0..=12.0).suffix("$").width(w));
+                    ui.add(ControlSlider::new("Budget $", &mut p[1], 2.0..=12.0).width(w));
                 });
             },
         },
@@ -636,7 +637,7 @@ let out = RunTimeline::new("Fix the failing deploy", &steps).show(ui);"##,
             show: |ui| {
                 let mut p = params(ui, [1.0, 300.0]);
                 let t = sim_clock(ui, p[0]);
-                let lines = log_sim(t);
+                let lines = log_sim(t + 40.0);
                 ui.add(LogStream::new(&lines).title("Deploy Fixer · logs").height(p[1]));
                 with_controls(ui, &mut p, 200.0, |ui, p, w| {
                     ui.add(ControlSlider::new("Speed", &mut p[0], 0.0..=3.0).decimals(1).suffix("x").width(w));
@@ -688,7 +689,7 @@ ui.add(AgentSessionList::new(&sessions, &mut selected));"##,
             show: |ui| {
                 let mut p = params(ui, [1.0, 470.0]);
                 let t = sim_clock(ui, p[0]);
-                let sessions = sessions_sim(t);
+                let sessions = sessions_sim(t + 8.0);
                 let mut sel: Option<u64> = mem(ui, "sel", || Some(1));
                 ui.add(AgentSessionList::new(&sessions, &mut sel).height(p[1]));
                 set_mem(ui, "sel", sel);
@@ -707,7 +708,7 @@ ui.add(AgentSessionList::new(&sessions, &mut selected));"##,
             code: r##"let action = SessionDetailHeader::new("Deploy Fixer", "Fix the failing production deploy")
     .meta("acme/web", "fix/missing-zod", "MacBook Pro")
     .state(RunState::Running, 142.0).step(3, 5, "Running the test suite")
-    .budget(18_400.0, 50_000.0).needs_you(2).model("Sonnet 4.5")
+    .budget(18_400.0, 50_000.0).needs_you(2).model("Nova 2")
     .show(ui);"##,
             show: |ui| {
                 let mut p = params(ui, [1.0]);
@@ -733,7 +734,7 @@ ui.add(AgentSessionList::new(&sessions, &mut selected));"##,
                     .step(step, 5, labels[step - 1])
                     .budget(4_000.0 + el * 260.0 % 46_000.0, 50_000.0)
                     .needs_you(if step >= 3 { 2 } else { 0 })
-                    .model("Sonnet 4.5")
+                    .model("Nova 2")
                     .show(ui);
                 match act {
                     Some(SessionAction::Pause) => paused = true,
@@ -764,11 +765,11 @@ ui.add(McpServerList::new(&mut servers));"##,
                 let idle_s = idle(ui);
                 let mut servers: Vec<McpServer> = mem(ui, "servers", || {
                     vec![
-                        McpServer::new("GitHub", "http", "https://api.githubcopilot.com/mcp/").tools(&["create_issue", "create_pr", "search_code", "get_file", "list_commits", "add_comment"]),
-                        McpServer::new("Linear", "http", "https://mcp.linear.app/sse").tools(&["list_issues", "save_issue", "list_projects"]),
+                        McpServer::new("GitHub", "http", "https://api.githubcopilot.com/mcp/").tools(&["create_issue", "create_pr", "search_code", "get_file", "list_commits", "add_comment"]).latency(vec![48.0, 52.0, 61.0, 44.0, 58.0, 72.0, 50.0, 47.0]),
+                        McpServer::new("Linear", "http", "https://mcp.linear.app/sse").tools(&["list_issues", "save_issue", "list_projects"]).latency(vec![120.0, 180.0, 340.0, 260.0, 150.0, 130.0, 310.0, 140.0]),
                         McpServer::new("Postgres", "stdio", "npx @mcp/postgres $DATABASE_URL").tools(&["query", "list_tables", "describe"]).enabled(false),
                         McpServer::new("Figma", "http", "http://127.0.0.1:3845/mcp").tools(&["get_frames", "get_code"]).error("Desktop app not running"),
-                        McpServer::new("Filesystem", "stdio", "npx @mcp/fs ~/projects").tools(&["read_file", "write_file", "list_dir", "search"]),
+                        McpServer::new("Filesystem", "stdio", "npx @mcp/fs ~/projects").tools(&["read_file", "write_file", "list_dir", "search"]).latency(vec![6.0, 8.0, 5.0, 7.0, 9.0, 6.0, 5.0, 8.0]),
                     ]
                 });
                 if tick(ui, "lat", t, 0.8) {
@@ -797,7 +798,7 @@ ui.add(McpServerList::new(&mut servers));"##,
             description: "Agent skills and plugins as cards with search and category tabs; Install fills across the button and morphs into Installed, which offers Remove on hover.",
             covers: &[],
             code: r##"let mut skills = vec![
-    Skill::new("PDF tools", "Anthropic", "Documents").desc("Read, fill and merge PDFs").installs(48_200),
+    Skill::new("PDF tools", "Lumen Labs", "Documents").desc("Read, fill and merge PDFs").installs(48_200),
     Skill::new("Postgres", "Community", "Data").desc("Query and migrate databases").installed(true),
 ];
 ui.add(SkillsBrowser::new(&mut skills));"##,
@@ -807,11 +808,11 @@ ui.add(SkillsBrowser::new(&mut skills));"##,
                 let idle_s = idle(ui);
                 let fresh = || {
                     vec![
-                        Skill::new("PDF tools", "Anthropic", "Documents").desc("Read, fill, split and merge PDF files, including forms.").icon(Icon::File).installs(48_200).installed(true),
-                        Skill::new("Spreadsheets", "Anthropic", "Documents").desc("Build and edit xlsx files with formulas and charts.").icon(Icon::Code).installs(39_400),
+                        Skill::new("PDF tools", "Lumen Labs", "Documents").desc("Read, fill, split and merge PDF files, including forms.").icon(Icon::File).installs(48_200).installed(true),
+                        Skill::new("Spreadsheets", "Lumen Labs", "Documents").desc("Build and edit xlsx files with formulas and charts.").icon(Icon::Code).installs(39_400),
                         Skill::new("Postgres", "Community", "Data").desc("Query, explain and migrate Postgres databases safely.").icon(Icon::Terminal).installs(12_900),
                         Skill::new("Web research", "Community", "Research").desc("Search, read and cite sources with quotes and dates.").icon(Icon::Globe).installs(27_100),
-                        Skill::new("Code review", "Anthropic", "Engineering").desc("Review diffs for bugs, reuse and simplification.").icon(Icon::Eye).installs(51_800),
+                        Skill::new("Code review", "Lumen Labs", "Engineering").desc("Review diffs for bugs, reuse and simplification.").icon(Icon::Eye).installs(51_800),
                         Skill::new("Release notes", "Community", "Engineering").desc("Group merged PRs into readable release notes.").icon(Icon::Bookmark).installs(6_300),
                     ]
                 };
@@ -868,7 +869,7 @@ ui.add(AgentFleetGrid::new(&fleet));"##,
 ui.add(EvalScoreboard::new(&suites).baseline("v2.0.3").trend(vec![91.0, 93.2, 94.6, 92.1, 94.0]));"##,
             show: |ui| {
                 let mut p = params(ui, [1.0]);
-                let t = sim_clock(ui, p[0]) % 30.0;
+                let t = (sim_clock(ui, p[0]) + 10.0) % 30.0;
                 let prog = (t / 18.0).min(1.0);
                 let suite = |name: &str, total: u32, pass: f32, fail: f32, flaky: f32, delta: f32, lag: f32| {
                     let f = ((prog - lag) / (1.0 - lag)).clamp(0.0, 1.0);
@@ -1099,7 +1100,7 @@ ui.add(PlanBoard::new("Fix the failing production deploy", &steps));"##,
             show: |ui| {
                 let mut p = params(ui, [1.0]);
                 let t = sim_clock(ui, p[0]);
-                let steps = plan_sim(t);
+                let steps = plan_sim(t + 12.0);
                 ui.add(PlanBoard::new("Fix the failing production deploy", &steps));
                 with_controls(ui, &mut p, 220.0, |ui, p, w| {
                     ui.add(ControlSlider::new("Speed", &mut p[0], 0.0..=3.0).decimals(1).suffix("x").width(w));
@@ -1121,7 +1122,7 @@ ui.add(PlanBoard::new("Fix the failing production deploy", &steps));"##,
 ui.add(ContextWindowViz::new(&parts, 200_000.0).compact_at(0.9));"##,
             show: |ui| {
                 let mut p = params(ui, [1.0, 90.0]);
-                let t = sim_clock(ui, p[0]) % 40.0;
+                let t = (sim_clock(ui, p[0]) + 14.0) % 40.0;
                 let grow = (t / 30.0).min(1.0);
                 let compacted = t > 30.0 && grow >= p[1] / 100.0 - 0.3;
                 let conv = if compacted { 9_000.0 } else { 18_000.0 + 92_000.0 * grow };

@@ -20,6 +20,7 @@ use std::f32::consts::TAU;
 pub struct GameLootPopup<'a> {
     item: &'a GameItem,
     replay: u64,
+    started_at: Option<f64>,
     height: f32,
     shake: f32,
     style: GameStyle,
@@ -30,7 +31,13 @@ pub struct GameLootPopup<'a> {
 impl<'a> GameLootPopup<'a> {
     /// A reveal for `item`.
     pub fn new(item: &'a GameItem) -> Self {
-        Self { item, replay: 0, height: 320.0, shake: 1.0, style: GameStyle::SciFi, palette: None, cues: None }
+        Self { item, replay: 0, started_at: None, height: 320.0, shake: 1.0, style: GameStyle::SciFi, palette: None, cues: None }
+    }
+    /// Sync the animation to a game clock: the egui time (`ui.input(|i| i.time)`) at which it
+    /// started. By default it starts when first shown or when its content changes.
+    pub fn started_at(mut self, time: f64) -> Self {
+        self.started_at = Some(time);
+        self
     }
     /// Change this number to replay the reveal for the same item.
     pub fn replay(mut self, key: u64) -> Self {
@@ -85,6 +92,7 @@ impl egui::Widget for GameLootPopup<'_> {
             }
             (now - s.1) as f32
         });
+        let t = self.started_at.map(|s| (now - s) as f32).unwrap_or(t);
         let charge = 0.75;
         let fired: bool = glowkit_core::state(ui, id.with(("fired", key)), || false);
         if t >= charge && !fired {
@@ -95,7 +103,7 @@ impl egui::Widget for GameLootPopup<'_> {
         let time = glowkit_core::time(ui);
         let rc = self.item.rarity.color();
         let tier = self.item.rarity.tier() as f32;
-        let painter = ui.painter();
+        let painter = &ui.painter_at(rect);
         let tb = t - charge;
         let amp = (2.0 + tier * 2.5) * self.shake;
         let mut sh = Vec2::ZERO;
@@ -257,7 +265,7 @@ impl egui::Widget for GameAchievementToast<'_> {
             return resp;
         }
         glowkit_core::animate(ui);
-        let painter = ui.painter();
+        let painter = &ui.painter_at(rect);
         let rc = self.rarity.color();
         let enter = glowkit_core::ease(glowkit_core::Easing::OutBack, (t / 0.5).min(1.0));
         let leave = if t > self.duration { glowkit_core::ease(glowkit_core::Easing::InCubic, ((t - self.duration) / exit).min(1.0)) } else { 0.0 };

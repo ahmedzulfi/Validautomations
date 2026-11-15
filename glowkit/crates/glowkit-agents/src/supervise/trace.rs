@@ -310,7 +310,7 @@ impl egui::Widget for TraceWaterfall<'_> {
                 // running: shimmering leading edge
                 let w = (bar.width()).min(40.0);
                 let er = Rect::from_min_max(pos2(bar.max.x - w, bar.min.y), bar.max);
-                paint::gradient_rect(&p, er, 4.0, 0.0, &[with_alpha(kc, 0.0), with_alpha(kc, 0.55)]);
+                grad_rect(&p, er.shrink2(vec2(0.0, 1.0)), Color32::TRANSPARENT, with_alpha(kc, 0.55), false);
                 spinner(&p, pos2(bar.max.x + 9.0, cy), 4.5, kc, now, 1.5);
             }
             let lx = if s.dur.is_none() { bar.max.x + 20.0 } else { bar.max.x + 6.0 };

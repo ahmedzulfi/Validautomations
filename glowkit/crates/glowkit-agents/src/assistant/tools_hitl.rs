@@ -208,7 +208,7 @@ impl<'a> FormResult<'a> {
                         let cur = opts.iter().position(|o| *o == st.values[i]).unwrap_or(0);
                         let x = glowkit_core::anim::spring(ui, fid.with("x"), cur as f32, 380.0, 30.0);
                         let p = ui.painter();
-                        p.rect_filled(r, cr(10.0), well(&t));
+                        p.rect_filled(r, cr(10.0), track(&t));
                         let pill = Rect::from_min_size(pos2(r.min.x + 3.0 + x * seg, r.min.y + 3.0), vec2(seg, r.height() - 6.0));
                         glowkit_core::paint::soft_shadow(p, pill, 8.0, 6.0, vec2(0.0, 1.0), shadow(&t, 0.6));
                         p.rect_filled(pill, cr(8.0), surface(&t));

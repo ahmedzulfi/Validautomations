@@ -14,7 +14,7 @@ use glowkit_core::{paint, Theme};
 pub struct AgentNode {
     /// Display name, e.g. `"Researcher"`.
     pub name: String,
-    /// Model label, e.g. `"Sonnet 4.5"`.
+    /// Model label, e.g. `"Nova 2"`.
     pub model: String,
     /// What it is doing right now.
     pub task: String,
@@ -89,9 +89,9 @@ fn initials(name: &str) -> String {
 /// ```no_run
 /// # let ui: &mut egui::Ui = todo!();
 /// use glowkit_agents::{AgentNode, AgentTree, RunState};
-/// let root = AgentNode::new("Orchestrator", "Opus 4.1").state(RunState::Running).task("Ship the pricing page")
-///     .child(AgentNode::new("Researcher", "Sonnet 4.5").state(RunState::Running).cost(0.06))
-///     .child(AgentNode::new("Writer", "Sonnet 4.5").state(RunState::Queued));
+/// let root = AgentNode::new("Orchestrator", "Nova Ultra").state(RunState::Running).task("Ship the pricing page")
+///     .child(AgentNode::new("Researcher", "Nova 2").state(RunState::Running).cost(0.06))
+///     .child(AgentNode::new("Writer", "Nova 2").state(RunState::Queued));
 /// ui.add(AgentTree::new(&root).title("Agents"));
 /// ```
 #[must_use = "add it with `ui.add(...)`"]
@@ -438,7 +438,7 @@ impl HandoffItem {
 /// ```no_run
 /// # let ui: &mut egui::Ui = todo!();
 /// use glowkit_agents::{HandoffCard, HandoffItem};
-/// ui.add(HandoffCard::new(("Researcher", "Sonnet 4.5"), ("Writer", "Haiku 4.5"))
+/// ui.add(HandoffCard::new(("Researcher", "Nova 2"), ("Writer", "Nova Flash"))
 ///     .reason("Research done, 5 competitors compared")
 ///     .item(HandoffItem::new("competitors.md", 2400.0))
 ///     .item(HandoffItem::new("raw HTML", 18000.0).dropped())

@@ -237,7 +237,7 @@ impl egui::Widget for LogStream<'_> {
         }
         // fade the top edge
         let fade = Rect::from_min_size(body.min, vec2(body.width(), 18.0));
-        paint::gradient_rect(&pc, fade, 0.0, 90.0, &[surface(&t), with_alpha(surface(&t), 0.0)]);
+        grad_rect(&pc, fade, surface(&t), Color32::TRANSPARENT, true);
         // jump pill
         if !st.follow {
             let label = if new_below > 0 { format!("{new_below} newer · Jump to latest") } else { "Jump to latest".into() };

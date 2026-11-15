@@ -57,6 +57,8 @@ struct BarAnim {
     hit_amt: f32,
     heal_at: f64,
     heal_from: f32,
+    trail_start: f32,
+    frame: f64,
 }
 
 struct BarNow {
@@ -71,14 +73,17 @@ struct BarNow {
 /// Advance the trail / heal animation for fraction `v`.
 fn bar_anim(ui: &Ui, id: Id, v: f32) -> BarNow {
     let now = ui.input(|i| i.time);
-    let dt = glowkit_core::dt(ui);
     let r = glowkit_core::with_state(
         ui,
         id.with("bar_anim"),
-        || BarAnim { last: v, shown: v, trail: v, hold_until: 0.0, hit_at: -100.0, hit_amt: 0.0, heal_at: -100.0, heal_from: v },
+        || BarAnim { last: v, shown: v, trail: v, hold_until: 0.0, hit_at: -100.0, hit_amt: 0.0, heal_at: -100.0, heal_from: v, trail_start: v, frame: now },
         |s| {
+            // wall-clock step so the trail reads the same at any frame rate
+            let dt = ((now - s.frame) as f32).clamp(0.0, 0.25);
+            s.frame = now;
             if v < s.last - 1e-5 {
                 s.trail = s.trail.max(s.last);
+                s.trail_start = s.trail;
                 s.hold_until = now + 0.55;
                 s.hit_amt = if now - s.hit_at < 0.3 { s.hit_amt + (s.last - v) } else { s.last - v };
                 s.hit_at = now;
@@ -96,7 +101,8 @@ fn bar_anim(ui: &Ui, id: Id, v: f32) -> BarNow {
                 }
             }
             if now > s.hold_until {
-                s.trail = glowkit_core::anim::approach(s.trail, s.shown, 5.0, dt);
+                let k = (-((now - s.hold_until) as f32) * 6.0).exp();
+                s.trail = s.shown + (s.trail_start - s.shown).max(0.0) * k;
                 if (s.trail - s.shown).abs() < 0.002 {
                     s.trail = s.shown;
                 }

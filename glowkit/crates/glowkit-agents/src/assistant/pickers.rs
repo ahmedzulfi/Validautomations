@@ -83,7 +83,7 @@ impl egui::Widget for AgentModeSwitcher<'_> {
         let i1 = (i0 + 1).min(n - 1);
         let tint = mix(self.modes[i0].color, self.modes[i1].color, x - i0 as f32);
         let p = ui.painter();
-        p.rect_filled(track, cr(20.0), well(&t));
+        p.rect_filled(track, cr(20.0), super::common::track(&t));
         p.rect_stroke(track, cr(20.0), hairline(&t), StrokeKind::Inside);
         let pill = Rect::from_min_size(pos2(track.min.x + 4.0 + x * seg, track.min.y + 4.0), vec2(seg, 32.0));
         paint::soft_shadow(p, pill, 16.0, 8.0, vec2(0.0, 2.0), shadow(&t, 0.8));

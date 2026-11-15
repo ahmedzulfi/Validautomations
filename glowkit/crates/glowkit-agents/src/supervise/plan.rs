@@ -264,7 +264,7 @@ impl egui::Widget for ContextWindowViz<'_> {
         let cols = 40usize;
         let rows = self.cells.div_ceil(cols);
         let legend_rows = self.parts.len().div_ceil(2);
-        let h = 132.0 + rows as f32 * 12.0 + 16.0 + legend_rows as f32 * 24.0 + 12.0;
+        let h = 132.0 + rows as f32 * 12.0 + legend_rows as f32 * 24.0 + 6.0;
         let (rect, resp) = alloc_centered(ui, self.width, h, Sense::hover());
         let p = ui.painter_at(rect.expand(14.0));
         panel(&p, &t, rect, 14.0);
@@ -340,7 +340,8 @@ impl egui::Widget for ContextWindowViz<'_> {
                     p.circle_filled(r.center(), 1.2, mix(track(&t), t.muted_foreground, 0.3));
                 }
             }
-            let at_mark = (kf * per / self.limit - self.compact_at).abs() < 0.5 / self.cells as f32;
+            let at_mark = k == (self.compact_at * self.cells as f32).round() as usize;
+            let _ = (kf, per);
             if at_mark {
                 p.line_segment([pos2(r.min.x - 1.5, r.min.y - 2.0), pos2(r.min.x - 1.5, r.max.y + 2.0)], Stroke::new(1.0, with_alpha(t.foreground, 0.4)));
             }

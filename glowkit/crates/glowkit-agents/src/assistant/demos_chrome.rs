@@ -319,7 +319,7 @@ fn app_mock(ui: &mut Ui) {
 const COPILOT_REPLY: &str = "Revenue is up **12%** over 8 weeks. The jump in **W4** lines up with the annual-plan discount; W6 dipped slightly as the promo ended.";
 
 fn mini_chat(ui: &mut Ui, key: &'static str, model: &mut ThreadModel, st: &mut ComposerState) {
-    let h = ui.available_height() - 74.0;
+    let h = ui.available_height() - 104.0;
     let out = AssistantThread::new(model).height(h.max(120.0)).text_size(13.0).id_salt((key, "thread")).show(ui);
     for e in out.events {
         if let ThreadEvent::Regenerate(turn) = e {

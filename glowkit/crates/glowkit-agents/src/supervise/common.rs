@@ -571,3 +571,17 @@ pub(crate) fn faded(p: &Painter, a: f32) -> Painter {
     q.multiply_opacity(a.clamp(0.0, 1.0));
     q
 }
+
+/// Fill `rect` with a two-stop gradient (`a` → `b`), top to bottom when `vertical`, else left to
+/// right. Colors are blended premultiplied, so fading to transparent never darkens.
+pub(crate) fn grad_rect(p: &Painter, rect: Rect, a: Color32, b: Color32, vertical: bool) {
+    let mut m = egui::epaint::Mesh::default();
+    let (c0, c1, c2, c3) = if vertical { (a, a, b, b) } else { (a, b, b, a) };
+    m.colored_vertex(rect.left_top(), c0);
+    m.colored_vertex(rect.right_top(), c1);
+    m.colored_vertex(rect.right_bottom(), c2);
+    m.colored_vertex(rect.left_bottom(), c3);
+    m.add_triangle(0, 1, 2);
+    m.add_triangle(0, 2, 3);
+    p.add(Shape::mesh(m));
+}

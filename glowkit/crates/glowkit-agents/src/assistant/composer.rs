@@ -621,31 +621,33 @@ fn context_chip(ui: &mut Ui, t: &Theme, id: Id, c: &ContextChip) -> bool {
     x.clicked()
 }
 
-/// Dashes around a rounded-ish rect (straight edges), marching with `offset`.
-fn rect_dashes(r: Rect, dash: f32, gap: f32, inset: f32, offset: f32) -> Vec<[egui::Pos2; 2]> {
-    let r = r.shrink(inset * 0.0);
-    let pts = paint::rounded_rect_points(r, 16.0, 6);
+/// Dashes around a rounded rect, marching with `offset`.
+fn rect_dashes(r: Rect, dash: f32, gap: f32, _inset: f32, offset: f32) -> Vec<[egui::Pos2; 2]> {
+    let mut pts = paint::rounded_rect_points(r, 16.0, 6);
+    if let Some(f) = pts.first().copied() {
+        pts.push(f);
+    }
+    let mut cum = vec![0.0f32];
+    for w in pts.windows(2) {
+        cum.push(cum.last().copied().unwrap_or(0.0) + (w[1] - w[0]).length());
+    }
+    let total = cum.last().copied().unwrap_or(0.0);
+    let at = |d: f32| -> egui::Pos2 {
+        let d = d.clamp(0.0, total);
+        let i = cum.partition_point(|c| *c < d).clamp(1, pts.len() - 1);
+        let seg = (cum[i] - cum[i - 1]).max(1e-4);
+        pts[i - 1].lerp(pts[i], (d - cum[i - 1]) / seg)
+    };
+    let period = dash + gap;
     let mut out = Vec::new();
-    let mut acc = -(offset % (dash + gap));
-    for i in 0..pts.len() {
-        let a = pts[i];
-        let b = pts[(i + 1) % pts.len()];
-        let len = (b - a).length();
-        let dir = (b - a) / len.max(1e-3);
-        let mut s = 0.0;
-        while s < len {
-            let phase = acc.rem_euclid(dash + gap);
-            if phase < dash {
-                let l = (dash - phase).min(len - s);
-                out.push([a + dir * s, a + dir * (s + l)]);
-                s += l;
-                acc += l;
-            } else {
-                let l = (dash + gap - phase).min(len - s);
-                s += l;
-                acc += l;
-            }
+    let mut s = offset.rem_euclid(period) - period;
+    while s < total && out.len() < 400 {
+        let a = s.max(0.0);
+        let b = (s + dash).min(total);
+        if b > a {
+            out.push([at(a), at(b)]);
         }
+        s += period;
     }
     out
 }

@@ -915,17 +915,17 @@ impl egui::Widget for GameCrosshair {
             }
             GameCrosshairShape::Scope => {
                 let r = self.size * 0.46;
-                painter.circle_stroke(c, r, Stroke::new(2.0, Color32::from_black_alpha(200)));
-                let thin = Stroke::new(1.0, Color32::from_black_alpha(230));
-                painter.line_segment([c - vec2(r, 0.0), c - vec2(gap, 0.0)], thin);
-                painter.line_segment([c + vec2(gap, 0.0), c + vec2(r, 0.0)], thin);
-                painter.line_segment([c + vec2(0.0, gap), c + vec2(0.0, r)], thin);
-                painter.line_segment([c - vec2(0.0, r), c - vec2(0.0, gap)], thin);
+                painter.circle_stroke(c, r, Stroke::new(4.0, Color32::from_black_alpha(140)));
+                painter.circle_stroke(c, r, Stroke::new(1.5, with_alpha(col, 0.8)));
+                for (a, b) in [(c - vec2(r, 0.0), c - vec2(gap, 0.0)), (c + vec2(gap, 0.0), c + vec2(r, 0.0)), (c + vec2(0.0, gap), c + vec2(0.0, r)), (c - vec2(0.0, r), c - vec2(0.0, gap))] {
+                    ol_line(painter, a, b, 1.0, col);
+                }
                 for k in 1..5 {
                     let o = gap + k as f32 * (r - gap) / 5.0;
-                    painter.circle_filled(c + vec2(0.0, o), 1.6, Color32::from_black_alpha(230));
-                    painter.circle_filled(c + vec2(o, 0.0), 1.6, Color32::from_black_alpha(230));
-                    painter.circle_filled(c - vec2(o, 0.0), 1.6, Color32::from_black_alpha(230));
+                    for p in [c + vec2(0.0, o), c + vec2(o, 0.0), c - vec2(o, 0.0)] {
+                        painter.circle_filled(p, 2.4, Color32::from_black_alpha(160));
+                        painter.circle_filled(p, 1.5, col);
+                    }
                 }
                 painter.circle_filled(c, 1.8, hex("#FF3B3B"));
                 paint::glow(painter, c, 6.0, with_alpha(hex("#FF3B3B"), 0.6));
