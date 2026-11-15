@@ -118,6 +118,21 @@ fn linear_to_byte(l: &Luts, c: f32) -> u8 {
     ((a + (b - a) * f) * 255.0).round() as u8
 }
 
+/// Cube root for the non-negative inputs of `to_oklab`: a bit-trick seed refined by two Halley
+/// steps (relative error ~1e-7, several times faster than `f32::cbrt`).
+#[inline]
+fn cbrt_pos(x: f32) -> f32 {
+    if x <= 0.0 || !x.is_finite() {
+        return x.max(0.0).cbrt();
+    }
+    let mut y = f32::from_bits(x.to_bits() / 3 + 709_921_077);
+    for _ in 0..2 {
+        let y3 = y * y * y;
+        y *= (y3 + 2.0 * x) / (2.0 * y3 + x);
+    }
+    y
+}
+
 /// Convert to OKLab `[L, a, b, alpha]`.
 pub fn to_oklab(c: Color32) -> [f32; 4] {
     let [r, g, b, a] = c.to_srgba_unmultiplied();
@@ -125,9 +140,9 @@ pub fn to_oklab(c: Color32) -> [f32; 4] {
     let r = byte_to_linear(lut, r);
     let g = byte_to_linear(lut, g);
     let b = byte_to_linear(lut, b);
-    let l = (0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b).cbrt();
-    let m = (0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b).cbrt();
-    let s = (0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b).cbrt();
+    let l = cbrt_pos(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+    let m = cbrt_pos(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+    let s = cbrt_pos(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
     [
         0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
         1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
@@ -233,6 +248,19 @@ pub mod palettes {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn fast_paths_match_exact_math() {
+        for i in 0..=10_000 {
+            let x = i as f32 / 10_000.0;
+            assert!((cbrt_pos(x) - x.cbrt()).abs() <= 1e-5, "cbrt {x}");
+            let exact = (linear_to_srgb(x) * 255.0).round() as i32;
+            assert!((linear_to_byte(luts(), x) as i32 - exact).abs() <= 1, "srgb {x}");
+        }
+        for b in 0..=255u8 {
+            assert_eq!(byte_to_linear(luts(), b), srgb_to_linear(b as f32 / 255.0));
+        }
+    }
 
     #[test]
     fn hex_parses() {
