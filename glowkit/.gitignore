@@ -9,3 +9,4 @@
 **/__pycache__/
 *.pyc
 ports/*/examples/*/web/pkg/
+/website/live/
