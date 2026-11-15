@@ -92,7 +92,7 @@ fn menu_list(
             let g = painter.layout_no_wrap(label.to_string(), f, with_alpha(col, ea));
             let rr = Align2::LEFT_CENTER.anchor_size(pos, g.size());
             if glow.a() > 0 {
-                paint::blurred_galley(painter, rr.min, &g, glow, 4.0);
+                blur(painter, rr.min, &g, glow, 4.0);
             }
             painter.galley_with_override_text_color(rr.min + vec2(1.0, 2.0), g.clone(), with_alpha(Color32::BLACK, 0.5 * ea));
             painter.galley(rr.min, g, col);
@@ -240,7 +240,7 @@ fn title_text(painter: &Painter, center: Pos2, text: &str, font: &FontId, t: f32
             let p = pos2(x + widths[i] / 2.0, y);
             let rr = Align2::CENTER_CENTER.anchor_size(p, g.size());
             let pulse = 0.55 + 0.25 * (t * 2.0 + i as f32 * 0.3).sin();
-            paint::blurred_galley(painter, rr.min, &g, with_alpha(glow, pulse * a), font.size * 0.14);
+            blur(painter, rr.min, &g, with_alpha(glow, pulse * a), font.size * 0.14);
             if outline.a() > 0 {
                 for d in [vec2(2.0, 0.0), vec2(-2.0, 0.0), vec2(0.0, 2.0), vec2(0.0, -2.0), vec2(0.0, 4.0)] {
                     painter.galley_with_override_text_color(rr.min + d, g.clone(), with_alpha(outline, a));

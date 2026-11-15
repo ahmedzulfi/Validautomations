@@ -335,7 +335,7 @@ pub(crate) fn glow_text(painter: &Painter, pos: Pos2, align: Align2, text: &str,
     let g = painter.layout_no_wrap(text.to_owned(), font, color);
     let r = align.anchor_size(pos, g.size());
     if glow.a() > 0 {
-        paint::blurred_galley(painter, r.min, &g, glow, (g.size().y * 0.16).max(2.0));
+        blur(painter, r.min, &g, glow, (g.size().y * 0.16).max(2.0));
     }
     painter.galley(r.min, g, color);
     r
@@ -1284,5 +1284,16 @@ pub(crate) fn thousands(v: i64) -> String {
         format!("-{out}")
     } else {
         out
+    }
+}
+
+/// A soft glow behind a galley: offset copies tinted with `color` (works for colored galleys).
+pub(crate) fn blur(painter: &Painter, pos: Pos2, galley: &std::sync::Arc<egui::Galley>, color: Color32, radius: f32) {
+    let taps = 10;
+    let a = 1.6 / taps as f32;
+    for i in 0..taps {
+        let ang = i as f32 / taps as f32 * TAU;
+        let rr = radius * if i % 2 == 0 { 1.0 } else { 0.5 };
+        painter.galley_with_override_text_color(pos + vec2(ang.cos(), ang.sin()) * rr, galley.clone(), color.gamma_multiply(a));
     }
 }

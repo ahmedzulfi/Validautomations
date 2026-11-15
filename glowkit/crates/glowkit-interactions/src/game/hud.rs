@@ -542,7 +542,7 @@ impl egui::Widget for GameAmmoCounter<'_> {
         let g = painter.layout_no_wrap(num, FontId::new(big.size * (1.0 + 0.22 * kick), big.family.clone()), mag_c);
         let gr = Align2::RIGHT_CENTER.anchor_size(anchor, g.size());
         if low || kick > 0.0 {
-            paint::blurred_galley(painter, gr.min, &g, with_alpha(if low { pal.warn } else { pal.accent }, 0.5), 5.0);
+            blur(painter, gr.min, &g, with_alpha(if low { pal.warn } else { pal.accent }, 0.5), 5.0);
         }
         painter.galley(gr.min, g, mag_c);
         painter.text(pos2(rect.max.x - 84.0, rect.min.y + 70.0), Align2::LEFT_CENTER, format!("/ {}", self.reserve), small, with_alpha(text_c, 0.65));

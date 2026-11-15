@@ -298,7 +298,7 @@ impl egui::Widget for GameLevelUpScreen<'_> {
                 let p = pos2(x + widths[i] / 2.0, c.y);
                 let g = painter.layout_no_wrap(ch.to_string(), f, Color32::WHITE);
                 let r = Align2::CENTER_CENTER.anchor_size(p, g.size());
-                paint::blurred_galley(painter, r.min, &g, with_alpha(gold, 0.7 * k), 6.0);
+                blur(painter, r.min, &g, with_alpha(gold, 0.7 * k), 6.0);
                 for d in [vec2(0.0, 3.0), vec2(2.0, 0.0), vec2(-2.0, 0.0), vec2(0.0, -2.0)] {
                     painter.galley_with_override_text_color(r.min + d, g.clone(), with_alpha(hex("#2A1600"), k));
                 }
@@ -320,7 +320,7 @@ impl egui::Widget for GameLevelUpScreen<'_> {
         if nk > 0.0 {
             let g = pc.layout_no_wrap(new.clone(), num_f.clone(), Color32::WHITE);
             let r = Align2::CENTER_CENTER.anchor_size(nc + vec2(0.0, num_f.size * (1.0 - ne)), g.size());
-            paint::blurred_galley(&pc, r.min, &g, with_alpha(gold, 0.6), 6.0);
+            blur(&pc, r.min, &g, with_alpha(gold, 0.6), 6.0);
             outlined(&pc, nc + vec2(0.0, num_f.size * (1.0 - ne)), Align2::CENTER_CENTER, &new, num_f.clone(), Color32::WHITE, Color32::from_black_alpha(200));
         }
         // stats
