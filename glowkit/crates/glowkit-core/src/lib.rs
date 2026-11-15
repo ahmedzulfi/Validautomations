@@ -16,6 +16,7 @@ pub mod color;
 pub mod demo;
 pub mod noise;
 pub mod paint;
+pub mod playground;
 pub mod rng;
 pub mod text;
 pub mod theme;

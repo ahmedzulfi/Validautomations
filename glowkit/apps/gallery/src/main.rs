@@ -3,6 +3,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod code;
+mod playgrounds;
+mod themes;
 mod ui;
 
 use glowkit::egui;

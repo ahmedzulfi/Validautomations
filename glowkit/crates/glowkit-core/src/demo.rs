@@ -3,6 +3,11 @@
 
 use egui::Ui;
 
+/// Live playgrounds (typed parameters + code generation) live in [`crate::playground`]; they are
+/// registered separately from [`Demo`] and matched by demo id, so every existing `Demo { .. }`
+/// literal keeps compiling.
+pub use crate::playground::{Params, Playground};
+
 /// Gallery categories, in sidebar order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Category {
@@ -127,4 +132,9 @@ impl std::fmt::Debug for Demo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Demo").field("id", &self.id).field("category", &self.category).finish()
     }
+}
+
+/// Find the playground for `demo_id` in a registry.
+pub fn find_playground(playgrounds: &[Playground], demo_id: &str) -> Option<Playground> {
+    playgrounds.iter().find(|p| p.id == demo_id).copied()
 }
