@@ -82,7 +82,7 @@ fn menu_list(
             }
         }
         let base_c = if on_scene { pal.hud } else { pal.text };
-        let col = mix(with_alpha(base_c, 0.62), if style == GameStyle::Fantasy && !on_scene { pal.text } else { Color32::WHITE }, k);
+        let col = mix(with_alpha(base_c, 0.62), if style == GameStyle::Fantasy && !on_scene { hex("#FBEFD2") } else { Color32::WHITE }, k);
         let col = mix(col, pal.accent, flash);
         let fsize = font.size * (1.0 + 0.06 * k);
         let f = FontId::new(fsize, font.family.clone());

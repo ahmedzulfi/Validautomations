@@ -464,7 +464,7 @@ impl<'a> SmartComposer<'a> {
                             let nr = text(p, pos2(ic.x + 16.0, ic.y), Align2::LEFT_CENTER, &format!("/{}", c.name), 13.5, t.foreground);
                             text(p, pos2(nr.max.x + 10.0, ic.y), Align2::LEFT_CENTER, &c.description, 12.0, t.muted_foreground);
                             if k == ms.hi {
-                                kbd(p, &t, ui, pos2(r.max.x - 8.0, ic.y), "↵");
+                                kbd(p, &t, ui, pos2(r.max.x - 8.0, ic.y), "Enter");
                             }
                         }
                     }

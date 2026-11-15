@@ -107,7 +107,7 @@ impl<'a> VoiceModeOverlay<'a> {
         } else {
             p.rect_filled(rect, cr(18.0), bg);
         }
-        let ck = ((k - 0.55) / 0.45).clamp(0.0, 1.0);
+        let ck = ((k - 0.75) / 0.25).clamp(0.0, 1.0);
         if ck <= 0.0 {
             return out;
         }

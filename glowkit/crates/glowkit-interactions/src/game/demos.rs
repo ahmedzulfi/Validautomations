@@ -818,9 +818,9 @@ ui.add(GameResourceBar::new(mp, 600.0).kind(GameResourceKind::Mana).style(GameSt
                 ];
                 for (i, style) in GameStyle::ALL.iter().enumerate() {
                     let (title, desc, icon, rar, pts, pct) = list[i];
-                    let age = (t + 2.0 - i as f32 * 0.5).rem_euclid(7.0);
+                    let age = (t + 1.5 - i as f32 * 0.4).rem_euclid(9.0);
                     let r = Rect::from_min_size(pos2(rect.center().x - 200.0, rect.min.y + 12.0 + i as f32 * 106.0), vec2(400.0, 104.0));
-                    put(ui, r, GameAchievementToast::new(title, desc, icon).points(pts).rarity(rar).percent(pct).age(age).duration(5.0).style(*style).width(400.0));
+                    put(ui, r, GameAchievementToast::new(title, desc, icon).points(pts).rarity(rar).percent(pct).age(age).duration(7.5).style(*style).width(400.0));
                 }
             },
         },
@@ -866,7 +866,7 @@ GameDamageNumbers::new(&feed).paint(ui, viewport_rect);"##,
                     if kind != GameDamageKind::Miss && kind != GameDamageKind::Heal {
                         st.2 = t;
                     }
-                    st.0 = t + (0.18 + 0.3 * hash01(st.1 * 11) as f64) / p[1] as f64;
+                    st.0 = t + (0.12 + 0.2 * hash01(st.1 * 11) as f64) / p[1] as f64;
                 }
                 if resp.clicked() {
                     if let Some(pp) = resp.interact_pointer_pos() {

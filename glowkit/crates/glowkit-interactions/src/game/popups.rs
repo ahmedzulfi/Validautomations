@@ -307,7 +307,7 @@ impl egui::Widget for GameAchievementToast<'_> {
         if self.points > 0 {
             let pr = Rect::from_min_size(pos2(card.max.x - 56.0, card.min.y + 10.0), vec2(44.0, 20.0));
             p2.rect_filled(pr, 10.0, with_alpha(rc, 0.22));
-            p2.text(pr.center(), Align2::CENTER_CENTER, format!("{}G", self.points), FontId::monospace(11.0), mix(rc, Color32::WHITE, 0.4));
+            p2.text(pr.center(), Align2::CENTER_CENTER, format!("{}G", self.points), FontId::monospace(11.0), if self.style == GameStyle::Fantasy { glowkit_core::color::shade(rc, -0.45) } else { mix(rc, Color32::WHITE, 0.4) });
         }
         let rem = (1.0 - t / self.duration).clamp(0.0, 1.0);
         let tl = Rect::from_min_size(pos2(card.min.x + 12.0, card.max.y - 5.0), vec2((card.width() - 24.0) * rem, 2.0));
