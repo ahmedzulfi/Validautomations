@@ -125,7 +125,7 @@
     dl.machine dt { color: var(--muted); }
     dl.machine dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
     pre { margin: 12px 0 0; padding: 14px 16px; border-radius: 14px; background: var(--bg); font: 13px/1.6 var(--mono); overflow-x: auto; }
-    .ext { border: 1px dashed var(--border-2); background: transparent; }
+    .ext { border: 1px dashed var(--border-2); background: transparent; grid-column: 1 / -1; }
 
     footer { padding: 32px 0 56px; color: var(--muted); font-size: 14px; }
     footer .wrap { display: flex; gap: 20px; flex-wrap: wrap; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 28px; }
@@ -299,14 +299,14 @@
       $("m-vp").textContent = `${m.viewport[0]}×${m.viewport[1]}`;
       $("meta").textContent = `Measured ${m.date} · ${m.cpu} · ${m.rustc} · ${m.profile}`;
 
-      const card = (k, v, unit, d) => `<div class="card"><div class="k">${k}</div><div class="v">${v}${unit ? `<small>${unit}</small>` : ""}</div><div class="d">${d}</div></div>`;
+      const card = (k, v, unit, d) => `<div class="card"><div class="k">${k}</div><div class="v">${v === "–" ? '<small style="margin:0">not measured</small>' : v + (unit ? `<small>${unit}</small>` : "")}</div><div class="d">${d}</div></div>`;
       const mb = (b) => b == null ? "–" : (b / 1048576).toFixed(1);
       $("cards").innerHTML = [
         card("Components measured", fmtInt(ok.length), "", `${rows.length - ok.length} errored · ${heavy} heavy (p95 > ${HEAVY} ms)`),
         card("Median frame time", fmtMs(median(meds)), "ms", "median of per-component medians, UI + tessellation"),
         card("Under 1 ms", under(1).toFixed(1), "%", "of components, by median frame"),
         card("Under 4 ms", under(4).toFixed(1), "%", "of components, by median frame"),
-        card("Gallery binary", mb(a.gallery_binary_bytes), "MB", "native release build, every component included"),
+        card("Gallery binary", mb(a.gallery_binary_stripped_bytes ?? a.gallery_binary_bytes), "MB", a.gallery_binary_stripped_bytes ? `stripped native release, all components · ${mb(a.gallery_binary_bytes)} MB unstripped` : "native release build, every component included"),
         card("WebAssembly", mb(a.wasm_bytes), "MB", a.wasm_gzip_bytes ? `${mb(a.wasm_gzip_bytes)} MB gzipped · whole gallery` : "whole gallery"),
         card("Peak memory", a.gallery_rss_peak_kb ? (a.gallery_rss_peak_kb / 1024).toFixed(0) : "–", "MB", "RSS, all category pages rendered headless"),
         card("Sleeps when idle", (sleeps / Math.max(1, ok.length) * 100).toFixed(0), "%", "of components stop requesting frames"),

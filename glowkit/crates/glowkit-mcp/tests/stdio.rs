@@ -64,7 +64,13 @@ impl Drop for Client {
 
 fn text_of(resp: &Value) -> String {
     let result = resp.get("result").unwrap_or_else(|| panic!("no result: {resp}"));
-    result["content"].as_array().expect("content array").iter().filter_map(|c| c["text"].as_str()).collect::<Vec<_>>().join("\n")
+    result["content"]
+        .as_array()
+        .expect("content array")
+        .iter()
+        .filter_map(|c| c["text"].as_str())
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 fn handshake() -> Client {
@@ -91,11 +97,21 @@ fn handshake() -> Client {
 fn initialize_and_list_tools() {
     let mut c = handshake();
     let tools = c.request("tools/list", json!({}));
-    let names: Vec<&str> = tools["result"]["tools"].as_array().unwrap().iter().map(|t| t["name"].as_str().unwrap()).collect();
-    for expected in ["search_components", "get_component", "list_categories", "get_template", "get_theme", "get_setup", "egui_037_notes"] {
+    let names: Vec<&str> =
+        tools["result"]["tools"].as_array().unwrap().iter().map(|t| t["name"].as_str().unwrap()).collect();
+    for expected in [
+        "search_components",
+        "get_component",
+        "list_categories",
+        "get_template",
+        "get_theme",
+        "get_setup",
+        "egui_037_notes",
+    ] {
         assert!(names.contains(&expected), "missing tool {expected}: {names:?}");
     }
-    let search = tools["result"]["tools"].as_array().unwrap().iter().find(|t| t["name"] == "search_components").unwrap();
+    let search =
+        tools["result"]["tools"].as_array().unwrap().iter().find(|t| t["name"] == "search_components").unwrap();
     assert_eq!(search["inputSchema"]["required"], json!(["query"]), "{search}");
 }
 
@@ -110,7 +126,8 @@ fn search_and_get_component() {
     assert!(!filtered.contains("Text Animations"), "{filtered}");
 
     let comp = text_of(&c.call_tool("get_component", json!({"id": "shiny-text"})));
-    for needle in ["use glowkit::text::ShinyText;", "ShinyText::new(", "fn speed(", "feature `text`", "Web equivalents"] {
+    for needle in ["use glowkit::text::ShinyText;", "ShinyText::new(", "fn speed(", "feature `text`", "Web equivalents"]
+    {
         assert!(comp.contains(needle), "get_component missing {needle}:\n{comp}");
     }
 
@@ -145,7 +162,8 @@ fn templates_theme_setup_notes() {
 fn resources_and_prompts() {
     let mut c = handshake();
     let list = c.request("resources/list", json!({}));
-    let uris: Vec<&str> = list["result"]["resources"].as_array().unwrap().iter().map(|r| r["uri"].as_str().unwrap()).collect();
+    let uris: Vec<&str> =
+        list["result"]["resources"].as_array().unwrap().iter().map(|r| r["uri"].as_str().unwrap()).collect();
     assert!(uris.contains(&"glowkit://docs/customizing"), "{list}");
 
     let read = c.request("resources/read", json!({"uri": "glowkit://docs/customizing"}));

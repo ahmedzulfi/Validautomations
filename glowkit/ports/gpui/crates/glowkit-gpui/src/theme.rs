@@ -45,6 +45,10 @@ pub struct Theme {
     pub chart: [Hsla; 6],
     /// Base corner radius in pixels.
     pub radius: f32,
+    /// UI font family (falls back to the platform default when missing).
+    pub font_family: &'static str,
+    /// Monospace family for code, commands and numbers.
+    pub mono_family: &'static str,
 }
 
 impl Global for Theme {}
@@ -84,6 +88,8 @@ impl Theme {
             gradient: [hex("#8B5CF6"), hex("#EC4899"), hex("#F59E0B")],
             chart: ["#8B5CF6", "#22D3EE", "#F472B6", "#FBBF24", "#34D399", "#60A5FA"].map(hex),
             radius: 10.0,
+            font_family: "Inter",
+            mono_family: "JetBrains Mono",
         }
     }
 
@@ -115,6 +121,8 @@ impl Theme {
             gradient: [hex("#7C3AED"), hex("#DB2777"), hex("#D97706")],
             chart: ["#7C3AED", "#0891B2", "#DB2777", "#D97706", "#059669", "#2563EB"].map(hex),
             radius: 10.0,
+            font_family: "Inter",
+            mono_family: "JetBrains Mono",
         }
     }
 

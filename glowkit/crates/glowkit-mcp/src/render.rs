@@ -31,12 +31,21 @@ pub fn search_results(cat: &Catalog, query: &str, category: Option<&str>, hits: 
         let _ = writeln!(out, "\nTry broader words (e.g. \"button\", \"chart\", \"sidebar\", \"chat\"), drop the category filter, or call list_categories.");
         return out;
     }
-    let _ = writeln!(out, "{} result(s) for \"{query}\"{scope} (of {} components). Call get_component(id) for usage and API.\n", hits.len(), cat.components.len());
+    let _ = writeln!(
+        out,
+        "{} result(s) for \"{query}\"{scope} (of {} components). Call get_component(id) for usage and API.\n",
+        hits.len(),
+        cat.components.len()
+    );
     for h in hits {
         let c = h.component;
         let ty = type_name(c).map(|t| format!(" `{t}`")).unwrap_or_default();
         let tpl = if c.template { " [template: get_template]" } else { "" };
-        let _ = writeln!(out, "- **{}** (`{}`){ty}: {} _{}; feature `{}`_{tpl}", c.name, c.id, c.description, c.category, c.feature);
+        let _ = writeln!(
+            out,
+            "- **{}** (`{}`){ty}: {} _{}; feature `{}`_{tpl}",
+            c.name, c.id, c.description, c.category, c.feature
+        );
         if !c.covers.is_empty() {
             let _ = writeln!(out, "  - web equivalents: {}", c.covers.join("; "));
         }
@@ -83,7 +92,11 @@ pub fn type_api(t: &TypeApi, out: &mut String) {
         out.push('\n');
     }
     if !t.variants.is_empty() {
-        let _ = writeln!(out, "**Variants**: {}\n", t.variants.iter().map(|v| format!("`{v}`")).collect::<Vec<_>>().join(", "));
+        let _ = writeln!(
+            out,
+            "**Variants**: {}\n",
+            t.variants.iter().map(|v| format!("`{v}`")).collect::<Vec<_>>().join(", ")
+        );
     }
     if let Some(ex) = &t.example {
         let _ = writeln!(out, "**Doc example**\n\n```rust\n{ex}\n```\n");
@@ -109,7 +122,11 @@ pub fn component(cat: &Catalog, c: &Component) -> String {
     let _ = writeln!(out, "# {} (`{}`)\n", c.name, c.id);
     let _ = writeln!(out, "{}\n", c.description);
     let _ = writeln!(out, "- **Category**: {}", c.category);
-    let _ = writeln!(out, "- **Crate**: `{}` (re-exported as `{}`), cargo feature `{}` of `glowkit` (on by default)", c.crate_name, c.module, c.feature);
+    let _ = writeln!(
+        out,
+        "- **Crate**: `{}` (re-exported as `{}`), cargo feature `{}` of `glowkit` (on by default)",
+        c.crate_name, c.module, c.feature
+    );
     if let Some(t) = type_name(c) {
         let _ = writeln!(out, "- **Main type**: `{t}`");
     }
@@ -121,7 +138,11 @@ pub fn component(cat: &Catalog, c: &Component) -> String {
     }
     let _ = writeln!(out, "\n## Imports\n\n```rust\n{}```\n", use_lines(c));
     let _ = writeln!(out, "Cargo (minimal): `{}`\n", cargo_line(c));
-    let _ = writeln!(out, "## Usage\n\nInside your `ui(&mut self, ui: &mut egui::Ui, ..)`:\n\n```rust\n{}\n```\n", c.code.trim_end());
+    let _ = writeln!(
+        out,
+        "## Usage\n\nInside your `ui(&mut self, ui: &mut egui::Ui, ..)`:\n\n```rust\n{}\n```\n",
+        c.code.trim_end()
+    );
     if let Some(t) = cat.type_api(c) {
         let _ = writeln!(out, "## API\n");
         type_api(t, &mut out);
@@ -136,7 +157,13 @@ pub fn component(cat: &Catalog, c: &Component) -> String {
     if !others.is_empty() {
         let _ = writeln!(out, "## Related types\n");
         for t in others {
-            let _ = writeln!(out, "- `{}`: {}{}", t.path.as_deref().unwrap_or(&t.name), one_line(&t.doc), if t.variants.is_empty() { String::new() } else { format!(" Variants: {}", t.variants.join(", ")) });
+            let _ = writeln!(
+                out,
+                "- `{}`: {}{}",
+                t.path.as_deref().unwrap_or(&t.name),
+                one_line(&t.doc),
+                if t.variants.is_empty() { String::new() } else { format!(" Variants: {}", t.variants.join(", ")) }
+            );
         }
         out.push('\n');
     }
@@ -162,7 +189,14 @@ pub fn categories(cat: &Catalog) -> String {
     );
     let _ = writeln!(out, "Pass a category name to search_components(query, category). Templates, Dashboards & Shells and Blocks are full pages/apps: use get_template.\n");
     for c in &cat.categories {
-        let _ = writeln!(out, "- **{}** ({}; feature {}): e.g. {}", c.name, c.count, c.features.iter().map(|f| format!("`{f}`")).collect::<Vec<_>>().join(", "), c.examples.join(", "));
+        let _ = writeln!(
+            out,
+            "- **{}** ({}; feature {}): e.g. {}",
+            c.name,
+            c.count,
+            c.features.iter().map(|f| format!("`{f}`")).collect::<Vec<_>>().join(", "),
+            c.examples.join(", ")
+        );
     }
     out
 }
@@ -238,7 +272,9 @@ pub fn template_app(c: &Component) -> String {
             let _ = writeln!(out, "        Self {{ {var}: app }}");
         }
         out.push_str("    }\n}\n\n");
-        out.push_str("impl eframe::App for MyApp {\n    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {\n");
+        out.push_str(
+            "impl eframe::App for MyApp {\n    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {\n",
+        );
         out.push_str("        egui::CentralPanel::default().frame(egui::Frame::new()).show(ui, |ui| {\n");
         let _ = writeln!(out, "            self.{var}.show(ui);");
         out.push_str("        });\n    }\n}\n");
@@ -269,7 +305,9 @@ pub fn template_app(c: &Component) -> String {
         }
         out.push_str("        }\n    }\n}\n\n");
     }
-    out.push_str("impl eframe::App for MyApp {\n    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {\n");
+    out.push_str(
+        "impl eframe::App for MyApp {\n    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {\n",
+    );
     if !fields.is_empty() {
         let names: Vec<&str> = fields.iter().map(|f| f.name.as_str()).collect();
         let _ = writeln!(out, "        let Self {{ {} }} = self;", names.join(", "));
@@ -322,7 +360,10 @@ t.gradient = [hex(\"#FF4F00\"), hex(\"#FF0080\"), hex(\"#7928CA\")];\nt.radius =
     let _ = writeln!(out, "## Tokens\n");
     let dark = th.presets.iter().find(|p| p.func == "dark");
     for f in &th.fields {
-        let val = dark.and_then(|p| p.values.get(&f.name)).map(|v| format!(" (dark: {})", v.to_string().replace('"', ""))).unwrap_or_default();
+        let val = dark
+            .and_then(|p| p.values.get(&f.name))
+            .map(|v| format!(" (dark: {})", v.to_string().replace('"', "")))
+            .unwrap_or_default();
         let doc = if f.doc.is_empty() { String::new() } else { format!(": {}", one_line(&f.doc)) };
         let _ = writeln!(out, "- `{}: {}`{doc}{val}", f.name, f.ty);
     }
@@ -330,7 +371,15 @@ t.gradient = [hex(\"#FF4F00\"), hex(\"#FF0080\"), hex(\"#7928CA\")];\nt.radius =
     for p in &th.presets {
         let name = p.values.get("name").and_then(|v| v.as_str()).unwrap_or("");
         let key = |k: &str| p.values.get(k).and_then(|v| v.as_str()).unwrap_or("?").to_string();
-        let _ = writeln!(out, "- `Theme::{}()` \"{name}\": {} background {}, foreground {}, accent {}", p.func, one_line(&p.doc), key("background"), key("foreground"), key("accent"));
+        let _ = writeln!(
+            out,
+            "- `Theme::{}()` \"{name}\": {} background {}, foreground {}, accent {}",
+            p.func,
+            one_line(&p.doc),
+            key("background"),
+            key("foreground"),
+            key("accent")
+        );
     }
     let _ = writeln!(out, "\n## Theme methods\n");
     for m in &th.methods {
@@ -367,7 +416,14 @@ mod tests {
     fn component_page_has_everything() {
         let cat = catalog();
         let page = component(cat, cat.component("shiny-text").unwrap());
-        for needle in ["use glowkit::text::ShinyText;", "feature `text`", "Builder setters", "fn speed(", "Related components", "Magic UI"] {
+        for needle in [
+            "use glowkit::text::ShinyText;",
+            "feature `text`",
+            "Builder setters",
+            "fn speed(",
+            "Related components",
+            "Magic UI",
+        ] {
             assert!(page.contains(needle), "missing {needle}:\n{page}");
         }
     }

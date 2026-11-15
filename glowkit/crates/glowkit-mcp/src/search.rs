@@ -16,10 +16,7 @@ pub struct Hit<'a> {
 
 /// Lowercase alphanumeric words, with a light plural/verb-suffix stemming.
 pub fn words(s: &str) -> Vec<String> {
-    s.split(|c: char| !c.is_alphanumeric())
-        .filter(|w| !w.is_empty())
-        .map(|w| stem(&w.to_lowercase()))
-        .collect()
+    s.split(|c: char| !c.is_alphanumeric()).filter(|w| !w.is_empty()).map(|w| stem(&w.to_lowercase())).collect()
 }
 
 fn stem(w: &str) -> String {
@@ -129,7 +126,15 @@ pub fn search<'a>(components: &'a [Component], query: &str, category: Option<&st
         .iter()
         .filter(|c| category.is_none_or(|f| category_matches(&c.category, f)))
         .filter_map(|c| {
-            let s = if terms.is_empty() { if c.showcase { 1.0 } else { 0.5 } } else { score(c, &terms, &q) };
+            let s = if terms.is_empty() {
+                if c.showcase {
+                    1.0
+                } else {
+                    0.5
+                }
+            } else {
+                score(c, &terms, &q)
+            };
             (s > 0.0).then_some(Hit { score: s, component: c })
         })
         .collect();
@@ -165,7 +170,13 @@ mod tests {
 
     fn fixture() -> Vec<Component> {
         vec![
-            comp("shiny-text", "Shiny Text", "Text Animations", "A band of light sweeps across text.", &["Magic UI: Animated Shiny Text"]),
+            comp(
+                "shiny-text",
+                "Shiny Text",
+                "Text Animations",
+                "A band of light sweeps across text.",
+                &["Magic UI: Animated Shiny Text"],
+            ),
             comp("shimmer-button", "Shimmer Button", "Buttons", "A button with a shimmer and a shiny edge.", &[]),
             comp("aurora", "Aurora", "Backgrounds", "Soft northern lights behind text.", &["React Bits: Aurora"]),
             comp("line-chart", "Line Chart", "Charts", "Animated lines.", &["Recharts: Line chart"]),

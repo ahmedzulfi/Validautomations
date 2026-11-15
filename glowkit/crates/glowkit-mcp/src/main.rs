@@ -59,9 +59,21 @@ pub struct BuildAppArgs {
 }
 
 const RESOURCES: [(&str, &str, &str); 3] = [
-    ("glowkit://docs/customizing", "customizing", "Customization guide: theme tokens, component setters, motion and composition."),
-    ("glowkit://docs/conventions", "conventions", "Component conventions: builder + egui::Widget, theme-aware colors, animation and state rules."),
-    ("glowkit://docs/egui-0.37", "egui-0.37-notes", "egui/eframe 0.37 API changes that coding agents commonly get wrong."),
+    (
+        "glowkit://docs/customizing",
+        "customizing",
+        "Customization guide: theme tokens, component setters, motion and composition.",
+    ),
+    (
+        "glowkit://docs/conventions",
+        "conventions",
+        "Component conventions: builder + egui::Widget, theme-aware colors, animation and state rules.",
+    ),
+    (
+        "glowkit://docs/egui-0.37",
+        "egui-0.37-notes",
+        "egui/eframe 0.37 API changes that coding agents commonly get wrong.",
+    ),
 ];
 
 /// The MCP server.
@@ -116,7 +128,10 @@ impl GlowkitServer {
         }
     }
 
-    #[tool(description = "List component categories with counts, cargo features and examples.", annotations(read_only_hint = true))]
+    #[tool(
+        description = "List component categories with counts, cargo features and examples.",
+        annotations(read_only_hint = true)
+    )]
     async fn list_categories(&self) -> String {
         render::categories(catalog())
     }
@@ -139,12 +154,18 @@ impl GlowkitServer {
         }
     }
 
-    #[tool(description = "glowkit's Theme: every design token with its default value, the built-in presets, the Theme API and how to customize colors/radius for a brand.", annotations(read_only_hint = true))]
+    #[tool(
+        description = "glowkit's Theme: every design token with its default value, the built-in presets, the Theme API and how to customize colors/radius for a brand.",
+        annotations(read_only_hint = true)
+    )]
     async fn get_theme(&self) -> String {
         render::theme(catalog())
     }
 
-    #[tool(description = "Project setup: Cargo.toml dependencies and features, an eframe 0.37 app skeleton (App::ui, panels, theme install), running, WebAssembly and Bevy notes.", annotations(read_only_hint = true))]
+    #[tool(
+        description = "Project setup: Cargo.toml dependencies and features, an eframe 0.37 app skeleton (App::ui, panels, theme install), running, WebAssembly and Bevy notes.",
+        annotations(read_only_hint = true)
+    )]
     async fn get_setup(&self) -> String {
         guides::SETUP.to_string()
     }
@@ -160,7 +181,10 @@ impl GlowkitServer {
 
 #[prompt_router]
 impl GlowkitServer {
-    #[prompt(name = "build-app", description = "Build a polished native Rust app with glowkit for a given purpose, using the glowkit MCP tools.")]
+    #[prompt(
+        name = "build-app",
+        description = "Build a polished native Rust app with glowkit for a given purpose, using the glowkit MCP tools."
+    )]
     async fn build_app(&self, Parameters(args): Parameters<BuildAppArgs>) -> Vec<PromptMessage> {
         let platform = args.platform.unwrap_or_else(|| "native desktop: Windows, macOS, Linux".into());
         vec![PromptMessage::new_text(Role::User, guides::build_app_prompt(&args.what, &platform))]
@@ -184,7 +208,9 @@ impl ServerHandler for GlowkitServer {
         Ok(ListResourcesResult::with_all_items(
             RESOURCES
                 .iter()
-                .map(|(uri, name, desc)| Resource::new(*uri, *name).with_description(*desc).with_mime_type("text/markdown"))
+                .map(|(uri, name, desc)| {
+                    Resource::new(*uri, *name).with_description(*desc).with_mime_type("text/markdown")
+                })
                 .collect(),
         ))
     }
@@ -200,7 +226,10 @@ impl ServerHandler for GlowkitServer {
             "glowkit://docs/egui-0.37" => guides::EGUI_037_NOTES,
             other => return Err(ErrorData::resource_not_found(format!("unknown resource {other}"), None)),
         };
-        Ok(ReadResourceResult::new(vec![ResourceContents::text(text, request.uri.clone()).with_mime_type("text/markdown")]).into())
+        Ok(ReadResourceResult::new(vec![
+            ResourceContents::text(text, request.uri.clone()).with_mime_type("text/markdown")
+        ])
+        .into())
     }
 }
 

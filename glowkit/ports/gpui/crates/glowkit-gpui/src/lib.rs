@@ -14,16 +14,22 @@
 //! });
 //! ```
 
+pub mod agents;
+pub mod ai;
 pub mod anim;
 pub mod buttons;
 pub mod cards;
+pub mod charts;
 pub mod color;
 pub mod motion;
 pub mod paint;
 pub mod text;
 pub mod theme;
 
+pub use agents::{AgentSession, AgentSessionList, Device, RunState};
+pub use ai::{ApprovalCard, ChatMessage, Decision, PromptInput, PromptStop, PromptSubmit, Risk, Role};
 pub use anim::{ease, Easing, FrameClock, Spring, Spring2};
+pub use charts::{Sparkline, StatTile};
 pub use buttons::{MagneticButton, ShimmerButton};
 pub use cards::{BorderBeam, SpotlightCard, TiltCard};
 pub use motion::{AnimatedTabs, Marquee, TabHighlight, Toast, ToastKind, ToastStack};
@@ -32,7 +38,10 @@ pub use theme::{ActiveTheme, Theme};
 
 /// Everything you need in one import.
 pub mod prelude {
+    pub use crate::agents::*;
+    pub use crate::ai::*;
     pub use crate::anim::{ease, Easing, Spring};
+    pub use crate::charts::*;
     pub use crate::buttons::*;
     pub use crate::cards::*;
     pub use crate::motion::*;
