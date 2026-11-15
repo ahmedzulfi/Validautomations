@@ -5,7 +5,7 @@ Components are added in batches into a scratch cargo project that depends only o
 `glowkit-core` (patched to this workspace) and `egui`; each batch imports every type the CLI says
 the component exposes. A failing batch is bisected down to the components that break it.
 
-    python3 scripts/test-cli-add.py [--batch 60] [--check] [--force] [--work DIR] [ids...]
+    python3 scripts/test-cli-add.py [--batch 60] [--build] [--force] [--work DIR] [ids...]
 
 Prints the success rate and writes a report (failures + first compiler error) to DIR/report.txt.
 """
@@ -27,7 +27,7 @@ def sh(cmd, cwd=None, env=None):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--batch", type=int, default=60)
-    ap.add_argument("--check", action="store_true", help="cargo check instead of cargo build")
+    ap.add_argument("--build", action="store_true", help="cargo build instead of cargo check (slower, much more disk)")
     ap.add_argument("--force", action="store_true", help="pass --force to `glowkit add` (copy deep components too)")
     ap.add_argument("--work", default=os.path.join(ROOT, "target", "cli-add-test"))
     ap.add_argument("ids", nargs="*")
@@ -63,11 +63,15 @@ def main():
         if r.returncode != 0:
             return False, [], "add failed:\n" + r.stdout + r.stderr
         fallback = re.findall(r"^! (\S+) was not copied", r.stdout, re.M)
-        uses = sorted(set(re.findall(r"^\s+(use crate::glowkit::[^;]+;)$", r.stdout, re.M)))
+        names = set()
+        for m, body in re.findall(r"^\s+use (crate::glowkit::\S+?)::(\{[^}]*\}|\w+);$", r.stdout, re.M):
+            for n in body.strip("{}").split(","):
+                names.add(f"{m}::{n.strip()}")
+        uses = [f"use {n};" for n in sorted(names)]
         main = "#![allow(unused_imports)]\nmod glowkit;\n" + "\n".join(uses) + "\nfn main() {}\n"
         open(os.path.join(proj, "src", "main.rs"), "w").write(main)
-        r = sh(["cargo", "check" if a.check else "build", "--message-format=short"], cwd=proj, env=env)
-        errs = [l for l in r.stderr.splitlines() if "error" in l]
+        r = sh(["cargo", "build" if a.build else "check", "--message-format=short"], cwd=proj, env=env)
+        errs = [l for l in r.stderr.splitlines() if re.search(r"\berror(\[|:)", l)]
         return r.returncode == 0, fallback, "\n".join(errs[:8])
 
     ok, failed, fell_back = [], {}, set()
@@ -82,6 +86,7 @@ def main():
             failed[batch[0]] = log
             print(f"  FAIL {batch[0]}: {log.splitlines()[0] if log else ''}", flush=True)
         else:
+            print(f"  split {len(batch)}: {log.splitlines()[0] if log else ''}", flush=True)
             h = len(batch) // 2
             run(batch[:h])
             run(batch[h:])

@@ -92,7 +92,6 @@ impl RenderOnce for ShimmerButton {
             .h(px(h))
             .px(px(self.size * 1.6))
             .rounded(px(radius))
-            .overflow_hidden()
             .bg(bg)
             .text_color(text)
             .text_size(px(self.size))
@@ -110,6 +109,7 @@ impl RenderOnce for ShimmerButton {
                 div()
                     .absolute()
                     .inset_0()
+                    .rounded(px(radius))
                     .bg(linear_gradient(
                         180.,
                         linear_color_stop(with_alpha(spark, 0.0), 0.45),
@@ -128,7 +128,7 @@ impl RenderOnce for ShimmerButton {
                             |_, _, _| (),
                             move |b: Bounds<Pixels>, _, window, _| {
                                 let hp = perimeter_point(b, radius, head);
-                                glow(window, hp, 6.0, f32::from(b.size.height) * 0.6, with_alpha(spark, 0.22));
+                                glow(window, hp, 4.0, f32::from(b.size.height) * 0.35, with_alpha(spark, 0.18));
                                 stroke_outline_fn(window, b, radius, 1.4, |s, _| {
                                     with_alpha(spark, 0.12 + 0.88 * sweep_profile(head, s, 0.035, 0.16))
                                 });

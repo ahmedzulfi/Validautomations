@@ -519,6 +519,7 @@ impl Render for PromptInput {
             )
             .child(
                 div()
+                    .w_full()
                     .flex()
                     .items_center()
                     .justify_between()

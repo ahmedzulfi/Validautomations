@@ -315,13 +315,18 @@ fn session_row(
         .flex()
         .items_center()
         .justify_center()
-        .child(div().size(px(7.)).rounded_full().bg(col))
-        .when(live, |el| {
-            el.child(div().absolute().inset_0().rounded_full().border_2().with_animation(
-                pulse_id,
-                Animation::new(secs(1.6)).repeat(),
-                move |el, k| el.border_color(with_alpha(col, 0.6 * (1.0 - k))).inset(px(-3.0 * k)),
-            ))
+        .child({
+            let dot = div().size(px(7.)).rounded_full().bg(col);
+            if live {
+                dot.with_animation(
+                    pulse_id,
+                    Animation::new(secs(1.4)).repeat().with_easing(gpui::pulsating_between(0.35, 1.0)),
+                    |el, k| el.opacity(k),
+                )
+                .into_any_element()
+            } else {
+                dot.into_any_element()
+            }
         });
     div()
         .id(("session-row", id))

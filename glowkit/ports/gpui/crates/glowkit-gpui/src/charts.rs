@@ -18,7 +18,8 @@ fn layout_points(values: &[f64], b: Bounds<Pixels>) -> Vec<Point<Pixels>> {
     let span = (hi - lo).max(1e-9);
     let n = values.len().max(2) - 1;
     let (x0, y0) = (f32::from(b.origin.x), f32::from(b.origin.y));
-    let (w, h) = (f32::from(b.size.width), f32::from(b.size.height));
+    // keep the end dot (r = 3 px + glow) inside the bounds
+    let (w, h) = (f32::from(b.size.width) - 6.0, f32::from(b.size.height));
     values
         .iter()
         .enumerate()
