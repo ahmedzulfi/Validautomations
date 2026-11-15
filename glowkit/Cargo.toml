@@ -1,5 +1,7 @@
 [workspace]
 resolver = "2"
+# ports/ holds separate workspaces for other UI frameworks (GPUI, Dioxus).
+exclude = ["ports"]
 members = [
     "crates/glowkit-core",
     "crates/glowkit-text",
@@ -19,6 +21,9 @@ members = [
     "apps/gallery",
     "examples/hello",
     "examples/ai-chat",
+    "crates/glowkit-mcp",
+    "crates/glowkit-cli",
+    "apps/bench",
 ]
 
 [workspace.package]
@@ -57,6 +62,7 @@ lto = "thin"
 
 [profile.dev]
 debug = false
+incremental = false
 
 [profile.dev.package."*"]
 opt-level = 2

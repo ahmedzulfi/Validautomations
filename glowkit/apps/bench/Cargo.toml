@@ -1,0 +1,10 @@
+[package]
+name = "glowkit-bench"
+description = "Benchmarks every glowkit component headlessly (frame time, vertices, memory)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+glowkit = { workspace = true, features = ["demos", "text", "backgrounds", "effects", "components", "charts", "ai", "blocks", "motion", "three-d", "canvas", "templates", "interactions", "agents"] }

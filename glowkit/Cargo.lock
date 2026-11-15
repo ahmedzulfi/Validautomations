@@ -1345,6 +1345,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "glowkit-bench"
+version = "0.1.0"
+dependencies = [
+ "glowkit",
+]
+
+[[package]]
 name = "glowkit-blocks"
 version = "0.1.0"
 dependencies = [
@@ -1367,6 +1374,10 @@ dependencies = [
  "egui",
  "glowkit-core",
 ]
+
+[[package]]
+name = "glowkit-cli"
+version = "0.1.0"
 
 [[package]]
 name = "glowkit-components"
@@ -1427,6 +1438,10 @@ dependencies = [
  "glowkit-core",
  "glowkit-effects",
 ]
+
+[[package]]
+name = "glowkit-mcp"
+version = "0.1.0"
 
 [[package]]
 name = "glowkit-motion"
