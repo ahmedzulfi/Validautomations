@@ -232,5 +232,68 @@ app.route = "reports".into(); // "reports" | "admin" | "projects"
 app.show(ui);"##,
         show: |ui| run_demo(ui, || embedded::<AuthGateApp>(|a| { a.scoped_theme = true; a.signed_in = true; a.route = "reports".into(); }), AuthGateApp::show),
     },
+    Demo {
+        id: "app-agent-sessions",
+        name: "Agent Sessions",
+        category: Category::Templates,
+        description: "Supervise coding-agent sessions across your machines: live / needs-input / idle states grouped by device, a streaming transcript with tool calls, a diff panel, an approve / deny bar, usage limits and a new-session composer (Ctrl+N, Enter / Esc).",
+        covers: &[],
+        code: r##"let mut app = AgentSessionsApp::default();
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<AgentSessionsApp>(|a| a.scoped_theme = true), AgentSessionsApp::show),
+    },
+    Demo {
+        id: "app-agent-fleet",
+        name: "Agent Fleet Manager",
+        category: Category::Templates,
+        description: "Skills, plugins, MCP servers and projects for coding agents: search, filter tabs, cards with install progress and enable switches, update badges and a details drawer (Esc closes).",
+        covers: &[],
+        code: r##"let mut app = AgentFleetApp::default();
+app.route = "skills".into(); // "plugins" | "mcp" | "projects"
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<AgentFleetApp>(|a| a.scoped_theme = true), AgentFleetApp::show),
+    },
+    Demo {
+        id: "app-agent-fleet-mcp",
+        name: "MCP Server Health",
+        category: Category::Templates,
+        description: "The fleet manager's MCP servers: live latency sparklines, degraded and down states with reconnect countdowns, transport and tool counts, restart from the drawer.",
+        covers: &[],
+        code: r##"let mut app = AgentFleetApp::default();
+app.route = "mcp".into();
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<AgentFleetApp>(|a| { a.scoped_theme = true; a.route = "mcp".into(); }), AgentFleetApp::show),
+    },
+    Demo {
+        id: "app-local-llm",
+        name: "Local LLM Chat",
+        category: Category::Templates,
+        description: "A desktop front end for local models: streaming chat with live tokens/sec, context and first-token readouts, a model switcher that loads into VRAM (Ctrl+L), system-prompt presets (Alt+1..4), sampling sliders and RAM / VRAM / GPU meters.",
+        covers: &[],
+        code: r##"let mut app = LocalLlmApp::default();
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<LocalLlmApp>(|a| a.scoped_theme = true), LocalLlmApp::show),
+    },
+    Demo {
+        id: "app-local-llm-models",
+        name: "Local Model Library",
+        category: Category::Templates,
+        description: "The local LLM app's model library: hardware tiles, quantization picks with sizes, fits-in-VRAM hints, downloads with progress, speed and ETA, and one-click load.",
+        covers: &[],
+        code: r##"let mut app = LocalLlmApp::default();
+app.route = "models".into();
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<LocalLlmApp>(|a| { a.scoped_theme = true; a.route = "models".into(); }), LocalLlmApp::show),
+    },
+    Demo {
+        id: "app-trading-terminal",
+        name: "Trading Terminal",
+        category: Category::Templates,
+        description: "A live trading terminal: candlesticks with EMA / Bollinger / volume, crosshair, wheel zoom and drag pan; an order book with depth bars and flashing levels, a trade tape, positions with live PnL, order entry (B / S, limit / market) and a watchlist with sparklines.",
+        covers: &[],
+        code: r##"let mut app = TradingTerminalApp::default(); // dark by default
+app.show(ui);"##,
+        show: |ui| run_demo(ui, || embedded::<TradingTerminalApp>(|a| a.scoped_theme = true), TradingTerminalApp::show),
+    },
     ]
 }
