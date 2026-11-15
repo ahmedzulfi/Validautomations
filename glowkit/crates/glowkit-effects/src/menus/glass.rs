@@ -1,4 +1,4 @@
-use super::common::{capture, clip_mesh, pointer_or_auto, subdivide_except};
+use super::common::{capture, clip_rect, pointer_or_auto, subdivide_except, ConvexClip};
 use crate::buttons::util::{self, outline};
 use crate::motion::common::sd_round_rect;
 use egui::epaint::Mesh;
@@ -171,7 +171,9 @@ impl GlassSurface {
         let (stage, resp) = ui.allocate_exact_size(vec2(ui.available_width(), self.height), Sense::hover());
         let id = resp.id;
         let painter = ui.painter_at(stage);
-        backdrop(&painter, stage);
+        // The backdrop is tessellated once: shown as is behind the glass, and bent inside it.
+        let src_full = capture(ui, |p| backdrop(&p.with_clip_rect(stage), stage));
+        painter.add(Shape::mesh(src_full.clone()));
 
         let mut center = stage.center() + self.offset;
         if self.follow_pointer {
@@ -201,20 +203,35 @@ impl GlassSurface {
             Color32::BLACK.gamma_multiply(if t.dark { 0.45 } else { 0.18 }),
         );
 
-        let src = capture(ui, |p| backdrop(&p.with_clip_rect(stage), stage));
-        let region = glass.expand(self.refraction + 4.0);
-        // Only the band near the rim bends; the interior is a uniform magnification.
-        let band = e * 1.25 + self.refraction + 8.0;
-        let src = subdivide_except(&src, if self.lens { 10.0 } else { 12.0 }, region, glass.shrink(band));
-        let clip = outline(glass, radius, 6.0);
         let m = self.refraction;
         let mag = self.magnify;
         let wob = self.wobble;
-        let warp_with = |scale: f32| -> Mesh {
-            let mut mesh = src.clone();
+        let chroma = self.chromatic && m > 0.5;
+        let max_scale = if chroma { 1.18 } else { 1.0 };
+        // Source content that can end up under the glass: the rim pulls in up to `m * scale`,
+        // blur taps shift by up to `blur`, and magnify < 1 shows a wider area.
+        let reach = m * max_scale + 4.0 + self.blur;
+        let region = glass.expand(reach);
+        let region = Rect::from_center_size(center, region.size() / mag.min(1.0)).intersect(stage.expand(2.0));
+        // Cut the (often stage-sized) backdrop triangles down to the region first, then subdivide
+        // only where the warp bends: the interior (sd <= -e, or -1.2e with wobble) is a uniform
+        // magnification and needs no extra detail.
+        let src = clip_rect(&src_full, region);
+        drop(src_full);
+        let inner = e * if wob > 0.0 { 1.2 } else { 1.0 } + (wr - e).max(0.0) * 0.5 + 1.0;
+        let keep = glass.shrink(inner);
+        let src = subdivide_except(&src, if self.lens { 10.0 } else { 12.0 }, region, keep);
+        let clip = ConvexClip::new(&outline(glass, radius, 6.0));
+        let p_exp = |mm: f32| (e + mm) / e.max(1.0);
+        let warp_into = |scale: f32, out: &mut Mesh| {
             let mm = m * scale;
-            let p = (e + mm) / e.max(1.0);
-            for v in &mut mesh.vertices {
+            let p = p_exp(mm);
+            out.texture_id = src.texture_id;
+            out.vertices.clear();
+            out.indices.clear();
+            out.vertices.extend_from_slice(&src.vertices);
+            out.indices.extend_from_slice(&src.indices);
+            for v in &mut out.vertices {
                 let s = v.pos;
                 let sd = sd_round_rect(s, glass, wr);
                 let mut q = s;
@@ -226,16 +243,19 @@ impl GlassSurface {
                 }
                 if wob > 0.0 {
                     let w = smoothstep(-e * 1.2, 0.0, sd) * wob * 6.0;
-                    q += vec2(
-                        noise::noise3(s.x * 0.02, s.y * 0.02, time * 0.6),
-                        noise::noise3(s.x * 0.02 + 9.1, s.y * 0.02, time * 0.6),
-                    ) * w;
+                    if w > 0.0 {
+                        q += vec2(
+                            noise::noise3(s.x * 0.02, s.y * 0.02, time * 0.6),
+                            noise::noise3(s.x * 0.02 + 9.1, s.y * 0.02, time * 0.6),
+                        ) * w;
+                    }
                 }
                 v.pos = center + (q - center) * mag;
             }
-            clip_mesh(&mesh, &clip)
         };
-        let main = warp_with(1.0);
+        let mut scratch = Mesh::default();
+        warp_into(1.0, &mut scratch);
+        let main = clip.clip(&scratch, Vec2::ZERO);
         let tint = self.tint.unwrap_or(with_alpha(Color32::WHITE, if t.dark { 0.07 } else { 0.22 }));
         let ta = tint.a() as f32 / 255.0;
         let tint_rgb = tint.to_opaque();
@@ -248,29 +268,42 @@ impl GlassSurface {
             mesh
         };
         // opaque base so the unbent backdrop never shows through the glass
-        paint::fill_convex_fn(&painter, &clip, 1, |_| if t.dark { t.background } else { Color32::WHITE });
+        paint::fill_convex_fn(&painter, &outline(glass, radius, 6.0), 1, |_| {
+            if t.dark {
+                t.background
+            } else {
+                Color32::WHITE
+            }
+        });
         if self.blur > 0.5 {
             let taps = 4;
-            painter.add(Shape::mesh(tinted(main.clone(), 1.0)));
-            for k in 1..taps {
-                let a = k as f32 / (taps - 1) as f32 * std::f32::consts::TAU + 0.4;
-                let rr = self.blur * if k % 2 == 0 { 1.0 } else { 0.55 };
-                let mut c = main.clone();
-                c.translate(vec2(a.cos(), a.sin()) * rr);
-                let c = clip_mesh(&c, &clip);
-                painter.add(Shape::mesh(tinted(c, 1.0 / (k + 1) as f32)));
+            let copies: Vec<Mesh> = (1..taps)
+                .map(|k| {
+                    let a = k as f32 / (taps - 1) as f32 * std::f32::consts::TAU + 0.4;
+                    let rr = self.blur * if k % 2 == 0 { 1.0 } else { 0.55 };
+                    tinted(clip.clip(&main, vec2(a.cos(), a.sin()) * rr), 1.0 / (k + 1) as f32)
+                })
+                .collect();
+            painter.add(Shape::mesh(tinted(main, 1.0)));
+            for c in copies {
+                painter.add(Shape::mesh(c));
             }
         } else {
             painter.add(Shape::mesh(tinted(main, 1.0)));
         }
-        if self.chromatic && m > 0.5 {
+        if chroma {
             for (scale, chan) in [(1.18f32, 0usize), (0.82, 2)] {
-                let mut fr = warp_with(scale);
-                for v in &mut fr.vertices {
+                warp_into(scale, &mut scratch);
+                for v in &mut scratch.vertices {
                     let c = v.color;
+                    let w = smoothstep(-e * 0.6, 0.0, sd_round_rect(v.pos, glass, wr));
+                    if w <= 0.0 {
+                        v.color = Color32::TRANSPARENT;
+                        continue;
+                    }
                     // additive light: fade it out on bright content so it never washes out to white
                     let lum = (0.3 * c.r() as f32 + 0.55 * c.g() as f32 + 0.15 * c.b() as f32) / 255.0;
-                    let w = smoothstep(-e * 0.6, 0.0, sd_round_rect(v.pos, glass, wr)) * 0.36 * (1.0 - lum).powi(2);
+                    let w = w * 0.36 * (1.0 - lum).powi(2);
                     let val = if chan == 0 { c.r() } else { c.b() };
                     let x = (val as f32 * w) as u8;
                     // alpha 0: additive light
@@ -280,7 +313,21 @@ impl GlassSurface {
                         Color32::from_rgba_premultiplied(0, x / 3, x, 0)
                     };
                 }
-                painter.add(Shape::mesh(fr));
+                // fully black additive triangles change nothing: drop them before clipping
+                let mut lit = Mesh::with_texture(scratch.texture_id);
+                for tri in scratch.indices.chunks_exact(3) {
+                    let v = [
+                        scratch.vertices[tri[0] as usize],
+                        scratch.vertices[tri[1] as usize],
+                        scratch.vertices[tri[2] as usize],
+                    ];
+                    if v.iter().any(|v| v.color != Color32::TRANSPARENT) {
+                        let i = lit.vertices.len() as u32;
+                        lit.vertices.extend_from_slice(&v);
+                        lit.add_triangle(i, i + 1, i + 2);
+                    }
+                }
+                painter.add(Shape::mesh(clip.clip(&lit, Vec2::ZERO)));
             }
         }
         // a whisper of frost so plain areas still read as glass

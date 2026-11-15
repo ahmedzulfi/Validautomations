@@ -129,63 +129,206 @@ pub(crate) fn subdivide_except(mesh: &Mesh, max_len: f32, region: Rect, keep: Re
 
 /// Clip a mesh to a **convex** polygon (any winding), interpolating uv and color on cut edges.
 pub(crate) fn clip_mesh(mesh: &Mesh, poly: &[Pos2]) -> Mesh {
-    let mut out = Mesh::with_texture(mesh.texture_id);
-    if poly.len() < 3 {
-        return out;
-    }
-    let mut area = 0.0;
-    for i in 0..poly.len() {
-        let a = poly[i];
-        let b = poly[(i + 1) % poly.len()];
-        area += a.x * b.y - b.x * a.y;
-    }
-    let sign = if area >= 0.0 { 1.0 } else { -1.0 };
-    let edges: Vec<(Pos2, Vec2)> = (0..poly.len()).map(|i| (poly[i], poly[(i + 1) % poly.len()] - poly[i])).collect();
-    let side = |p: Pos2, (a, d): (Pos2, Vec2)| (d.x * (p - a).y - d.y * (p - a).x) * sign;
-    let bounds = Rect::from_points(poly);
-    let mut buf: Vec<Vertex> = Vec::with_capacity(12);
-    let mut nxt: Vec<Vertex> = Vec::with_capacity(12);
-    for tri in mesh.indices.chunks_exact(3) {
-        let v = [mesh.vertices[tri[0] as usize], mesh.vertices[tri[1] as usize], mesh.vertices[tri[2] as usize]];
-        let bb = Rect::from_points(&[v[0].pos, v[1].pos, v[2].pos]);
-        if !bb.intersects(bounds) {
-            continue;
+    ConvexClip::new(poly).clip(mesh, Vec2::ZERO)
+}
+
+/// A convex clip region prepared once and reused for several meshes.
+///
+/// Collinear outline points are merged, points are tested with an inscribed-rect quick accept and
+/// an O(log n) wedge search, and only triangles that actually cross the boundary go through
+/// Sutherland–Hodgman clipping.
+pub(crate) struct ConvexClip {
+    /// Counter-clockwise in the `cross >= 0 is inside` sense, no collinear or duplicate points.
+    poly: Vec<Pos2>,
+    bounds: Rect,
+    /// An axis-aligned rect fully inside the polygon (quick accept).
+    inner: Rect,
+}
+
+#[inline]
+fn cross(a: Vec2, b: Vec2) -> f32 {
+    a.x * b.y - a.y * b.x
+}
+
+impl ConvexClip {
+    pub fn new(poly: &[Pos2]) -> Self {
+        let mut pts: Vec<Pos2> = poly.to_vec();
+        let mut area = 0.0;
+        for i in 0..pts.len() {
+            area += cross(pts[i].to_vec2(), pts[(i + 1) % pts.len()].to_vec2());
         }
-        if v.iter().all(|x| edges.iter().all(|e| side(x.pos, *e) >= 0.0)) {
-            push_tri(&mut out, v);
-            continue;
+        if area < 0.0 {
+            pts.reverse();
         }
-        buf.clear();
-        buf.extend_from_slice(&v);
-        for e in &edges {
-            if buf.is_empty() {
-                break;
-            }
-            nxt.clear();
-            for j in 0..buf.len() {
-                let p = buf[j];
-                let q = buf[(j + 1) % buf.len()];
-                let sp = side(p.pos, *e);
-                let sq = side(q.pos, *e);
-                if sp >= 0.0 {
-                    nxt.push(p);
+        // drop duplicates and (nearly) collinear points: straight edges are often pre-subdivided
+        let mut changed = true;
+        while changed && pts.len() > 3 {
+            changed = false;
+            let mut i = 0;
+            while i < pts.len() && pts.len() > 3 {
+                let n = pts.len();
+                let a = pts[(i + n - 1) % n];
+                let b = pts[i];
+                let c = pts[(i + 1) % n];
+                let ab = b - a;
+                let bc = c - b;
+                let len = ab.length() * bc.length();
+                if ab.length_sq() < 1e-8 || bc.length_sq() < 1e-8 || cross(ab, bc).abs() <= len * 1e-4 {
+                    pts.remove(i);
+                    changed = true;
+                } else {
+                    i += 1;
                 }
-                if (sp >= 0.0) != (sq >= 0.0) {
-                    let t = sp / (sp - sq);
-                    nxt.push(lerp_vertex(&p, &q, t.clamp(0.0, 1.0)));
+            }
+        }
+        let bounds = if pts.is_empty() { Rect::NOTHING } else { Rect::from_points(&pts) };
+        let mut clip = Self { poly: pts, bounds, inner: Rect::NOTHING };
+        if clip.poly.len() >= 3 {
+            // largest uniformly scaled copy of the bounds (about the centroid) that fits inside
+            let c = clip.poly.iter().fold(Vec2::ZERO, |acc, p| acc + p.to_vec2()) / clip.poly.len() as f32;
+            let c = c.to_pos2();
+            let half = bounds.size() / 2.0;
+            let fits = |s: f32| {
+                let r = Rect::from_center_size(c, half * 2.0 * s);
+                [r.left_top(), r.right_top(), r.left_bottom(), r.right_bottom()].iter().all(|&q| clip.contains_slow(q))
+            };
+            let (mut lo, mut hi) = (0.0f32, 1.0f32);
+            for _ in 0..14 {
+                let mid = (lo + hi) / 2.0;
+                if fits(mid) {
+                    lo = mid;
+                } else {
+                    hi = mid;
                 }
             }
-            std::mem::swap(&mut buf, &mut nxt);
+            if lo > 0.0 {
+                clip.inner = Rect::from_center_size(c, half * 2.0 * lo);
+            }
         }
-        if buf.len() >= 3 {
-            let base = out.vertices.len() as u32;
-            out.vertices.extend_from_slice(&buf);
-            for k in 1..buf.len() as u32 - 1 {
-                out.add_triangle(base, base + k, base + k + 1);
+        clip
+    }
+
+    #[inline]
+    fn side(&self, i: usize, p: Pos2) -> f32 {
+        let a = self.poly[i];
+        let b = self.poly[(i + 1) % self.poly.len()];
+        cross(b - a, p - a)
+    }
+
+    fn contains_slow(&self, p: Pos2) -> bool {
+        (0..self.poly.len()).all(|i| self.side(i, p) >= 0.0)
+    }
+
+    /// Point-in-polygon in O(1) for most points, O(log n) otherwise.
+    #[inline]
+    pub fn contains(&self, p: Pos2) -> bool {
+        if self.inner.contains(p) {
+            return true;
+        }
+        if !self.bounds.contains(p) {
+            return false;
+        }
+        let poly = &self.poly;
+        let n = poly.len();
+        let p0 = poly[0];
+        let d = p - p0;
+        if cross(poly[1] - p0, d) < 0.0 || cross(poly[n - 1] - p0, d) > 0.0 {
+            return false;
+        }
+        let (mut lo, mut hi) = (1, n - 1);
+        while hi - lo > 1 {
+            let mid = (lo + hi) / 2;
+            if cross(poly[mid] - p0, d) >= 0.0 {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+        cross(poly[lo + 1] - poly[lo], p - poly[lo]) >= 0.0
+    }
+
+    /// Clip `mesh` (translated by `offset`) to the polygon.
+    pub fn clip(&self, mesh: &Mesh, offset: Vec2) -> Mesh {
+        let mut out = Mesh::with_texture(mesh.texture_id);
+        self.clip_into(mesh, offset, &mut out);
+        out
+    }
+
+    /// Like [`ConvexClip::clip`], appending to `out` (which must share `mesh`'s texture).
+    pub fn clip_into(&self, mesh: &Mesh, offset: Vec2, out: &mut Mesh) {
+        if self.poly.len() < 3 {
+            return;
+        }
+        out.vertices.reserve(mesh.vertices.len());
+        out.indices.reserve(mesh.indices.len());
+        let mut buf: Vec<Vertex> = Vec::with_capacity(12);
+        let mut nxt: Vec<Vertex> = Vec::with_capacity(12);
+        let n = self.poly.len();
+        for tri in mesh.indices.chunks_exact(3) {
+            let mut v = [mesh.vertices[tri[0] as usize], mesh.vertices[tri[1] as usize], mesh.vertices[tri[2] as usize]];
+            for x in &mut v {
+                x.pos += offset;
+            }
+            let (a, b, c) = (v[0].pos, v[1].pos, v[2].pos);
+            if a.x.max(b.x).max(c.x) < self.bounds.min.x
+                || a.x.min(b.x).min(c.x) > self.bounds.max.x
+                || a.y.max(b.y).max(c.y) < self.bounds.min.y
+                || a.y.min(b.y).min(c.y) > self.bounds.max.y
+            {
+                continue;
+            }
+            // convex: all three corners inside means the whole triangle is
+            if self.contains(a) && self.contains(b) && self.contains(c) {
+                push_tri(out, v);
+                continue;
+            }
+            buf.clear();
+            buf.extend_from_slice(&v);
+            for e in 0..n {
+                if buf.is_empty() {
+                    break;
+                }
+                nxt.clear();
+                let mut any_out = false;
+                for j in 0..buf.len() {
+                    if self.side(e, buf[j].pos) < 0.0 {
+                        any_out = true;
+                        break;
+                    }
+                }
+                if !any_out {
+                    continue;
+                }
+                for j in 0..buf.len() {
+                    let p = buf[j];
+                    let q = buf[(j + 1) % buf.len()];
+                    let sp = self.side(e, p.pos);
+                    let sq = self.side(e, q.pos);
+                    if sp >= 0.0 {
+                        nxt.push(p);
+                    }
+                    if (sp >= 0.0) != (sq >= 0.0) {
+                        let t = sp / (sp - sq);
+                        nxt.push(lerp_vertex(&p, &q, t.clamp(0.0, 1.0)));
+                    }
+                }
+                std::mem::swap(&mut buf, &mut nxt);
+            }
+            if buf.len() >= 3 {
+                let base = out.vertices.len() as u32;
+                out.vertices.extend_from_slice(&buf);
+                for k in 1..buf.len() as u32 - 1 {
+                    out.add_triangle(base, base + k, base + k + 1);
+                }
             }
         }
     }
-    out
+}
+
+/// Keep only the parts of `mesh` inside the axis-aligned `rect` (cheap: four edges).
+pub(crate) fn clip_rect(mesh: &Mesh, rect: Rect) -> Mesh {
+    ConvexClip::new(&[rect.left_top(), rect.right_top(), rect.right_bottom(), rect.left_bottom()])
+        .clip(mesh, Vec2::ZERO)
 }
 
 /// Desaturate (and optionally darken) a premultiplied color: `amount` 1 = full grayscale.
