@@ -25,7 +25,8 @@ use std::process::ExitCode;
 const MAX_FILES: usize = 80;
 
 /// Names re-exported at the root of `glowkit-core` that usage snippets commonly need.
-const CORE_NAMES: &[&str] = &["ease", "Clock", "Easing", "Spring", "Trigger", "hex", "hsv", "mix", "with_alpha", "Rng", "Theme"];
+const CORE_NAMES: &[&str] =
+    &["ease", "Clock", "Easing", "Spring", "Trigger", "hex", "hsv", "mix", "with_alpha", "Rng", "Theme"];
 
 const HELP: &str = "glowkit: animated egui components you own
 
@@ -203,8 +204,10 @@ fn cmd_info(args: &[String]) -> Result<(), String> {
     println!("category : {}", c.category);
     println!("crate    : {} (or the `glowkit` umbrella crate)", c.krate);
     println!("feature  : glowkit/{}", features.join(", glowkit/"));
-    println!("cargo    : glowkit = {{ version = \"0.1\", default-features = false, features = [{}] }}",
-        features.iter().map(|f| format!("\"{f}\"")).collect::<Vec<_>>().join(", "));
+    println!(
+        "cargo    : glowkit = {{ version = \"0.1\", default-features = false, features = [{}] }}",
+        features.iter().map(|f| format!("\"{f}\"")).collect::<Vec<_>>().join(", ")
+    );
     if !roots.is_empty() {
         println!("use      : {}", use_lines(&roots, "glowkit").join("\n           "));
     }
@@ -219,7 +222,11 @@ fn cmd_info(args: &[String]) -> Result<(), String> {
 fn cmd_plan(args: &[String]) -> Result<(), String> {
     let all = registry::load();
     let src = Sources::load();
-    let ids: Vec<&Component> = if args.is_empty() { all.iter().collect() } else { args.iter().map(|i| find(&all, i)).collect::<Result<_, _>>()? };
+    let ids: Vec<&Component> = if args.is_empty() {
+        all.iter().collect()
+    } else {
+        args.iter().map(|i| find(&all, i)).collect::<Result<_, _>>()?
+    };
     for c in ids {
         let roots = copier::roots(&src, &c.krate, &c.code);
         let start: Vec<_> = roots.iter().map(|r| (r.krate, r.file.clone())).collect();
@@ -274,7 +281,8 @@ fn cmd_add(args: &[String]) -> Result<(), String> {
         let cl = copier::closure(&src, &start);
         let crates: BTreeSet<usize> = cl.files.iter().map(|f| f.0).collect();
         if !cl.unresolved.is_empty() {
-            let why = format!("could not resolve: {}", cl.unresolved.iter().take(3).cloned().collect::<Vec<_>>().join(", "));
+            let why =
+                format!("could not resolve: {}", cl.unresolved.iter().take(3).cloned().collect::<Vec<_>>().join(", "));
             fallback.push((c, roots, why));
             continue;
         }
@@ -296,7 +304,8 @@ fn cmd_add(args: &[String]) -> Result<(), String> {
     let rel_dir = dir.strip_prefix(&project).unwrap_or(&dir).to_string_lossy().replace('\\', "/");
     if !wanted.is_empty() {
         let (all_files, outs) = copier::plan_outputs(&src, &dir, &base, &wanted, a.flag("overwrite"));
-        let shorts: BTreeSet<String> = all_files.iter().map(|f| source::short_name(&src.crates[f.0].name).to_string()).collect();
+        let shorts: BTreeSet<String> =
+            all_files.iter().map(|f| source::short_name(&src.crates[f.0].name).to_string()).collect();
         let mut wrote = 0;
         let mut kept = 0;
         log.push(format!("{} into {rel_dir}/", if dry { "Would write" } else { "Writing" }));
@@ -306,10 +315,18 @@ fn cmd_add(args: &[String]) -> Result<(), String> {
                 ("create", true)
             } else if o.is_module_file {
                 let same = std::fs::read_to_string(&path).map(|s| s == o.content).unwrap_or(false);
-                if same { ("same  ", false) } else { ("update", true) }
+                if same {
+                    ("same  ", false)
+                } else {
+                    ("update", true)
+                }
             } else if a.flag("overwrite") {
                 let same = std::fs::read_to_string(&path).map(|s| s == o.content).unwrap_or(false);
-                if same { ("same  ", false) } else { ("over  ", true) }
+                if same {
+                    ("same  ", false)
+                } else {
+                    ("over  ", true)
+                }
             } else {
                 ("keep  ", false)
             };
@@ -335,7 +352,10 @@ fn cmd_add(args: &[String]) -> Result<(), String> {
                 std::fs::write(dir.join("mod.rs"), root).map_err(|e| e.to_string())?;
             }
         }
-        log.push(format!("  ({wrote} written, {kept} already present and kept{})", if a.flag("overwrite") { "" } else { "; --overwrite replaces them" }));
+        log.push(format!(
+            "  ({wrote} written, {kept} already present and kept{})",
+            if a.flag("overwrite") { "" } else { "; --overwrite replaces them" }
+        ));
     }
 
     for l in &log {
@@ -347,10 +367,7 @@ fn cmd_add(args: &[String]) -> Result<(), String> {
     for (c, roots, why) in &fallback {
         println!("\n! {} was not copied: {why}.", c.id);
         println!("  Use it from the published crate instead:");
-        println!(
-            "    cargo add glowkit --no-default-features --features {}",
-            source::feature_name(&c.krate)
-        );
+        println!("    cargo add glowkit --no-default-features --features {}", source::feature_name(&c.krate));
         for l in use_lines(roots, "glowkit") {
             println!("    {l}");
         }
@@ -380,10 +397,14 @@ fn normalize(p: &Path) -> PathBuf {
 
 fn next_steps(project: &Path, dir: &Path, base: &str, copied: &[(&Component, Vec<copier::Root>)]) {
     let manifest = std::fs::read_to_string(project.join("Cargo.toml")).unwrap_or_default();
-    let has_dep = |name: &str| manifest.lines().any(|l| {
-        let l = l.trim_start();
-        l.starts_with(&format!("{name} ")) || l.starts_with(&format!("{name}=")) || l.starts_with(&format!("{name}."))
-    });
+    let has_dep = |name: &str| {
+        manifest.lines().any(|l| {
+            let l = l.trim_start();
+            l.starts_with(&format!("{name} "))
+                || l.starts_with(&format!("{name}="))
+                || l.starts_with(&format!("{name}."))
+        })
+    };
     let segs: Vec<&str> = base.trim_start_matches("crate::").split("::").collect();
     let top = segs[0];
     let top_decl = format!("mod {top};");
@@ -471,7 +492,10 @@ fn next_steps(project: &Path, dir: &Path, base: &str, copied: &[(&Component, Vec
 fn cmd_init(args: &[String]) -> Result<(), String> {
     let a = parse(args, &["template"])?;
     a.check(&["template"])?;
-    let name = a.pos.first().ok_or("usage: glowkit init <name> [--template blank|dashboard|ai-chat|agent-sessions|trading|game]")?;
+    let name = a
+        .pos
+        .first()
+        .ok_or("usage: glowkit init <name> [--template blank|dashboard|ai-chat|agent-sessions|trading|game]")?;
     let template = a.value("template").unwrap_or("blank");
     templates::init(Path::new(name), template)
 }

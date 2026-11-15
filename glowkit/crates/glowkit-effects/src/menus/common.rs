@@ -60,6 +60,61 @@ fn push_shape(tess: &mut Tessellator, s: Shape, mesh: &mut Mesh) {
     }
 }
 
+/// A hash of everything that defines a mesh's look (positions, texture coordinates, colors,
+/// indices and texture). Used to cache meshes derived from a capture.
+pub(crate) fn mesh_key(mesh: &Mesh) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut acc: u64 = 0xcbf2_9ce4_8422_2325;
+    let mut feed = |x: u64| {
+        acc = (acc ^ x).wrapping_mul(0x0000_0100_0000_01b3).rotate_left(17);
+    };
+    for v in &mesh.vertices {
+        feed(((v.pos.x.to_bits() as u64) << 32) | v.pos.y.to_bits() as u64);
+        feed(((v.uv.x.to_bits() as u64) << 32) | v.uv.y.to_bits() as u64);
+        feed(u32::from_le_bytes(v.color.to_array()) as u64);
+    }
+    for i in &mesh.indices {
+        feed(*i as u64);
+    }
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    (acc, mesh.vertices.len(), mesh.indices.len(), mesh.texture_id).hash(&mut h);
+    h.finish()
+}
+
+/// A key for text drawn into a cached mesh: changes when the glyphs' places in the font atlas
+/// change (the atlas is rebuilt when it fills up), so cached texture coordinates never go stale.
+pub(crate) fn text_key(ui: &Ui, texts: &[(&str, f32)]) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    ui.ctx().pixels_per_point().to_bits().hash(&mut h);
+    ui.ctx().fonts(|f| f.font_image_size()).hash(&mut h);
+    for (text, size) in texts {
+        text.hash(&mut h);
+        size.to_bits().hash(&mut h);
+        let g = ui.painter().layout_no_wrap((*text).to_owned(), egui::FontId::proportional(*size), Color32::WHITE);
+        for row in &g.rows {
+            for glyph in &row.row.glyphs {
+                glyph.uv_rect.min.hash(&mut h);
+                glyph.uv_rect.max.hash(&mut h);
+            }
+        }
+    }
+    h.finish()
+}
+
+/// `build()` cached across frames under `id`, rebuilt only when `key` changes.
+pub(crate) fn cached_mesh(ui: &Ui, id: egui::Id, key: u64, build: impl FnOnce() -> Mesh) -> std::sync::Arc<Mesh> {
+    type Slot = Option<(u64, std::sync::Arc<Mesh>)>;
+    if let Some((k, m)) = glowkit_core::state::<Slot>(ui, id, || None) {
+        if k == key {
+            return m;
+        }
+    }
+    let m = std::sync::Arc::new(build());
+    glowkit_core::set_state::<Slot>(ui, id, Some((key, m.clone())));
+    m
+}
+
 #[inline]
 fn lerp_color(a: Color32, b: Color32, t: f32) -> Color32 {
     let l = |x: u8, y: u8| (x as f32 + (y as f32 - x as f32) * t).round().clamp(0.0, 255.0) as u8;
@@ -127,6 +182,8 @@ pub(crate) fn subdivide_except(mesh: &Mesh, max_len: f32, region: Rect, keep: Re
             }
             // Slivers (line cores, anti-aliasing feathers): bisecting the longest edge would fan
             // out into hundreds of needles, so cut them into a strip along their length instead.
+            // The cuts are made by halving both long edges with the same shared midpoints that a
+            // neighbor's bisection uses, so neighbors meet without T-junctions.
             let s = ab.min(bc).min(ca);
             let area2 = cross(pb - pa, pc - pa).abs();
             if s <= max2 && area2 / m.sqrt() < max_len * 0.5 {
@@ -138,18 +195,10 @@ pub(crate) fn subdivide_except(mesh: &Mesh, max_len: f32, region: Rect, keep: Re
                 } else {
                     [c, a, b]
                 };
-                let n = (m.sqrt() / max_len).ceil() as u32;
-                let mut prev = (x, x);
-                for i in 1..=n {
-                    let pi = pts.at(&mut out, x, y, i, n);
-                    let qi = pts.at(&mut out, x, z, i, n);
-                    if i == 1 {
-                        out.indices.extend_from_slice(&[x, pi, qi]);
-                    } else {
-                        out.indices.extend_from_slice(&[prev.0, pi, qi, prev.0, qi, prev.1]);
-                    }
-                    prev = (pi, qi);
-                }
+                let max_len2 = max2;
+                strip(&mut out, &mut pts, x, y, z, |o, p0, p1| {
+                    o.vertices[p0 as usize].pos.distance_sq(o.vertices[p1 as usize].pos) > max_len2
+                });
                 continue;
             }
             let (x, y) = if m == ab {
@@ -173,6 +222,221 @@ pub(crate) fn subdivide_except(mesh: &Mesh, max_len: f32, region: Rect, keep: Re
         }
     }
     out
+}
+
+/// Subdivide `mesh` (triangles touching `region`) only where `warp` bends it: a triangle is
+/// bisected (longest edge first) while one of its edges' warped midpoint strays more than `tol`
+/// points from the warped chord, or while an edge is longer than `max_len` outside `flat` (a rect
+/// where the warp is known to be affine).
+///
+/// Edges along a rim, and everything in affine zones, stay coarse. Output is indexed.
+///
+/// `warp` returns the warped point, its "slack" and any per-point data the caller wants back.
+/// The slack is a 1-Lipschitz distance to the zone whose look matters (`<= 0` inside it, e.g. a
+/// signed distance minus a margin): edges and triangles that provably stay outside that zone are
+/// never split. Returns the mesh and, per output vertex, its warped point and data.
+pub(crate) fn subdivide_warp<T: Copy>(
+    mesh: &Mesh,
+    region: Rect,
+    flat: Rect,
+    max_len: f32,
+    tol: f32,
+    warp: impl Fn(Pos2) -> (Pos2, f32, T),
+) -> (Mesh, Vec<(Pos2, T)>) {
+    const MIN_LEN: f32 = 2.0;
+    type W<T> = (Pos2, f32, T);
+    let mut out = Mesh::with_texture(mesh.texture_id);
+    let mut wpos: Vec<W<T>> = Vec::with_capacity(mesh.vertices.len() * 2);
+    let mut remap = vec![u32::MAX; mesh.vertices.len()];
+    let mut pts: EdgePoints = Default::default();
+    let mut memo: std::collections::HashMap<u64, (bool, Option<W<T>>), std::hash::BuildHasherDefault<EdgeHasher>> =
+        Default::default();
+    let mut stack: Vec<[u32; 3]> = Vec::new();
+    let tol2 = tol * tol;
+    let max2 = max_len * max_len;
+    let flat_on = flat.is_positive();
+    // does the edge a-b need a split? (also returns the warped midpoint when it was computed)
+    let need = |a: Pos2, wa: &W<T>, b: Pos2, wb: &W<T>| -> (bool, Option<W<T>>) {
+        let l2 = a.distance_sq(b);
+        // too short to show a bend (before, or after the warp compresses it), or every point
+        // of the edge is provably outside the zone that matters
+        if l2 < MIN_LEN * MIN_LEN || wa.0.distance_sq(wb.0) < MIN_LEN * MIN_LEN || (wa.1 + wb.1 - l2.sqrt()) * 0.5 > 0.0
+        {
+            return (false, None);
+        }
+        if flat_on && flat.contains(a) && flat.contains(b) {
+            return (false, None);
+        }
+        let mid = warp(a.lerp(b, 0.5));
+        let split = l2 > max2 || mid.0.distance_sq(wa.0.lerp(wb.0, 0.5)) > tol2;
+        (split, Some(mid))
+    };
+    let sync = |out: &Mesh, wpos: &mut Vec<W<T>>| {
+        while wpos.len() < out.vertices.len() {
+            wpos.push(warp(out.vertices[wpos.len()].pos));
+        }
+    };
+    for tri in mesh.indices.chunks_exact(3) {
+        let p = [
+            mesh.vertices[tri[0] as usize].pos,
+            mesh.vertices[tri[1] as usize].pos,
+            mesh.vertices[tri[2] as usize].pos,
+        ];
+        let bb = Rect::from_points(&p);
+        if !bb.intersects(region) {
+            continue;
+        }
+        let mut idx = [0u32; 3];
+        for k in 0..3 {
+            let i = tri[k] as usize;
+            if remap[i] == u32::MAX {
+                remap[i] = out.vertices.len() as u32;
+                out.vertices.push(mesh.vertices[i]);
+            }
+            idx[k] = remap[i];
+        }
+        sync(&out, &mut wpos);
+        if flat_on && flat.contains_rect(bb) {
+            out.indices.extend_from_slice(&idx);
+            continue;
+        }
+        stack.push(idx);
+        while let Some([a, b, c]) = stack.pop() {
+            if out.vertices.len() > 60_000 {
+                out.indices.extend_from_slice(&[a, b, c]);
+                continue;
+            }
+            let (pa, pb, pc) =
+                (out.vertices[a as usize].pos, out.vertices[b as usize].pos, out.vertices[c as usize].pos);
+            let ab = pa.distance_sq(pb);
+            let bc = pb.distance_sq(pc);
+            let ca = pc.distance_sq(pa);
+            let s = ab.min(bc).min(ca);
+            let m = ab.max(bc).max(ca);
+            let height = cross(pb - pa, pc - pa).abs() / m.sqrt().max(1e-6);
+            if s < 16.0 && height < 3.0 && m > MIN_LEN * MIN_LEN {
+                // Sliver (line core, anti-aliasing feather): bisection would fan out into
+                // needles, so cut it as a strip along its length.
+                let [x, y, z] = if s == bc {
+                    [a, b, c]
+                } else if s == ca {
+                    [b, c, a]
+                } else {
+                    [c, a, b]
+                };
+                // halve both long sides in step (shared midpoints, so neighbors stay crack-free)
+                // while the warp bends the longer side
+                strip(&mut out, &mut pts, x, y, z, |o, s0, s1| {
+                    sync(o, &mut wpos);
+                    let (s0, s1) = (s0 as usize, s1 as usize);
+                    need(o.vertices[s0].pos, &wpos[s0], o.vertices[s1].pos, &wpos[s1]).0
+                });
+                sync(&out, &mut wpos);
+                continue;
+            }
+            // If any edge needs it, bisect the longest edge: longest-edge bisection keeps the
+            // triangles well shaped and terminates, splitting a shorter edge would fan out.
+            // cheap triangle-level exits before any per-edge work
+            let (sa, sb, sc) = (wpos[a as usize].1, wpos[b as usize].1, wpos[c as usize].1);
+            let in_flat = flat_on && flat.contains(pa) && flat.contains(pb) && flat.contains(pc);
+            // a long triangle that may reach the zone is split even if its edges stay outside it
+            // (it can cover the zone with its interior)
+            let reach = sa.min(sb).min(sc) - m.sqrt() <= 0.0;
+            if in_flat || !reach || m < MIN_LEN * MIN_LEN {
+                out.indices.extend_from_slice(&[a, b, c]);
+                continue;
+            }
+            let long = m > max2;
+            let mut test = |x: u32, px: Pos2, y: u32, py: Pos2| -> bool {
+                let key = ((x.min(y) as u64) << 32) | x.max(y) as u64;
+                if let Some(r) = memo.get(&key) {
+                    return r.0;
+                }
+                let r = need(px, &wpos[x as usize], py, &wpos[y as usize]);
+                if r.1.is_some() {
+                    memo.insert(key, r);
+                }
+                r.0
+            };
+            if !(long || test(a, pa, b, pb) || test(b, pb, c, pc) || test(c, pc, a, pa)) {
+                out.indices.extend_from_slice(&[a, b, c]);
+                continue;
+            }
+            let (x, y) = if m == ab {
+                (a, b)
+            } else if m == bc {
+                (b, c)
+            } else {
+                (c, a)
+            };
+            let before = out.vertices.len();
+            let mid = pts.at(&mut out, x, y, 1, 2);
+            if out.vertices.len() > before {
+                let key = ((x.min(y) as u64) << 32) | x.max(y) as u64;
+                match memo.get(&key) {
+                    Some((_, Some(w))) => wpos.push(*w),
+                    _ => sync(&out, &mut wpos),
+                }
+            }
+            if (x, y) == (a, b) {
+                stack.push([a, mid, c]);
+                stack.push([mid, b, c]);
+            } else if (x, y) == (b, c) {
+                stack.push([a, b, mid]);
+                stack.push([a, mid, c]);
+            } else {
+                stack.push([a, b, mid]);
+                stack.push([mid, b, c]);
+            }
+        }
+    }
+    sync(&out, &mut wpos);
+    let w = wpos.into_iter().map(|(p, _, t)| (p, t)).collect();
+    (out, w)
+}
+
+/// Cut the sliver `x, y, z` (short edge `y-z`) into a strip. Each long side is halved (with
+/// the shared midpoints from `pts`) for as long as `split(out, p0, p1)` holds for a piece, the same
+/// rule a neighbor's bisection applies to that edge, so both sides of every edge end up with the
+/// same points and no T-junctions; the two chains are then zipped together.
+fn strip(
+    out: &mut Mesh,
+    pts: &mut EdgePoints,
+    x: u32,
+    y: u32,
+    z: u32,
+    mut split: impl FnMut(&mut Mesh, u32, u32) -> bool,
+) {
+    let mut chains: [Vec<(u32, f32)>; 2] = [vec![(x, 0.0)], vec![(x, 0.0)]];
+    for (k, end) in [y, z].into_iter().enumerate() {
+        // depth-first, left half first, so points come out in order along the side
+        let mut stack = vec![(x, end, 0.0f32, 1.0f32, 0u32)];
+        while let Some((p0, p1, t0, t1, depth)) = stack.pop() {
+            if depth < 12 && split(out, p0, p1) {
+                let pm = pts.at(out, p0, p1, 1, 2);
+                let tm = (t0 + t1) * 0.5;
+                stack.push((pm, p1, tm, t1, depth + 1));
+                stack.push((p0, pm, t0, tm, depth + 1));
+            } else {
+                chains[k].push((p1, t1));
+            }
+        }
+    }
+    let [p, q] = &chains;
+    let (mut i, mut j) = (0, 0);
+    while i + 1 < p.len() || j + 1 < q.len() {
+        let step_p = j + 1 >= q.len() || (i + 1 < p.len() && p[i + 1].1 <= q[j + 1].1);
+        let tri = if step_p {
+            i += 1;
+            [p[i - 1].0, p[i].0, q[j].0]
+        } else {
+            j += 1;
+            [p[i].0, q[j].0, q[j - 1].0]
+        };
+        if tri[0] != tri[1] && tri[1] != tri[2] && tri[0] != tri[2] {
+            out.indices.extend_from_slice(&tri);
+        }
+    }
 }
 
 /// Points inserted on mesh edges, shared between the triangles on both sides of an edge.
@@ -351,20 +615,29 @@ impl ConvexClip {
 
     /// Clip `mesh` (translated by `offset`) to the polygon.
     pub fn clip(&self, mesh: &Mesh, offset: Vec2) -> Mesh {
+        self.clip_hinted(mesh, offset, None)
+    }
+
+    /// Like [`ConvexClip::clip`]; `inside[i]` (when given) promises that vertex `i`, translated,
+    /// is inside the polygon, which skips its point test.
+    pub fn clip_hinted(&self, mesh: &Mesh, offset: Vec2, inside: Option<&[bool]>) -> Mesh {
         let mut out = Mesh::with_texture(mesh.texture_id);
-        self.clip_into(mesh, offset, &mut out);
+        self.clip_into(mesh, offset, inside, &mut out);
         out
     }
 
-    /// Like [`ConvexClip::clip`], appending to `out` (which must share `mesh`'s texture).
-    pub fn clip_into(&self, mesh: &Mesh, offset: Vec2, out: &mut Mesh) {
+    /// Like [`ConvexClip::clip_hinted`], appending to `out` (which must share `mesh`'s texture).
+    pub fn clip_into(&self, mesh: &Mesh, offset: Vec2, inside: Option<&[bool]>, out: &mut Mesh) {
         if self.poly.len() < 3 {
             return;
         }
         out.vertices.reserve(mesh.vertices.len());
         out.indices.reserve(mesh.indices.len());
         // per-vertex: 0 = unknown, 1 = outside, 2 = inside; inside vertices get an output index
-        let mut state = vec![0u8; mesh.vertices.len()];
+        let mut state = match inside {
+            Some(h) if h.len() == mesh.vertices.len() => h.iter().map(|&i| if i { 2u8 } else { 0 }).collect(),
+            _ => vec![0u8; mesh.vertices.len()],
+        };
         let mut remap = vec![u32::MAX; mesh.vertices.len()];
         let mut buf: Vec<Vertex> = Vec::with_capacity(12);
         let mut nxt: Vec<Vertex> = Vec::with_capacity(12);
@@ -392,7 +665,8 @@ impl ConvexClip {
                 }
                 continue;
             }
-            let mut v = [mesh.vertices[tri[0] as usize], mesh.vertices[tri[1] as usize], mesh.vertices[tri[2] as usize]];
+            let mut v =
+                [mesh.vertices[tri[0] as usize], mesh.vertices[tri[1] as usize], mesh.vertices[tri[2] as usize]];
             for x in &mut v {
                 x.pos += offset;
             }

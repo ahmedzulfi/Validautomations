@@ -436,7 +436,8 @@ impl Widget for CrumpleReveal {
             let crumple = Crumple::new(i as u64 * 977 + 13);
             let sheet_size = self.sheet;
             let residual = self.residual;
-            let deform = |u: f32, v: f32| crumple.pos(u, v, sheet_size, cc, residual);
+            let pose = crumple.pose(sheet_size, cc, residual);
+            let deform = |u: f32, v: f32| pose.at(u, v);
             let front = |u: f32, v: f32| item.front(u, v);
             let ink = cached_ink(ui, id.with(("crumple_item", i)), 7.0, |ink| item.print(ink, sheet_size));
             let mut cam = Cam::new(center);
@@ -479,6 +480,8 @@ struct CarouselState {
     vel: f32,
     target: Option<f32>,
     auto_t: f32,
+    /// Input time of the last frame, so the autoplay timer keeps time across skipped frames.
+    last: Option<f64>,
 }
 
 /// A row of posters where only the one in focus lies flat: its neighbours crinkle and the outer
@@ -574,7 +577,7 @@ impl Widget for CrumpleCarousel {
         let id = response.id;
         let n = self.count;
         let dt = glowkit_core::dt(ui);
-        let wdt = wall_dt(ui);
+        let now = ui.input(|i| i.time);
         let idle = idle_time(ui, id, rect);
         let step = self.poster.x * 0.62 * self.spread;
         let drag = if response.dragged() { response.drag_delta().x } else { 0.0 };
@@ -586,6 +589,9 @@ impl Widget for CrumpleCarousel {
         let max = (n - 1) as f32;
         let nf = n as f32;
         let st = glowkit_core::with_state(ui, id, CarouselState::default, |s| {
+            // real time since the last frame (frames are skipped while the row sits still)
+            let wdt = s.last.map_or(0.0, |l| (now - l).clamp(0.0, 10.0) as f32);
+            s.last = Some(now);
             if let Some(p) = progress {
                 s.pos = p * max;
                 s.vel = 0.0;
@@ -629,8 +635,16 @@ impl Widget for CrumpleCarousel {
             }
             *s
         });
-        if autoplay || st.vel.abs() > 1e-3 || response.dragged() {
+        // still gliding: more than a fraction of a point off, or faster than a few points/s
+        let moving = st.vel.abs() * step > 2.0
+            || st.target.is_some_and(|t| (st.pos - t).abs() * step > 0.2)
+            || response.dragged();
+        if moving {
             glowkit_core::animate(ui);
+        } else if autoplay && progress.is_none() {
+            // nothing moves until the next autoplay step: wake up just for that
+            let wait = (2.0 - idle).max(0.0) + st.auto_t.max(0.0);
+            ui.ctx().request_repaint_after(std::time::Duration::from_secs_f32(wait + 0.02));
         }
         if response.hovered() {
             ui.ctx().set_cursor_icon(if response.dragged() {
@@ -686,7 +700,8 @@ impl Widget for CrumpleCarousel {
             );
             let k = i % POSTERS;
             let crumple = Crumple::new(i as u64 * 31 + 7);
-            let deform = |u: f32, v: f32| crumple.pos(u, v, poster, c, 0.35);
+            let pose = crumple.pose(poster, c, 0.35);
+            let deform = |u: f32, v: f32| pose.at(u, v);
             let front = |u: f32, v: f32| poster_bg(k, u, v);
             let ink = cached_ink(ui, id.with(("poster", k)), 8.0, |ink| poster_ink(ink, k, poster));
             let mut cam = Cam::new(center);

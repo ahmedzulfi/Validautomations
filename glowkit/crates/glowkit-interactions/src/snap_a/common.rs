@@ -41,13 +41,28 @@ impl V3 {
     pub fn lerp(self, o: V3, t: f32) -> V3 {
         self + (o - self) * t
     }
-    /// Rotate about the X axis (pitch), then Y (yaw), then Z (roll).
-    pub fn rot(self, pitch: f32, yaw: f32, roll: f32) -> V3 {
-        let (s, c) = pitch.sin_cos();
-        let p = v3(self.x, self.y * c - self.z * s, self.y * s + self.z * c);
-        let (s, c) = yaw.sin_cos();
+}
+
+/// A rotation about the X axis (pitch), then Y (yaw), then Z (roll), with its sines and
+/// cosines worked out once, for per-vertex use.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct Rot {
+    pitch: (f32, f32),
+    yaw: (f32, f32),
+    roll: (f32, f32),
+}
+
+impl Rot {
+    pub fn new(pitch: f32, yaw: f32, roll: f32) -> Self {
+        Self { pitch: pitch.sin_cos(), yaw: yaw.sin_cos(), roll: roll.sin_cos() }
+    }
+    #[inline]
+    pub fn apply(&self, v: V3) -> V3 {
+        let (s, c) = self.pitch;
+        let p = v3(v.x, v.y * c - v.z * s, v.y * s + v.z * c);
+        let (s, c) = self.yaw;
         let p = v3(p.x * c + p.z * s, p.y, -p.x * s + p.z * c);
-        let (s, c) = roll.sin_cos();
+        let (s, c) = self.roll;
         v3(p.x * c - p.y * s, p.x * s + p.y * c, p.z)
     }
 }
@@ -123,9 +138,11 @@ impl Cam {
     pub fn new(center: Pos2) -> Self {
         Self { center, pitch: 0.0, yaw: 0.0, roll: 0.0, focal: 1400.0, offset: V3::default() }
     }
-    /// Local point to camera space.
-    pub fn view(&self, p: V3) -> V3 {
-        p.rot(self.pitch, self.yaw, self.roll) + self.offset
+    /// Local point to camera space, as a function with the rotation worked out once.
+    pub fn viewer(&self) -> impl Fn(V3) -> V3 {
+        let r = Rot::new(self.pitch, self.yaw, self.roll);
+        let o = self.offset;
+        move |p| r.apply(p) + o
     }
     /// Camera-space point to screen.
     pub fn project(&self, p: V3) -> Pos2 {
@@ -141,8 +158,12 @@ pub(crate) const LIGHT: V3 = v3(-0.42, -0.62, 0.66);
 /// a sheet lying flat toward the camera gets exactly 1.
 #[inline]
 pub(crate) fn shade(n: V3, ambient: f32, gloss: f32) -> f32 {
-    let l = LIGHT.norm();
-    let h = (l + v3(0.0, 0.0, 1.0)).norm();
+    // the light and half vectors are constants: normalise them once
+    static LH: std::sync::OnceLock<(V3, V3)> = std::sync::OnceLock::new();
+    let &(l, h) = LH.get_or_init(|| {
+        let l = LIGHT.norm();
+        (l, (l + v3(0.0, 0.0, 1.0)).norm())
+    });
     let d = n.dot(l).max(0.0);
     let s = n.dot(h).max(0.0).powi(18) * gloss;
     let flat = ambient + (1.0 - ambient) * l.z + h.z.powi(18) * gloss;
@@ -174,14 +195,27 @@ impl Soup {
             }
         }
     }
-    pub fn paint(mut self, painter: &Painter) {
-        self.tris.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
+    pub fn paint(self, painter: &Painter) {
+        // Sort compact (depth, index) keys instead of the 64-byte triangles; the index keeps
+        // the order of equal depths as emitted (a stable sort), and NaN depths sort as equal.
+        let ordered = |z: f32| {
+            let b = if z.is_nan() { 0.0f32.to_bits() } else { z.to_bits() };
+            if b & 0x8000_0000 != 0 {
+                !b
+            } else {
+                b | 0x8000_0000
+            }
+        };
+        let mut keys: Vec<u64> =
+            self.tris.iter().enumerate().map(|(i, (z, _))| ((ordered(*z) as u64) << 32) | i as u64).collect();
+        keys.sort_unstable();
         let mut m = Mesh::default();
-        m.reserve_vertices(self.tris.len() * 3);
+        m.reserve_vertices(self.tris.len().min(60_000) * 3);
         m.reserve_triangles(self.tris.len());
-        for (_, v) in self.tris {
+        for key in keys {
+            let v = &self.tris[(key & 0xFFFF_FFFF) as usize].1;
             let b = m.vertices.len() as u32;
-            m.vertices.extend_from_slice(&v);
+            m.vertices.extend_from_slice(v);
             m.add_triangle(b, b + 1, b + 2);
             if m.vertices.len() > 60_000 {
                 painter.add(Shape::mesh(std::mem::take(&mut m)));
@@ -221,10 +255,11 @@ impl Sheet<'_> {
         let mut pts: Vec<V3> = Vec::with_capacity(w * (rows + 1));
         let mut scr: Vec<Pos2> = Vec::with_capacity(w * (rows + 1));
         let mut col: Vec<Color32> = Vec::with_capacity(w * (rows + 1));
+        let view = cam.viewer();
         for j in 0..=rows {
             for i in 0..=cols {
                 let (u, v) = (i as f32 / cols as f32, j as f32 / rows as f32);
-                let p = cam.view((self.deform)(u, v));
+                let p = view((self.deform)(u, v));
                 pts.push(p);
                 scr.push(cam.project(p));
                 col.push((self.front)(u, v));
@@ -268,7 +303,8 @@ impl Sheet<'_> {
     pub fn outline(&self, cam: &Cam, per_side: usize) -> Vec<Pos2> {
         let n = per_side.max(1);
         let mut out = Vec::with_capacity(n * 4);
-        let mut push = |u: f32, v: f32| out.push(cam.project(cam.view((self.deform)(u, v))));
+        let view = cam.viewer();
+        let mut push = |u: f32, v: f32| out.push(cam.project(view((self.deform)(u, v))));
         for i in 0..n {
             push(i as f32 / n as f32, 0.0);
         }
@@ -287,10 +323,11 @@ impl Sheet<'_> {
     /// Map ink (laid out in local points `0..size`) onto the deformed front face.
     fn emit_ink(&self, soup: &mut Soup, cam: &Cam, ink: &Mesh) {
         let a = self.alpha.clamp(0.0, 1.0);
+        let view = cam.viewer();
         let map = |p: Pos2| {
             let u = (p.x / self.size.x).clamp(0.0, 1.0);
             let v = (p.y / self.size.y).clamp(0.0, 1.0);
-            cam.view((self.deform)(u, v))
+            view((self.deform)(u, v))
         };
         let mut cache: Vec<(V3, Pos2)> = Vec::with_capacity(ink.vertices.len());
         for vtx in &ink.vertices {
@@ -363,6 +400,10 @@ impl Ink {
     /// Tessellate everything into one mesh (font texture), subdividing triangles longer than
     /// `max_edge` so they bend with the sheet.
     pub fn mesh(self, ctx: &Context, max_edge: f32) -> Mesh {
+        subdivide(&self.tessellate(ctx), max_edge)
+    }
+    /// Tessellate everything into one mesh, without subdividing.
+    pub fn tessellate(self, ctx: &Context) -> Mesh {
         let mut tess = tessellator(ctx);
         let mut out = Mesh::default();
         for s in self.shapes {
@@ -370,7 +411,7 @@ impl Ink {
             tess.tessellate_shape(s, &mut m);
             out.append(m);
         }
-        subdivide(&out, max_edge)
+        out
     }
 }
 
@@ -386,32 +427,106 @@ fn mid(a: &Vertex, b: &Vertex) -> Vertex {
 }
 
 /// Split triangles until no edge is longer than `max_edge` points.
+///
+/// The output is indexed: vertices shared in the input stay shared and an edge split from both
+/// sides gets a single midpoint, so per-vertex work on the result (mapping onto a deformed sheet)
+/// runs once per point instead of once per triangle corner.
 pub(crate) fn subdivide(m: &Mesh, max_edge: f32) -> Mesh {
-    let mut out = Mesh::default();
-    out.reserve_vertices(m.vertices.len());
-    let mut stack: Vec<[Vertex; 3]> = Vec::new();
+    let mut out = Mesh::with_texture(m.texture_id);
+    out.vertices.extend_from_slice(&m.vertices);
+    out.indices.reserve(m.indices.len());
+    // edge midpoints, shared by the triangles on both sides of an edge
+    let mut mids: std::collections::HashMap<u64, u32> = std::collections::HashMap::new();
+    let mut at = |out: &mut Mesh, x: u32, y: u32| -> u32 {
+        let (a, b) = (x.min(y), x.max(y));
+        *mids.entry(((a as u64) << 32) | b as u64).or_insert_with(|| {
+            let v = mid(&out.vertices[a as usize], &out.vertices[b as usize]);
+            out.vertices.push(v);
+            out.vertices.len() as u32 - 1
+        })
+    };
+    let mut stack: Vec<[u32; 3]> = Vec::new();
+    let mut strip: Vec<(u32, u32, f32, f32, u32)> = Vec::new();
     let max2 = max_edge * max_edge;
     for t in m.indices.chunks_exact(3) {
-        stack.push([m.vertices[t[0] as usize], m.vertices[t[1] as usize], m.vertices[t[2] as usize]]);
+        stack.push([t[0], t[1], t[2]]);
         while let Some([a, b, c]) = stack.pop() {
-            let l = [(a.pos - b.pos).length_sq(), (b.pos - c.pos).length_sq(), (c.pos - a.pos).length_sq()];
+            let (pa, pb, pc) =
+                (out.vertices[a as usize].pos, out.vertices[b as usize].pos, out.vertices[c as usize].pos);
+            let l = [(pa - pb).length_sq(), (pb - pc).length_sq(), (pc - pa).length_sq()];
             let lm = l[0].max(l[1]).max(l[2]);
             if lm <= max2 || stack.len() > 4000 {
-                let base = out.vertices.len() as u32;
-                out.vertices.extend_from_slice(&[a, b, c]);
-                out.add_triangle(base, base + 1, base + 2);
-            } else if lm == l[0] {
-                let m = mid(&a, &b);
-                stack.push([a, m, c]);
-                stack.push([m, b, c]);
+                out.indices.extend_from_slice(&[a, b, c]);
+                continue;
+            }
+            // Slivers (thin strokes, anti-aliasing feathers): bisection would fan out into
+            // needles, so cut them into a strip along their length instead.
+            let ls = l[0].min(l[1]).min(l[2]);
+            let ab = pb - pa;
+            let ac = pc - pa;
+            let height = (ab.x * ac.y - ab.y * ac.x).abs() / lm.sqrt();
+            if ls <= max2 && height < max_edge * 0.5 {
+                let [x, y, z] = if ls == l[1] {
+                    [a, b, c]
+                } else if ls == l[2] {
+                    [b, c, a]
+                } else {
+                    [c, a, b]
+                };
+                // Halve each long side (shared midpoints) while its pieces are too long: the
+                // same rule a neighbor's bisection applies to that edge, so both sides of every
+                // edge get the same points (no T-junctions, which crack once deformed). Then zip
+                // the two chains together.
+                let mut chains: [Vec<(u32, f32)>; 2] = [vec![(x, 0.0)], vec![(x, 0.0)]];
+                for (k, end) in [y, z].into_iter().enumerate() {
+                    strip.clear();
+                    strip.push((x, end, 0.0, 1.0, 0));
+                    while let Some((p0, p1, t0, t1, depth)) = strip.pop() {
+                        let len2 = out.vertices[p0 as usize].pos.distance_sq(out.vertices[p1 as usize].pos);
+                        if depth < 12 && len2 > max2 {
+                            let pm = at(&mut out, p0, p1);
+                            let tm = (t0 + t1) * 0.5;
+                            strip.push((pm, p1, tm, t1, depth + 1));
+                            strip.push((p0, pm, t0, tm, depth + 1));
+                        } else {
+                            chains[k].push((p1, t1));
+                        }
+                    }
+                }
+                let [p, q] = &chains;
+                let (mut i, mut j) = (0, 0);
+                while i + 1 < p.len() || j + 1 < q.len() {
+                    let step_p = j + 1 >= q.len() || (i + 1 < p.len() && p[i + 1].1 <= q[j + 1].1);
+                    let tri = if step_p {
+                        i += 1;
+                        [p[i - 1].0, p[i].0, q[j].0]
+                    } else {
+                        j += 1;
+                        [p[i].0, q[j].0, q[j - 1].0]
+                    };
+                    if tri[0] != tri[1] && tri[1] != tri[2] && tri[0] != tri[2] {
+                        out.indices.extend_from_slice(&tri);
+                    }
+                }
+                continue;
+            }
+            let (x, y) = if lm == l[0] {
+                (a, b)
             } else if lm == l[1] {
-                let m = mid(&b, &c);
-                stack.push([a, b, m]);
-                stack.push([a, m, c]);
+                (b, c)
             } else {
-                let m = mid(&c, &a);
-                stack.push([a, b, m]);
-                stack.push([m, b, c]);
+                (c, a)
+            };
+            let mi = at(&mut out, x, y);
+            if lm == l[0] {
+                stack.push([a, mi, c]);
+                stack.push([mi, b, c]);
+            } else if lm == l[1] {
+                stack.push([a, b, mi]);
+                stack.push([a, mi, c]);
+            } else {
+                stack.push([a, b, mi]);
+                stack.push([mi, b, c]);
             }
         }
     }
@@ -451,14 +566,44 @@ impl Crumple {
         h * 0.7
     }
 
-    /// Position of `(u, v)` on a `size` sheet crumpled by `c` (0 flat with faint creases left
-    /// over, 1 a tight ball). `residual` scales the creases of the flat state.
-    pub fn pos(&self, u: f32, v: f32, size: Vec2, c: f32, residual: f32) -> V3 {
+    /// The sheet of `size` crumpled by `c` (0 flat with faint creases left over, 1 a tight
+    /// ball), with the per-sheet terms (tumble rotation, easing) worked out once. `residual`
+    /// scales the creases of the flat state.
+    pub fn pose(&self, size: Vec2, c: f32, residual: f32) -> CrumplePose<'_> {
         let c = c.clamp(0.0, 1.0);
-        let h = self.crease(u, v, 1.0);
-        let dim = (size.x + size.y) * 0.5;
-        let flat = v3((u - 0.5) * size.x, (v - 0.5) * size.y, h * dim * 0.006 * residual);
-        if c <= 1e-4 {
+        let (a, b, g) = self.tumble;
+        CrumplePose {
+            crumple: self,
+            size,
+            c,
+            residual,
+            dim: (size.x + size.y) * 0.5,
+            tumble: Rot::new(a * c, b * c, g * c),
+            ease: c * c * (3.0 - 2.0 * c),
+            wobble: (PI * c).sin(),
+        }
+    }
+}
+
+/// A [`Crumple`] at a fixed size and crumple amount (see [`Crumple::pose`]).
+pub(crate) struct CrumplePose<'a> {
+    crumple: &'a Crumple,
+    size: Vec2,
+    c: f32,
+    residual: f32,
+    dim: f32,
+    tumble: Rot,
+    ease: f32,
+    wobble: f32,
+}
+
+impl CrumplePose<'_> {
+    /// Position of `(u, v)`.
+    pub fn at(&self, u: f32, v: f32) -> V3 {
+        let (size, dim) = (self.size, self.dim);
+        let h = self.crumple.crease(u, v, 1.0);
+        let flat = v3((u - 0.5) * size.x, (v - 0.5) * size.y, h * dim * 0.006 * self.residual);
+        if self.c <= 1e-4 {
             return flat;
         }
         // wrap the sheet round a ball: centre at the front pole, the edges tucked behind
@@ -466,15 +611,13 @@ impl Crumple {
         let r = (d.length() / std::f32::consts::SQRT_2).min(1.0);
         let dir = if d.length() > 1e-4 { d.normalized() } else { vec2(1.0, 0.0) };
         let th = r * PI * 0.94;
-        let h2 = self.crease(u, v, 2.3);
+        let h2 = self.crumple.crease(u, v, 2.3);
         let radius = dim * 0.2 * (1.0 + 0.3 * h + 0.16 * h2);
         let ball = v3(th.sin() * dir.x, th.sin() * dir.y, th.cos()) * radius;
-        let (a, b, g) = self.tumble;
-        let ball = ball.rot(a * c, b * c, g * c);
+        let ball = self.tumble.apply(ball);
         // ease the path so the paper bunches up, not just shrinks
-        let e = c * c * (3.0 - 2.0 * c);
-        let mut p = flat.lerp(ball, e);
-        let wobble = (PI * c).sin();
+        let mut p = flat.lerp(ball, self.ease);
+        let wobble = self.wobble;
         p.z += (h * 0.5 + h2 * 0.5) * dim * 0.09 * wobble;
         p.x += h2 * dim * 0.03 * wobble;
         p.y += h * dim * 0.03 * wobble;
@@ -738,12 +881,38 @@ pub(crate) fn photo(kind: usize, u: f32, v: f32) -> Color32 {
     }
 }
 
-/// Tessellate ink for this frame. (Glyph UVs point into the live font atlas, which egui may
-/// grow or repack between frames, so printed ink is rebuilt every frame rather than cached.)
-pub(crate) fn cached_ink(ui: &Ui, _key: Id, max_edge: f32, draw: impl FnOnce(&mut Ink)) -> Arc<Mesh> {
+/// Ink tessellated and subdivided once and reused while it stays the same.
+///
+/// `draw` runs and is tessellated every frame (cheap: it only records shapes and text layout is
+/// cached by egui); the costly subdivision is redone only when the tessellated ink changes in any
+/// way, including glyph texture coordinates (egui repacks the font atlas when it fills up).
+pub(crate) fn cached_ink(ui: &Ui, key: Id, max_edge: f32, draw: impl FnOnce(&mut Ink)) -> Arc<Mesh> {
+    use std::hash::{Hash, Hasher};
     let mut ink = Ink::new(ui.painter());
     draw(&mut ink);
-    Arc::new(ink.mesh(ui.ctx(), max_edge))
+    let raw = ink.tessellate(ui.ctx());
+    let mut acc: u64 = 0xcbf2_9ce4_8422_2325;
+    let mut feed = |x: u64| acc = (acc ^ x).wrapping_mul(0x0000_0100_0000_01b3).rotate_left(17);
+    for v in &raw.vertices {
+        feed(((v.pos.x.to_bits() as u64) << 32) | v.pos.y.to_bits() as u64);
+        feed(((v.uv.x.to_bits() as u64) << 32) | v.uv.y.to_bits() as u64);
+        feed(u32::from_le_bytes(v.color.to_array()) as u64);
+    }
+    for i in &raw.indices {
+        feed(*i as u64);
+    }
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    (acc, raw.vertices.len(), raw.indices.len(), raw.texture_id, max_edge.to_bits()).hash(&mut h);
+    let stamp = h.finish();
+    let id = key.with("snap_ink");
+    if let Some((k, m)) = ui.data(|d| d.get_temp::<(u64, Arc<Mesh>)>(id)) {
+        if k == stamp {
+            return m;
+        }
+    }
+    let m = Arc::new(subdivide(&raw, max_edge));
+    ui.data_mut(|d| d.insert_temp(id, (stamp, m.clone())));
+    m
 }
 
 /// Ellipse outline, optionally rotated by `angle` radians.

@@ -66,7 +66,9 @@ impl eframe::App for App {{
         )
     };
     match template {
-        "dashboard" => app_template("AnalyticsApp", "The analytics dashboard template: replace its sample data with yours."),
+        "dashboard" => {
+            app_template("AnalyticsApp", "The analytics dashboard template: replace its sample data with yours.")
+        }
         "ai-chat" => app_template("ChatApp", "A chat app: channels, messages, reactions and a composer."),
         "agent-sessions" => app_template("AgentSessionsApp", "A session manager for coding agents."),
         "trading" => app_template("TradingTerminalApp", "A trading terminal with live candles and an order book."),
@@ -227,11 +229,9 @@ pub fn init(dir: &Path, template: &str) -> Result<(), String> {
         let list: Vec<String> = TEMPLATES.iter().map(|(t, d)| format!("  {t:15} {d}")).collect();
         return Err(format!("unknown template `{template}`. Available:\n{}", list.join("\n")));
     }
-    let name = dir
-        .file_name()
-        .map(|n| n.to_string_lossy().to_string())
-        .ok_or("invalid project path")?;
-    let pkg: String = name.chars().map(|c| if c.is_ascii_alphanumeric() || c == '-' || c == '_' { c } else { '-' }).collect();
+    let name = dir.file_name().map(|n| n.to_string_lossy().to_string()).ok_or("invalid project path")?;
+    let pkg: String =
+        name.chars().map(|c| if c.is_ascii_alphanumeric() || c == '-' || c == '_' { c } else { '-' }).collect();
     if pkg.is_empty() || pkg.starts_with(|c: char| c.is_ascii_digit()) {
         return Err(format!("`{name}` is not a valid package name"));
     }
@@ -260,6 +260,9 @@ pub fn init(dir: &Path, template: &str) -> Result<(), String> {
     write(".gitignore", "/target\n")?;
     println!("Created {} (template: {template})", dir.display());
     println!("  Cargo.toml\n  src/main.rs\n  AGENTS.md\n  .gitignore");
-    println!("\nNext:\n  cd {}\n  cargo run\n  glowkit add shiny-text    # copy components into src/glowkit/", dir.display());
+    println!(
+        "\nNext:\n  cd {}\n  cargo run\n  glowkit add shiny-text    # copy components into src/glowkit/",
+        dir.display()
+    );
     Ok(())
 }

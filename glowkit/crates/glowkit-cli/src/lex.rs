@@ -106,7 +106,10 @@ pub fn lex(src: &str) -> Vec<Tok> {
                     let hashes = k - j;
                     let mut e = k + 1;
                     while e < n {
-                        if b[e] == b'"' && e + hashes < n + 1 && b[e + 1..(e + 1 + hashes).min(n)].iter().filter(|&&x| x == b'#').count() == hashes {
+                        if b[e] == b'"'
+                            && e + hashes < n + 1
+                            && b[e + 1..(e + 1 + hashes).min(n)].iter().filter(|&&x| x == b'#').count() == hashes
+                        {
                             e += 1 + hashes;
                             break;
                         }
@@ -158,7 +161,9 @@ pub fn lex(src: &str) -> Vec<Tok> {
                 let more = d.is_ascii_alphanumeric()
                     || d == b'_'
                     || (d == b'.' && i + 1 < n && b[i + 1].is_ascii_digit())
-                    || ((d == b'+' || d == b'-') && (b[i - 1] == b'e' || b[i - 1] == b'E') && !src[s..i].starts_with("0x"));
+                    || ((d == b'+' || d == b'-')
+                        && (b[i - 1] == b'e' || b[i - 1] == b'E')
+                        && !src[s..i].starts_with("0x"));
                 if !more {
                     break;
                 }
@@ -288,7 +293,13 @@ pub fn skip_group(toks: &[Tok], src: &str, i: usize) -> usize {
 pub fn items(toks: &[Tok], src: &str, from: usize, to: usize) -> Vec<Item> {
     let mut out = Vec::new();
     let mut i = from;
-    let txt = |k: usize| -> &str { if k < to { toks[k].text(src) } else { "" } };
+    let txt = |k: usize| -> &str {
+        if k < to {
+            toks[k].text(src)
+        } else {
+            ""
+        }
+    };
     while i < to {
         let first = i;
         let mut attrs = Vec::new();

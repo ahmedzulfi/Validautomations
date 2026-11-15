@@ -1,10 +1,10 @@
-use super::common::{capture, clip_rect, pointer_or_auto, subdivide_except, ConvexClip};
+use super::common::{capture, clip_rect, pointer_or_auto, subdivide_warp, ConvexClip};
 use crate::buttons::util::{self, outline};
 use crate::motion::common::sd_round_rect;
-use egui::epaint::Mesh;
+use egui::epaint::{Mesh, Vertex};
 use egui::{vec2, Align, Color32, InnerResponse, Layout, Painter, Pos2, Rect, Sense, Shape, Ui, UiBuilder, Vec2};
 use glowkit_core::anim::{smoothstep, spring2};
-use glowkit_core::color::{mix, with_alpha};
+use glowkit_core::color::{from_oklab, to_oklab, with_alpha};
 use glowkit_core::{noise, paint, Theme};
 
 /// Outward normal of a rounded rect's distance field (smooth inside the bending zone when
@@ -172,9 +172,8 @@ impl GlassSurface {
         let id = resp.id;
         let painter = ui.painter_at(stage);
         // The backdrop is tessellated once: shown as is behind the glass, and bent inside it.
-        let t0 = std::time::Instant::now();
         let src_full = capture(ui, |p| backdrop(&p.with_clip_rect(stage), stage));
-        painter.add(Shape::mesh(src_full.clone()));
+        let backdrop_slot = painter.add(Shape::Noop);
 
         let mut center = stage.center() + self.offset;
         if self.follow_pointer {
@@ -217,59 +216,119 @@ impl GlassSurface {
         // Cut the (often stage-sized) backdrop triangles down to the region first, then subdivide
         // only where the warp bends: the interior (sd <= -e, or -1.2e with wobble) is a uniform
         // magnification and needs no extra detail.
-        eprintln!("capture {} {:?}", src_full.vertices.len(), t0.elapsed());
-        let src = clip_rect(&src_full, region);
-        eprintln!("rect {} {:?}", src.vertices.len(), t0.elapsed());
-        drop(src_full);
+        let src_rect = clip_rect(&src_full, region);
+        painter.set(backdrop_slot, Shape::mesh(src_full));
         let inner = e * if wob > 0.0 { 1.2 } else { 1.0 } + (wr - e).max(0.0) * 0.5 + 1.0;
         let keep = glass.shrink(inner);
-        let src = subdivide_except(&src, if self.lens { 10.0 } else { 12.0 }, region, keep);
-        eprintln!("subdiv {} tris {} {:?} keep {:?} region {:?}", src.vertices.len(), src.indices.len()/3, t0.elapsed(), keep, region);
-        let clip = ConvexClip::new(&outline(glass, radius, 6.0));
-        let p_exp = |mm: f32| (e + mm) / e.max(1.0);
-        let warp_into = |scale: f32, out: &mut Mesh| {
+        let beyond = m * max_scale;
+        // The bend splits into a scale-independent part (distance to the rim and its normal),
+        // a cheap pull-in that depends on `scale`, and the wobble offset.
+        let parts = |s: Pos2| -> (f32, Vec2) {
+            let sd = sd_round_rect(s, glass, wr);
+            (sd, if sd > -e { rr_normal(s, glass, wr) } else { Vec2::ZERO })
+        };
+        let wobble = |s: Pos2, sd: f32| -> Vec2 {
+            let w = smoothstep(-e * 1.2, 0.0, sd) * wob * 6.0;
+            if w > 0.0 {
+                vec2(
+                    noise::noise3(s.x * 0.02, s.y * 0.02, time * 0.6),
+                    noise::noise3(s.x * 0.02 + 9.1, s.y * 0.02, time * 0.6),
+                ) * w
+            } else {
+                Vec2::ZERO
+            }
+        };
+        let bend_with = |s: Pos2, (sd, n): (f32, Vec2), off: Vec2, scale: f32| -> Pos2 {
             let mm = m * scale;
-            let p = p_exp(mm);
+            let mut q = s;
+            if sd > -e {
+                // pull toward the rim; content beyond `mm` lands on the rim (the bend's slope is 0
+                // there, so this stays smooth and needs no extra detail)
+                let shift = if sd < mm {
+                    let x = (sd + e) / (e + mm);
+                    let u = 1.0 - (1.0 - x).powf((e + mm) / e.max(1.0));
+                    -e + e * u - sd
+                } else {
+                    -sd
+                };
+                q += n * shift;
+            }
+            center + (q + off - center) * mag
+        };
+        // Subdivide only where the bend (and wobble) is not linear; the interior and the
+        // untouched outside stay as captured.
+        let (src, base) = subdivide_warp(&src_rect, region, keep, 40.0, 0.75, |s| {
+            let p = parts(s);
+            let off = if wob > 0.0 { wobble(s, p.0) } else { Vec2::ZERO };
+            // slack: distance past the farthest content that can show (the rest is clipped away)
+            (bend_with(s, p, off, 1.0), p.0 - beyond, (p, off))
+        });
+        let off = |i: usize| base[i].1 .1;
+        let clip = ConvexClip::new(&outline(glass, radius, 6.0));
+        let warp_into = |scale: f32, out: &mut Mesh| {
             out.texture_id = src.texture_id;
             out.vertices.clear();
             out.indices.clear();
-            out.vertices.extend_from_slice(&src.vertices);
-            out.indices.extend_from_slice(&src.indices);
-            for v in &mut out.vertices {
-                let s = v.pos;
-                let sd = sd_round_rect(s, glass, wr);
-                let mut q = s;
-                if sd > -e && sd < mm + 2.0 {
-                    let x = ((sd + e) / (e + mm)).clamp(0.0, 1.0);
-                    let u = 1.0 - (1.0 - x).powf(p);
-                    let g = -e + e * u;
-                    q = s + rr_normal(s, glass, wr) * (g - sd);
-                }
-                if wob > 0.0 {
-                    let w = smoothstep(-e * 1.2, 0.0, sd) * wob * 6.0;
-                    if w > 0.0 {
-                        q += vec2(
-                            noise::noise3(s.x * 0.02, s.y * 0.02, time * 0.6),
-                            noise::noise3(s.x * 0.02 + 9.1, s.y * 0.02, time * 0.6),
-                        ) * w;
-                    }
-                }
-                v.pos = center + (q - center) * mag;
-            }
+            out.vertices.extend(src.vertices.iter().zip(&base).enumerate().map(|(i, (v, b))| {
+                let pos = if scale == 1.0 { b.0 } else { bend_with(v.pos, b.1 .0, off(i), scale) };
+                Vertex { pos, ..*v }
+            }));
+            // triangles entirely beyond the pull-in distance collapse onto the rim: skip them
+            // (sd is 1-Lipschitz, so no point is nearer than the nearest corner minus the
+            // longest edge)
+            let lim = m * scale;
+            out.indices.extend(
+                src.indices
+                    .chunks_exact(3)
+                    .filter(|t| {
+                        let (a, b, c) = (t[0] as usize, t[1] as usize, t[2] as usize);
+                        let (pa, pb, pc) = (src.vertices[a].pos, src.vertices[b].pos, src.vertices[c].pos);
+                        let longest = pa.distance_sq(pb).max(pb.distance_sq(pc)).max(pc.distance_sq(pa)).sqrt();
+                        let near = base[a].1 .0 .0.min(base[b].1 .0 .0).min(base[c].1 .0 .0);
+                        near - longest < lim
+                    })
+                    .flatten(),
+            );
         };
         let mut scratch = Mesh::default();
         warp_into(1.0, &mut scratch);
-        eprintln!("warp {:?}", t0.elapsed());
         let main = clip.clip(&scratch, Vec2::ZERO);
-        eprintln!("main {} {:?}", main.vertices.len(), t0.elapsed());
         let tint = self.tint.unwrap_or(with_alpha(Color32::WHITE, if t.dark { 0.07 } else { 0.22 }));
         let ta = tint.a() as f32 / 255.0;
         let tint_rgb = tint.to_opaque();
-        let tinted = |mut mesh: Mesh, alpha: f32| -> Mesh {
+        // `mix(c, tint at c's alpha, k)` with the tint converted to OKLab once
+        let tint_lab = to_oklab(tint_rgb);
+        // also notes which vertices are so deep inside that a blur tap cannot push them out
+        let deep_at = -(self.blur + 1.0);
+        let tinted = |mut mesh: Mesh, deep: &mut Vec<bool>| -> Mesh {
+            // Most vertices repeat a handful of colors (glow rings, text, dots) at the same tint
+            // amount, so conversions are memoized in a small direct-mapped table.
+            let mut memo = vec![(0u32, u32::MAX, Color32::TRANSPARENT); 2048];
+            deep.clear();
             for v in &mut mesh.vertices {
-                let lift = smoothstep(-e, 0.0, sd_round_rect(v.pos, glass, wr)) * 0.06;
-                v.color =
-                    mix(v.color, tint_rgb.gamma_multiply(v.color.a() as f32 / 255.0), ta + lift).gamma_multiply(alpha);
+                let sd = sd_round_rect(v.pos, glass, wr);
+                deep.push(sd < deep_at);
+                if v.color.a() == 0 {
+                    continue;
+                }
+                let k = (ta + smoothstep(-e, 0.0, sd) * 0.06).clamp(0.0, 1.0);
+                let kq = (k * 1024.0).round() as u32;
+                let key = u32::from_le_bytes(v.color.to_array());
+                let slot = ((key ^ kq.wrapping_mul(0x9E37_79B9)).wrapping_mul(0x85EB_CA6B) >> 21) as usize;
+                let hit = memo[slot];
+                if hit.0 == key && hit.1 == kq {
+                    v.color = hit.2;
+                    continue;
+                }
+                let k = kq as f32 / 1024.0;
+                let c = to_oklab(v.color);
+                v.color = from_oklab([
+                    c[0] + (tint_lab[0] - c[0]) * k,
+                    c[1] + (tint_lab[1] - c[1]) * k,
+                    c[2] + (tint_lab[2] - c[2]) * k,
+                    c[3],
+                ]);
+                memo[slot] = (key, kq, v.color);
             }
             mesh
         };
@@ -281,16 +340,36 @@ impl GlassSurface {
                 Color32::WHITE
             }
         });
+        // The bend's rim has rounder corners (`wr`) than the pane (`radius`); as before, the
+        // corner slivers between the two show the unbent (magnified, tinted) backdrop.
+        if radius + 0.5 < wr {
+            let mut scratch_deep = Vec::new();
+            for (cx, cy, sx, sy) in [
+                (glass.min.x, glass.min.y, 1.0, 1.0),
+                (glass.max.x, glass.min.y, -1.0, 1.0),
+                (glass.min.x, glass.max.y, 1.0, -1.0),
+                (glass.max.x, glass.max.y, -1.0, -1.0),
+            ] {
+                let corner = Rect::from_two_pos(egui::pos2(cx, cy), egui::pos2(cx + sx * wr, cy + sy * wr));
+                let unscale = |p: Pos2| center + (p - center) / mag;
+                let mut piece = clip_rect(&src_rect, Rect::from_two_pos(unscale(corner.min), unscale(corner.max)));
+                for v in &mut piece.vertices {
+                    v.pos = center + (v.pos - center) * mag;
+                }
+                let piece = clip.clip(&clip_rect(&piece, corner), Vec2::ZERO);
+                painter.add(Shape::mesh(tinted(piece, &mut scratch_deep)));
+            }
+        }
         // tint once; the blur taps are shifted, clipped and faded copies of the tinted pane
-        let main = tinted(main, 1.0);
-        eprintln!("tinted {:?}", t0.elapsed());
+        let mut deep = Vec::new();
+        let main = tinted(main, &mut deep);
         if self.blur > 0.5 {
             let taps = 4;
             let copies: Vec<Mesh> = (1..taps)
                 .map(|k| {
                     let a = k as f32 / (taps - 1) as f32 * std::f32::consts::TAU + 0.4;
                     let rr = self.blur * if k % 2 == 0 { 1.0 } else { 0.55 };
-                    let mut c = clip.clip(&main, vec2(a.cos(), a.sin()) * rr);
+                    let mut c = clip.clip_hinted(&main, vec2(a.cos(), a.sin()) * rr, Some(&deep));
                     let alpha = 1.0 / (k + 1) as f32;
                     for v in &mut c.vertices {
                         v.color = v.color.gamma_multiply(alpha);
@@ -298,7 +377,6 @@ impl GlassSurface {
                     c
                 })
                 .collect();
-            eprintln!("blurcopies {:?} {:?}", t0.elapsed(), copies.iter().map(|c| c.vertices.len()).collect::<Vec<_>>());
             painter.add(Shape::mesh(main));
             for c in copies {
                 painter.add(Shape::mesh(c));
@@ -329,24 +407,18 @@ impl GlassSurface {
                     };
                 }
                 // fully black additive triangles change nothing: drop them before clipping
-                let mut lit = Mesh::with_texture(scratch.texture_id);
-                for tri in scratch.indices.chunks_exact(3) {
-                    let v = [
-                        scratch.vertices[tri[0] as usize],
-                        scratch.vertices[tri[1] as usize],
-                        scratch.vertices[tri[2] as usize],
-                    ];
-                    if v.iter().any(|v| v.color != Color32::TRANSPARENT) {
-                        let i = lit.vertices.len() as u32;
-                        lit.vertices.extend_from_slice(&v);
-                        lit.add_triangle(i, i + 1, i + 2);
-                    }
-                }
-                eprintln!("chroma lit {} {:?}", lit.vertices.len(), t0.elapsed());
-                painter.add(Shape::mesh(clip.clip(&lit, Vec2::ZERO)));
+                let dark = |i: u32| scratch.vertices[i as usize].color == Color32::TRANSPARENT;
+                let lit_idx: Vec<u32> = scratch
+                    .indices
+                    .chunks_exact(3)
+                    .filter(|t| !(dark(t[0]) && dark(t[1]) && dark(t[2])))
+                    .flatten()
+                    .copied()
+                    .collect();
+                scratch.indices = lit_idx;
+                painter.add(Shape::mesh(clip.clip(&scratch, Vec2::ZERO)));
             }
         }
-        eprintln!("end {:?}", t0.elapsed());
         // a whisper of frost so plain areas still read as glass
         util::inner_glow(
             &painter,

@@ -135,7 +135,8 @@ fn deps(src: &Sources, id: &FileId, unresolved: &mut BTreeSet<String>) -> Vec<Fi
             "mod" if f.tok(it.last - 1) == ";" => {}
             "use" => {
                 for (path, _) in f.use_paths(it) {
-                    let first = if path.first().map(String::as_str) == Some("self") { path.get(1) } else { path.first() };
+                    let first =
+                        if path.first().map(String::as_str) == Some("self") { path.get(1) } else { path.first() };
                     if first.is_some_and(|s| children.contains(s)) {
                         continue; // re-export of a child module: kept only if that child is copied
                     }
@@ -236,7 +237,8 @@ pub fn render(src: &Sources, id: &FileId, copied: &BTreeSet<FileId>, base: &str)
         let drop = if f.stripped.contains(&i) {
             true
         } else if it.kind == "inner_attr" {
-            let t: String = f.src[f.toks[it.first].start..f.toks[it.last - 1].end].chars().filter(|c| !c.is_whitespace()).collect();
+            let t: String =
+                f.src[f.toks[it.first].start..f.toks[it.last - 1].end].chars().filter(|c| !c.is_whitespace()).collect();
             t.starts_with("#![warn(") || t.starts_with("#![deny(") || t.starts_with("#![forbid(")
         } else if it.kind == "mod" && f.tok(it.last - 1) == ";" {
             let mut p = m.clone();
@@ -260,7 +262,8 @@ pub fn render(src: &Sources, id: &FileId, copied: &BTreeSet<FileId>, base: &str)
                 .iter()
                 .map(|(p, _)| {
                     let first = if p.first().map(String::as_str) == Some("self") { p.get(1) } else { p.first() };
-                    let local = p.first().is_some_and(|s| is_local_root(s)) || first.is_some_and(|s| children.contains_key(s));
+                    let local =
+                        p.first().is_some_and(|s| is_local_root(s)) || first.is_some_and(|s| children.contains_key(s));
                     match src.resolve(c, m, p) {
                         Some(r) => match src.res_file(&r) {
                             Some(fid) => copied.contains(&fid) || src.file(&fid).is_none(),
@@ -283,8 +286,11 @@ pub fn render(src: &Sources, id: &FileId, copied: &BTreeSet<FileId>, base: &str)
                     j += 1;
                 }
                 let pre = if it.head < j { &f.src[f.toks[it.head].start..f.toks[j - 1].end] } else { "" };
-                let attrs: String =
-                    it.attrs.iter().map(|&(a, b)| format!("{}\n", &f.src[f.toks[a].start..f.toks[b - 1].end])).collect();
+                let attrs: String = it
+                    .attrs
+                    .iter()
+                    .map(|&(a, b)| format!("{}\n", &f.src[f.toks[a].start..f.toks[b - 1].end]))
+                    .collect();
                 for ((p, alias), k) in paths.iter().zip(&keep) {
                     if !*k {
                         continue;
@@ -345,7 +351,13 @@ pub fn render(src: &Sources, id: &FileId, copied: &BTreeSet<FileId>, base: &str)
                     } else {
                         fence_open = true;
                         let l = lang.trim();
-                        if l.is_empty() || l.contains("rust") || l.contains("no_run") || l.contains("should_panic") || l.contains("compile_fail") || l.contains("edition") {
+                        if l.is_empty()
+                            || l.contains("rust")
+                            || l.contains("no_run")
+                            || l.contains("should_panic")
+                            || l.contains("compile_fail")
+                            || l.contains("edition")
+                        {
                             let off = t.start + text.find("```").unwrap() + 3;
                             edits.push((off, off + lang.len(), "ignore".to_string()));
                         }

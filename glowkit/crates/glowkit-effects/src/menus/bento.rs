@@ -1,5 +1,6 @@
 use super::common::{
-    bold_text, capture, clip_mesh, desaturate, paint_avatar, pointer_or_auto, subdivide, Persp, VIVID,
+    bold_text, cached_mesh, capture, clip_mesh, desaturate, paint_avatar, pointer_or_auto, subdivide, text_key, Persp,
+    VIVID,
 };
 use crate::buttons::util::{self, cr, outline};
 use egui::{
@@ -414,32 +415,55 @@ impl ChromaGrid {
             let fg = t.foreground;
             let muted = t.muted_foreground;
             let img = Rect::from_min_max(tile.min + vec2(8.0, 8.0), pos2(tile.max.x - 8.0, tile.max.y - 64.0));
-            let mesh = capture(ui, |p| {
-                paint::fill_convex_fn(p, &outline(tile, radius, 10.0), 4, |q| {
-                    let u = ((q.y - tile.min.y) / tile.height()).clamp(0.0, 1.0);
-                    mix(mix(card_bg, colors[0], if t.dark { 0.22 } else { 0.12 }), card_bg, u)
+            // The tile (card + avatar) only changes with its content, so it is captured and
+            // subdivided once; per frame only the spotlight recolors it.
+            let key = {
+                use std::hash::{Hash, Hasher};
+                let mut h = std::collections::hash_map::DefaultHasher::new();
+                for f in [tile.min.x, tile.min.y, tile.max.x, tile.max.y] {
+                    f.to_bits().hash(&mut h);
+                }
+                (i, colors, card_bg, fg, muted, t.dark, &item.name, &item.role, &item.handle).hash(&mut h);
+                text_key(ui, &[(&item.name, 15.0), (&item.role, 12.5), (&item.handle, 12.0)]).hash(&mut h);
+                h.finish()
+            };
+            let cached = cached_mesh(ui, id.with(("tile", i)), key, || {
+                let mesh = capture(ui, |p| {
+                    paint::fill_convex_fn(p, &outline(tile, radius, 10.0), 4, |q| {
+                        let u = ((q.y - tile.min.y) / tile.height()).clamp(0.0, 1.0);
+                        mix(mix(card_bg, colors[0], if t.dark { 0.22 } else { 0.12 }), card_bg, u)
+                    });
+                    let y = img.max.y + 12.0;
+                    bold_text(
+                        p,
+                        pos2(tile.min.x + 14.0, y),
+                        Align2::LEFT_TOP,
+                        &item.name,
+                        FontId::proportional(15.0),
+                        fg,
+                    );
+                    p.text(
+                        pos2(tile.min.x + 14.0, y + 22.0),
+                        Align2::LEFT_TOP,
+                        &item.role,
+                        FontId::proportional(12.5),
+                        muted,
+                    );
+                    p.text(
+                        pos2(tile.max.x - 14.0, y + 2.0),
+                        Align2::RIGHT_TOP,
+                        &item.handle,
+                        FontId::proportional(12.0),
+                        muted,
+                    );
                 });
-                let y = img.max.y + 12.0;
-                bold_text(p, pos2(tile.min.x + 14.0, y), Align2::LEFT_TOP, &item.name, FontId::proportional(15.0), fg);
-                p.text(
-                    pos2(tile.min.x + 14.0, y + 22.0),
-                    Align2::LEFT_TOP,
-                    &item.role,
-                    FontId::proportional(12.5),
-                    muted,
-                );
-                p.text(
-                    pos2(tile.max.x - 14.0, y + 2.0),
-                    Align2::RIGHT_TOP,
-                    &item.handle,
-                    FontId::proportional(12.0),
-                    muted,
-                );
+                let mut mesh = subdivide(&mesh, 14.0, tile.expand(2.0));
+                let avatar = capture(ui, |p| paint_avatar(p, img, 11.0, colors, i as u32, true));
+                let avatar = clip_mesh(&subdivide(&avatar, 14.0, img.expand(2.0)), &outline(img, 11.0, 6.0));
+                mesh.append(avatar);
+                mesh
             });
-            let mut mesh = subdivide(&mesh, 14.0, tile.expand(2.0));
-            let avatar = capture(ui, |p| paint_avatar(p, img, 11.0, colors, i as u32, true));
-            let avatar = clip_mesh(&subdivide(&avatar, 14.0, img.expand(2.0)), &outline(img, 11.0, 6.0));
-            mesh.append(avatar);
+            let mut mesh = egui::epaint::Mesh::clone(&cached);
             for v in &mut mesh.vertices {
                 let d = v.pos.distance(sp);
                 let m = (1.0 - smoothstep(spot * 0.25, spot, d)) * k;

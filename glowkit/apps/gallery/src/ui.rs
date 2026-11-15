@@ -656,7 +656,13 @@ impl Gallery {
                 );
                 dot_field(ui.painter(), deco, &t, time);
                 dot_field(ui.painter(), deco.translate(vec2(-(full.width() - 460.0), 60.0)), &t, time + 2.0);
-                let title = if ui.available_width() > 760.0 { 60.0 } else if ui.available_width() > 480.0 { 44.0 } else { 34.0 };
+                let title = if ui.available_width() > 760.0 {
+                    60.0
+                } else if ui.available_width() > 480.0 {
+                    44.0
+                } else {
+                    34.0
+                };
                 centered_text(ui, "Premium animated UI", display(title), t.foreground);
                 centered_text(
                     ui,

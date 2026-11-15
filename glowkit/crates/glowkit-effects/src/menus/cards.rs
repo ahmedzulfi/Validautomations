@@ -1,4 +1,7 @@
-use super::common::{bold_text, capture, clip_mesh, paint_avatar, pointer_or_auto, subdivide, Persp, VIVID};
+use super::common::{
+    bold_text, cached_mesh, capture, clip_mesh, mesh_key, paint_avatar, pointer_or_auto, subdivide, text_key, Persp,
+    VIVID,
+};
 use crate::buttons::util::{self, clip_convex, outline};
 use crate::motion::common::{polygon_shadow, sd_round_rect};
 use egui::{
@@ -166,82 +169,105 @@ impl ProfileCard {
             pos2(bar.max.x - 12.0 - btn_g.size().x - 26.0, bar.center().y - 16.0),
             vec2(btn_g.size().x + 26.0, 32.0),
         );
-        let mesh = capture(ui, |p| {
-            paint::fill_convex_fn(p, &outline(card, radius, 10.0), 6, |q| {
-                let u = ((q.y - card.min.y) / card.height()).clamp(0.0, 1.0);
-                let v = ((q.x - card.min.x) / card.width()).clamp(0.0, 1.0);
-                let base = mix(c0, mix(c1, c0, 0.35), (1.0 - u) * 0.9);
-                mix(base, shade(c0, -0.5), (v * 0.3 + u * 0.4).min(1.0) * 0.5)
-            });
-            // radial light behind the portrait
-            paint::glow(
-                p,
-                pos2(card.center().x, card.min.y + card.height() * 0.55),
-                card.width() * 0.62,
-                with_alpha(c1, 0.55),
-            );
-            let art = Rect::from_min_max(pos2(card.min.x, card.min.y + card.height() * 0.22), card.max);
-            paint_avatar(p, art, 0.0, [mix(c1, Color32::WHITE, 0.2), c0], seed, false);
-            bold_text(
-                p,
-                pos2(card.center().x, card.min.y + 38.0),
-                Align2::CENTER_TOP,
-                &name,
-                FontId::proportional((card.width() * 0.105).clamp(16.0, 34.0)),
-                Color32::WHITE,
-            );
-            p.text(
-                pos2(card.center().x, card.min.y + 38.0 + (card.width() * 0.105).clamp(16.0, 34.0) * 1.35),
-                Align2::CENTER_TOP,
-                &title,
-                FontId::proportional(14.5),
-                with_alpha(Color32::WHITE, 0.88),
-            );
-            // frosted bar
-            p.rect(
-                bar,
-                util::cr(18.0),
-                with_alpha(Color32::WHITE, 0.12),
-                Stroke::new(1.0, with_alpha(Color32::WHITE, 0.22)),
-                egui::StrokeKind::Inside,
-            );
-            let av = pos2(bar.min.x + 30.0, bar.center().y);
-            paint::gradient_circle(p, av, 17.0, &[mix(c1, Color32::WHITE, 0.3), c0]);
-            p.circle_stroke(av, 17.0, Stroke::new(1.0, with_alpha(Color32::WHITE, 0.4)));
-            p.text(
-                av,
-                Align2::CENTER_CENTER,
-                name.chars().next().unwrap_or('?').to_string(),
-                FontId::proportional(14.0),
-                Color32::WHITE,
-            );
-            p.text(
-                pos2(av.x + 26.0, bar.center().y - 9.0),
-                Align2::LEFT_CENTER,
-                &handle,
-                FontId::proportional(13.5),
-                Color32::WHITE,
-            );
-            p.circle_filled(pos2(av.x + 30.0, bar.center().y + 10.0), 3.0, glowkit_core::hex("#4ADE80"));
-            p.text(
-                pos2(av.x + 37.0, bar.center().y + 10.0),
-                Align2::LEFT_CENTER,
-                &status,
-                FontId::proportional(12.0),
-                with_alpha(Color32::WHITE, 0.7),
-            );
-            if !contact.is_empty() {
+        // The face only changes when its content does, so it is captured, subdivided and clipped
+        // once and reused. The projection keeps lines straight, so the detail only needs to carry
+        // the smooth foil shading.
+        let name_size = (card.width() * 0.105).clamp(16.0, 34.0);
+        let initial = name.chars().next().unwrap_or('?').to_string();
+        let key = {
+            use std::hash::{Hash, Hasher};
+            let mut h = std::collections::hash_map::DefaultHasher::new();
+            for f in [card.min.x, card.min.y, card.max.x, card.max.y] {
+                f.to_bits().hash(&mut h);
+            }
+            (c0, c1, seed, &name, &title, &handle, &status, &contact).hash(&mut h);
+            text_key(
+                ui,
+                &[
+                    (&name, name_size),
+                    (&title, 14.5),
+                    (&initial, 14.0),
+                    (&handle, 13.5),
+                    (&status, 12.0),
+                    (&contact, 13.0),
+                ],
+            )
+            .hash(&mut h);
+            h.finish()
+        };
+        let face = cached_mesh(ui, id.with("face"), key, || {
+            let mesh = capture(ui, |p| {
+                paint::fill_convex_fn(p, &outline(card, radius, 10.0), 6, |q| {
+                    let u = ((q.y - card.min.y) / card.height()).clamp(0.0, 1.0);
+                    let v = ((q.x - card.min.x) / card.width()).clamp(0.0, 1.0);
+                    let base = mix(c0, mix(c1, c0, 0.35), (1.0 - u) * 0.9);
+                    mix(base, shade(c0, -0.5), (v * 0.3 + u * 0.4).min(1.0) * 0.5)
+                });
+                // radial light behind the portrait
+                paint::glow(
+                    p,
+                    pos2(card.center().x, card.min.y + card.height() * 0.55),
+                    card.width() * 0.62,
+                    with_alpha(c1, 0.55),
+                );
+                let art = Rect::from_min_max(pos2(card.min.x, card.min.y + card.height() * 0.22), card.max);
+                paint_avatar(p, art, 0.0, [mix(c1, Color32::WHITE, 0.2), c0], seed, false);
+                bold_text(
+                    p,
+                    pos2(card.center().x, card.min.y + 38.0),
+                    Align2::CENTER_TOP,
+                    &name,
+                    FontId::proportional(name_size),
+                    Color32::WHITE,
+                );
+                p.text(
+                    pos2(card.center().x, card.min.y + 38.0 + name_size * 1.35),
+                    Align2::CENTER_TOP,
+                    &title,
+                    FontId::proportional(14.5),
+                    with_alpha(Color32::WHITE, 0.88),
+                );
+                // frosted bar
                 p.rect(
-                    btn,
-                    util::cr(16.0),
-                    with_alpha(Color32::WHITE, 0.1),
-                    Stroke::new(1.0, with_alpha(Color32::WHITE, 0.35)),
+                    bar,
+                    util::cr(18.0),
+                    with_alpha(Color32::WHITE, 0.12),
+                    Stroke::new(1.0, with_alpha(Color32::WHITE, 0.22)),
                     egui::StrokeKind::Inside,
                 );
-                p.text(btn.center(), Align2::CENTER_CENTER, &contact, FontId::proportional(13.0), Color32::WHITE);
-            }
+                let av = pos2(bar.min.x + 30.0, bar.center().y);
+                paint::gradient_circle(p, av, 17.0, &[mix(c1, Color32::WHITE, 0.3), c0]);
+                p.circle_stroke(av, 17.0, Stroke::new(1.0, with_alpha(Color32::WHITE, 0.4)));
+                p.text(av, Align2::CENTER_CENTER, &initial, FontId::proportional(14.0), Color32::WHITE);
+                p.text(
+                    pos2(av.x + 26.0, bar.center().y - 9.0),
+                    Align2::LEFT_CENTER,
+                    &handle,
+                    FontId::proportional(13.5),
+                    Color32::WHITE,
+                );
+                p.circle_filled(pos2(av.x + 30.0, bar.center().y + 10.0), 3.0, glowkit_core::hex("#4ADE80"));
+                p.text(
+                    pos2(av.x + 37.0, bar.center().y + 10.0),
+                    Align2::LEFT_CENTER,
+                    &status,
+                    FontId::proportional(12.0),
+                    with_alpha(Color32::WHITE, 0.7),
+                );
+                if !contact.is_empty() {
+                    p.rect(
+                        btn,
+                        util::cr(16.0),
+                        with_alpha(Color32::WHITE, 0.1),
+                        Stroke::new(1.0, with_alpha(Color32::WHITE, 0.35)),
+                        egui::StrokeKind::Inside,
+                    );
+                    p.text(btn.center(), Align2::CENTER_CENTER, &contact, FontId::proportional(13.0), Color32::WHITE);
+                }
+            });
+            clip_mesh(&subdivide(&mesh, 24.0, card.expand(1.0)), &outline(card, radius, 6.0))
         });
-        let mesh = clip_mesh(&subdivide(&mesh, 12.0, card.expand(1.0)), &outline(card, radius, 6.0));
+        let mesh = egui::epaint::Mesh::clone(&face);
         let mut mesh = mesh;
         // holographic foil + glare, evaluated in card space before projection
         let glare = card.center() + vec2(rel.x, rel.y) * card.size() * 0.5;
@@ -551,13 +577,18 @@ impl DecayCard {
             vec2(0.0, 10.0),
             Color32::BLACK.gamma_multiply(if t.dark { 0.6 } else { 0.22 }),
         );
-        let mesh = capture(ui, |p| art(p, card));
-        let mut mesh = subdivide(&mesh, 12.0, card.expand(2.0));
+        // The art is painted at the resting place and moved with the rest of the transform, so
+        // the subdivided picture can be reused for as long as the art itself does not change.
+        let art_mesh = capture(ui, |p| art(p, card0));
+        let base =
+            cached_mesh(ui, id.with("art"), mesh_key(&art_mesh), || subdivide(&art_mesh, 12.0, card0.expand(2.0)));
+        let mut mesh = egui::epaint::Mesh::clone(&base);
+        let shift = center - card0.center();
         let amp = 46.0 * self.intensity * energy;
         let z = time * 0.7;
         let (sn, cs) = angle.sin_cos();
         for v in &mut mesh.vertices {
-            let q = v.pos;
+            let q = v.pos + shift;
             let mut d = Vec2::ZERO;
             if amp > 0.05 {
                 let nx = noise::fbm3(q.x * 0.018, q.y * 0.018, z, 3);

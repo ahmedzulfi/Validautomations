@@ -113,9 +113,7 @@ fn install_fonts(ctx: &egui::Context) {
     };
     fonts.families.insert(FontFamily::Proportional, with("inter", &prop));
     fonts.families.insert(FontFamily::Monospace, with("jetbrains", &mono));
-    fonts
-        .families
-        .insert(FontFamily::Name("display".into()), with("jakarta-bold", &with("inter-semibold", &prop)));
+    fonts.families.insert(FontFamily::Name("display".into()), with("jakarta-bold", &with("inter-semibold", &prop)));
     fonts.families.insert(FontFamily::Name("semibold".into()), with("inter-semibold", &prop));
     ctx.set_fonts(fonts);
 }
@@ -204,12 +202,8 @@ fn run_frame(ctx: &egui::Context, d: &Demo, inp: egui::RawInput) -> (Sample, Dur
     let t1 = Instant::now();
     let prims = ctx.tessellate(out.shapes, ppp);
     let tess = t1.elapsed();
-    let mut s = Sample {
-        ui: ui.as_secs_f64() * 1e3,
-        tess: tess.as_secs_f64() * 1e3,
-        prims: prims.len(),
-        ..Default::default()
-    };
+    let mut s =
+        Sample { ui: ui.as_secs_f64() * 1e3, tess: tess.as_secs_f64() * 1e3, prims: prims.len(), ..Default::default() };
     for p in &prims {
         if let egui::epaint::Primitive::Mesh(m) = &p.primitive {
             s.verts += m.vertices.len();
@@ -281,12 +275,9 @@ fn bench_demo(d: Demo, frames: usize) -> DemoResult {
 /// Runs `bench_demo` on a worker thread so a deadlocking demo cannot hang the whole run.
 fn bench_demo_guarded(d: Demo, frames: usize) -> DemoResult {
     let (tx, rx) = std::sync::mpsc::channel();
-    let spawned = std::thread::Builder::new()
-        .name(format!("bench-{}", d.id))
-        .stack_size(64 << 20)
-        .spawn(move || {
-            let _ = tx.send(bench_demo(d, frames));
-        });
+    let spawned = std::thread::Builder::new().name(format!("bench-{}", d.id)).stack_size(64 << 20).spawn(move || {
+        let _ = tx.send(bench_demo(d, frames));
+    });
     let hung = |msg: String| DemoResult {
         demo: d,
         error: Some(msg),
@@ -308,10 +299,7 @@ fn bench_demo_guarded(d: Demo, frames: usize) -> DemoResult {
                 if p != last.0 {
                     last = (p, Instant::now());
                 } else if last.1.elapsed() > FRAME_STALL {
-                    return hung(format!(
-                        "hung: a frame made no progress for {} s (deadlock?)",
-                        FRAME_STALL.as_secs()
-                    ));
+                    return hung(format!("hung: a frame made no progress for {} s (deadlock?)", FRAME_STALL.as_secs()));
                 }
             }
         }
@@ -472,7 +460,9 @@ fn app_numbers(skip: &[String]) -> App {
             loop {
                 match child.try_wait() {
                     Ok(Some(_)) => break,
-                    Ok(None) if t0.elapsed() < Duration::from_secs(600) => std::thread::sleep(Duration::from_millis(200)),
+                    Ok(None) if t0.elapsed() < Duration::from_secs(600) => {
+                        std::thread::sleep(Duration::from_millis(200))
+                    }
                     _ => {
                         let _ = child.kill();
                         return None;
@@ -516,8 +506,7 @@ fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let get = |k: &str| args.iter().position(|a| a == k).and_then(|i| args.get(i + 1)).cloned();
     if args.iter().any(|a| a == "--gallery-rss") {
-        let skip: Vec<String> =
-            get("--skip").map(|s| s.split(',').map(str::to_owned).collect()).unwrap_or_default();
+        let skip: Vec<String> = get("--skip").map(|s| s.split(',').map(str::to_owned).collect()).unwrap_or_default();
         gallery_rss(&skip);
         return;
     }
@@ -542,10 +531,8 @@ fn main() {
         PANIC_MSG.with(|m| *m.borrow_mut() = Some(format!("{msg}{loc}")));
     }));
 
-    let demos: Vec<Demo> = glowkit::all_demos()
-        .into_iter()
-        .filter(|d| filter.as_deref().is_none_or(|f| d.id.contains(f)))
-        .collect();
+    let demos: Vec<Demo> =
+        glowkit::all_demos().into_iter().filter(|d| filter.as_deref().is_none_or(|f| d.id.contains(f))).collect();
     eprintln!("glowkit-bench: {} demos x {} frames @ {}x{}", demos.len(), frames, W, H);
 
     let started = Instant::now();
@@ -615,7 +602,9 @@ fn main() {
 fn to_json(results: &[DemoResult], frames: usize, elapsed: f64, app: Option<&App>) -> String {
     let cpu = std::fs::read_to_string("/proc/cpuinfo")
         .ok()
-        .and_then(|s| s.lines().find(|l| l.starts_with("model name")).map(|l| l.split(':').nth(1).unwrap_or("").trim().to_owned()))
+        .and_then(|s| {
+            s.lines().find(|l| l.starts_with("model name")).map(|l| l.split(':').nth(1).unwrap_or("").trim().to_owned())
+        })
         .unwrap_or_else(|| "unknown".into());
     let cores = std::thread::available_parallelism().map_or(0, |n| n.get());
     let mem_kb = std::fs::read_to_string("/proc/meminfo")
@@ -673,7 +662,11 @@ fn to_json(results: &[DemoResult], frames: usize, elapsed: f64, app: Option<&App
     }
     o.push_str(",\n  \"histogram\": {\"edges_ms\": [");
     o.push_str(
-        &edges.iter().map(|e| if e.is_finite() { format!("{e}") } else { "null".into() }).collect::<Vec<_>>().join(", "),
+        &edges
+            .iter()
+            .map(|e| if e.is_finite() { format!("{e}") } else { "null".into() })
+            .collect::<Vec<_>>()
+            .join(", "),
     );
     o.push_str("], \"counts\": [");
     o.push_str(&counts.iter().map(|c| c.to_string()).collect::<Vec<_>>().join(", "));

@@ -1,5 +1,6 @@
 //! Smooth noise for organic motion: 2D/3D gradient noise and fBm.
 
+#[inline]
 fn hash3(x: i32, y: i32, z: i32) -> u32 {
     let mut h = (x as u32).wrapping_mul(0x8da6_b343)
         ^ (y as u32).wrapping_mul(0xd816_3841)
@@ -9,21 +10,26 @@ fn hash3(x: i32, y: i32, z: i32) -> u32 {
     h ^ (h >> 15)
 }
 
+/// The 12 edge-direction gradients, as a table so picking one is branch-free.
+const GRAD3: [[f32; 3]; 12] = [
+    [1.0, 1.0, 0.0],
+    [-1.0, 1.0, 0.0],
+    [1.0, -1.0, 0.0],
+    [-1.0, -1.0, 0.0],
+    [1.0, 0.0, 1.0],
+    [-1.0, 0.0, 1.0],
+    [1.0, 0.0, -1.0],
+    [-1.0, 0.0, -1.0],
+    [0.0, 1.0, 1.0],
+    [0.0, -1.0, 1.0],
+    [0.0, 1.0, -1.0],
+    [0.0, -1.0, -1.0],
+];
+
+#[inline]
 fn grad3(h: u32, x: f32, y: f32, z: f32) -> f32 {
-    match h % 12 {
-        0 => x + y,
-        1 => -x + y,
-        2 => x - y,
-        3 => -x - y,
-        4 => x + z,
-        5 => -x + z,
-        6 => x - z,
-        7 => -x - z,
-        8 => y + z,
-        9 => -y + z,
-        10 => y - z,
-        _ => -y - z,
-    }
+    let g = GRAD3[(h % 12) as usize];
+    g[0] * x + g[1] * y + g[2] * z
 }
 
 #[inline]
