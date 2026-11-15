@@ -1,4 +1,4 @@
-use super::common::{capture, clip_mesh, pointer_or_auto, subdivide, subdivide_except};
+use super::common::{capture, clip_mesh, pointer_or_auto, subdivide_except};
 use crate::buttons::util::{self, outline};
 use crate::motion::common::sd_round_rect;
 use egui::epaint::Mesh;
