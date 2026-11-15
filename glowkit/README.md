@@ -7,7 +7,7 @@ AI agent interfaces, live dashboards, game menus and HUDs, node editors, charts,
 micro-interactions, for native Windows, macOS and Linux apps (and the web through WebAssembly).
 100% Rust, built on [egui](https://github.com/emilk/egui). No Electron, no webview.
 
-[Live gallery](https://glowkit-rs.github.io/glowkit/gallery/) · [Website](https://glowkit-rs.github.io/glowkit/) · [Catalog](CATALOG.md) · [Docs](https://docs.rs/glowkit) · [Customizing](crates/glowkit/docs/CUSTOMIZING.md) · [Contributing](CONTRIBUTING.md)
+[Live gallery](https://glowkit-rs.github.io/glowkit/gallery/) · [Website](https://glowkit-rs.github.io/glowkit/) · [Catalog](CATALOG.md) · [Benchmarks](https://glowkit-rs.github.io/glowkit/benchmarks.html) · [Docs](https://docs.rs/glowkit) · [Customizing](crates/glowkit/docs/CUSTOMIZING.md) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -132,6 +132,28 @@ t.install(ctx);
 Every component reads its colors from the active theme and offers setters to override them.
 The full [customization guide](crates/glowkit/docs/CUSTOMIZING.md) covers tokens, component
 options, triggers, springs, the motion engine and composition.
+
+## Use with AI agents
+
+glowkit ships an MCP server so coding agents (Claude Code, Cursor, Codex...) use the real API
+instead of guessing it: ranked component search, exact `use` paths (compiler-verified),
+constructors and builder setters, full app templates, theme tokens and egui 0.37 migration notes.
+The catalog is compiled into the binary: no network, no keys.
+
+```bash
+cargo install glowkit-mcp
+claude mcp add glowkit -- glowkit-mcp        # Claude Code
+```
+
+Cursor: put `{"mcpServers": {"glowkit": {"command": "glowkit-mcp"}}}` in `.cursor/mcp.json`.
+Codex and other clients: see [agents/mcp](agents/mcp/). Tools: `search_components`,
+`get_component`, `get_template`, `list_categories`, `get_theme`, `get_setup`, `egui_037_notes`;
+plus a `build-app` prompt.
+
+* [agents/AGENTS.md](agents/AGENTS.md): drop-in instructions for your project (`AGENTS.md` / `CLAUDE.md`).
+* [agents/skills/glowkit](agents/skills/glowkit/SKILL.md): an agent skill for building polished glowkit UIs
+  (copy it to `.claude/skills/glowkit/`).
+* [agents/starter](agents/starter/): a starter app (app shell, dashboard, settings) to copy.
 
 ## Running the web gallery
 

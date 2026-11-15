@@ -91,6 +91,7 @@ Demo {
 cargo build -p glowkit-<crate> --features demos              # compile
 cargo clippy -p glowkit-<crate> --features demos             # lint
 cargo test -p glowkit-<crate>                                # tests
+cargo run --release -p glowkit-bench -- --filter <demo-id>   # frame time, vertices, allocations
 ./scripts/serve.sh &                                         # serve ./website on :8787
 FEATURES=<crate> PKG=pkg-<crate> PROFILE=dev ./scripts/build-web.sh
 PKG=pkg-<crate> node scripts/shot.mjs /tmp/shots <demo-id> shot/<demo-id> shot/<demo-id>@1

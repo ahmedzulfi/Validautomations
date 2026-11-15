@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>glowkit · Benchmarks</title>
+  <meta name="description" content="Frame time, tessellation, vertex counts and memory for every glowkit component, measured headlessly in release builds." />
+  <link rel="icon" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #ffffff; --surface: #f2f2f3; --surface-2: #e9e9eb; --card: #ffffff; --border: #e4e4e7; --border-2: #d4d4d8;
+      --fg: #111113; --muted: #5f5f68; --dim: #8a8a93;
+      --primary: #111113; --primary-fg: #ffffff; --accent: #7c3aed;
+      --bar: #7c3aed; --bar-heavy: #c2410c; --ok: #15803d; --warn: #b45309; --bad: #b91c1c;
+      --warn-bg: #fff4e5; --bad-bg: #fdecec; --ok-bg: #eaf6ee;
+      --radius: 28px;
+      --display: "Plus Jakarta Sans", Inter, system-ui, sans-serif;
+      --body: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+      --bg: #0b0b0d; --surface: #161619; --surface-2: #1d1d21; --card: #111114; --border: #26262b; --border-2: #33333a;
+      --fg: #fafafa; --muted: #a1a1aa; --dim: #71717a; --primary: #fafafa; --primary-fg: #111113; --accent: #a78bfa;
+      --bar: #a78bfa; --bar-heavy: #fb923c; --ok: #4ade80; --warn: #fbbf24; --bad: #f87171;
+      --warn-bg: #2a1f0c; --bad-bg: #2a1212; --ok-bg: #0f2417; color-scheme: dark; } }
+    :root[data-theme="dark"] {
+      --bg: #0b0b0d; --surface: #161619; --surface-2: #1d1d21; --card: #111114; --border: #26262b; --border-2: #33333a;
+      --fg: #fafafa; --muted: #a1a1aa; --dim: #71717a; --primary: #fafafa; --primary-fg: #111113; --accent: #a78bfa;
+      --bar: #a78bfa; --bar-heavy: #fb923c; --ok: #4ade80; --warn: #fbbf24; --bad: #f87171;
+      --warn-bg: #2a1f0c; --bad-bg: #2a1212; --ok-bg: #0f2417; color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 var(--body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    a { color: inherit; text-decoration: none; }
+    code { font-family: var(--mono); font-size: .9em; }
+    .wrap { max-width: 1400px; margin: 0 auto; padding-inline: max(20px, env(safe-area-inset-left, 0px)); }
+
+    nav { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(12px); }
+    nav .wrap { display: flex; align-items: center; gap: 28px; height: 68px; }
+    .brand { display: flex; align-items: center; gap: 10px; font: 700 19px var(--display); letter-spacing: -.02em; }
+    .brand i { width: 30px; height: 30px; border-radius: 10px; background: var(--primary); display: grid; place-items: center; }
+    .brand i svg { width: 16px; height: 16px; fill: var(--primary-fg); }
+    nav .links { display: flex; gap: 22px; font-size: 14.5px; color: var(--muted); }
+    nav .links a:hover, nav .links a[aria-current] { color: var(--fg); }
+    nav .right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    nav .gh { font-size: 14.5px; color: var(--muted); }
+    @media (max-width: 760px) { nav .links, nav .gh { display: none; } }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 18px; border-radius: 999px; font: 600 14.5px var(--body); border: 1px solid var(--border); background: var(--bg); color: var(--fg); cursor: pointer; }
+    .btn.primary { background: var(--primary); color: var(--primary-fg); border-color: transparent; }
+
+    .hero { padding: 72px 0 24px; }
+    .eyebrow { font: 600 12px var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    h1 { font: 700 clamp(36px, 5.6vw, 60px)/1.05 var(--display); letter-spacing: -.035em; margin: 10px 0 16px; max-width: 900px; text-wrap: balance; }
+    h1 span { color: var(--muted); }
+    .lead { max-width: 720px; margin: 0; color: var(--muted); font-size: clamp(16px, 2vw, 18px); }
+    .lead b { color: var(--fg); font-weight: 500; }
+    .meta { margin-top: 18px; color: var(--dim); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+    section { padding: 40px 0; }
+    h2 { font: 700 clamp(24px, 3.2vw, 34px)/1.15 var(--display); letter-spacing: -.03em; margin: 6px 0 10px; }
+    .sub { color: var(--muted); max-width: 680px; margin: 0; font-size: 16px; }
+
+    .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 8px; }
+    @media (max-width: 1000px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .card { padding: 22px 24px; border-radius: 24px; background: var(--surface); min-width: 0; }
+    .card .k { font-size: 13.5px; color: var(--muted); font-weight: 500; }
+    .card .v { font: 700 clamp(28px, 3.4vw, 38px)/1.1 var(--display); letter-spacing: -.03em; margin-top: 6px; font-variant-numeric: tabular-nums; }
+    .card .v small { font: 600 15px var(--body); color: var(--muted); letter-spacing: 0; margin-left: 4px; }
+    .card .d { font-size: 13px; color: var(--dim); margin-top: 4px; }
+
+    .panel { margin-top: 22px; border-radius: var(--radius); background: var(--surface); padding: 24px; }
+    .hist-head { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .seg { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 3px; margin-left: auto; }
+    .seg button { border: 0; background: transparent; color: var(--muted); font: 600 13px var(--body); padding: 6px 14px; border-radius: 999px; cursor: pointer; }
+    .seg button[aria-pressed="true"] { background: var(--card); color: var(--fg); }
+    .hist-title { font-weight: 600; font-size: 15px; }
+    .hist-note { color: var(--muted); font-size: 13px; }
+    #hist { display: block; width: 100%; height: 280px; margin-top: 12px; overflow: visible; }
+    #hist text { font: 12px var(--body); fill: var(--muted); font-variant-numeric: tabular-nums; }
+    #hist .grid { stroke: var(--border-2); stroke-width: 1; }
+    #hist .bar { fill: var(--bar); }
+    #hist .bar.heavy { fill: var(--bar-heavy); }
+    #hist .hit:hover + .bar, #hist .bar.hot { opacity: .8; }
+    #hist .val { fill: var(--fg); font-weight: 600; }
+    .legend { display: flex; gap: 16px; font-size: 13px; color: var(--muted); margin-top: 6px; flex-wrap: wrap; }
+    .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+    .tip { position: fixed; pointer-events: none; z-index: 50; background: var(--primary); color: var(--primary-fg); font-size: 12.5px; padding: 7px 10px; border-radius: 10px; opacity: 0; transition: opacity .1s; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 20px; }
+    .controls input[type=search], .controls select { height: 44px; padding: 0 16px; border-radius: 999px; border: 0; background: var(--surface); color: var(--fg); font: inherit; font-size: 14.5px; outline: none; }
+    .controls input[type=search] { flex: 1; min-width: 220px; }
+    .controls input:focus, .controls select:focus { box-shadow: 0 0 0 2px var(--border-2); }
+    .controls label { display: inline-flex; gap: 8px; align-items: center; font-size: 14px; color: var(--muted); padding: 0 6px; cursor: pointer; }
+    .controls .count { color: var(--muted); font-size: 14px; margin-left: auto; font-variant-numeric: tabular-nums; }
+    .table-wrap { margin-top: 14px; border-radius: 22px; background: var(--surface); overflow: auto; max-height: 760px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+    thead th { position: sticky; top: 0; background: var(--surface-2); text-align: left; font-weight: 600; font-size: 12.5px; color: var(--muted); padding: 11px 14px; white-space: nowrap; cursor: pointer; user-select: none; z-index: 1; }
+    thead th.num, td.num { text-align: right; }
+    thead th[aria-sort] { color: var(--fg); }
+    thead th[aria-sort="ascending"]::after { content: " ↑"; }
+    thead th[aria-sort="descending"]::after { content: " ↓"; }
+    tbody td { padding: 9px 14px; border-top: 1px solid var(--border); white-space: nowrap; }
+    tbody tr:hover td { background: color-mix(in srgb, var(--surface-2) 70%, transparent); }
+    td.name b { font-weight: 600; }
+    td.name small { display: block; color: var(--dim); font: 12px var(--mono); }
+    td.cat { color: var(--muted); }
+    .ms-bar { display: inline-block; height: 6px; border-radius: 3px; background: var(--bar); vertical-align: middle; margin-right: 8px; opacity: .55; }
+    .heavy-row td.p95 { color: var(--bad); font-weight: 600; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; font: 600 11.5px var(--body); padding: 2px 8px; border-radius: 999px; margin-left: 8px; vertical-align: 1px; }
+    .tag.heavy { background: var(--bad-bg); color: var(--bad); }
+    .tag.err { background: var(--bad-bg); color: var(--bad); }
+    .rep { font-size: 12.5px; font-weight: 600; padding: 2px 9px; border-radius: 999px; }
+    .rep.continuous { background: var(--warn-bg); color: var(--warn); }
+    .rep.periodic { background: var(--surface-2); color: var(--muted); }
+    .rep.none { background: var(--ok-bg); color: var(--ok); }
+
+    .method { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
+    @media (max-width: 900px) { .method { grid-template-columns: minmax(0, 1fr); } }
+    .method .card p, .method .card li { color: var(--muted); font-size: 14.5px; margin: 6px 0 0; }
+    .method .card ul { margin: 6px 0 0; padding-left: 18px; }
+    .method h3 { margin: 0; font: 700 17px var(--display); letter-spacing: -.01em; }
+    dl.machine { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 10px 0 0; font-size: 14px; }
+    dl.machine dt { color: var(--muted); }
+    dl.machine dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    pre { margin: 12px 0 0; padding: 14px 16px; border-radius: 14px; background: var(--bg); font: 13px/1.6 var(--mono); overflow-x: auto; }
+    .ext { border: 1px dashed var(--border-2); background: transparent; }
+
+    footer { padding: 32px 0 56px; color: var(--muted); font-size: 14px; }
+    footer .wrap { display: flex; gap: 20px; flex-wrap: wrap; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 28px; }
+    footer a:hover { color: var(--fg); }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .empty { padding: 40px; text-align: center; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="wrap">
+      <a class="brand" href="./"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12C11.4 17.8 6.2 12.6 0 12 6.2 11.4 11.4 6.2 12 0z"/></svg></i>glowkit</a>
+      <div class="links">
+        <a href="gallery/">Components</a>
+        <a href="./#demo">Live demo</a>
+        <a href="./#catalog">Catalog</a>
+        <a href="benchmarks.html" aria-current="page">Benchmarks</a>
+        <a href="./#start">Docs</a>
+      </div>
+      <div class="right">
+        <a class="gh" href="https://github.com/glowkit-rs/glowkit">GitHub</a>
+        <a class="btn primary" href="./#start">Get started</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <div class="eyebrow">Benchmarks</div>
+      <h1>Every component, measured. <span>Frame by frame.</span></h1>
+      <p class="lead">Each glowkit component renders headlessly for <b id="m-frames">120</b> frames of simulated time with the pointer moving across it. We time the <b>UI pass</b> and <b>tessellation</b>, count vertices and allocations, and check whether it keeps asking for frames when nothing is happening.</p>
+      <div class="meta" id="meta">Loading benchmarks.json…</div>
+    </div>
+  </header>
+
+  <section style="padding-top: 16px">
+    <div class="wrap">
+      <div class="cards" id="cards"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">Distribution</div>
+      <h2>Frame time histogram</h2>
+      <p class="sub">CPU time per frame (UI pass + tessellation). A 60 Hz display gives you 16.7 ms per frame; a 120 Hz one gives 8.3 ms. Bars past 4 ms are highlighted.</p>
+      <div class="panel">
+        <div class="hist-head">
+          <span class="hist-title" id="hist-title">All measured frames</span>
+          <span class="hist-note" id="hist-note"></span>
+          <div class="seg" role="group" aria-label="Histogram source">
+            <button type="button" data-mode="frames" aria-pressed="true">All frames</button>
+            <button type="button" data-mode="medians" aria-pressed="false">Component medians</button>
+            <button type="button" data-mode="p95" aria-pressed="false">Component p95</button>
+          </div>
+        </div>
+        <svg id="hist" role="img" aria-label="Histogram of frame times"></svg>
+        <div class="legend"><span><i style="background: var(--bar)"></i>Under 4 ms</span><span><i style="background: var(--bar-heavy)"></i>4 ms or more</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="table">
+    <div class="wrap">
+      <div class="eyebrow">Per component</div>
+      <h2>All components</h2>
+      <p class="sub">Click a column to sort. Components whose p95 frame is above 4 ms are tagged <span class="tag heavy" style="margin-left:0">Heavy</span>. "Idle repaint" says what the component does after the pointer leaves: <span class="rep none">none</span> sleeps, <span class="rep periodic">periodic</span> wakes on a timer, <span class="rep continuous">continuous</span> animates every frame.</p>
+      <div class="controls">
+        <input type="search" id="q" placeholder="Filter by name or id…" aria-label="Filter components" />
+        <select id="cat" aria-label="Category"><option value="">All categories</option></select>
+        <select id="rep" aria-label="Idle repaint"><option value="">Any idle repaint</option><option value="none">Sleeps when idle</option><option value="periodic">Periodic</option><option value="continuous">Continuous</option></select>
+        <label><input type="checkbox" id="heavy" /> Heavy only</label>
+        <span class="count" id="count"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th data-k="name">Component</th>
+            <th data-k="category">Category</th>
+            <th class="num" data-k="med">Median ms</th>
+            <th class="num" data-k="p95" aria-sort="descending">p95 ms</th>
+            <th class="num" data-k="max">Max ms</th>
+            <th class="num" data-k="cold">Cold ms</th>
+            <th class="num" data-k="tess">Tess. ms</th>
+            <th class="num" data-k="verts">Vertices</th>
+            <th class="num" data-k="allocs">Allocs/frame</th>
+            <th class="num" data-k="peak">Peak alloc</th>
+            <th data-k="idle">Idle repaint</th>
+          </tr></thead>
+          <tbody id="rows"><tr><td colspan="11" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="method">
+    <div class="wrap">
+      <div class="eyebrow">Methodology</div>
+      <h2>How these numbers are made</h2>
+      <p class="sub">Run it yourself: the harness lives in <code>apps/bench</code>.</p>
+      <div class="method">
+        <div class="card">
+          <h3>Harness</h3>
+          <ul>
+            <li>One fresh <code>egui::Context</code> per component, gallery fonts and the light theme installed, warmed with one empty frame so "cold" measures the component and not egui's font atlas.</li>
+            <li>Fixed <span id="m-vp">1100×720</span> viewport at 1 pixel per point. The component sits in the same padded preview card the gallery uses.</li>
+            <li><span id="m-frames2">120</span> frames with <code>time</code> advancing 1/60 s each; the pointer moves along a Lissajous path so hover effects and cursor-driven components do real work.</li>
+            <li>Per frame: wall time of <code>ctx.run_ui</code> and <code>ctx.tessellate</code>, primitive/vertex/index counts, allocation count and peak extra heap bytes from a counting global allocator.</li>
+            <li>Median, p95 and max exclude the first ("cold") frame. Then the pointer leaves and <span id="m-idle">30</span> idle frames run; the requested repaint delay over the last 10 decides the idle-repaint class.</li>
+            <li>Panicking components are caught with <code>catch_unwind</code> and listed as errors.</li>
+          </ul>
+          <pre>cargo run --release -p glowkit-bench -- \
+  --frames 120 --json website/benchmarks.json</pre>
+        </div>
+        <div class="card">
+          <h3>Machine &amp; build</h3>
+          <dl class="machine" id="machine"></dl>
+          <h3 style="margin-top: 18px">Caveats</h3>
+          <ul>
+            <li><b>Headless CPU time only.</b> GPU rasterization, texture upload and presentation are not included; a real frame also pays for those, usually a small fixed cost for 2D meshes of this size.</li>
+            <li>Single-threaded, sequential runs on a shared machine; expect a few percent of noise, more on sub-0.05 ms numbers.</li>
+            <li>App memory is the peak RSS of a gallery-equivalent workload (every category page rendered as a tile grid in one long-lived context), measured in a child process, not of the windowed gallery with a GPU surface.</li>
+          </ul>
+        </div>
+        <div class="card ext" id="ext">
+          <h3>External context (not measured here)</h3>
+          <p>For orientation only, typical published ballparks for an Electron "hello world": roughly 80–150 MB installer/binary footprint (it bundles Chromium) and 60–100 MB+ resident memory at idle. These figures are not produced by this harness and vary widely by app and platform; compare against your own builds.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 glowkit contributors · MIT / Apache-2.0</span>
+      <span><a href="./">Home</a> · <a href="gallery/">Gallery</a> · <a href="https://docs.rs/glowkit">Docs</a> · <a href="https://github.com/glowkit-rs/glowkit">GitHub</a></span>
+    </div>
+  </footer>
+  <div class="tip" id="tip"></div>
+
+  <script>
+    const HEAVY = 4;
+    const $ = (id) => document.getElementById(id);
+    const fmtMs = (v) => v == null ? "–" : v < 0.1 ? v.toFixed(3) : v < 10 ? v.toFixed(2) : v.toFixed(1);
+    const fmtInt = (v) => v == null ? "–" : Math.round(v).toLocaleString("en-US");
+    const fmtBytes = (b) => b == null ? "–" : b >= 1048576 ? (b / 1048576).toFixed(1) + " MB" : b >= 1024 ? (b / 1024).toFixed(0) + " kB" : b + " B";
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const median = (a) => { if (!a.length) return 0; const s = [...a].sort((x, y) => x - y); return s[Math.floor((s.length - 1) / 2)]; };
+
+    let data, rows = [], sortKey = "p95", sortDir = -1, histMode = "frames";
+
+    fetch("benchmarks.json").then((r) => r.json()).then((d) => { data = d; init(); }).catch(() => {
+      $("meta").textContent = "Could not load benchmarks.json. Generate it with: cargo run --release -p glowkit-bench -- --json website/benchmarks.json";
+      $("rows").innerHTML = '<tr><td colspan="11" class="empty">No data</td></tr>';
+    });
+
+    function init() {
+      const m = data.meta;
+      rows = data.components.map((c) => c.error ? { ...c, err: true, med: null, p95: null, max: null, cold: null, tess: null, verts: null, allocs: null, peak: null, idle: "error" } : {
+        ...c, med: c.total_ms.median, p95: c.total_ms.p95, max: c.total_ms.max, cold: c.cold_ms, tess: c.tess_ms.median,
+        verts: c.vertices, allocs: c.allocs, peak: c.alloc_peak_bytes, idle: c.idle_repaint,
+      });
+      const ok = rows.filter((r) => !r.err);
+      const meds = ok.map((r) => r.med);
+      const under = (t) => (meds.filter((v) => v < t).length / Math.max(1, meds.length) * 100);
+      const heavy = ok.filter((r) => r.p95 > HEAVY).length;
+      const sleeps = ok.filter((r) => r.idle === "none").length;
+      const a = data.app || {};
+      ["m-frames", "m-frames2"].forEach((id) => $(id).textContent = m.frames);
+      $("m-idle").textContent = m.idle_frames;
+      $("m-vp").textContent = `${m.viewport[0]}×${m.viewport[1]}`;
+      $("meta").textContent = `Measured ${m.date} · ${m.cpu} · ${m.rustc} · ${m.profile}`;
+
+      const card = (k, v, unit, d) => `<div class="card"><div class="k">${k}</div><div class="v">${v}${unit ? `<small>${unit}</small>` : ""}</div><div class="d">${d}</div></div>`;
+      const mb = (b) => b == null ? "–" : (b / 1048576).toFixed(1);
+      $("cards").innerHTML = [
+        card("Components measured", fmtInt(ok.length), "", `${rows.length - ok.length} errored · ${heavy} heavy (p95 > ${HEAVY} ms)`),
+        card("Median frame time", fmtMs(median(meds)), "ms", "median of per-component medians, UI + tessellation"),
+        card("Under 1 ms", under(1).toFixed(1), "%", "of components, by median frame"),
+        card("Under 4 ms", under(4).toFixed(1), "%", "of components, by median frame"),
+        card("Gallery binary", mb(a.gallery_binary_bytes), "MB", "native release build, every component included"),
+        card("WebAssembly", mb(a.wasm_bytes), "MB", a.wasm_gzip_bytes ? `${mb(a.wasm_gzip_bytes)} MB gzipped · whole gallery` : "whole gallery"),
+        card("Peak memory", a.gallery_rss_peak_kb ? (a.gallery_rss_peak_kb / 1024).toFixed(0) : "–", "MB", "RSS, all category pages rendered headless"),
+        card("Sleeps when idle", (sleeps / Math.max(1, ok.length) * 100).toFixed(0), "%", "of components stop requesting frames"),
+      ].join("");
+
+      $("machine").innerHTML = [
+        ["CPU", `${m.cpu} (${m.cores} threads)`], ["Memory", m.mem_kb ? `${(m.mem_kb / 1048576).toFixed(1)} GB` : "–"], ["OS", m.os],
+        ["Compiler", m.rustc], ["Profile", m.profile], ["egui", m.egui], ["Frames", `${m.frames} + ${m.idle_frames} idle, dt 1/60 s`],
+        ["Viewport", `${m.viewport[0]}×${m.viewport[1]} pt`], ["Total run", `${m.elapsed_s.toFixed(0)} s`],
+      ].map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("");
+
+      const cats = [...new Set(rows.map((r) => r.category))];
+      $("cat").innerHTML += cats.map((c) => `<option>${esc(c)}</option>`).join("");
+      ["q", "cat", "rep", "heavy"].forEach((id) => $(id).addEventListener("input", render));
+      document.querySelectorAll("thead th").forEach((th) => th.addEventListener("click", () => {
+        const k = th.dataset.k;
+        if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = ["name", "category", "idle"].includes(k) ? 1 : -1; }
+        document.querySelectorAll("thead th").forEach((t) => t.removeAttribute("aria-sort"));
+        th.setAttribute("aria-sort", sortDir > 0 ? "ascending" : "descending");
+        render();
+      }));
+      document.querySelectorAll(".seg button").forEach((b) => b.addEventListener("click", () => {
+        histMode = b.dataset.mode;
+        document.querySelectorAll(".seg button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+        drawHist();
+      }));
+      render();
+      drawHist();
+      addEventListener("resize", drawHist);
+    }
+
+    function render() {
+      const q = $("q").value.trim().toLowerCase(), cat = $("cat").value, rep = $("rep").value, heavyOnly = $("heavy").checked;
+      const list = rows.filter((r) => (!q || r.name.toLowerCase().includes(q) || r.id.includes(q)) && (!cat || r.category === cat)
+        && (!rep || r.idle === rep) && (!heavyOnly || r.p95 > HEAVY));
+      list.sort((a, b) => {
+        const x = a[sortKey], y = b[sortKey];
+        if (x == null) return 1; if (y == null) return -1;
+        return (typeof x === "string" ? x.localeCompare(y) : x - y) * sortDir;
+      });
+      const maxP = Math.max(...rows.filter((r) => !r.err).map((r) => r.p95), 1);
+      $("count").textContent = `${list.length} of ${rows.length}`;
+      $("rows").innerHTML = list.length ? list.map((r) => {
+        if (r.err) return `<tr><td class="name"><b>${esc(r.name)}</b><span class="tag err">Error</span><small>${esc(r.id)}</small></td><td class="cat">${esc(r.category)}</td><td colspan="9" style="color:var(--bad);white-space:normal">${esc(r.error)}</td></tr>`;
+        const heavy = r.p95 > HEAVY;
+        const w = Math.max(2, Math.round(60 * Math.sqrt(r.p95 / maxP)));
+        return `<tr class="${heavy ? "heavy-row" : ""}"><td class="name"><b>${esc(r.name)}</b>${heavy ? '<span class="tag heavy">Heavy</span>' : ""}<small>${esc(r.id)}</small></td>
+          <td class="cat">${esc(r.category)}</td><td class="num">${fmtMs(r.med)}</td>
+          <td class="num p95"><span class="ms-bar" style="width:${w}px${heavy ? ";background:var(--bar-heavy);opacity:1" : ""}"></span>${fmtMs(r.p95)}</td>
+          <td class="num">${fmtMs(r.max)}</td><td class="num">${fmtMs(r.cold)}</td><td class="num">${fmtMs(r.tess)}</td>
+          <td class="num">${fmtInt(r.verts)}</td><td class="num">${fmtInt(r.allocs)}</td><td class="num">${fmtBytes(r.peak)}</td>
+          <td><span class="rep ${r.idle}">${r.idle}</span></td></tr>`;
+      }).join("") : '<tr><td colspan="11" class="empty">No components match.</td></tr>';
+    }
+
+    function drawHist() {
+      const edges = data.histogram.edges_ms.map((e) => e == null ? Infinity : e);
+      let counts, unit;
+      if (histMode === "frames") { counts = data.histogram.counts; unit = "frames"; }
+      else {
+        const vals = rows.filter((r) => !r.err).map((r) => histMode === "medians" ? r.med : r.p95);
+        counts = edges.slice(0, -1).map((lo, i) => vals.filter((v) => v >= lo && v < edges[i + 1]).length); unit = "components";
+      }
+      const total = counts.reduce((a, b) => a + b, 0);
+      $("hist-title").textContent = { frames: "All measured frames", medians: "Per-component median frame", p95: "Per-component p95 frame" }[histMode];
+      $("hist-note").textContent = `${total.toLocaleString("en-US")} ${unit}`;
+      const svg = $("hist"), W = svg.clientWidth || 800, H = 280, L = 44, B = 42, T = 22;
+      const n = counts.length, gap = 6, bw = (W - L) / n, max = Math.max(...counts, 1);
+      const nice = (v) => { const p = 10 ** Math.floor(Math.log10(v)); return [1, 2, 2.5, 5, 10].map((m) => m * p).find((x) => x >= v); };
+      const top = nice(max), y = (v) => T + (H - T - B) * (1 - v / top);
+      let s = "";
+      for (let i = 0; i <= 4; i++) { const v = top * i / 4; s += `<line class="grid" x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v >= 1000 ? (v / 1000) + "k" : v}</text>`; }
+      const lab = (e) => e === Infinity ? "" : e < 1 ? String(e).replace(/^0/, "") : String(e);
+      counts.forEach((c, i) => {
+        const x = L + i * bw + gap / 2, w = bw - gap, h = (H - T - B) * c / top, heavy = edges[i] >= HEAVY;
+        const range = edges[i + 1] === Infinity ? `≥ ${edges[i]} ms` : `${edges[i]}–${edges[i + 1]} ms`;
+        const pct = total ? (c / total * 100).toFixed(1) : 0;
+        s += `<g data-tip="${range}: ${c.toLocaleString("en-US")} ${unit} (${pct}%)">`;
+        s += `<rect class="hit" x="${L + i * bw}" y="${T}" width="${bw}" height="${H - T - B}" fill="transparent"/>`;
+        if (c) s += `<path class="bar${heavy ? " heavy" : ""}" d="M${x},${y(0)} V${y(0) - h + Math.min(4, h)} q0,-${Math.min(4, h)} ${Math.min(4, h)},-${Math.min(4, h)} H${x + w - Math.min(4, h)} q${Math.min(4, h)},0 ${Math.min(4, h)},${Math.min(4, h)} V${y(0)} Z"/>`;
+        if (c && pct >= 1) s += `<text class="val" x="${x + w / 2}" y="${y(0) - h - 6}" text-anchor="middle">${pct}%</text>`;
+        s += `<text x="${x + w / 2}" y="${H - B + 18}" text-anchor="middle">${edges[i + 1] === Infinity ? "≥" + lab(edges[i]) : lab(edges[i]) + "–" + lab(edges[i + 1])}</text></g>`;
+      });
+      s += `<text x="${(W + L) / 2}" y="${H - 4}" text-anchor="middle">frame time (ms)</text>`;
+      svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+      svg.innerHTML = s;
+      const tip = $("tip");
+      svg.querySelectorAll("g[data-tip]").forEach((g) => {
+        g.addEventListener("mousemove", (e) => { tip.textContent = g.dataset.tip; tip.style.opacity = 1; tip.style.left = e.clientX + 12 + "px"; tip.style.top = e.clientY - 34 + "px"; g.querySelector(".bar")?.classList.add("hot"); });
+        g.addEventListener("mouseleave", () => { tip.style.opacity = 0; g.querySelector(".bar")?.classList.remove("hot"); });
+      });
+    }
+  </script>
+</body>
+</html>

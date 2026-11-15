@@ -6,9 +6,20 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
+keywords = ["egui", "ui", "cli", "components", "scaffold"]
+categories = ["command-line-utilities", "gui"]
+build = "build.rs"
+# `sources.bundle` is produced by `BUNDLE=1 scripts/gen-cli-registry.sh` before publishing, so the
+# published crate carries every component's source and works offline.
+include = ["src/**", "build.rs", "registry.json", "sources.bundle", "Cargo.toml"]
 
 [[bin]]
 name = "glowkit"
 path = "src/main.rs"
 
 [dependencies]
+miniz_oxide = "0.8"
+serde_json = "1"
+
+[build-dependencies]
+miniz_oxide = "0.8"

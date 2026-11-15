@@ -1,0 +1,26 @@
+[workspace]
+resolver = "2"
+members = ["crates/glowkit-tokens", "crates/glowkit-dioxus", "examples/gallery"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/glowkit-rs/glowkit"
+rust-version = "1.83"
+
+[workspace.dependencies]
+glowkit-tokens = { path = "crates/glowkit-tokens", version = "0.1.0" }
+glowkit-dioxus = { path = "crates/glowkit-dioxus", version = "0.1.0" }
+dioxus = { version = "0.7.10", default-features = false }
+
+[profile.dev]
+debug = 0
+
+[profile.dev.package."*"]
+opt-level = 2
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1

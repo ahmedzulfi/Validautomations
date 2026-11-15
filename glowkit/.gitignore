@@ -3,3 +3,9 @@
 **/*.rs.bk
 /website/gallery/pkg*
 /target-*
+
+# build outputs anywhere in the tree (ports, examples, scratch projects)
+**/target/
+**/__pycache__/
+*.pyc
+ports/*/examples/*/web/pkg/

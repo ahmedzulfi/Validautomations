@@ -1,0 +1,5 @@
+# Add to ~/.codex/config.toml (OpenAI Codex CLI), or run:
+#   codex mcp add glowkit -- glowkit-mcp
+[mcp_servers.glowkit]
+command = "glowkit-mcp"
+args = []

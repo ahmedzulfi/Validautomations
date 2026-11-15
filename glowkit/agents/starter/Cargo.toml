@@ -1,0 +1,18 @@
+[package]
+name = "glowkit-starter"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+# All glowkit features are on by default. To compile less, list only what you use, e.g.
+# glowkit = { version = "0.1", default-features = false, features = ["components", "charts", "text", "templates"] }
+glowkit = "0.1"
+eframe = "0.37"
+
+[profile.dev.package."*"]
+# Dependencies optimized even in debug builds: animations stay smooth while you iterate.
+opt-level = 2
+
+# A standalone project, even when copied inside another workspace.
+[workspace]

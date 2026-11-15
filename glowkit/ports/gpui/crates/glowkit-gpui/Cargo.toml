@@ -1,0 +1,9 @@
+[package]
+name = "glowkit-gpui"
+description = "glowkit's animated design language and flagship components for GPUI"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+gpui.workspace = true

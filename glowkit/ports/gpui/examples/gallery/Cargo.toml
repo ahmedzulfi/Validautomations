@@ -1,0 +1,11 @@
+[package]
+name = "glowkit-gpui-gallery"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+gpui.workspace = true
+glowkit-gpui.workspace = true
+env_logger = "0.11"

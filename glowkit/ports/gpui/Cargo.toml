@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = ["crates/glowkit-gpui", "examples/gallery"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+gpui = "0.2.2"
+glowkit-gpui = { path = "crates/glowkit-gpui" }
+
+[profile.dev]
+debug = 0
+[profile.dev.package."*"]
+opt-level = 2
+
+# xattr 0.2.3 (pulled in by gpui 0.2.2 -> zed-async-tar) references `libc::ENOATTR`, which newer
+# libc releases no longer export on Linux. Patched copy maps it to ENODATA (same errno on Linux).
+[patch.crates-io]
+xattr = { path = "patches/xattr" }
