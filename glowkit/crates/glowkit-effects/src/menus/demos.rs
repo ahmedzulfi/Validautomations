@@ -44,7 +44,7 @@ fn glass_backdrop(dark: bool, time: f32) -> impl Fn(&Painter, Rect) {
             paint::glow(p, pos2(x, y), rad, with_alpha(*c, if dark { 0.85 } else { 0.7 }));
         }
         // diagonal stripes
-        let step = 26.0;
+        let step = 44.0;
         let n = ((r.width() + r.height()) / step) as i32 + 2;
         let sc = with_alpha(if dark { Color32::WHITE } else { hex("#312E81") }, 0.1);
         for k in 0..n {

@@ -80,6 +80,12 @@ fn push_tri(out: &mut Mesh, v: [Vertex; 3]) {
 /// Split every triangle (whose bounds touch `region`) until no edge is longer than `max_len`,
 /// so the mesh can be bent smoothly. Triangles outside `region` are dropped.
 pub(crate) fn subdivide(mesh: &Mesh, max_len: f32, region: Rect) -> Mesh {
+    subdivide_except(mesh, max_len, region, Rect::NOTHING)
+}
+
+/// Like [`subdivide`], but triangles that lie entirely inside `keep` are kept as they are
+/// (used where a warp only bends geometry near an edge, so the interior needs no extra detail).
+pub(crate) fn subdivide_except(mesh: &Mesh, max_len: f32, region: Rect, keep: Rect) -> Mesh {
     let mut out = Mesh::with_texture(mesh.texture_id);
     let mut stack: Vec<[Vertex; 3]> = Vec::new();
     let max2 = max_len * max_len;
@@ -89,13 +95,17 @@ pub(crate) fn subdivide(mesh: &Mesh, max_len: f32, region: Rect) -> Mesh {
         if !bb.intersects(region) {
             continue;
         }
+        if keep.is_positive() && keep.contains_rect(bb) {
+            push_tri(&mut out, v);
+            continue;
+        }
         stack.push(v);
         while let Some([a, b, c]) = stack.pop() {
             let ab = a.pos.distance_sq(b.pos);
             let bc = b.pos.distance_sq(c.pos);
             let ca = c.pos.distance_sq(a.pos);
             let m = ab.max(bc).max(ca);
-            if m <= max2 || out.vertices.len() > 240_000 {
+            if m <= max2 || out.vertices.len() > 60_000 {
                 push_tri(&mut out, [a, b, c]);
                 continue;
             }

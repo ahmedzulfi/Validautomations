@@ -87,9 +87,11 @@ const DT: f64 = 1.0 / 60.0;
 const IDLE_FRAMES: usize = 30;
 /// A demo that takes longer than this in total is cut short (frames actually run are recorded).
 const DEMO_BUDGET: Duration = Duration::from_secs(20);
-/// A demo still running after this long is reported as hung (e.g. a lock re-entered and
-/// deadlocked) and its thread is abandoned.
-const DEMO_WATCHDOG: Duration = Duration::from_secs(90);
+/// A demo whose frame has not finished after this long is reported as hung (e.g. a lock
+/// re-entered and deadlocked) and its thread is abandoned. The slowest healthy frame is < 1 s.
+const FRAME_STALL: Duration = Duration::from_secs(10);
+/// Frames completed by the current worker; the watchdog watches it advance.
+static PROGRESS: AtomicUsize = AtomicUsize::new(0);
 
 fn install_fonts(ctx: &egui::Context) {
     use egui::{FontData, FontDefinitions, FontFamily};
@@ -190,6 +192,7 @@ thread_local! {
 }
 
 fn run_frame(ctx: &egui::Context, d: &Demo, inp: egui::RawInput) -> (Sample, Duration) {
+    PROGRESS.fetch_add(1, Relaxed);
     let base = CUR.load(Relaxed);
     PEAK.store(base, Relaxed);
     COUNT.store(0, Relaxed);
@@ -295,9 +298,23 @@ fn bench_demo_guarded(d: Demo, frames: usize) -> DemoResult {
     if spawned.is_err() {
         return hung("could not spawn worker thread".into());
     }
-    match rx.recv_timeout(DEMO_WATCHDOG) {
-        Ok(r) => r,
-        Err(_) => hung(format!("hung: no progress after {} s (deadlock?)", DEMO_WATCHDOG.as_secs())),
+    let mut last = (PROGRESS.load(Relaxed), Instant::now());
+    loop {
+        match rx.recv_timeout(Duration::from_millis(250)) {
+            Ok(r) => return r,
+            Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => return hung("worker thread died".into()),
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
+                let p = PROGRESS.load(Relaxed);
+                if p != last.0 {
+                    last = (p, Instant::now());
+                } else if last.1.elapsed() > FRAME_STALL {
+                    return hung(format!(
+                        "hung: a frame made no progress for {} s (deadlock?)",
+                        FRAME_STALL.as_secs()
+                    ));
+                }
+            }
+        }
     }
 }
 

@@ -552,7 +552,7 @@ impl DecayCard {
             Color32::BLACK.gamma_multiply(if t.dark { 0.6 } else { 0.22 }),
         );
         let mesh = capture(ui, |p| art(p, card));
-        let mut mesh = subdivide(&mesh, 7.0, card.expand(2.0));
+        let mut mesh = subdivide(&mesh, 12.0, card.expand(2.0));
         let amp = 46.0 * self.intensity * energy;
         let z = time * 0.7;
         let (sn, cs) = angle.sin_cos();

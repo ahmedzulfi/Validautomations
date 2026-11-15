@@ -1,4 +1,4 @@
-use super::common::{capture, clip_mesh, pointer_or_auto, subdivide};
+use super::common::{capture, clip_mesh, pointer_or_auto, subdivide, subdivide_except};
 use crate::buttons::util::{self, outline};
 use crate::motion::common::sd_round_rect;
 use egui::epaint::Mesh;
@@ -203,7 +203,9 @@ impl GlassSurface {
 
         let src = capture(ui, |p| backdrop(&p.with_clip_rect(stage), stage));
         let region = glass.expand(self.refraction + 4.0);
-        let src = subdivide(&src, if self.lens { 8.0 } else { 10.0 }, region);
+        // Only the band near the rim bends; the interior is a uniform magnification.
+        let band = e * 1.25 + self.refraction + 8.0;
+        let src = subdivide_except(&src, if self.lens { 10.0 } else { 12.0 }, region, glass.shrink(band));
         let clip = outline(glass, radius, 6.0);
         let m = self.refraction;
         let mag = self.magnify;
@@ -248,7 +250,7 @@ impl GlassSurface {
         // opaque base so the unbent backdrop never shows through the glass
         paint::fill_convex_fn(&painter, &clip, 1, |_| if t.dark { t.background } else { Color32::WHITE });
         if self.blur > 0.5 {
-            let taps = 7;
+            let taps = 4;
             painter.add(Shape::mesh(tinted(main.clone(), 1.0)));
             for k in 1..taps {
                 let a = k as f32 / (taps - 1) as f32 * std::f32::consts::TAU + 0.4;

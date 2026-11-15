@@ -209,28 +209,23 @@ impl Viewport3D {
         let mut controls = self.controls.unwrap_or_default();
         if let Some(init) = self.controls {
             let cid = id.with("orbit");
-            controls = glowkit_core::with_state(
-                ui,
-                cid,
-                || init,
-                |c| {
-                    // settings come from the builder every frame; motion state persists
-                    let (yaw, pitch, dist, target_dist, yv, pv, idle) =
-                        (c.yaw, c.pitch, c.distance, c.target_distance, c.yaw_velocity, c.pitch_velocity, c.idle);
-                    *c = OrbitControls {
-                        yaw,
-                        pitch,
-                        distance: dist,
-                        target_distance: target_dist,
-                        yaw_velocity: yv,
-                        pitch_velocity: pv,
-                        idle,
-                        ..init
-                    };
-                    c.update(ui, &response, dt);
-                    *c
-                },
-            );
+            // Read the stored state, update it outside egui's data lock (`update` reads
+            // input, which would deadlock inside `with_state`), then store it back.
+            let s = glowkit_core::state(ui, cid, || init);
+            // settings come from the builder every frame; motion state persists
+            let mut c = OrbitControls {
+                yaw: s.yaw,
+                pitch: s.pitch,
+                distance: s.distance,
+                target_distance: s.target_distance,
+                yaw_velocity: s.yaw_velocity,
+                pitch_velocity: s.pitch_velocity,
+                idle: s.idle,
+                ..init
+            };
+            c.update(ui, &response, dt);
+            glowkit_core::set_state(ui, cid, c);
+            controls = c;
             if controls.is_moving() {
                 ui.ctx().request_repaint();
             }
