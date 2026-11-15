@@ -235,10 +235,10 @@
             <li><span id="m-frames2">120</span> frames with <code>time</code> advancing 1/60 s each; the pointer moves along a Lissajous path so hover effects and cursor-driven components do real work.</li>
             <li>Per frame: wall time of <code>ctx.run_ui</code> and <code>ctx.tessellate</code>, primitive/vertex/index counts, allocation count and peak extra heap bytes from a counting global allocator.</li>
             <li>Median, p95 and max exclude the first ("cold") frame. Then the pointer leaves and <span id="m-idle">30</span> idle frames run; the requested repaint delay over the last 10 decides the idle-repaint class.</li>
-            <li>Panicking components are caught with <code>catch_unwind</code> and listed as errors.</li>
+            <li>Panicking components are caught with <code>catch_unwind</code>, and components that stop making progress for 90 s (e.g. a deadlock) are abandoned by a watchdog; both are listed as errors.</li>
           </ul>
           <pre>cargo run --release -p glowkit-bench -- \
-  --frames 120 --json website/benchmarks.json</pre>
+  --frames <span id="m-frames3">120</span> --json website/benchmarks.json</pre>
         </div>
         <div class="card">
           <h3>Machine &amp; build</h3>
@@ -294,7 +294,7 @@
       const heavy = ok.filter((r) => r.p95 > HEAVY).length;
       const sleeps = ok.filter((r) => r.idle === "none").length;
       const a = data.app || {};
-      ["m-frames", "m-frames2"].forEach((id) => $(id).textContent = m.frames);
+      ["m-frames", "m-frames2", "m-frames3"].forEach((id) => $(id).textContent = m.frames);
       $("m-idle").textContent = m.idle_frames;
       $("m-vp").textContent = `${m.viewport[0]}×${m.viewport[1]}`;
       $("meta").textContent = `Measured ${m.date} · ${m.cpu} · ${m.rustc} · ${m.profile}`;

@@ -87,6 +87,9 @@ const DT: f64 = 1.0 / 60.0;
 const IDLE_FRAMES: usize = 30;
 /// A demo that takes longer than this in total is cut short (frames actually run are recorded).
 const DEMO_BUDGET: Duration = Duration::from_secs(20);
+/// A demo still running after this long is reported as hung (e.g. a lock re-entered and
+/// deadlocked) and its thread is abandoned.
+const DEMO_WATCHDOG: Duration = Duration::from_secs(90);
 
 fn install_fonts(ctx: &egui::Context) {
     use egui::{FontData, FontDefinitions, FontFamily};
@@ -272,6 +275,32 @@ fn bench_demo(d: Demo, frames: usize) -> DemoResult {
     r
 }
 
+/// Runs `bench_demo` on a worker thread so a deadlocking demo cannot hang the whole run.
+fn bench_demo_guarded(d: Demo, frames: usize) -> DemoResult {
+    let (tx, rx) = std::sync::mpsc::channel();
+    let spawned = std::thread::Builder::new()
+        .name(format!("bench-{}", d.id))
+        .stack_size(64 << 20)
+        .spawn(move || {
+            let _ = tx.send(bench_demo(d, frames));
+        });
+    let hung = |msg: String| DemoResult {
+        demo: d,
+        error: Some(msg),
+        cold_ms: 0.0,
+        samples: Vec::new(),
+        retained_bytes: 0,
+        idle_repaint: "none",
+    };
+    if spawned.is_err() {
+        return hung("could not spawn worker thread".into());
+    }
+    match rx.recv_timeout(DEMO_WATCHDOG) {
+        Ok(r) => r,
+        Err(_) => hung(format!("hung: no progress after {} s (deadlock?)", DEMO_WATCHDOG.as_secs())),
+    }
+}
+
 // ---------------------------------------------------------------------------------------------
 // Stats helpers
 // ---------------------------------------------------------------------------------------------
@@ -420,8 +449,24 @@ fn app_numbers(skip: &[String]) -> App {
         if !skip.is_empty() {
             c.arg("--skip").arg(skip.join(","));
         }
-        if let Ok(o) = c.output() {
-            for l in String::from_utf8_lossy(&o.stdout).lines() {
+        c.stdout(std::process::Stdio::piped()).stderr(std::process::Stdio::null());
+        if let Some(stdout) = c.spawn().ok().and_then(|mut child| {
+            let t0 = Instant::now();
+            loop {
+                match child.try_wait() {
+                    Ok(Some(_)) => break,
+                    Ok(None) if t0.elapsed() < Duration::from_secs(600) => std::thread::sleep(Duration::from_millis(200)),
+                    _ => {
+                        let _ = child.kill();
+                        return None;
+                    }
+                }
+            }
+            let mut s = String::new();
+            std::io::Read::read_to_string(&mut child.stdout.take()?, &mut s).ok()?;
+            Some(s)
+        }) {
+            for l in stdout.lines() {
                 let mut it = l.split_whitespace();
                 match (it.next(), it.next().and_then(|v| v.parse().ok())) {
                     (Some("peak_kb"), v) => rss_peak_kb = v,
@@ -489,7 +534,7 @@ fn main() {
     let started = Instant::now();
     let mut results = Vec::with_capacity(demos.len());
     for (i, d) in demos.iter().enumerate() {
-        let r = bench_demo(*d, frames);
+        let r = bench_demo_guarded(*d, frames);
         let tot: Vec<f64> = r.samples.iter().map(|s| s.ui + s.tess).collect();
         let st = stat(&tot);
         match &r.error {
