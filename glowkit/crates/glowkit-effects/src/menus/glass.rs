@@ -172,6 +172,7 @@ impl GlassSurface {
         let id = resp.id;
         let painter = ui.painter_at(stage);
         // The backdrop is tessellated once: shown as is behind the glass, and bent inside it.
+        let t0 = std::time::Instant::now();
         let src_full = capture(ui, |p| backdrop(&p.with_clip_rect(stage), stage));
         painter.add(Shape::mesh(src_full.clone()));
 
@@ -216,11 +217,14 @@ impl GlassSurface {
         // Cut the (often stage-sized) backdrop triangles down to the region first, then subdivide
         // only where the warp bends: the interior (sd <= -e, or -1.2e with wobble) is a uniform
         // magnification and needs no extra detail.
+        eprintln!("capture {} {:?}", src_full.vertices.len(), t0.elapsed());
         let src = clip_rect(&src_full, region);
+        eprintln!("rect {} {:?}", src.vertices.len(), t0.elapsed());
         drop(src_full);
         let inner = e * if wob > 0.0 { 1.2 } else { 1.0 } + (wr - e).max(0.0) * 0.5 + 1.0;
         let keep = glass.shrink(inner);
         let src = subdivide_except(&src, if self.lens { 10.0 } else { 12.0 }, region, keep);
+        eprintln!("subdiv {} tris {} {:?} keep {:?} region {:?}", src.vertices.len(), src.indices.len()/3, t0.elapsed(), keep, region);
         let clip = ConvexClip::new(&outline(glass, radius, 6.0));
         let p_exp = |mm: f32| (e + mm) / e.max(1.0);
         let warp_into = |scale: f32, out: &mut Mesh| {
@@ -255,7 +259,9 @@ impl GlassSurface {
         };
         let mut scratch = Mesh::default();
         warp_into(1.0, &mut scratch);
+        eprintln!("warp {:?}", t0.elapsed());
         let main = clip.clip(&scratch, Vec2::ZERO);
+        eprintln!("main {} {:?}", main.vertices.len(), t0.elapsed());
         let tint = self.tint.unwrap_or(with_alpha(Color32::WHITE, if t.dark { 0.07 } else { 0.22 }));
         let ta = tint.a() as f32 / 255.0;
         let tint_rgb = tint.to_opaque();
@@ -275,21 +281,30 @@ impl GlassSurface {
                 Color32::WHITE
             }
         });
+        // tint once; the blur taps are shifted, clipped and faded copies of the tinted pane
+        let main = tinted(main, 1.0);
+        eprintln!("tinted {:?}", t0.elapsed());
         if self.blur > 0.5 {
             let taps = 4;
             let copies: Vec<Mesh> = (1..taps)
                 .map(|k| {
                     let a = k as f32 / (taps - 1) as f32 * std::f32::consts::TAU + 0.4;
                     let rr = self.blur * if k % 2 == 0 { 1.0 } else { 0.55 };
-                    tinted(clip.clip(&main, vec2(a.cos(), a.sin()) * rr), 1.0 / (k + 1) as f32)
+                    let mut c = clip.clip(&main, vec2(a.cos(), a.sin()) * rr);
+                    let alpha = 1.0 / (k + 1) as f32;
+                    for v in &mut c.vertices {
+                        v.color = v.color.gamma_multiply(alpha);
+                    }
+                    c
                 })
                 .collect();
-            painter.add(Shape::mesh(tinted(main, 1.0)));
+            eprintln!("blurcopies {:?} {:?}", t0.elapsed(), copies.iter().map(|c| c.vertices.len()).collect::<Vec<_>>());
+            painter.add(Shape::mesh(main));
             for c in copies {
                 painter.add(Shape::mesh(c));
             }
         } else {
-            painter.add(Shape::mesh(tinted(main, 1.0)));
+            painter.add(Shape::mesh(main));
         }
         if chroma {
             for (scale, chan) in [(1.18f32, 0usize), (0.82, 2)] {
@@ -327,9 +342,11 @@ impl GlassSurface {
                         lit.add_triangle(i, i + 1, i + 2);
                     }
                 }
+                eprintln!("chroma lit {} {:?}", lit.vertices.len(), t0.elapsed());
                 painter.add(Shape::mesh(clip.clip(&lit, Vec2::ZERO)));
             }
         }
+        eprintln!("end {:?}", t0.elapsed());
         // a whisper of frost so plain areas still read as glass
         util::inner_glow(
             &painter,

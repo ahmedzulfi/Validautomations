@@ -81,12 +81,50 @@ fn linear_to_srgb(c: f32) -> f32 {
     }
 }
 
+/// Lookup tables for the hot color paths (`mix` runs per vertex in several components).
+struct Luts {
+    /// sRGB byte -> linear, exact.
+    to_linear: [f32; 256],
+    /// linear (0..=1 in `LIN_STEPS` steps) -> sRGB 0..=1, linearly interpolated between entries.
+    to_srgb: Vec<f32>,
+}
+
+const LIN_STEPS: usize = 4096;
+
+fn luts() -> &'static Luts {
+    static L: std::sync::OnceLock<Luts> = std::sync::OnceLock::new();
+    L.get_or_init(|| {
+        let mut to_linear = [0.0; 256];
+        for (i, v) in to_linear.iter_mut().enumerate() {
+            *v = srgb_to_linear(i as f32 / 255.0);
+        }
+        let to_srgb = (0..=LIN_STEPS + 1).map(|i| linear_to_srgb(i as f32 / LIN_STEPS as f32)).collect();
+        Luts { to_linear, to_srgb }
+    })
+}
+
+#[inline]
+fn byte_to_linear(l: &Luts, c: u8) -> f32 {
+    l.to_linear[c as usize]
+}
+
+#[inline]
+fn linear_to_byte(l: &Luts, c: f32) -> u8 {
+    let x = c.clamp(0.0, 1.0) * LIN_STEPS as f32;
+    let i = x as usize;
+    let f = x - i as f32;
+    let a = l.to_srgb[i];
+    let b = l.to_srgb[i + 1];
+    ((a + (b - a) * f) * 255.0).round() as u8
+}
+
 /// Convert to OKLab `[L, a, b, alpha]`.
 pub fn to_oklab(c: Color32) -> [f32; 4] {
     let [r, g, b, a] = c.to_srgba_unmultiplied();
-    let r = srgb_to_linear(r as f32 / 255.0);
-    let g = srgb_to_linear(g as f32 / 255.0);
-    let b = srgb_to_linear(b as f32 / 255.0);
+    let lut = luts();
+    let r = byte_to_linear(lut, r);
+    let g = byte_to_linear(lut, g);
+    let b = byte_to_linear(lut, b);
     let l = (0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b).cbrt();
     let m = (0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b).cbrt();
     let s = (0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b).cbrt();
@@ -107,10 +145,11 @@ pub fn from_oklab(lab: [f32; 4]) -> Color32 {
     let r = 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
     let g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
     let b = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
+    let lut = luts();
     Color32::from_rgba_unmultiplied(
-        (linear_to_srgb(r) * 255.0).round() as u8,
-        (linear_to_srgb(g) * 255.0).round() as u8,
-        (linear_to_srgb(b) * 255.0).round() as u8,
+        linear_to_byte(lut, r),
+        linear_to_byte(lut, g),
+        linear_to_byte(lut, b),
         (alpha.clamp(0.0, 1.0) * 255.0).round() as u8,
     )
 }
@@ -164,9 +203,8 @@ pub fn shade(c: Color32, amount: f32) -> Color32 {
 /// Relative luminance (WCAG).
 pub fn luminance(c: Color32) -> f32 {
     let [r, g, b, _] = c.to_srgba_unmultiplied();
-    0.2126 * srgb_to_linear(r as f32 / 255.0)
-        + 0.7152 * srgb_to_linear(g as f32 / 255.0)
-        + 0.0722 * srgb_to_linear(b as f32 / 255.0)
+    let lut = luts();
+    0.2126 * byte_to_linear(lut, r) + 0.7152 * byte_to_linear(lut, g) + 0.0722 * byte_to_linear(lut, b)
 }
 
 /// Black or white, whichever reads best on top of `bg`.

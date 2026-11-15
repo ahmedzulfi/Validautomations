@@ -46,6 +46,8 @@ pub struct Gallery {
     /// Extra layers (popups, overlays) a tile's demo created, so they get the tile's transform.
     tile_layers: HashMap<&'static str, HashSet<LayerId>>,
     scroll_to_grid: bool,
+    /// Phone layout: the search row below the top bar is open.
+    search_open: bool,
     /// Offset of the chips row inside the home scroll content (for "scroll to grid").
     grid_offset: f32,
     /// Live playgrounds, keyed by demo id.
@@ -231,13 +233,17 @@ fn centered_rich(ui: &mut Ui, spans: &[(&str, bool)], size: f32, wrap: f32) {
     ui.painter().galley(pos2(rect.center().x, rect.min.y), g, t.foreground);
 }
 
-/// Centered single-line text.
+/// Centered text; wraps (each line centered) when it is wider than the screen.
 fn centered_text(ui: &mut Ui, text: &str, font: FontId, color: Color32) -> Rect {
-    let g = ui.painter().layout(text.to_owned(), font, color, ui.available_width().min(900.0));
+    let max = (ui.available_width() - 32.0).clamp(120.0, 900.0);
+    let mut job = egui::text::LayoutJob::simple(text.to_owned(), font, color, max);
+    job.halign = egui::Align::Center;
+    let g = ui.painter().layout_job(job);
     let (rect, _) = ui.allocate_exact_size(vec2(ui.available_width(), g.size().y), Sense::hover());
-    let pos = pos2(rect.center().x - g.size().x / 2.0, rect.min.y);
+    let pos = pos2(rect.center().x, rect.min.y);
+    let size = g.size();
     ui.painter().galley(pos, g, color);
-    Rect::from_min_size(pos, rect.size())
+    Rect::from_center_size(pos2(rect.center().x, rect.min.y + size.y / 2.0), size)
 }
 
 /// Soft dot field (decoration behind the hero), fading out radially.
@@ -345,6 +351,7 @@ impl Gallery {
             tile_heights: HashMap::new(),
             tile_layers: HashMap::new(),
             scroll_to_grid: false,
+            search_open: false,
             grid_offset: 0.0,
             playgrounds: crate::playgrounds::all(),
             params: HashMap::new(),
@@ -426,71 +433,25 @@ impl Gallery {
 
     fn top_bar(&mut self, ui: &mut Ui) {
         let t = Theme::of(ui);
-        let bar = ui.available_rect_before_wrap();
-        let bar = Rect::from_min_size(bar.min, vec2(bar.width(), 68.0));
-        ui.allocate_rect(bar, Sense::hover());
-        let narrow = bar.width() < 900.0;
+        let full = ui.available_rect_before_wrap();
+        let width = full.width();
+        let phone = width < 640.0;
+        let search_row = phone && self.search_open;
+        let bar = Rect::from_min_size(full.min, vec2(width, 68.0));
+        ui.allocate_rect(
+            Rect::from_min_size(full.min, vec2(width, if search_row { 68.0 + 52.0 } else { 68.0 })),
+            Sense::hover(),
+        );
         let time = glowkit::core::time(ui);
-
-        // left: logo + wordmark + links
-        let mut x = bar.min.x + 24.0;
+        let pad = if phone { 16.0 } else { 24.0 };
         let cy = bar.center().y;
-        let lr = Rect::from_center_size(pos2(x + 15.0, cy), vec2(30.0, 30.0));
-        let logo_resp = ui.interact(lr.expand2(vec2(60.0, 4.0)), Id::unique("gk_logo"), Sense::click());
-        logo(ui.painter(), lr, &t, time);
-        ui.painter().text(pos2(x + 40.0, cy), Align2::LEFT_CENTER, "glowkit", display(19.0), t.foreground);
-        if logo_resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
-            self.filter = None;
-            self.search.clear();
-            self.open(Page::Home);
-        }
-        x += 140.0;
-        if !narrow {
-            let links: [(&str, Option<Category>); 5] = [
-                ("AI agents", Some(Category::Ai)),
-                ("Games", Some(Category::Games)),
-                ("Interactions", Some(Category::MicroInteractions)),
-                ("Templates", Some(Category::Templates)),
-                ("Charts", Some(Category::Charts)),
-            ];
-            for (label, cat) in links {
-                let active = self.page == Page::Home && self.filter == cat && (cat.is_some() || self.search.is_empty());
-                let g = ui.painter().layout_no_wrap(label.to_owned(), body(14.5), t.foreground);
-                let r = Rect::from_min_size(pos2(x, cy - 14.0), vec2(g.size().x + 20.0, 28.0));
-                let resp = ui.interact(r, Id::unique(("gk_nav", label)), Sense::click());
-                let col = if active || resp.hovered() { t.foreground } else { t.muted_foreground };
-                ui.painter().galley_with_override_text_color(pos2(r.min.x + 10.0, cy - g.size().y / 2.0), g, col);
-                if resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
-                    self.filter = cat;
-                    self.search.clear();
-                    self.scroll_to_grid = true;
-                    self.open(Page::Home);
-                }
-                x = r.max.x + 2.0;
-            }
-            // the theme builder
-            let active = self.page == Page::Themes;
-            let g = ui.painter().layout_no_wrap("Themes".to_owned(), body(14.5), t.foreground);
-            let r = Rect::from_min_size(pos2(x, cy - 14.0), vec2(g.size().x + 20.0, 28.0));
-            let resp = ui.interact(r, Id::unique("gk_nav_themes"), Sense::click());
-            let col = if active || resp.hovered() { t.foreground } else { t.muted_foreground };
-            ui.painter().galley_with_override_text_color(pos2(r.min.x + 10.0, cy - g.size().y / 2.0), g, col);
-            if active {
-                ui.painter().circle_filled(pos2(r.center().x, r.max.y + 3.0), 2.0, t.foreground);
-            }
-            if resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
-                self.open(Page::Themes);
-            }
-            x = r.max.x + 2.0;
-        }
-        let links_end = x;
 
-        // right: theme toggle, GitHub, primary pill
-        let right = bar.max.x - 24.0;
-        let primary_w = 132.0;
+        // ---- right cluster (measured first so nothing can overlap it) -------------------
+        let right = bar.max.x - pad;
+        let primary_w = if width < 420.0 { 104.0 } else { 132.0 };
         let pr = Rect::from_min_max(pos2(right - primary_w, cy - 20.0), pos2(right, cy + 20.0));
         ui.scope_builder(UiBuilder::new().max_rect(pr), |ui| {
-            if pill(ui, "Get started", true, 40.0).clicked() {
+            if pill(ui, if width < 420.0 { "Start" } else { "Get started" }, true, 40.0).clicked() {
                 self.open(Page::Start);
             }
         });
@@ -507,29 +468,72 @@ impl Gallery {
         if toggled {
             self.theme_idx = self.themes.iter().position(|th| th.dark != dark).unwrap_or(0);
         }
-        if !narrow {
-            let gr = Rect::from_center_size(pos2(tr.min.x - 46.0, cy), vec2(70.0, 28.0));
+        let mut cluster_left = tr.min.x - 10.0;
+        let show_github = width >= 1180.0;
+        if show_github {
+            let gr = Rect::from_min_max(pos2(cluster_left - 72.0, cy - 14.0), pos2(cluster_left - 6.0, cy + 14.0));
             let resp = ui.interact(gr, Id::unique("gk_gh"), Sense::click());
             let col = if resp.hovered() { t.foreground } else { t.muted_foreground };
             ui.painter().text(gr.center(), Align2::CENTER_CENTER, "GitHub", body(14.5), col);
             if resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
                 ui.ctx().open_url(egui::OpenUrl::new_tab("https://github.com/glowkit-rs/glowkit"));
             }
+            cluster_left = gr.min.x - 6.0;
         }
 
-        // center: search pill
-        let (sw, sx) = if narrow {
-            ((bar.width() - 140.0 - 24.0 - 220.0).max(120.0), bar.min.x + 170.0)
-        } else {
-            // between the nav links and the GitHub link, centered when there is room
-            let lo = links_end + 16.0;
-            let hi = tr.min.x - 46.0 - 35.0 - 16.0;
-            let sw = (hi - lo).clamp(140.0, 280.0);
-            let sx = (bar.center().x - sw / 2.0 + 60.0).clamp(lo, (hi - sw).max(lo));
-            (sw, sx)
-        };
-        let sr = Rect::from_min_size(pos2(sx, cy - 20.0), vec2(sw, 40.0));
+        // ---- logo -----------------------------------------------------------------------
+        let x0 = bar.min.x + pad;
+        let lr = Rect::from_center_size(pos2(x0 + 15.0, cy), vec2(30.0, 30.0));
+        let show_word = width >= 420.0;
+        let logo_hit = if show_word { lr.expand2(vec2(60.0, 4.0)) } else { lr.expand(4.0) };
+        let logo_resp = ui.interact(logo_hit, Id::unique("gk_logo"), Sense::click());
+        logo(ui.painter(), lr, &t, time);
+        if show_word {
+            ui.painter().text(pos2(x0 + 40.0, cy), Align2::LEFT_CENTER, "glowkit", display(19.0), t.foreground);
+        }
+        if logo_resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
+            self.filter = None;
+            self.search.clear();
+            self.open(Page::Home);
+        }
+        let links_start = x0 + if show_word { 128.0 } else { 46.0 };
+
+        // ---- search: a pill on wide screens, an icon (opening a row) on phones -------------
         let search_id = Id::unique("gk_search");
+        let sr = if phone {
+            let ir = Rect::from_min_max(pos2(cluster_left - 40.0, cy - 20.0), pos2(cluster_left, cy + 20.0));
+            let clicked = ui
+                .scope_builder(UiBuilder::new().max_rect(ir), |ui| {
+                    round_button(ui, 40.0, false, |p, r, c| {
+                        let ic = r.center();
+                        p.circle_stroke(ic - vec2(1.5, 1.5), r.width() * 0.32, Stroke::new(1.6, c));
+                        p.line_segment([ic + vec2(3.0, 3.0), ic + vec2(7.0, 7.0)], Stroke::new(1.6, c));
+                    })
+                    .clicked()
+                })
+                .inner;
+            if clicked {
+                self.search_open = !self.search_open;
+                if self.search_open {
+                    ui.memory_mut(|m| m.request_focus(search_id));
+                }
+            }
+            if !search_row {
+                self.top_links(ui, &t, links_start, ir.min.x - 12.0, cy, false);
+                return;
+            }
+            Rect::from_min_max(pos2(bar.min.x + pad, bar.max.y + 4.0), pos2(bar.max.x - pad, bar.max.y + 44.0))
+        } else {
+            // links get what they need first; the search pill takes the rest (180..280 wide)
+            let link_room = self.top_links(ui, &t, links_start, cluster_left - 16.0 - 180.0, cy, true);
+            let lo = link_room + 16.0;
+            let hi = cluster_left - 16.0;
+            let sw = (hi - lo).clamp(120.0, 280.0);
+            let sx = (bar.center().x - sw / 2.0).clamp(lo, (hi - sw).max(lo));
+            Rect::from_min_size(pos2(sx, cy - 20.0), vec2(sw, 40.0))
+        };
+        let cy = sr.center().y;
+
         let focused = ui.memory(|m| m.has_focus(search_id));
         let fh = ui.ctx().animate_bool_with_time(search_id.with("f"), focused, 0.15);
         ui.painter().rect(
@@ -543,7 +547,7 @@ impl Gallery {
         ui.painter().circle_stroke(ic - vec2(1.5, 1.5), 6.0, Stroke::new(1.6, t.muted_foreground));
         ui.painter().line_segment([ic + vec2(3.0, 3.0), ic + vec2(7.0, 7.0)], Stroke::new(1.6, t.muted_foreground));
         let kbd = if cfg!(target_os = "macos") { "⌘ K" } else { "Ctrl K" };
-        if !focused && self.search.is_empty() {
+        if !focused && self.search.is_empty() && sr.width() >= 200.0 {
             ui.painter().text(
                 sr.right_center() - vec2(16.0, 0.0),
                 Align2::RIGHT_CENTER,
@@ -552,7 +556,8 @@ impl Gallery {
                 with_alpha(t.muted_foreground, 0.8),
             );
         }
-        let er = Rect::from_min_max(pos2(sr.min.x + 38.0, sr.min.y + 8.0), pos2(sr.max.x - 58.0, sr.max.y - 8.0));
+        let kbd_room = if sr.width() >= 200.0 { 58.0 } else { 14.0 };
+        let er = Rect::from_min_max(pos2(sr.min.x + 38.0, sr.min.y + 8.0), pos2(sr.max.x - kbd_room, sr.max.y - 8.0));
         let changed = ui
             .scope_builder(UiBuilder::new().max_rect(er), |ui| {
                 ui.add(
@@ -578,7 +583,50 @@ impl Gallery {
         if focused && ui.input(|i| i.key_pressed(egui::Key::Escape)) {
             self.search.clear();
         }
-        let _ = (VERSION, sr);
+        let _ = VERSION;
+    }
+
+    /// Nav links laid out from `x` and stopping before `limit` (links that don't fit are
+    /// dropped). With `measure_only == false` nothing is reserved. Returns the end x.
+    fn top_links(&mut self, ui: &mut Ui, t: &Theme, x: f32, limit: f32, cy: f32, _measure_only: bool) -> f32 {
+        let links: [(&str, Option<Category>); 5] = [
+            ("AI agents", Some(Category::Ai)),
+            ("Games", Some(Category::Games)),
+            ("Interactions", Some(Category::MicroInteractions)),
+            ("Templates", Some(Category::Templates)),
+            ("Charts", Some(Category::Charts)),
+        ];
+        let mut x = x;
+        for (label, cat) in links.iter().map(|(l, c)| (*l, Some(*c))).chain(std::iter::once(("Themes", None))) {
+            let g = ui.painter().layout_no_wrap(label.to_owned(), body(14.5), t.foreground);
+            let r = Rect::from_min_size(pos2(x, cy - 14.0), vec2(g.size().x + 20.0, 28.0));
+            if r.max.x > limit {
+                break;
+            }
+            let resp = ui.interact(r, Id::unique(("gk_nav", label)), Sense::click());
+            let active = match cat {
+                Some(c) => self.page == Page::Home && self.filter == c,
+                None => self.page == Page::Themes,
+            };
+            let col = if active || resp.hovered() { t.foreground } else { t.muted_foreground };
+            ui.painter().galley_with_override_text_color(pos2(r.min.x + 10.0, cy - g.size().y / 2.0), g, col);
+            if active && cat.is_none() {
+                ui.painter().circle_filled(pos2(r.center().x, r.max.y + 3.0), 2.0, t.foreground);
+            }
+            if resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
+                match cat {
+                    Some(c) => {
+                        self.filter = c;
+                        self.search.clear();
+                        self.scroll_to_grid = true;
+                        self.open(Page::Home);
+                    }
+                    None => self.open(Page::Themes),
+                }
+            }
+            x = r.max.x + 2.0;
+        }
+        x
     }
 
     // ----------------------------------------------------------------------------------------
@@ -608,7 +656,7 @@ impl Gallery {
                 );
                 dot_field(ui.painter(), deco, &t, time);
                 dot_field(ui.painter(), deco.translate(vec2(-(full.width() - 460.0), 60.0)), &t, time + 2.0);
-                let title = if ui.available_width() > 760.0 { 60.0 } else { 40.0 };
+                let title = if ui.available_width() > 760.0 { 60.0 } else if ui.available_width() > 480.0 { 44.0 } else { 34.0 };
                 centered_text(ui, "Premium animated UI", display(title), t.foreground);
                 centered_text(
                     ui,
@@ -631,7 +679,7 @@ impl Gallery {
                         (". Native on Windows, macOS and Linux, and on the web. No Electron.", false),
                     ],
                     17.0,
-                    600.0,
+                    (ui.available_width() - 40.0).clamp(200.0, 600.0),
                 );
                 ui.add_space(22.0);
                 // platform badges
@@ -658,10 +706,22 @@ impl Gallery {
                 }
                 ui.add_space(30.0);
                 // CTAs
+                // side by side when there is room, stacked on phones
                 let cta_w = 196.0 + 12.0 + 212.0;
-                let (cr, _) = ui.allocate_exact_size(vec2(ui.available_width(), 46.0), Sense::hover());
-                let left = Rect::from_min_size(pos2(cr.center().x - cta_w / 2.0, cr.min.y), vec2(196.0, 46.0));
-                let right = Rect::from_min_size(pos2(left.max.x + 12.0, cr.min.y), vec2(212.0, 46.0));
+                let stacked = ui.available_width() < cta_w + 32.0;
+                let (cr, _) = ui.allocate_exact_size(
+                    vec2(ui.available_width(), if stacked { 46.0 * 2.0 + 10.0 } else { 46.0 }),
+                    Sense::hover(),
+                );
+                let (left, right) = if stacked {
+                    (
+                        Rect::from_center_size(pos2(cr.center().x, cr.min.y + 23.0), vec2(212.0, 46.0)),
+                        Rect::from_center_size(pos2(cr.center().x, cr.max.y - 23.0), vec2(212.0, 46.0)),
+                    )
+                } else {
+                    let left = Rect::from_min_size(pos2(cr.center().x - cta_w / 2.0, cr.min.y), vec2(196.0, 46.0));
+                    (left, Rect::from_min_size(pos2(left.max.x + 12.0, cr.min.y), vec2(212.0, 46.0)))
+                };
                 ui.scope_builder(UiBuilder::new().max_rect(left), |ui| {
                     if pill(ui, "Browse components", true, 46.0).clicked() {
                         self.scroll_to_grid = true;
@@ -880,7 +940,8 @@ impl Gallery {
                 }
             });
             ui.add_space(8.0);
-            let stacked = w < 980.0;
+            let wide_demo = matches!(d.category, Category::Templates | Category::Dashboards);
+            let stacked = w < 980.0 || (wide_demo && w < 1500.0);
             let panel_w = if stacked { w } else { 340.0 };
             let stage_w = if stacked { w } else { w - panel_w - 14.0 };
             let stage_h = (ui.available_height() - 40.0).clamp(560.0, 820.0);
@@ -999,6 +1060,38 @@ impl Gallery {
                 });
             });
         } else {
+            // Full app templates are designed for ~1200 pt. In a narrower stage, render them at
+            // that width and scale the whole layer down (input still maps through the transform).
+            const APP_W: f32 = 1200.0;
+            let wide = matches!(d.category, Category::Templates | Category::Dashboards) && pg.is_none();
+            if wide && inner.width() < APP_W {
+                let s = inner.width() / APP_W;
+                let key = Id::unique(("gk_stage_h", d.id, "scaled"));
+                let measured: f32 = ui.data(|m| m.get_temp(key)).unwrap_or(720.0);
+                let top = ((inner.height() - measured * s) / 2.0).max(0.0);
+                let origin = inner.min + vec2(0.0, top);
+                let translation = origin.to_vec2() - origin.to_vec2() * s;
+                let ctx = ui.ctx().clone();
+                let vp = stage.shrink(2.0).intersect(ui.clip_rect());
+                let clip = Rect::from_min_max(
+                    pos2((vp.min.x - translation.x) / s, (vp.min.y - translation.y) / s),
+                    pos2((vp.max.x - translation.x) / s, (vp.max.y - translation.y) / s),
+                );
+                let order_layer = ui.layer_id().order;
+                let resp = egui::Area::new(Id::unique(("gk_stage_area", d.id)))
+                    .order(order_layer)
+                    .fixed_pos(origin)
+                    .constrain(false)
+                    .show(&ctx, |ui| {
+                        ui.set_clip_rect(clip);
+                        ui.set_width(APP_W);
+                        ui.push_id(("stage", d.id), |ui| (d.show)(ui));
+                        ui.min_rect().height()
+                    });
+                ctx.set_transform_layer(resp.response.layer_id, TSTransform::new(translation, s));
+                ui.data_mut(|m| m.insert_temp(key, resp.inner));
+                return;
+            }
             // vertically center the demo using last frame's measured height
             let key = Id::unique(("gk_stage_h", d.id));
             let measured: f32 = ui.data(|m| m.get_temp(key)).unwrap_or(360.0);

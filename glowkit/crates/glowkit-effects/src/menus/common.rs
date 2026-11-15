@@ -71,12 +71,6 @@ fn lerp_vertex(a: &Vertex, b: &Vertex, t: f32) -> Vertex {
     Vertex { pos: a.pos.lerp(b.pos, t), uv: a.uv.lerp(b.uv, t), color: lerp_color(a.color, b.color, t) }
 }
 
-fn push_tri(out: &mut Mesh, v: [Vertex; 3]) {
-    let i = out.vertices.len() as u32;
-    out.vertices.extend_from_slice(&v);
-    out.add_triangle(i, i + 1, i + 2);
-}
-
 /// Split every triangle (whose bounds touch `region`) until no edge is longer than `max_len`,
 /// so the mesh can be bent smoothly. Triangles outside `region` are dropped.
 pub(crate) fn subdivide(mesh: &Mesh, max_len: f32, region: Rect) -> Mesh {
@@ -85,46 +79,154 @@ pub(crate) fn subdivide(mesh: &Mesh, max_len: f32, region: Rect) -> Mesh {
 
 /// Like [`subdivide`], but triangles that lie entirely inside `keep` are kept as they are
 /// (used where a warp only bends geometry near an edge, so the interior needs no extra detail).
+///
+/// The output is indexed: vertices shared in the input stay shared, and an edge split by two
+/// neighboring triangles gets one shared midpoint, so the vertex count stays close to the
+/// triangle count / 2 instead of 3 per triangle.
 pub(crate) fn subdivide_except(mesh: &Mesh, max_len: f32, region: Rect, keep: Rect) -> Mesh {
     let mut out = Mesh::with_texture(mesh.texture_id);
-    let mut stack: Vec<[Vertex; 3]> = Vec::new();
+    let mut remap = vec![u32::MAX; mesh.vertices.len()];
+    let mut pts: EdgePoints = Default::default();
+    let mut stack: Vec<[u32; 3]> = Vec::new();
     let max2 = max_len * max_len;
+    let keep_on = keep.is_positive();
     for tri in mesh.indices.chunks_exact(3) {
-        let v = [mesh.vertices[tri[0] as usize], mesh.vertices[tri[1] as usize], mesh.vertices[tri[2] as usize]];
-        let bb = Rect::from_points(&[v[0].pos, v[1].pos, v[2].pos]);
+        let p = [
+            mesh.vertices[tri[0] as usize].pos,
+            mesh.vertices[tri[1] as usize].pos,
+            mesh.vertices[tri[2] as usize].pos,
+        ];
+        let bb = Rect::from_points(&p);
         if !bb.intersects(region) {
             continue;
         }
-        if keep.is_positive() && keep.contains_rect(bb) {
-            push_tri(&mut out, v);
+        let mut idx = [0u32; 3];
+        for k in 0..3 {
+            let i = tri[k] as usize;
+            if remap[i] == u32::MAX {
+                remap[i] = out.vertices.len() as u32;
+                out.vertices.push(mesh.vertices[i]);
+            }
+            idx[k] = remap[i];
+        }
+        if keep_on && keep.contains_rect(bb) {
+            out.indices.extend_from_slice(&idx);
             continue;
         }
-        stack.push(v);
+        stack.push(idx);
         while let Some([a, b, c]) = stack.pop() {
-            let ab = a.pos.distance_sq(b.pos);
-            let bc = b.pos.distance_sq(c.pos);
-            let ca = c.pos.distance_sq(a.pos);
+            let (pa, pb, pc) =
+                (out.vertices[a as usize].pos, out.vertices[b as usize].pos, out.vertices[c as usize].pos);
+            let ab = pa.distance_sq(pb);
+            let bc = pb.distance_sq(pc);
+            let ca = pc.distance_sq(pa);
             let m = ab.max(bc).max(ca);
             if m <= max2 || out.vertices.len() > 60_000 {
-                push_tri(&mut out, [a, b, c]);
+                out.indices.extend_from_slice(&[a, b, c]);
                 continue;
             }
+            // Slivers (line cores, anti-aliasing feathers): bisecting the longest edge would fan
+            // out into hundreds of needles, so cut them into a strip along their length instead.
+            let s = ab.min(bc).min(ca);
+            let area2 = cross(pb - pa, pc - pa).abs();
+            if s <= max2 && area2 / m.sqrt() < max_len * 0.5 {
+                // rotate so the short edge is (y, z) and x is the far apex
+                let [x, y, z] = if s == bc {
+                    [a, b, c]
+                } else if s == ca {
+                    [b, c, a]
+                } else {
+                    [c, a, b]
+                };
+                let n = (m.sqrt() / max_len).ceil() as u32;
+                let mut prev = (x, x);
+                for i in 1..=n {
+                    let pi = pts.at(&mut out, x, y, i, n);
+                    let qi = pts.at(&mut out, x, z, i, n);
+                    if i == 1 {
+                        out.indices.extend_from_slice(&[x, pi, qi]);
+                    } else {
+                        out.indices.extend_from_slice(&[prev.0, pi, qi, prev.0, qi, prev.1]);
+                    }
+                    prev = (pi, qi);
+                }
+                continue;
+            }
+            let (x, y) = if m == ab {
+                (a, b)
+            } else if m == bc {
+                (b, c)
+            } else {
+                (c, a)
+            };
+            let mid = pts.at(&mut out, x, y, 1, 2);
             if m == ab {
-                let mid = lerp_vertex(&a, &b, 0.5);
                 stack.push([a, mid, c]);
                 stack.push([mid, b, c]);
             } else if m == bc {
-                let mid = lerp_vertex(&b, &c, 0.5);
                 stack.push([a, b, mid]);
                 stack.push([a, mid, c]);
             } else {
-                let mid = lerp_vertex(&c, &a, 0.5);
                 stack.push([a, b, mid]);
                 stack.push([mid, b, c]);
             }
         }
     }
     out
+}
+
+/// Points inserted on mesh edges, shared between the triangles on both sides of an edge.
+#[derive(Default)]
+struct EdgePoints(std::collections::HashMap<u128, u32, std::hash::BuildHasherDefault<EdgeHasher>>);
+
+impl EdgePoints {
+    /// Index of the point `i / n` of the way from vertex `x` to vertex `y` (created on first use).
+    fn at(&mut self, out: &mut Mesh, x: u32, y: u32, i: u32, n: u32) -> u32 {
+        if i == 0 {
+            return x;
+        }
+        if i >= n {
+            return y;
+        }
+        let (a, b, i) = if x < y { (x, y, i) } else { (y, x, n - i) };
+        let g = gcd(i, n);
+        let (i, n) = (i / g, n / g);
+        let key = a as u128 | (b as u128) << 32 | (i as u128) << 64 | (n as u128) << 96;
+        *self.0.entry(key).or_insert_with(|| {
+            let v = lerp_vertex(&out.vertices[a as usize], &out.vertices[b as usize], i as f32 / n as f32);
+            out.vertices.push(v);
+            out.vertices.len() as u32 - 1
+        })
+    }
+}
+
+fn gcd(mut a: u32, mut b: u32) -> u32 {
+    while b != 0 {
+        (a, b) = (b, a % b);
+    }
+    a.max(1)
+}
+
+/// A fast hasher for packed `(u32, u32)` edge keys.
+#[derive(Default)]
+struct EdgeHasher(u64);
+
+impl std::hash::Hasher for EdgeHasher {
+    fn write(&mut self, bytes: &[u8]) {
+        for b in bytes {
+            self.0 = (self.0 ^ *b as u64).wrapping_mul(0x0100_0000_01b3);
+        }
+    }
+    fn write_u64(&mut self, n: u64) {
+        self.0 = (self.0.rotate_left(23) ^ n).wrapping_mul(0x9E37_79B9_7F4A_7C15);
+    }
+    fn write_u128(&mut self, n: u128) {
+        self.write_u64(n as u64);
+        self.write_u64((n >> 64) as u64);
+    }
+    fn finish(&self) -> u64 {
+        self.0 ^ (self.0 >> 29)
+    }
 }
 
 /// Clip a mesh to a **convex** polygon (any winding), interpolating uv and color on cut edges.
@@ -261,10 +363,35 @@ impl ConvexClip {
         }
         out.vertices.reserve(mesh.vertices.len());
         out.indices.reserve(mesh.indices.len());
+        // per-vertex: 0 = unknown, 1 = outside, 2 = inside; inside vertices get an output index
+        let mut state = vec![0u8; mesh.vertices.len()];
+        let mut remap = vec![u32::MAX; mesh.vertices.len()];
         let mut buf: Vec<Vertex> = Vec::with_capacity(12);
         let mut nxt: Vec<Vertex> = Vec::with_capacity(12);
         let n = self.poly.len();
         for tri in mesh.indices.chunks_exact(3) {
+            let mut all_in = true;
+            for &i in tri {
+                let i = i as usize;
+                if state[i] == 0 {
+                    state[i] = if self.contains(mesh.vertices[i].pos + offset) { 2 } else { 1 };
+                }
+                all_in &= state[i] == 2;
+            }
+            if all_in {
+                // convex: all three corners inside means the whole triangle is
+                for &i in tri {
+                    let i = i as usize;
+                    if remap[i] == u32::MAX {
+                        remap[i] = out.vertices.len() as u32;
+                        let mut v = mesh.vertices[i];
+                        v.pos += offset;
+                        out.vertices.push(v);
+                    }
+                    out.indices.push(remap[i]);
+                }
+                continue;
+            }
             let mut v = [mesh.vertices[tri[0] as usize], mesh.vertices[tri[1] as usize], mesh.vertices[tri[2] as usize]];
             for x in &mut v {
                 x.pos += offset;
@@ -277,28 +404,16 @@ impl ConvexClip {
             {
                 continue;
             }
-            // convex: all three corners inside means the whole triangle is
-            if self.contains(a) && self.contains(b) && self.contains(c) {
-                push_tri(out, v);
-                continue;
-            }
             buf.clear();
             buf.extend_from_slice(&v);
             for e in 0..n {
                 if buf.is_empty() {
                     break;
                 }
-                nxt.clear();
-                let mut any_out = false;
-                for j in 0..buf.len() {
-                    if self.side(e, buf[j].pos) < 0.0 {
-                        any_out = true;
-                        break;
-                    }
-                }
-                if !any_out {
+                if buf.iter().all(|p| self.side(e, p.pos) >= 0.0) {
                     continue;
                 }
+                nxt.clear();
                 for j in 0..buf.len() {
                     let p = buf[j];
                     let q = buf[(j + 1) % buf.len()];
