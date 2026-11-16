@@ -42,6 +42,7 @@ CRATES = {
     "glowkit-templates": ("templates", "templates"),
     "glowkit-interactions": ("interactions", "interactions"),
     "glowkit-agents": ("agents", "agents"),
+    "glowkit-stream": ("stream", "stream"),
 }
 
 # Categories whose demos are whole pages / apps / sections: served by `get_template`.

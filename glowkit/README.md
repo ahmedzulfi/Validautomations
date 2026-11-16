@@ -103,6 +103,7 @@ cargo run --release -p glowkit-gallery  # every component
 | `glowkit-components` | `components` | Buttons, inputs, switches, selects, date picker, tabs, dialogs, toasts, tables, spinners... |
 | `glowkit-charts` | `charts` | Animated line, area, bar, pie, donut, radar, radial, gauge, heatmap, treemap, sparklines... |
 | `glowkit-ai` | `ai` | Chat messages, streaming markdown, prompt input, reasoning, tool calls, sources, voice orb, waveform... |
+| `glowkit-stream` | `stream` | Real agent streams into the AI components: event model, thread reducer, UI bridge, AG-UI / Vercel AI SDK / ACP / async-openai / rig adapters |
 | `glowkit-blocks` | `blocks` | Hero sections, feature grids, bento, pricing, testimonials, terminals, globes, device mockups |
 | `glowkit-motion` | `motion` | Framer-Motion-style engine: animated values, keyframes, timelines, variants, presence, layout (FLIP), drag & gestures, scroll-linked motion, path motion, shape morphing |
 | `glowkit-3d` | `three-d` | Real-time 3D inside egui: camera, orbit controls, meshes & OBJ loading, lighting & materials, particle clouds, terrains, 3D cards, globes, voxel text |
@@ -132,6 +133,34 @@ t.install(ctx);
 Every component reads its colors from the active theme and offers setters to override them.
 The full [customization guide](crates/glowkit/docs/CUSTOMIZING.md) covers tokens, component
 options, triggers, springs, the motion engine and composition.
+
+## Connect real agents
+
+[`glowkit-stream`](crates/glowkit-stream) drives the AI components from real LLM and agent
+streams instead of fake ones. Adapters turn what your agent speaks into one event model, a
+`Session` folds the events into a thread, and `AgentThread` renders it: streaming Markdown,
+reasoning, tool calls with live arguments, approvals that go back to the agent, plans, sources
+and errors.
+
+```rust
+rx.drain_into(&mut session);                        // events from any thread or runtime
+let out = AgentThread::new(&mut session).show(ui);  // the whole thread
+for decision in out.decisions { /* send the approval back */ }
+```
+
+| Recipe | Talks to |
+|---|---|
+| [Local LLM chat with Ollama](docs/recipes/ollama-chat.md) | Ollama, vLLM, LM Studio, OpenRouter (async-openai) |
+| [A rig agent UI](docs/recipes/rig-agent.md) | a rig agent in your process |
+| [A desktop front-end for an AG-UI agent](docs/recipes/ag-ui-desktop.md) | LangGraph, CrewAI, Mastra, Pydantic AI, ADK |
+| [A native client for a Vercel AI SDK backend](docs/recipes/vercel-ai-sdk-client.md) | any `toUIMessageStreamResponse()` route |
+| [An ACP coding-agent viewer](docs/recipes/acp-viewer.md) | Agent Client Protocol agents |
+
+```bash
+cargo run -p glowkit-example-agent-ag-ui -- --replay    # offline replay of a recorded AG-UI run
+cargo run -p glowkit-example-agent-vercel -- --replay   # same for the Vercel AI SDK stream
+cargo run -p glowkit-example-agent-ollama               # local model via Ollama
+```
 
 ## Use with AI agents
 

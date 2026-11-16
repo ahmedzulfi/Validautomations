@@ -1,0 +1,166 @@
+data: {"type": "start", "messageId": "msg-a1", "messageMetadata": {"model": "nova-2"}}
+
+data: {"type": "start-step"}
+
+data: {"type": "reasoning-start", "id": "rs-1"}
+
+data: {"type": "reasoning-delta", "id": "rs-1", "delta": "The user wants "}
+
+data: {"type": "reasoning-delta", "id": "rs-1", "delta": "the cheapest flight "}
+
+data: {"type": "reasoning-delta", "id": "rs-1", "delta": "from Oslo to "}
+
+data: {"type": "reasoning-delta", "id": "rs-1", "delta": "Lisbon next Friday. "}
+
+data: {"type": "reasoning-delta", "id": "rs-1", "delta": "I should search "}
+
+data: {"type": "reasoning-delta", "id": "rs-1", "delta": "first, compare fares, "}
+
+data: {"type": "reasoning-delta", "id": "rs-1", "delta": "then book, which "}
+
+data: {"type": "reasoning-delta", "id": "rs-1", "delta": "needs their approval "}
+
+data: {"type": "reasoning-delta", "id": "rs-1", "delta": "because it charges "}
+
+data: {"type": "reasoning-delta", "id": "rs-1", "delta": "the card."}
+
+data: {"type": "reasoning-end", "id": "rs-1"}
+
+data: {"type": "text-start", "id": "txt-1"}
+
+data: {"type": "text-delta", "id": "txt-1", "delta": "I'll look for "}
+
+data: {"type": "text-delta", "id": "txt-1", "delta": "flights from **Oslo "}
+
+data: {"type": "text-delta", "id": "txt-1", "delta": "(OSL)** to **Lisbon "}
+
+data: {"type": "text-delta", "id": "txt-1", "delta": "(LIS)** on Friday, "}
+
+data: {"type": "text-delta", "id": "txt-1", "delta": "20 November."}
+
+data: {"type": "text-end", "id": "txt-1"}
+
+data: {"type": "tool-input-start", "toolCallId": "call-search-1", "toolName": "search_flights"}
+
+data: {"type": "tool-input-delta", "toolCallId": "call-search-1", "inputTextDelta": "{\"from\":\"OSL\","}
+
+data: {"type": "tool-input-delta", "toolCallId": "call-search-1", "inputTextDelta": "\"to\":\"LIS\",\"da"}
+
+data: {"type": "tool-input-delta", "toolCallId": "call-search-1", "inputTextDelta": "te\":\"2026-11-2"}
+
+data: {"type": "tool-input-delta", "toolCallId": "call-search-1", "inputTextDelta": "0\",\"cabin\":\"ec"}
+
+data: {"type": "tool-input-delta", "toolCallId": "call-search-1", "inputTextDelta": "onomy\"}"}
+
+data: {"type": "tool-input-available", "toolCallId": "call-search-1", "toolName": "search_flights", "input": {"from": "OSL", "to": "LIS", "date": "2026-11-20", "cabin": "economy"}}
+
+data: {"type": "tool-output-available", "toolCallId": "call-search-1", "output": {"flights": [{"flight": "SF 512", "carrier": "SkyFjord", "departs": "07:40", "arrives": "11:55", "fare_eur": 89}, {"flight": "NB 204", "carrier": "Northbound Air", "departs": "13:10", "arrives": "17:30", "fare_eur": 112}]}}
+
+data: {"type": "source-url", "sourceId": "src-1", "url": "https://fares.example.com/osl-lis", "title": "OSL to LIS fares, 20 Nov"}
+
+data: {"type": "finish-step"}
+
+data: {"type": "start-step"}
+
+data: {"type": "text-start", "id": "txt-2"}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "The cheapest option "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "is **SkyFjord SF "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "512**, departing 07:40 "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "and arriving 11:55 "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "for **€89**.\n\n| "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "Flight | Departs "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "| Arrives | "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "Fare |\n|:--|:--|:--|--:|\n"}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "| SF 512 "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "| 07:40 | "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "11:55 | €89 "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "|\n| NB "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "204 | 13:10 "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "| 17:30 | "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "€112 |\n\nI'll "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "book SF 512 "}
+
+data: {"type": "text-delta", "id": "txt-2", "delta": "for you."}
+
+data: {"type": "text-end", "id": "txt-2"}
+
+data: {"type": "tool-input-start", "toolCallId": "call-book-1", "toolName": "book_flight"}
+
+data: {"type": "tool-input-delta", "toolCallId": "call-book-1", "inputTextDelta": "{\"flight\":\"SF "}
+
+data: {"type": "tool-input-delta", "toolCallId": "call-book-1", "inputTextDelta": "512\",\"date\":\"2"}
+
+data: {"type": "tool-input-delta", "toolCallId": "call-book-1", "inputTextDelta": "026-11-20\",\"pa"}
+
+data: {"type": "tool-input-delta", "toolCallId": "call-book-1", "inputTextDelta": "ssenger\":\"Ada "}
+
+data: {"type": "tool-input-delta", "toolCallId": "call-book-1", "inputTextDelta": "Example\",\"fare"}
+
+data: {"type": "tool-input-delta", "toolCallId": "call-book-1", "inputTextDelta": "_eur\":89}"}
+
+data: {"type": "tool-input-available", "toolCallId": "call-book-1", "toolName": "book_flight", "input": {"flight": "SF 512", "date": "2026-11-20", "passenger": "Ada Example", "fare_eur": 89}}
+
+data: {"type": "tool-approval-request", "approvalId": "appr-1", "toolCallId": "call-book-1"}
+
+data: {"type": "data-fare-hold", "id": "hold-1", "data": {"flight": "SF 512", "heldUntil": "2026-11-16T10:15:00Z"}}
+
+data: {"type": "seat-map", "seats": ["12A"]}
+
+data: {"type": "finish-step"}
+
+data: {"type": "finish", "finishReason": "tool-calls"}
+
+data: [DONE]
+
+data: {"type": "start", "messageId": "msg-a2"}
+
+data: {"type": "start-step"}
+
+data: {"type": "tool-output-available", "toolCallId": "call-book-1", "output": {"status": "confirmed", "confirmation": "LX7Q2P", "charged_eur": 89}}
+
+data: {"type": "reasoning-start", "id": "rs-2"}
+
+data: {"type": "reasoning-delta", "id": "rs-2", "delta": "Booking went through. "}
+
+data: {"type": "reasoning-delta", "id": "rs-2", "delta": "Next step is "}
+
+data: {"type": "reasoning-delta", "id": "rs-2", "delta": "emailing the itinerary."}
+
+data: {"type": "reasoning-end", "id": "rs-2"}
+
+data: {"type": "text-start", "id": "txt-3"}
+
+data: {"type": "text-delta", "id": "txt-3", "delta": "Booked! Your confirmation "}
+
+data: {"type": "text-delta", "id": "txt-3", "delta": "code is **LX7Q2P**. "}
+
+data: {"type": "text-delta", "id": "txt-3", "delta": "Sending the itinerary "}
+
+data: {"type": "text-delta", "id": "txt-3", "delta": "to your inbox "}
+
+data: {"type": "text-delta", "id": "txt-3", "delta": "now"}
+
+data: {"type": "text-end", "id": "txt-3"}
+
+data: {"type": "message-metadata", "messageMetadata": {"usage": {"inputTokens": 2310, "outputTokens": 64}}}
+
+data: {"type": "error", "errorText": "Mail service unavailable (503). The booking is confirmed, but the itinerary email was not sent."}
+
+data: [DONE]
+

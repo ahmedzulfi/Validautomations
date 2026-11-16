@@ -1,0 +1,50 @@
+[package]
+name = "glowkit-stream"
+description = "Drive glowkit's AI components from real agent streams: a normalized event model, a thread reducer, a UI bridge and adapters for AG-UI, the Vercel AI SDK, ACP, async-openai and rig."
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords = ["egui", "llm", "agents", "ai", "streaming"]
+categories = ["gui", "asynchronous"]
+authors.workspace = true
+
+[features]
+default = []
+## The `AgentThread` view and `EventSender::with_repaint`.
+egui = ["dep:egui", "dep:glowkit-core", "dep:glowkit-ai"]
+## AG-UI 1.x adapter (own serde types, no extra dependencies).
+ag-ui = []
+## Vercel AI SDK v7 UI message stream adapter (own serde types, no extra dependencies).
+vercel = []
+## ACP JSON-RPC adapter over serde_json values (no extra dependencies).
+acp-wire = []
+## Typed ACP adapter for agent-client-protocol 5.x.
+acp = ["acp-wire", "dep:agent-client-protocol"]
+## Chat Completions and Responses API adapters for async-openai 0.43 (types only).
+async-openai = ["dep:async-openai"]
+## Adapters for rig-core / rig-agent 0.46 streams.
+rig = ["dep:rig-core", "dep:rig-agent"]
+## `http::stream_sse`: POST to an AG-UI or Vercel endpoint and stream into the bridge (reqwest).
+http = ["ag-ui", "vercel", "dep:reqwest", "dep:futures-util"]
+## Gallery demos (fixture replay only: wasm-friendly).
+demos = ["egui", "ag-ui", "vercel", "acp-wire"]
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+egui = { workspace = true, optional = true }
+glowkit-core = { workspace = true, optional = true }
+glowkit-ai = { workspace = true, optional = true }
+agent-client-protocol = { workspace = true, optional = true }
+async-openai = { workspace = true, optional = true, features = ["chat-completion-types", "response-types"] }
+rig-core = { workspace = true, optional = true }
+rig-agent = { workspace = true, optional = true }
+reqwest = { workspace = true, optional = true, features = ["stream", "json", "rustls"] }
+futures-util = { workspace = true, optional = true }
+
+[package.metadata.docs.rs]
+all-features = true

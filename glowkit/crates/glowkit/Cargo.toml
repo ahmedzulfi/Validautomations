@@ -13,7 +13,7 @@ categories.workspace = true
 authors.workspace = true
 
 [features]
-default = ["text", "backgrounds", "effects", "components", "charts", "ai", "blocks", "motion", "three-d", "canvas", "templates", "interactions", "agents"]
+default = ["text", "backgrounds", "effects", "components", "charts", "ai", "blocks", "motion", "three-d", "canvas", "templates", "interactions", "agents", "stream"]
 text = ["dep:glowkit-text"]
 backgrounds = ["dep:glowkit-backgrounds"]
 effects = ["dep:glowkit-effects"]
@@ -27,8 +27,11 @@ canvas = ["dep:glowkit-canvas"]
 templates = ["dep:glowkit-templates"]
 interactions = ["dep:glowkit-interactions"]
 agents = ["dep:glowkit-agents"]
+## Real agent streams (AG-UI, Vercel AI SDK, ACP) driving the AI components. Heavier adapters
+## (async-openai, rig, typed ACP, http) are features of `glowkit-stream` itself.
+stream = ["dep:glowkit-stream", "glowkit-stream/egui", "glowkit-stream/ag-ui", "glowkit-stream/vercel", "glowkit-stream/acp-wire"]
 ## Gallery demos for every enabled crate.
-demos = ["glowkit-text?/demos", "glowkit-backgrounds?/demos", "glowkit-effects?/demos", "glowkit-components?/demos", "glowkit-charts?/demos", "glowkit-ai?/demos", "glowkit-blocks?/demos", "glowkit-motion?/demos", "glowkit-3d?/demos", "glowkit-canvas?/demos", "glowkit-templates?/demos", "glowkit-interactions?/demos", "glowkit-agents?/demos"]
+demos = ["glowkit-text?/demos", "glowkit-backgrounds?/demos", "glowkit-effects?/demos", "glowkit-components?/demos", "glowkit-charts?/demos", "glowkit-ai?/demos", "glowkit-blocks?/demos", "glowkit-motion?/demos", "glowkit-3d?/demos", "glowkit-canvas?/demos", "glowkit-templates?/demos", "glowkit-interactions?/demos", "glowkit-agents?/demos", "glowkit-stream?/demos"]
 
 [dependencies]
 egui.workspace = true
@@ -46,3 +49,4 @@ glowkit-canvas = { workspace = true, optional = true }
 glowkit-templates = { workspace = true, optional = true }
 glowkit-interactions = { workspace = true, optional = true }
 glowkit-agents = { workspace = true, optional = true }
+glowkit-stream = { workspace = true, optional = true }

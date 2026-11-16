@@ -1,0 +1,15 @@
+[package]
+name = "glowkit-example-agent-vercel"
+description = "A native client for a Vercel AI SDK backend, or an offline replay of a recorded run."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+glowkit = { workspace = true, features = ["ai"] }
+glowkit-stream = { workspace = true, features = ["egui", "http"] }
+eframe = { workspace = true, features = ["default"] }
+reqwest.workspace = true
+serde_json.workspace = true
+tokio = { workspace = true, features = ["rt-multi-thread"] }

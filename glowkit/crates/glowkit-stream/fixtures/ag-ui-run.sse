@@ -1,0 +1,162 @@
+: recorded AG-UI 1.0 stream (two runs: the second resumes after the approval)
+
+data: {"type": "RUN_STARTED", "threadId": "thread-7", "runId": "run-1"}
+
+data: {"type": "STEP_STARTED", "stepName": "planner"}
+
+data: {"type": "REASONING_START", "messageId": "think-1"}
+
+data: {"type": "REASONING_MESSAGE_START", "messageId": "think-1", "role": "reasoning"}
+
+data: {"type": "REASONING_MESSAGE_CONTENT", "messageId": "think-1", "delta": "The user wants "}
+
+data: {"type": "REASONING_MESSAGE_CONTENT", "messageId": "think-1", "delta": "the cheapest flight "}
+
+data: {"type": "REASONING_MESSAGE_CONTENT", "messageId": "think-1", "delta": "from Oslo to "}
+
+data: {"type": "REASONING_MESSAGE_CONTENT", "messageId": "think-1", "delta": "Lisbon next Friday. "}
+
+data: {"type": "REASONING_MESSAGE_CONTENT", "messageId": "think-1", "delta": "I should search "}
+
+data: {"type": "REASONING_MESSAGE_CONTENT", "messageId": "think-1", "delta": "first, compare fares, "}
+
+data: {"type": "REASONING_MESSAGE_CONTENT", "messageId": "think-1", "delta": "then book, which "}
+
+data: {"type": "REASONING_MESSAGE_CONTENT", "messageId": "think-1", "delta": "needs their approval "}
+
+data: {"type": "REASONING_MESSAGE_CONTENT", "messageId": "think-1", "delta": "because it charges "}
+
+data: {"type": "REASONING_MESSAGE_CONTENT", "messageId": "think-1", "delta": "the card."}
+
+data: {"type": "REASONING_MESSAGE_END", "messageId": "think-1"}
+
+data: {"type": "REASONING_END", "messageId": "think-1"}
+
+data: {"type": "STEP_FINISHED", "stepName": "planner"}
+
+data: {"type": "STATE_SNAPSHOT", "snapshot": {"trip": {"from": "OSL", "to": "LIS"}, "stage": "searching"}}
+
+data: {"type": "STEP_STARTED", "stepName": "travel_agent"}
+
+data: {"type": "TEXT_MESSAGE_START", "messageId": "msg-1", "role": "assistant"}
+
+data: {"type": "TEXT_MESSAGE_CONTENT", "messageId": "msg-1", "delta": "I'll look for "}
+
+data: {"type": "TEXT_MESSAGE_CONTENT", "messageId": "msg-1", "delta": "flights from **Oslo "}
+
+data: {"type": "TEXT_MESSAGE_CONTENT", "messageId": "msg-1", "delta": "(OSL)** to **Lisbon "}
+
+data: {"type": "TEXT_MESSAGE_CONTENT", "messageId": "msg-1", "delta": "(LIS)** on Friday, "}
+
+data: {"type": "TEXT_MESSAGE_CONTENT", "messageId": "msg-1", "delta": "20 November."}
+
+data: {"type": "TEXT_MESSAGE_END", "messageId": "msg-1"}
+
+data: {"type": "TOOL_CALL_START", "toolCallId": "call-search-1", "toolCallName": "search_flights", "parentMessageId": "msg-1"}
+
+data: {"type": "TOOL_CALL_ARGS", "toolCallId": "call-search-1", "delta": "{\"from\":\"OSL\","}
+
+data: {"type": "TOOL_CALL_ARGS", "toolCallId": "call-search-1", "delta": "\"to\":\"LIS\",\"da"}
+
+data: {"type": "TOOL_CALL_ARGS", "toolCallId": "call-search-1", "delta": "te\":\"2026-11-2"}
+
+data: {"type": "TOOL_CALL_ARGS", "toolCallId": "call-search-1", "delta": "0\",\"cabin\":\"ec"}
+
+data: {"type": "TOOL_CALL_ARGS", "toolCallId": "call-search-1", "delta": "onomy\"}"}
+
+data: {"type": "TOOL_CALL_END", "toolCallId": "call-search-1"}
+
+data: {"type": "TOOL_CALL_RESULT", "messageId": "tool-msg-1", "toolCallId": "call-search-1", "role": "tool", "content": "{\"flights\": [{\"flight\": \"SF 512\", \"carrier\": \"SkyFjord\", \"departs\": \"07:40\", \"arrives\": \"11:55\", \"fare_eur\": 89}, {\"flight\": \"NB 204\", \"carrier\": \"Northbound Air\", \"departs\": \"13:10\", \"arrives\": \"17:30\", \"fare_eur\": 112}]}"}
+
+data: {"type": "STATE_DELTA", "delta": [{"op": "replace", "path": "/stage", "value": "booking"}]}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "The cheapest option ", "messageId": "msg-2", "role": "assistant"}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "is **SkyFjord SF "}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "512**, departing 07:40 "}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "and arriving 11:55 "}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "for **€89**.\n\n| "}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "Flight | Departs "}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "| Arrives | "}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "Fare |\n|:--|:--|:--|--:|\n"}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "| SF 512 "}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "| 07:40 | "}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "11:55 | €89 "}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "|\n| NB "}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "204 | 13:10 "}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "| 17:30 | "}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "€112 |\n\nI'll "}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "book SF 512 "}
+
+data: {"type": "TEXT_MESSAGE_CHUNK", "delta": "for you."}
+
+data: {"type": "TOOL_CALL_START", "toolCallId": "call-book-1", "toolCallName": "book_flight", "parentMessageId": "msg-2"}
+
+data: {"type": "TOOL_CALL_ARGS", "toolCallId": "call-book-1", "delta": "{\"flight\":\"SF "}
+
+data: {"type": "TOOL_CALL_ARGS", "toolCallId": "call-book-1", "delta": "512\",\"date\":\"2"}
+
+data: {"type": "TOOL_CALL_ARGS", "toolCallId": "call-book-1", "delta": "026-11-20\",\"pa"}
+
+data: {"type": "TOOL_CALL_ARGS", "toolCallId": "call-book-1", "delta": "ssenger\":\"Ada "}
+
+data: {"type": "TOOL_CALL_ARGS", "toolCallId": "call-book-1", "delta": "Example\",\"fare"}
+
+data: {"type": "TOOL_CALL_ARGS", "toolCallId": "call-book-1", "delta": "_eur\":89}"}
+
+data: {"type": "TOOL_CALL_END", "toolCallId": "call-book-1"}
+
+data: {"type": "ACTIVITY_SNAPSHOT", "messageId": "act-1", "activityType": "progress", "content": {"label": "Holding fare", "percent": 60}}
+
+data: {"type": "SEAT_MAP_PREVIEW", "seats": ["12A", "12B"]}
+
+data: {"type": "STEP_FINISHED", "stepName": "travel_agent"}
+
+data: {"type": "RUN_FINISHED", "threadId": "thread-7", "runId": "run-1", "outcome": {"type": "interrupt", "interrupts": [{"id": "int-book-1", "reason": "tool_approval", "message": "Book SkyFjord SF 512 for €89?", "toolCallId": "call-book-1"}]}, "usage": [{"provider": "lumen-labs", "model": "nova-2", "inputTokens": 1840, "outputTokens": 212, "totalTokens": 2052}]}
+
+data: {"type": "RUN_STARTED", "threadId": "thread-7", "runId": "run-2", "parentRunId": "run-1"}
+
+data: {"type": "TOOL_CALL_RESULT", "messageId": "tool-msg-2", "toolCallId": "call-book-1", "role": "tool", "content": "{\"status\": \"confirmed\", \"confirmation\": \"LX7Q2P\", \"charged_eur\": 89}"}
+
+data: {"type": "THINKING_START"}
+
+data: {"type": "THINKING_TEXT_MESSAGE_CONTENT", "delta": "Booking went through. "}
+
+data: {"type": "THINKING_TEXT_MESSAGE_CONTENT", "delta": "Next step is "}
+
+data: {"type": "THINKING_TEXT_MESSAGE_CONTENT", "delta": "emailing the itinerary."}
+
+data: {"type": "THINKING_END"}
+
+data: {"type": "TEXT_MESSAGE_START", "messageId": "msg-3", "role": "assistant"}
+
+data: {"type": "TEXT_MESSAGE_CONTENT", "messageId": "msg-3", "delta": "Booked! Your confirmation "}
+
+data: {"type": "TEXT_MESSAGE_CONTENT", "messageId": "msg-3", "delta": "code is **LX7Q2P**. "}
+
+data: {"type": "TEXT_MESSAGE_CONTENT", "messageId": "msg-3", "delta": "Sending the itinerary "}
+
+data: {"type": "TEXT_MESSAGE_CONTENT", "messageId": "msg-3", "delta": "to your inbox "}
+
+data: {"type": "TEXT_MESSAGE_CONTENT", "messageId": "msg-3", "delta": "now"}
+
+data: {"type": "TEXT_MESSAGE_END", "messageId": "msg-3"}
+
+data: {"type": "CUSTOM", "name": "email_status", "value": {"attempt": 1, "status": "retrying"}}
+
+data: {"type": "RUN_ERROR", "message": "Mail service unavailable (503). The booking is confirmed, but the itinerary email was not sent.", "code": "UPSTREAM_UNAVAILABLE", "usage": [{"provider": "lumen-labs", "model": "nova-2", "inputTokens": 2310, "outputTokens": 64}]}
+

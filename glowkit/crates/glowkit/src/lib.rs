@@ -13,7 +13,8 @@
 //! ```
 //!
 //! Every category lives in its own crate and is enabled by a cargo feature (all on by default):
-//! `text`, `backgrounds`, `effects`, `components`, `charts`, `ai`, `blocks`, `motion`, `three-d`, `canvas`, `templates`.
+//! `text`, `backgrounds`, `effects`, `components`, `charts`, `ai`, `blocks`, `motion`, `three-d`, `canvas`, `templates`,
+//! `interactions`, `agents`, `stream`.
 
 pub use glowkit_core as core;
 pub use glowkit_core::{anim, color, egui, noise, paint, rng, Theme};
@@ -40,6 +41,8 @@ pub use glowkit_effects as effects;
 pub use glowkit_interactions as interactions;
 #[cfg(feature = "motion")]
 pub use glowkit_motion as motion;
+#[cfg(feature = "stream")]
+pub use glowkit_stream as stream;
 #[cfg(feature = "templates")]
 pub use glowkit_templates as templates;
 #[cfg(feature = "text")]
@@ -90,6 +93,8 @@ pub fn all_demos() -> Vec<glowkit_core::demo::Demo> {
     v.extend(glowkit_interactions::demos());
     #[cfg(feature = "agents")]
     v.extend(glowkit_agents::demos());
+    #[cfg(feature = "stream")]
+    v.extend(glowkit_stream::demos());
     v.sort_by_key(|d| d.category);
     v
 }
