@@ -23,7 +23,7 @@ export function SortingStatus({running, error, unsorted, total}: {running: boole
   if (running) {
     const done = Math.max(0, total - unsorted);
     return (
-      <div role="status" className="flex flex-col gap-2 rounded-panel bg-surface p-4">
+      <div role="status" className="stash-card flex flex-col gap-2 p-4">
         <p className="text-sm text-fg">
           Sorting your saves. {unsorted.toLocaleString('en-US')} left. You can keep browsing.
         </p>

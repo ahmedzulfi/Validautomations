@@ -11,7 +11,7 @@ Everything you saved, in one place, sorted for you: X bookmarks, LinkedIn saved 
   - A broken-link checker finds dead bookmarks.
   - Installable on a phone: share any link to Stash from the share sheet.
   - Export to Markdown or CSV, delete everything, dark mode.
-- Styled with the [Lime](https://design.how/systems/lime) design system from design.how (MIT).
+- Built on the [Lime](https://design.how/systems/lime) components from design.how (MIT), with Stash's own colourful "Violet sunset" theme: soft gradients, white cards and a colour for every category and source (`apps/web/src/app/theme.css`).
 
 The plan behind it is in [PLAN.md](PLAN.md).
 

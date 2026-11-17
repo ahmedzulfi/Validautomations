@@ -34,10 +34,13 @@ export default async function SettingsPage() {
   const runBySource = new Map(runs.map((r) => [r.source, r]));
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-10 px-4 pt-6 pb-12 sm:px-6">
-      <h1 className="text-xl leading-tight font-semibold tracking-tight sm:text-2xl">Settings</h1>
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pt-6 pb-12 sm:px-6">
+      <div className="stash-hero flex flex-col gap-2 rounded-sheet p-6 sm:p-8">
+        <h1 className="text-2xl leading-tight font-semibold tracking-tight sm:text-3xl">Settings</h1>
+        <p className="stash-hero-muted text-base">Connect your browser, bring in files, and choose how Stash keeps your library tidy.</p>
+      </div>
 
-      <section className="flex flex-col gap-3">
+      <section className="stash-card flex flex-col gap-3 p-5 sm:p-6">
         <h2 className="text-lg font-semibold">Connect the browser extension</h2>
         <p className="text-base text-fg-2">
           The extension reads your saves on X, LinkedIn, Reddit, YouTube and Instagram, and your browser bookmarks, while you are logged in, and sends them here. It only reads, and only when you sync.
@@ -50,7 +53,7 @@ export default async function SettingsPage() {
         <TokenManager serverUrl={serverUrl} tokens={tokens.map((t) => ({...t, createdAt: when.format(new Date(t.createdAt)), lastUsedAt: t.lastUsedAt ? when.format(new Date(t.lastUsedAt)) : null}))}/>
       </section>
 
-      <section className="flex flex-col gap-3">
+      <section className="stash-card flex flex-col gap-3 p-5 sm:p-6">
         <h2 className="text-lg font-semibold">Last synced</h2>
         <List variant="grouped">
           {SYNC_SOURCES.map((s) => {
@@ -69,7 +72,7 @@ export default async function SettingsPage() {
         </List>
       </section>
 
-      <section id="import" className="flex scroll-mt-20 flex-col gap-3">
+      <section id="import" className="stash-card flex scroll-mt-24 flex-col gap-3 p-5 sm:p-6">
         <h2 className="text-lg font-semibold">Import a file</h2>
         <p className="text-base text-fg-2">
           The HTML file any browser exports (in Chrome: bookmark manager, then the menu, then Export bookmarks), or a CSV export from Pocket, Raindrop.io or anything else with a url column.
@@ -77,13 +80,13 @@ export default async function SettingsPage() {
         <ImportBookmarks/>
       </section>
 
-      <section className="flex flex-col gap-3">
+      <section className="stash-card flex flex-col gap-3 p-5 sm:p-6">
         <h2 className="text-lg font-semibold">Import GitHub stars</h2>
         <p className="text-base text-fg-2">Stars are public, so a username is all it takes. Import again any time to add new ones.</p>
         <GitHubImport/>
       </section>
 
-      <section id="links" className="flex scroll-mt-20 flex-col gap-3">
+      <section id="links" className="stash-card flex scroll-mt-24 flex-col gap-3 p-5 sm:p-6">
         <h2 className="text-lg font-semibold">Check for broken links</h2>
         <p className="text-base text-fg-2">
           Opens each saved web link to see whether it still works, and lists the dead ones under Broken links in the library. Each link is checked at most once a month. Posts on X, LinkedIn and similar sites are not checked.
@@ -91,7 +94,7 @@ export default async function SettingsPage() {
         <LinkChecker running={links.running} checked={links.checked} broken={links.broken} due={links.due}/>
       </section>
 
-      <section id="digest" className="flex scroll-mt-20 flex-col gap-3">
+      <section id="digest" className="stash-card flex scroll-mt-24 flex-col gap-3 p-5 sm:p-6">
         <h2 className="text-lg font-semibold">Weekly digest</h2>
         <p className="text-base text-fg-2">
           On Mondays, an email with what you saved that week and a few older saves worth another look. Weeks with nothing new are skipped.
@@ -104,7 +107,7 @@ export default async function SettingsPage() {
         />
       </section>
 
-      <section className="flex flex-col gap-3">
+      <section className="stash-card flex flex-col gap-3 p-5 sm:p-6">
         <h2 className="text-lg font-semibold">Export your library</h2>
         <p className="text-base text-fg-2">Download everything, with categories, tags and summaries. Your saves are yours.</p>
         <div className="flex flex-wrap gap-2">
@@ -113,12 +116,12 @@ export default async function SettingsPage() {
         </div>
       </section>
 
-      <section className="flex flex-col gap-3">
+      <section className="stash-card flex flex-col gap-3 p-5 sm:p-6">
         <h2 className="text-lg font-semibold">Appearance</h2>
         <ThemeSetting/>
       </section>
 
-      <section className="flex flex-col gap-3">
+      <section className="stash-card flex flex-col gap-3 p-5 sm:p-6">
         <h2 className="text-lg font-semibold">Delete your library</h2>
         <p className="text-base text-fg-2">Removes every save, category and sync record from this account. Your account and extension tokens stay.</p>
         <DeleteEverything/>

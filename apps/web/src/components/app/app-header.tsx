@@ -18,9 +18,12 @@ const LINKS = [
 export function AppHeader({email}: {email: string}) {
   const pathname = usePathname();
   return (
-    <header className="sticky top-0 z-10 border-b border-line bg-page">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-2 px-4 sm:px-6">
-        <Link href="/library" className="me-2 text-lg font-semibold tracking-tight">Stash</Link>
+    <header className="stash-glass sticky top-0 z-20 border-b border-line">
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-4 sm:px-6">
+        <Link href="/library" className="me-3 flex shrink-0 items-center gap-2" aria-label="Stash, go to library">
+          <span className="stash-logo" aria-hidden="true">S</span>
+          <span className="stash-gradient-text hidden text-lg font-semibold tracking-tight sm:inline">Stash</span>
+        </Link>
         <nav aria-label="Main" className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
           {LINKS.map((link) => {
             const active = pathname.startsWith(link.href);
@@ -31,7 +34,7 @@ export function AppHeader({email}: {email: string}) {
                 aria-current={active ? 'page' : undefined}
                 className={cn(
                   'rounded-control px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors duration-(--dur-fast)',
-                  active ? 'bg-surface-2 text-fg' : 'text-fg-2 hover:bg-surface hover:text-fg',
+                  active ? 'bg-accent-wash font-semibold text-accent-line' : 'text-fg-2 hover:bg-surface hover:text-fg',
                 )}
               >
                 {link.label}

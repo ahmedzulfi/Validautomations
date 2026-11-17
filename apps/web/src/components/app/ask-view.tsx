@@ -11,7 +11,7 @@ import {ItemCard} from './item-card';
 type Props = {
   aiReady: boolean;
   coverage: {embedded: number; total: number};
-  categories: Array<{id: string; name: string}>;
+  categories: Array<{id: string; name: string; hue?: string}>;
 };
 
 const EXAMPLES = ['What have I saved about pricing pages?', 'Which posts talk about hiring engineers?', 'Find the Postgres tips I saved'];
@@ -31,7 +31,7 @@ export function AskView({aiReady, coverage, categories}: Props) {
   };
 
   if (!aiReady) {
-    return <p className="rounded-panel bg-surface p-4 text-base text-fg-2">Asking needs OPENROUTER_API_KEY on the server.</p>;
+    return <p className="stash-card p-5 text-base text-fg-2">Asking needs OPENROUTER_API_KEY on the server.</p>;
   }
 
   return (
@@ -43,7 +43,7 @@ export function AskView({aiReady, coverage, categories}: Props) {
       )}
 
       <form
-        className="flex flex-col gap-3"
+        className="stash-card flex flex-col gap-3 p-5 sm:p-6"
         onSubmit={(e) => {
           e.preventDefault();
           ask(question);
@@ -68,7 +68,7 @@ export function AskView({aiReady, coverage, categories}: Props) {
         <div className="flex flex-wrap items-center gap-2">
           <Button type="submit" pending={pending} disabled={!question.trim()}>Ask</Button>
           {!asked && EXAMPLES.map((ex) => (
-            <Button key={ex} type="button" variant="ghost" size="sm" onClick={() => {
+            <Button key={ex} type="button" variant="secondary" size="sm" onClick={() => {
               setQuestion(ex);
               ask(ex);
             }}>
@@ -85,9 +85,12 @@ export function AskView({aiReady, coverage, categories}: Props) {
           {result && 'error' in result && <p role="alert" className="text-sm text-danger-text">{result.error}</p>}
           {result && 'answer' in result && (
             <>
-              <Message name="Stash">
-                <p className="whitespace-pre-line">{result.answer}</p>
-              </Message>
+              <div className="stash-card stash-wash p-5 sm:p-6">
+                <p className="stash-gradient-text pb-2 text-sm font-semibold">Stash found</p>
+                <Message name="Stash">
+                  <p className="whitespace-pre-line">{result.answer}</p>
+                </Message>
+              </div>
               {result.sources.length > 0 && (
                 <div className="flex flex-col gap-3">
                   <h2 className="text-lg font-semibold">Saves used</h2>

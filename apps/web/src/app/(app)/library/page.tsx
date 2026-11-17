@@ -7,6 +7,7 @@ import {LinkButton} from '@/components/app/link-button';
 import {SortingStatus} from '@/components/app/sorting-status';
 import {Empty, EmptyActions, EmptyDescription, EmptyTitle} from '@/components/lime/ui/empty';
 import {toCardData} from '@/lib/card-data';
+import {hueFor} from '@/lib/hue';
 import {aiConfigured} from '@/lib/server/ai';
 import {requireUser} from '@/lib/server/auth';
 import {libraryStats, listCategories, listItems, PAGE_SIZE, resurfaceItems, type Item} from '@/lib/server/items';
@@ -70,16 +71,23 @@ export default async function LibraryPage({searchParams}: {searchParams: SearchP
     for (const [k, v] of Object.entries({...base, ...changes})) if (v) sp.set(k, v);
     return `/library${sp.size ? `?${sp}` : ''}`;
   };
-  const categoryOptions = categories.map((c) => ({id: c.id, name: c.name}));
+  const categoryOptions = categories.map((c, i) => ({id: c.id, name: c.name, hue: hueFor(i)}));
 
   return (
     <main className="mx-auto flex w-full max-w-6xl gap-8 px-4 pt-6 pb-12 sm:px-6">
       <CategoryNav className="hidden w-60 shrink-0 lg:flex" categories={categories} view={view} total={stats.total} inbox={stats.inbox} broken={stats.broken}/>
       <div className="flex min-w-0 flex-1 flex-col gap-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex min-w-0 flex-col gap-1">
-            <h1 className="text-xl leading-tight font-semibold tracking-tight sm:text-2xl">{heading}</h1>
-            {description && <p className="max-w-2xl text-sm text-fg-2">{description}</p>}
+        <section className="stash-hero flex flex-wrap items-end justify-between gap-6 rounded-sheet p-6 sm:p-8">
+          <div className="flex min-w-0 flex-col gap-3">
+            <h1 className="text-2xl leading-tight font-semibold tracking-tight sm:text-3xl">{heading}</h1>
+            {description && <p className="stash-hero-muted max-w-2xl text-base">{description}</p>}
+            {stats.total > 0 && (
+              <div className="flex flex-wrap gap-2">
+                <span className="stash-hero-pill">{stats.total.toLocaleString('en-US')} saves</span>
+                <span className="stash-hero-pill">{categories.length} {categories.length === 1 ? 'category' : 'categories'}</span>
+                {stats.inbox > 0 && <span className="stash-hero-pill">{stats.inbox} in your inbox</span>}
+              </div>
+            )}
           </div>
           <LibraryActions
             hasItems={stats.total > 0}
@@ -88,15 +96,15 @@ export default async function LibraryPage({searchParams}: {searchParams: SearchP
             sorting={sorting.running}
             aiReady={aiReady}
           />
-        </div>
+        </section>
 
         <CategoryNav className="flex lg:hidden" compact categories={categories} view={view} total={stats.total} inbox={stats.inbox} broken={stats.broken}/>
 
         <SortingStatus running={sorting.running} error={sorting.error} unsorted={stats.unclassified} total={stats.total}/>
 
         {stats.total > 0 && (
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex w-full flex-col gap-1 sm:max-w-sm">
+          <div className="stash-card flex flex-col gap-3 p-3 sm:flex-row sm:items-start sm:justify-between sm:p-4">
+            <div className="flex w-full flex-col gap-1 sm:max-w-md">
               <SearchBox defaultValue={q} byMeaning={byMeaning}/>
               {q && aiReady && (
                 <p className="text-sm text-fg-2">
@@ -112,7 +120,7 @@ export default async function LibraryPage({searchParams}: {searchParams: SearchP
         )}
 
         {resurfaced.length > 0 && (
-          <section className="flex flex-col gap-3">
+          <section className="stash-card stash-wash flex flex-col gap-4 p-5">
             <div className="flex flex-col gap-1">
               <h2 className="text-lg font-semibold">From your archive</h2>
               <p className="text-sm text-fg-2">Three older saves to look at again. A new set each day.</p>
@@ -122,7 +130,7 @@ export default async function LibraryPage({searchParams}: {searchParams: SearchP
         )}
 
         {searchError ? (
-          <div role="alert" className="rounded-panel bg-danger-tint p-4 text-sm text-danger-text">Search by meaning failed: {searchError}</div>
+          <div role="alert" className="stash-card p-4 text-sm text-danger-text">Search by meaning failed: {searchError}</div>
         ) : stats.total === 0 ? (
           <Empty className="py-16">
             <EmptyTitle>Your library is empty</EmptyTitle>

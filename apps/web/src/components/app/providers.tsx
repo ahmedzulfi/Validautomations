@@ -13,7 +13,7 @@ export function Providers({children}: {children: React.ReactNode}) {
   return (
     <LimePortalProvider>
       <ToastProvider>
-        <div className="min-h-dvh bg-page text-fg">{children}</div>
+        <div className="stash-bg min-h-dvh text-fg">{children}</div>
       </ToastProvider>
     </LimePortalProvider>
   );

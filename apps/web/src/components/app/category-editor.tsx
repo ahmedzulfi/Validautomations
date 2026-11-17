@@ -10,6 +10,7 @@ import {Badge} from '@/components/lime/ui/badge';
 import {Button, buttonVariants} from '@/components/lime/ui/button';
 import {Field, FieldLabel} from '@/components/lime/ui/field';
 import {Input} from '@/components/lime/ui/input';
+import {hueFor} from '@/lib/hue';
 
 type Row = {key: string; name: string; description: string; count?: number};
 
@@ -86,7 +87,7 @@ export function CategoryEditor({current, proposal, itemCount, aiReady}: Props) {
 
   if (!reviewing && rows.length === 0) {
     return (
-      <section className="flex flex-col gap-4 rounded-panel bg-surface p-6">
+      <section className="stash-card stash-wash flex flex-col gap-4 p-6">
         <h2 className="text-lg font-semibold">Start with a suggestion</h2>
         <p className="text-base text-fg-2">
           {itemCount > 0
@@ -124,7 +125,7 @@ export function CategoryEditor({current, proposal, itemCount, aiReady}: Props) {
 
       {error && <p role="alert" className="text-sm text-danger-text">{error}</p>}
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-line pt-4">
+      <div className="stash-card flex flex-wrap items-center gap-2 p-4">
         <Button pending={saving} disabled={!dirty} onClick={apply}>{reviewing ? 'Apply categories' : 'Save changes'}</Button>
         {reviewing
           ? <Button variant="secondary" pending={discarding} onClick={discard}>Discard suggestion</Button>
@@ -137,7 +138,8 @@ export function CategoryEditor({current, proposal, itemCount, aiReady}: Props) {
 function CategoryRow({row, index, onChange, onRemove}: {row: Row; index: number; onChange: (key: string, patch: Partial<Row>) => void; onRemove: (key: string) => void}) {
   const id = useId();
   return (
-    <li className="flex items-start gap-3 rounded-panel bg-surface p-4">
+    <li data-hue={hueFor(index)} className="stash-card flex items-start gap-3 overflow-hidden p-4">
+      <span className="hue-tile mt-6 text-base font-semibold" aria-hidden="true">{index + 1}</span>
       <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <Field name={`name-${id}`}>
           <FieldLabel>Name</FieldLabel>

@@ -13,6 +13,8 @@ import {
 } from '../../utils/settings';
 
 
+const SOURCE_INITIALS: Record<SyncSource, string> = {x: 'X', linkedin: 'in', reddit: 'R', youtube: '▶', instagram: 'IG', bookmark: '★'};
+
 export function App() {
   const [settings, setSettings] = useState<Settings | null | undefined>(undefined);
   useEffect(() => {
@@ -20,7 +22,7 @@ export function App() {
   }, []);
   if (settings === undefined) return null;
   return (
-    <main className="flex w-[360px] flex-col gap-5 bg-page p-4 text-fg">
+    <main className="stash-bg flex w-[360px] flex-col gap-4 p-4 text-fg">
       {settings ? <Connected settings={settings} onChange={setSettings}/> : <Connect onConnected={setSettings}/>}
     </main>
   );
@@ -54,9 +56,9 @@ function Connect({onConnected}: {onConnected: (s: Settings) => void}) {
 
   return (
     <>
-      <div className="flex flex-col gap-1">
+      <div className="stash-hero flex flex-col gap-1 rounded-panel p-5">
         <h1 className="text-xl leading-tight font-semibold tracking-tight">Connect to Stash</h1>
-        <p className="text-sm text-fg-2">In Stash, open Settings, create a token, and paste it here with the server address.</p>
+        <p className="stash-hero-muted text-sm">In Stash, open Settings, create a token, and paste it here with the server address.</p>
       </div>
       <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); void connect(); }}>
         <Field name="server">
@@ -112,8 +114,11 @@ function Connected({settings, onChange}: {settings: Settings; onChange: (s: Sett
     <>
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 flex-col">
-          <h1 className="text-xl leading-tight font-semibold tracking-tight">Stash</h1>
-          <p className="truncate text-sm text-fg-2">{settings.email}</p>
+          <h1 className="flex items-center gap-2 text-xl leading-tight font-semibold tracking-tight">
+            <span className="stash-logo" aria-hidden="true">S</span>
+            <span className="stash-gradient-text">Stash</span>
+          </h1>
+          <p className="truncate pt-1 text-sm text-fg-2">{settings.email}</p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => void browser.tabs.create({url: `${settings.serverUrl}/library`})}>Open library</Button>
       </div>
@@ -123,6 +128,7 @@ function Connected({settings, onChange}: {settings: Settings; onChange: (s: Sett
           <ListItem
             key={source}
             title={SOURCE_NAMES[source]}
+            leading={<span className="src-dot" data-source={source} aria-hidden="true">{SOURCE_INITIALS[source]}</span>}
             description={describe(status[source])}
             trailing={status[source].state === 'running'
               ? <Status status="running" label="Syncing"/>

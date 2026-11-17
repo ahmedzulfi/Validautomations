@@ -9,11 +9,11 @@ const UPDATED = 'November 2026';
 
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 pt-10 pb-16 sm:px-6">
-      <Link href="/" className="text-lg font-semibold tracking-tight">Stash</Link>
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl leading-tight font-semibold tracking-tight">Privacy policy</h1>
-        <p className="text-sm text-fg-2">Last updated {UPDATED}.</p>
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pt-10 pb-16 sm:px-6">
+      <Link href="/" className="flex items-center gap-2"><span className="stash-logo" aria-hidden="true">S</span><span className="stash-gradient-text text-lg font-semibold">Stash</span></Link>
+      <div className="stash-hero flex flex-col gap-2 rounded-sheet p-6 sm:p-8">
+        <h1 className="text-2xl leading-tight font-semibold tracking-tight sm:text-3xl">Privacy policy</h1>
+        <p className="stash-hero-muted text-sm">Last updated {UPDATED}.</p>
       </div>
 
       <Section title="What Stash collects">
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
 
 function Section({title, children}: {title: string; children: React.ReactNode}) {
   return (
-    <section className="flex flex-col gap-3 text-base text-fg-2">
+    <section className="stash-card flex flex-col gap-3 p-5 text-base text-fg-2 sm:p-6">
       <h2 className="text-lg font-semibold text-fg">{title}</h2>
       {children}
     </section>

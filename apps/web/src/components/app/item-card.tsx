@@ -8,7 +8,6 @@ import {Icon, OverflowMenuHorizontal} from '@/components/lime/icon';
 import {Avatar} from '@/components/lime/ui/avatar';
 import {Badge} from '@/components/lime/ui/badge';
 import {Button} from '@/components/lime/ui/button';
-import {Card} from '@/components/lime/ui/card';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -40,7 +39,7 @@ const INBOX = 'inbox';
 
 type ItemCardProps = {
   item: ItemCardData;
-  categories: Array<{id: string; name: string}>;
+  categories: Array<{id: string; name: string; hue?: string}>;
   /** In select mode a checkbox leads the card. */
   selecting?: boolean;
   selected?: boolean;
@@ -81,8 +80,12 @@ export function ItemCard({item, categories, selecting, selected, onSelectedChang
   };
 
   return (
-    <div className={cn('flex w-full min-w-0 rounded-panel', selected && 'ring-2 ring-accent-line')}>
-    <Card variant="outline" className="flex w-full min-w-0 flex-col gap-3 p-4">
+    <article
+      data-hue={current?.hue ?? (current ? '0' : undefined)}
+      className={cn('stash-card stash-card-lift flex w-full min-w-0 flex-col overflow-hidden', selected && 'ring-2 ring-accent-line')}
+    >
+      {current ? <div className="hue-strip" aria-hidden="true"/> : <div className="h-1 bg-surface-2" aria-hidden="true"/>}
+      <div className="flex flex-1 flex-col gap-3 p-4">
       <div className="flex items-start gap-3">
         {selecting && (
           <Checkbox
@@ -150,17 +153,17 @@ export function ItemCard({item, categories, selecting, selected, onSelectedChang
       {note && <p className="text-sm text-fg-2">{note}</p>}
 
       <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
-        {item.sources.map((s) => <Badge key={s}>{SOURCE_LABELS[s]}</Badge>)}
+        {item.sources.map((s) => <span key={s} className="src-badge" data-source={s}>{SOURCE_LABELS[s]}</span>)}
         {current
-          ? <Badge variant="accent" title={item.placedBy === 'ai' ? 'Placed by AI' : 'Placed by you'}>{current.name}</Badge>
+          ? <span className="hue-chip" title={item.placedBy === 'ai' ? 'Placed by AI' : 'Placed by you'}><span className="hue-dot" aria-hidden="true"/>{current.name}</span>
           : <Badge variant="outline">Inbox</Badge>}
         {item.tags.slice(0, 3).map((tag) => (
-          <Link key={tag} href={`/library?q=${encodeURIComponent(tag)}`} className="text-sm text-fg-2 hover:text-fg hover:underline hover:underline-offset-4">
-            {tag}
+          <Link key={tag} href={`/library?q=${encodeURIComponent(tag)}`} className="text-sm text-fg-3 hover:text-accent-line hover:underline hover:underline-offset-4">
+            #{tag}
           </Link>
         ))}
       </div>
-    </Card>
-    </div>
+      </div>
+    </article>
   );
 }

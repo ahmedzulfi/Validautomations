@@ -12,7 +12,7 @@ import {ItemCard, type ItemCardData} from './item-card';
 
 type Props = {
   items: Array<ItemCardData & {note?: string}>;
-  categories: Array<{id: string; name: string}>;
+  categories: Array<{id: string; name: string; hue?: string}>;
   /** False for small showcase lists that should not offer select mode. */
   selectable?: boolean;
 };

@@ -1,0 +1,260 @@
+/* Stash's own look on top of the Lime components: "Violet sunset".
+   Lime brings the components (focus, keyboard, states); this file retunes its tokens to a violet-to-pink
+   palette, and adds the few things Lime does not have: soft gradient backgrounds, white cards with a
+   soft shadow, a colour per category (data-hue) and a colour per source (data-source).
+   Loaded after Lime's stylesheet, with the same selectors, so these values win. */
+
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+
+[data-system="lime"], .lime {
+  --font-sans: "Plus Jakarta Sans", "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --page: #fcfaff;
+  --surface: #f5f0ff;
+  --surface-2: #ede5fe;
+  --surface-3: #e2d6fc;
+  --raised: #ffffff;
+  --field: #ffffff;
+  --scrim: rgb(30 20 51 / 0.45);
+
+  --fg: #1e1433; /* deep plum ink, 16:1 on --page */
+  --fg-2: #4a3f63; /* 9.5:1 on --page */
+  --fg-3: #6b6283; /* 5.6:1 on --page */
+  --fg-disabled: #b0a8c4;
+  --fg-inverse: #ffffff;
+  --on-accent: #ffffff;
+  --glow-accent-fg: #ffffff;
+
+  --line: #ece4fb;
+  --line-strong: #d6c9f3;
+  --control: #8b7fa8;
+
+  --ink: #1e1433;
+  --ink-hover: #33255a;
+  --ink-active: #46337a;
+
+  --accent: #7c3aed; /* violet, 5.7:1 with white */
+  --accent-hover: #6d28d9;
+  --accent-active: #5b21b6;
+  --accent-wash: #f1e9ff;
+  --accent-line: #7c3aed;
+
+  --shadow-ink: 76 29 149;
+  --shadow-card: 0 1px 2px rgb(var(--shadow-ink) / 0.05), 0 10px 30px -14px rgb(var(--shadow-ink) / 0.22);
+  --shadow-menu: 0 12px 32px -8px rgb(var(--shadow-ink) / 0.22), 0 2px 6px rgb(var(--shadow-ink) / 0.06);
+  --shadow-overlay: 0 30px 60px -16px rgb(var(--shadow-ink) / 0.32), 0 4px 12px rgb(var(--shadow-ink) / 0.08);
+
+  /* The primary button: violet into pink, white text (4.6:1 or better at every stop). */
+  --glow-accent-from: #7c3aed;
+  --glow-accent-to: #c026d3;
+  --glow-accent-from-lit: #8b47f5;
+  --glow-accent-to-lit: #d03ae0;
+  --glow-accent-from-press: #6d28d9;
+  --glow-accent-to-press: #a21caf;
+  --glow-accent-edge: rgb(255 255 255 / 0.35);
+  --glow-accent-bloom: rgb(255 255 255 / 0.12);
+  --glow-accent-edge-lit: rgb(255 255 255 / 0.5);
+  --glow-accent-bloom-lit: rgb(255 255 255 / 0.18);
+  --glow-accent-cast: 124 58 237;
+  --glow-accent-light: 0.55;
+
+  --radius-field: 14px;
+  --radius-panel: 20px;
+  --radius-sheet: 28px;
+}
+
+[data-system="lime"][data-theme="dark"], .lime[data-theme="dark"], [data-theme="dark"] [data-system="lime"], [data-theme="dark"] .lime {
+  --page: #110b1d;
+  --surface: #1b1430;
+  --surface-2: #251c40;
+  --surface-3: #30254f;
+  --raised: #1d1533;
+  --field: #1b1430;
+  --scrim: rgb(0 0 0 / 0.6);
+  --fg: #f6f1ff;
+  --fg-2: #cdc1e8;
+  --fg-3: #a597c8;
+  --fg-disabled: #5d5179;
+  --fg-inverse: #1e1433;
+  --on-accent: #ffffff;
+  --line: #2c2346;
+  --line-strong: #43365f;
+  --control: #9d8fc2;
+  --ink: #f6f1ff;
+  --ink-hover: #e4dbfa;
+  --ink-active: #d2c5f5;
+  --accent: #8b5cf6;
+  --accent-hover: #9b70f8;
+  --accent-active: #7c3aed;
+  --accent-wash: #2a1d4b;
+  --accent-line: #b69cfc;
+  --shadow-ink: 0 0 0;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 30px -14px rgb(0 0 0 / 0.6);
+}
+
+/* ---- Backgrounds ------------------------------------------------------------------------------- */
+
+/* The page: soft glows of violet, pink and peach behind everything. */
+.stash-bg {
+  background-color: var(--page);
+  background-image:
+    radial-gradient(60rem 40rem at -10% -10%, rgb(167 139 250 / 0.22), transparent 60%),
+    radial-gradient(50rem 35rem at 110% 0%, rgb(244 114 182 / 0.18), transparent 60%),
+    radial-gradient(60rem 40rem at 50% 120%, rgb(251 191 36 / 0.12), transparent 60%);
+  background-attachment: fixed;
+}
+[data-theme="dark"] .stash-bg {
+  background-image:
+    radial-gradient(60rem 40rem at -10% -10%, rgb(124 58 237 / 0.25), transparent 60%),
+    radial-gradient(50rem 35rem at 110% 0%, rgb(219 39 119 / 0.16), transparent 60%),
+    radial-gradient(60rem 40rem at 50% 120%, rgb(234 88 12 / 0.1), transparent 60%);
+}
+
+/* A banner: violet through fuchsia to coral, with white text. */
+.stash-hero {
+  color: #ffffff;
+  background-color: #7c3aed;
+  background-image:
+    radial-gradient(40rem 20rem at 85% -20%, rgb(255 255 255 / 0.22), transparent 60%),
+    radial-gradient(30rem 18rem at 0% 120%, rgb(255 255 255 / 0.12), transparent 60%),
+    linear-gradient(120deg, #6d28d9 0%, #a21caf 55%, #e11d48 100%);
+  box-shadow: 0 20px 50px -24px rgb(124 58 237 / 0.7);
+}
+.stash-hero a:not([data-slot]):not(.stash-hero-action), .stash-hero h1, .stash-hero h2, .stash-hero p { color: inherit; }
+.stash-hero .stash-hero-muted { color: rgb(255 255 255 / 0.93); }
+
+/* A softer banner for secondary moments. */
+.stash-wash {
+  background-image: linear-gradient(135deg, #f3ecff 0%, #fde7f3 60%, #fff1e6 100%);
+}
+[data-theme="dark"] .stash-wash {
+  background-image: linear-gradient(135deg, #2a1d4b 0%, #3a1a3a 60%, #3b2216 100%);
+}
+
+.stash-gradient-text {
+  background-image: linear-gradient(100deg, #7c3aed 0%, #c026d3 50%, #f43f5e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+[data-theme="dark"] .stash-gradient-text {
+  background-image: linear-gradient(100deg, #b69cfc 0%, #f0abfc 50%, #fda4af 100%);
+}
+
+/* ---- Boxes ------------------------------------------------------------------------------------ */
+
+/* A white card with a soft violet shadow that lifts on hover when it is interactive. */
+.stash-card {
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+}
+.stash-card-lift:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-strong);
+  box-shadow: 0 1px 2px rgb(var(--shadow-ink) / 0.06), 0 18px 40px -16px rgb(var(--shadow-ink) / 0.32);
+}
+@media (prefers-reduced-motion: reduce) {
+  .stash-card-lift:hover { transform: none; }
+}
+
+/* The frosted header. */
+.stash-glass {
+  background: rgb(252 250 255 / 0.72);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+}
+[data-theme="dark"] .stash-glass { background: rgb(17 11 29 / 0.72); }
+
+/* The app mark: a gradient tile. */
+.stash-logo {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  color: #ffffff;
+  font-weight: 700;
+  background-image: linear-gradient(135deg, #7c3aed 0%, #c026d3 60%, #f43f5e 100%);
+  box-shadow: 0 6px 16px -6px rgb(124 58 237 / 0.7);
+}
+
+/* ---- Category colours (data-hue="0".."7") --------------------------------------------------- */
+
+[data-hue] {
+  --hue-tint: #f1e9ff; --hue-text: #5b21b6; --hue-dot: #8b5cf6; --hue-from: #a78bfa; --hue-to: #7c3aed;
+}
+[data-hue="1"] { --hue-tint: #fde7f3; --hue-text: #9d174d; --hue-dot: #ec4899; --hue-from: #f9a8d4; --hue-to: #db2777; }
+[data-hue="2"] { --hue-tint: #fef3c7; --hue-text: #92400e; --hue-dot: #f59e0b; --hue-from: #fcd34d; --hue-to: #f59e0b; }
+[data-hue="3"] { --hue-tint: #ccfbf1; --hue-text: #115e59; --hue-dot: #14b8a6; --hue-from: #5eead4; --hue-to: #0d9488; }
+[data-hue="4"] { --hue-tint: #e0f2fe; --hue-text: #075985; --hue-dot: #0ea5e9; --hue-from: #7dd3fc; --hue-to: #0284c7; }
+[data-hue="5"] { --hue-tint: #dcfce7; --hue-text: #166534; --hue-dot: #22c55e; --hue-from: #86efac; --hue-to: #16a34a; }
+[data-hue="6"] { --hue-tint: #ffedd5; --hue-text: #9a3412; --hue-dot: #f97316; --hue-from: #fdba74; --hue-to: #ea580c; }
+[data-hue="7"] { --hue-tint: #e0e7ff; --hue-text: #3730a3; --hue-dot: #6366f1; --hue-from: #a5b4fc; --hue-to: #4f46e5; }
+[data-theme="dark"] [data-hue] { --hue-tint: color-mix(in srgb, var(--hue-dot) 22%, #110b1d); --hue-text: color-mix(in srgb, var(--hue-dot) 55%, #ffffff); }
+
+.hue-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 2px 10px;
+  font-size: 12px; font-weight: 600; line-height: 20px;
+  background: var(--hue-tint); color: var(--hue-text);
+}
+.hue-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--hue-dot); flex-shrink: 0; }
+.hue-strip { height: 4px; background-image: linear-gradient(90deg, var(--hue-from), var(--hue-to)); }
+.hue-tile {
+  display: inline-grid; place-items: center; flex-shrink: 0;
+  width: 44px; height: 44px; border-radius: 14px; color: #ffffff;
+  background-image: linear-gradient(135deg, var(--hue-from), var(--hue-to));
+  box-shadow: 0 8px 18px -8px var(--hue-dot);
+}
+.hue-row[aria-current="page"] { background: var(--hue-tint); color: var(--hue-text); font-weight: 600; }
+
+/* ---- Source colours --------------------------------------------------------------------------- */
+
+.src-badge {
+  display: inline-flex; align-items: center; border-radius: 999px; padding: 2px 10px;
+  font-size: 12px; font-weight: 600; line-height: 20px; color: #ffffff; background: #6b6283;
+}
+.src-badge[data-source="x"] { background: #0f1419; }
+.src-badge[data-source="linkedin"] { background: #0a66c2; }
+.src-badge[data-source="reddit"] { background: #e03d00; }
+.src-badge[data-source="youtube"] { background: #d90000; }
+.src-badge[data-source="instagram"] { background-image: linear-gradient(45deg, #f58529, #dd2a7b 50%, #8134af); }
+.src-badge[data-source="github"] { background: #24292f; }
+.src-badge[data-source="bookmark"] { background: #b45309; }
+.src-badge[data-source="web"] { background: #0f766e; }
+[data-theme="dark"] .src-badge[data-source="x"], [data-theme="dark"] .src-badge[data-source="github"] { background: #3d3550; }
+
+/* ---- On the gradient banner ------------------------------------------------------------------- */
+
+.stash-hero-action {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 44px; padding: 0 20px; border-radius: 999px; border: 0; cursor: pointer;
+  background: #ffffff; color: #6d28d9; font: inherit; font-size: 15px; font-weight: 600; white-space: nowrap;
+  box-shadow: 0 10px 24px -10px rgb(30 20 51 / 0.45);
+  transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+}
+.stash-hero-action:hover { background: #faf5ff; transform: translateY(-1px); }
+.stash-hero-action:focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
+.stash-hero-action[aria-busy="true"] { opacity: 0.8; cursor: progress; }
+.stash-hero-pill {
+  display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 4px 12px;
+  font-size: 13px; font-weight: 500; color: #ffffff;
+  background: rgb(255 255 255 / 0.16); border: 1px solid rgb(255 255 255 / 0.28);
+}
+
+/* A round source mark, for lists. */
+.src-dot {
+  display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 999px;
+  color: #ffffff; font-size: 12px; font-weight: 700; background: #6b6283;
+}
+.src-dot[data-source="x"] { background: #0f1419; }
+.src-dot[data-source="linkedin"] { background: #0a66c2; }
+.src-dot[data-source="reddit"] { background: #e03d00; }
+.src-dot[data-source="youtube"] { background: #d90000; }
+.src-dot[data-source="instagram"] { background-image: linear-gradient(45deg, #f58529, #dd2a7b 50%, #8134af); }
+.src-dot[data-source="github"] { background: #24292f; }
+.src-dot[data-source="bookmark"] { background: #b45309; }
+.src-dot[data-source="web"] { background: #0f766e; }

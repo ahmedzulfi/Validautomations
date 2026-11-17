@@ -20,14 +20,29 @@ export function AuthForm({mode, action, next}: Props) {
   const [email, setEmail] = useState('');
   const signup = mode === 'signup';
   return (
-    <main className="mx-auto flex w-full max-w-md flex-col gap-8 px-4 pt-16 pb-8 sm:px-6 sm:pt-24">
+    <main className="mx-auto grid min-h-dvh w-full max-w-6xl items-center gap-8 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:gap-16">
+      <section className="stash-hero hidden flex-col gap-6 rounded-sheet p-10 lg:flex">
+        <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
+          <span className="stash-logo" aria-hidden="true">S</span>Stash
+        </Link>
+        <h2 className="text-3xl leading-tight font-semibold tracking-tight">Everything you saved, in one place. Sorted for you.</h2>
+        <p className="stash-hero-muted text-lg">X, LinkedIn, Reddit, YouTube, Instagram, GitHub and your browser bookmarks, in one colourful library that sorts itself.</p>
+        <div className="flex flex-wrap gap-2">
+          {['Sorted by AI', 'Search by meaning', 'Ask your saves', 'Weekly digest'].map((t) => <span key={t} className="stash-hero-pill">{t}</span>)}
+        </div>
+      </section>
+
+      <div className="stash-card mx-auto flex w-full max-w-md flex-col gap-8 p-6 sm:p-8">
       <div className="flex flex-col gap-2">
-        <p className="text-lg font-semibold">Stash</p>
+        <Link href="/" className="flex items-center gap-2 lg:hidden" aria-label="Stash home">
+          <span className="stash-logo" aria-hidden="true">S</span>
+          <span className="stash-gradient-text text-lg font-semibold">Stash</span>
+        </Link>
         <h1 className="text-xl leading-tight font-semibold tracking-tight sm:text-2xl">
-          {signup ? 'Create your library' : 'Sign in to your library'}
+          {signup ? 'Create your library' : 'Welcome back'}
         </h1>
         <p className="text-base text-fg-2">
-          Your X bookmarks, LinkedIn saved posts and browser bookmarks in one place, sorted for you.
+          {signup ? 'It takes a minute. Then bring in your saves.' : 'Sign in to your library.'}
         </p>
       </div>
       <form action={formAction} className="flex flex-col gap-4">
@@ -48,10 +63,11 @@ export function AuthForm({mode, action, next}: Props) {
       </form>
       <p className="text-sm text-fg-2">
         {signup ? 'Already have an account? ' : 'New here? '}
-        <Link href={`${signup ? '/signin' : '/signup'}${next ? `?next=${encodeURIComponent(next)}` : ''}`} className="font-medium text-fg underline underline-offset-4">
+        <Link href={`${signup ? '/signin' : '/signup'}${next ? `?next=${encodeURIComponent(next)}` : ''}`} className="font-semibold text-accent-line underline underline-offset-4">
           {signup ? 'Sign in' : 'Create an account'}
         </Link>
       </p>
+      </div>
     </main>
   );
 }

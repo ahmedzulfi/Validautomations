@@ -1,6 +1,7 @@
 import type {Metadata, Viewport} from 'next';
 import '@/components/lime/styles.css';
 import './globals.css';
+import './theme.css';
 import {Providers} from '@/components/app/providers';
 
 export const metadata: Metadata = {

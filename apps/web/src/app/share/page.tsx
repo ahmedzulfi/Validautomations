@@ -48,10 +48,13 @@ export default async function SharePage({searchParams}: {searchParams: SearchPar
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 pt-16 pb-8 sm:px-6">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4 py-10 sm:px-6">
+      <div className="stash-card flex flex-col gap-6 p-6 sm:p-8">
+      <span className="stash-logo" aria-hidden="true">S</span>
       <h1 className="text-xl leading-tight font-semibold tracking-tight">{message}</h1>
       {link && <p className="truncate text-base text-fg-2">{title || link}</p>}
       <LinkButton href="/library" size="lg" className="w-full">Open the library</LinkButton>
+      </div>
     </main>
   );
 }

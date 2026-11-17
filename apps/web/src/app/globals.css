@@ -1,10 +1,10 @@
 /* Lime is scoped to .lime and brings its own base styles (see components/lime/styles.css).
    This file only covers the page behind it, so there is no white flash in the dark theme. */
 html {
-  background: #ffffff;
+  background: #fcfaff;
 }
 html[data-theme="dark"] {
-  background: #0f0f0d;
+  background: #110b1d;
   color-scheme: dark;
 }
 body {
