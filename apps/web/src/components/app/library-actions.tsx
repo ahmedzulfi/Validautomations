@@ -27,7 +27,8 @@ export function LibraryActions({hasItems, hasCategories, unsorted, sorting, aiRe
   }
   if (unsorted > 0 && aiReady && !sorting) {
     return (
-      // eslint-disable-next-line lime/no-native-control -- Lime has no white button for the gradient banner; .stash-hero-action brings its own focus ring and busy state.
+      // Lime has no white button for the gradient banner; .stash-hero-action brings its own focus ring and busy state.
+      // eslint-disable-next-line
       <button
         type="button"
         className="stash-hero-action"
