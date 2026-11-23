@@ -2,15 +2,16 @@
 name = "glowkit-text"
 description = "Animated text effects for egui: shiny, gradient, blur-in, split, decrypt, typewriter, count-up, rotating words, glitch and more."
 readme = "../../README.md"
+documentation = "https://docs.rs/glowkit-text"
+homepage.workspace = true
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
-keywords.workspace = true
-categories.workspace = true
+rust-version.workspace = true
 authors.workspace = true
+keywords = ["egui", "text-effects", "animation", "typography", "gui"]
+categories = ["gui", "graphics"]
 
 [features]
 default = []

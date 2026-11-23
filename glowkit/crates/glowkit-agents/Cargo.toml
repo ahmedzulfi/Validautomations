@@ -2,15 +2,16 @@
 name = "glowkit-agents"
 description = "AI agent interface blocks for egui: agent trees, traces, approvals, diff review, run monitors, threads with branching, tool UIs, generative UI and copilot panels."
 readme = "../../README.md"
+documentation = "https://docs.rs/glowkit-agents"
+homepage.workspace = true
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
-keywords.workspace = true
-categories.workspace = true
+rust-version.workspace = true
 authors.workspace = true
+keywords = ["egui", "ai-agents", "llm", "ui", "gui"]
+categories = ["gui"]
 
 [features]
 default = []

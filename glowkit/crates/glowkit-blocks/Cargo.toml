@@ -2,15 +2,16 @@
 name = "glowkit-blocks"
 description = "Ready-made page blocks for egui: hero sections, feature grids, bento, pricing, testimonials, stats, navbar, footer, CTA."
 readme = "../../README.md"
+documentation = "https://docs.rs/glowkit-blocks"
+homepage.workspace = true
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
-keywords.workspace = true
-categories.workspace = true
+rust-version.workspace = true
 authors.workspace = true
+keywords = ["egui", "landing-page", "sections", "ui", "gui"]
+categories = ["gui"]
 
 [features]
 default = []

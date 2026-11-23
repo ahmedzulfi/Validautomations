@@ -1,17 +1,21 @@
 [package]
 name = "glowkit-cli"
 description = "glowkit CLI: add components to your project as source you own, and scaffold new apps."
+readme = "README.md"
+documentation = "https://docs.rs/glowkit-cli"
+homepage.workspace = true
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
-keywords = ["egui", "ui", "cli", "components", "scaffold"]
-categories = ["command-line-utilities", "gui"]
 build = "build.rs"
 # `sources.bundle` is produced by `BUNDLE=1 scripts/gen-cli-registry.sh` before publishing, so the
 # published crate carries every component's source and works offline.
-include = ["src/**", "build.rs", "registry.json", "sources.bundle", "Cargo.toml"]
+include = ["src/**", "build.rs", "registry.json", "sources.bundle", "Cargo.toml", "README.md"]
+rust-version.workspace = true
+authors.workspace = true
+keywords = ["egui", "ui", "cli", "components", "scaffold"]
+categories = ["command-line-utilities", "gui", "development-tools"]
 
 [[bin]]
 name = "glowkit"

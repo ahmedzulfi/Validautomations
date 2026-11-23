@@ -2,15 +2,16 @@
 name = "glowkit-backgrounds"
 description = "Animated backgrounds for egui: aurora, particles, grids, waves, beams, meteors, starfields, silk, plasma and more."
 readme = "../../README.md"
+documentation = "https://docs.rs/glowkit-backgrounds"
+homepage.workspace = true
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
-keywords.workspace = true
-categories.workspace = true
+rust-version.workspace = true
 authors.workspace = true
+keywords = ["egui", "background", "animation", "particles", "gui"]
+categories = ["gui", "graphics", "rendering"]
 
 [features]
 default = []

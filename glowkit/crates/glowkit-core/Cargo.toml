@@ -2,15 +2,16 @@
 name = "glowkit-core"
 description = "Core of glowkit: theme tokens, animation engine (easings, springs), gradient/glow painting, noise and text glyph helpers for egui."
 readme = "../../README.md"
+documentation = "https://docs.rs/glowkit-core"
+homepage.workspace = true
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
-keywords.workspace = true
-categories.workspace = true
+rust-version.workspace = true
 authors.workspace = true
+keywords = ["egui", "animation", "theme", "gui", "easing"]
+categories = ["gui", "graphics", "rendering"]
 
 [dependencies]
 egui.workspace = true

@@ -2,15 +2,16 @@
 name = "glowkit-components"
 description = "Polished everyday components for egui: buttons, inputs, switches, tabs, accordions, dialogs, toasts, tables, loaders and more."
 readme = "../../README.md"
+documentation = "https://docs.rs/glowkit-components"
+homepage.workspace = true
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
-keywords.workspace = true
-categories.workspace = true
+rust-version.workspace = true
 authors.workspace = true
+keywords = ["egui", "components", "widgets", "ui", "gui"]
+categories = ["gui"]
 
 [features]
 default = []

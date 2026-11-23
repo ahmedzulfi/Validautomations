@@ -2,15 +2,16 @@
 name = "glowkit-effects"
 description = "Animated buttons, borders, cards and cursor effects for egui: shimmer, border beams, spotlight cards, tilt, sparks, docks and more."
 readme = "../../README.md"
+documentation = "https://docs.rs/glowkit-effects"
+homepage.workspace = true
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
-keywords.workspace = true
-categories.workspace = true
+rust-version.workspace = true
 authors.workspace = true
+keywords = ["egui", "animation", "buttons", "effects", "gui"]
+categories = ["gui", "graphics"]
 
 [features]
 default = []

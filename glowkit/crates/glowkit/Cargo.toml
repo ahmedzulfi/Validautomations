@@ -2,15 +2,16 @@
 name = "glowkit"
 description = "A big, beautiful, animated component library for Rust desktop apps (Windows, macOS, Linux) and the web, built on egui."
 readme = "../../README.md"
+documentation = "https://docs.rs/glowkit"
+homepage.workspace = true
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
-keywords.workspace = true
-categories.workspace = true
+rust-version.workspace = true
 authors.workspace = true
+keywords = ["egui", "ui", "animation", "gui", "components"]
+categories = ["gui", "graphics", "visualization", "game-development"]
 
 [features]
 default = ["text", "backgrounds", "effects", "components", "charts", "ai", "blocks", "motion", "three-d", "canvas", "templates", "interactions", "agents", "stream"]

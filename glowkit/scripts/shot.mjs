@@ -1,5 +1,5 @@
 // Screenshot gallery routes headlessly.
-// usage: [PKG=pkg-text] [WAIT=ms] node scripts/shot.mjs <outdir> <route> [route...]   (route like "home", "shiny-text", "shot/shiny-text")
+// usage: [PKG=pkg-text] [WAIT=ms] [W=1360 H=860] node scripts/shot.mjs <outdir> <route> [route...]   (route like "home", "shiny-text", "shot/shiny-text")
 // Needs a static server on :8787 serving ./website (scripts/serve.sh).
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
@@ -8,7 +8,7 @@ const [outdir, ...routes] = process.argv.slice(2);
 const fs = await import("fs");
 fs.mkdirSync(outdir, { recursive: true });
 const browser = await chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
-const page = await browser.newPage({ viewport: { width: 1360, height: 860 }, deviceScaleFactor: 1 });
+const page = await browser.newPage({ viewport: { width: Number(process.env.W || 1360), height: Number(process.env.H || 860) }, deviceScaleFactor: 1 });
 const errors = [];
 page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
 page.on("pageerror", (e) => errors.push(String(e)));

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question or show and tell
+    url: https://github.com/ahmedzulfi/glowkit/discussions
+    about: Ask how to do something, or share what you built with glowkit.
+  - name: Security issue
+    url: https://github.com/ahmedzulfi/glowkit/security/advisories/new
+    about: Please report vulnerabilities privately, not in a public issue.

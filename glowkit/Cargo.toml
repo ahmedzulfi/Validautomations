@@ -34,10 +34,12 @@ members = [
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.85"
+# egui 0.37 needs rustc 1.95. The optional `rig` adapter of glowkit-stream needs rustc 1.97.1 for
+# rig 0.45+ (rig 0.44, which Cargo.lock pins, works on 1.95).
+rust-version = "1.95"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/ahmedzulfi/glowkit"
-homepage = "https://github.com/ahmedzulfi/glowkit"
+homepage = "https://ahmedzulfi.github.io/glowkit/"
 keywords = ["egui", "ui", "animation", "gui", "components"]
 categories = ["gui", "graphics"]
 authors = ["glowkit contributors"]

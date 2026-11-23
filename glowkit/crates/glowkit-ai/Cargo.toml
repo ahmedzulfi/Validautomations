@@ -2,15 +2,16 @@
 name = "glowkit-ai"
 description = "AI interface components for egui: chat messages, streaming text, prompt input, reasoning, tool calls, voice orb and waveform."
 readme = "../../README.md"
+documentation = "https://docs.rs/glowkit-ai"
+homepage.workspace = true
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
-keywords.workspace = true
-categories.workspace = true
+rust-version.workspace = true
 authors.workspace = true
+keywords = ["egui", "ai", "chat", "llm", "markdown"]
+categories = ["gui"]
 
 [features]
 default = []

@@ -1,0 +1,64 @@
+name: Bug report
+description: Something renders wrong, panics, or does not compile.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. A small reproduction and a screenshot help a lot.
+  - type: input
+    id: component
+    attributes:
+      label: Component or crate
+      description: The type, demo id (from the gallery URL) or crate this is about.
+      placeholder: "e.g. ShimmerButton, #live-agent-stream, glowkit-stream"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: The smallest code that shows the problem.
+      render: rust
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot or recording
+      description: Drag an image or video here if it is a visual bug.
+  - type: input
+    id: version
+    attributes:
+      label: glowkit version
+      placeholder: "0.1.0 or a git commit"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      multiple: true
+      options:
+        - Windows
+        - macOS
+        - Linux (X11)
+        - Linux (Wayland)
+        - Web (WebAssembly)
+    validations:
+      required: true
+  - type: input
+    id: toolchain
+    attributes:
+      label: Rust toolchain and egui/eframe version
+      placeholder: "rustc 1.97.0, eframe 0.37 (glow or wgpu)"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Compiler output or panic message
+      render: text

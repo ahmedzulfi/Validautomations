@@ -1,11 +1,17 @@
 [package]
 name = "glowkit-mcp"
 description = "MCP server that lets AI coding agents search, read and use glowkit components."
+readme = "README.md"
+documentation = "https://docs.rs/glowkit-mcp"
+homepage.workspace = true
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+keywords = ["mcp", "egui", "ai", "components", "glowkit"]
+categories = ["development-tools", "gui"]
 
 [dependencies]
 rmcp = { version = "3.10.0", features = ["server", "transport-io", "macros"] }

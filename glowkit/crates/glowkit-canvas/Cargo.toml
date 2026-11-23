@@ -2,15 +2,16 @@
 name = "glowkit-canvas"
 description = "Canvas components for egui: infinite pan/zoom canvas, node-graph editor (React Flow style), whiteboard, kanban, gantt and mind map."
 readme = "../../README.md"
+documentation = "https://docs.rs/glowkit-canvas"
+homepage.workspace = true
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
-keywords.workspace = true
-categories.workspace = true
+rust-version.workspace = true
 authors.workspace = true
+keywords = ["egui", "node-editor", "canvas", "whiteboard", "kanban"]
+categories = ["gui", "visualization"]
 
 [features]
 default = []

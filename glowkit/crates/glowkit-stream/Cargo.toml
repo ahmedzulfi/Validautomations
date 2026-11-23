@@ -2,15 +2,16 @@
 name = "glowkit-stream"
 description = "Drive glowkit's AI components from real agent streams: a normalized event model, a thread reducer, a UI bridge and adapters for AG-UI, the Vercel AI SDK, ACP, async-openai and rig."
 readme = "README.md"
+documentation = "https://docs.rs/glowkit-stream"
+homepage.workspace = true
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
-keywords = ["egui", "llm", "agents", "ai", "streaming"]
-categories = ["gui", "asynchronous"]
+rust-version.workspace = true
 authors.workspace = true
+keywords = ["egui", "llm", "agents", "ag-ui", "streaming"]
+categories = ["gui", "asynchronous", "api-bindings"]
 
 [features]
 default = []

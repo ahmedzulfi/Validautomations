@@ -1,0 +1,45 @@
+name: Feature or component request
+description: Suggest a new component, a missing option, or a feature.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Requests for components that exist in web libraries are welcome. Please check
+        [CATALOG.md](https://github.com/ahmedzulfi/glowkit/blob/main/CATALOG.md) and the
+        [gallery](https://ahmedzulfi.github.io/glowkit/gallery/) first, since it may already exist under another name.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of request is this?
+      options:
+        - New component
+        - New option on an existing component
+        - New agent protocol or adapter
+        - Template or full app
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe it
+      description: What it looks like and how it behaves. Links to a web reference, a video or a sketch are great.
+    validations:
+      required: true
+  - type: textarea
+    id: use-case
+    attributes:
+      label: What are you building?
+      description: The app or game this is for helps decide the API.
+  - type: input
+    id: reference
+    attributes:
+      label: Web equivalent (if any)
+      placeholder: "Library: Component"
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I would like to implement this myself (see CONTRIBUTING.md)

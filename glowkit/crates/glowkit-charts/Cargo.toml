@@ -2,15 +2,16 @@
 name = "glowkit-charts"
 description = "Animated charts for egui: line, area, bar, pie, donut, radar, radial, sparklines, heatmaps and gauges."
 readme = "../../README.md"
+documentation = "https://docs.rs/glowkit-charts"
+homepage.workspace = true
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
-keywords.workspace = true
-categories.workspace = true
+rust-version.workspace = true
 authors.workspace = true
+keywords = ["egui", "charts", "plotting", "dashboard", "animation"]
+categories = ["gui", "visualization"]
 
 [features]
 default = []
