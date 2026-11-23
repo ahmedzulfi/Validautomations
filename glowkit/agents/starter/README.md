@@ -1,6 +1,6 @@
 # glowkit starter
 
-A ready-to-run native app with [glowkit](https://github.com/glowkit-rs/glowkit): an app shell
+A ready-to-run native app with [glowkit](https://github.com/ahmedzulfi/glowkit): an app shell
 with a collapsible sidebar, command palette (Ctrl+K), notifications and theme toggle, plus a
 dashboard (KPI cards, tabs, animated area chart) and a settings form.
 

@@ -181,7 +181,7 @@ fn cards(ui: &mut egui::Ui) {
 Everything glowkit uses is public in `glowkit::core`: painting helpers (`paint::gradient_rect`,
 `paint::glow`, `paint::galley_with` for gradient text, `paint::shader_grid` for shader-like
 backgrounds), per-glyph text layout (`core::text::Glyphs`), noise, color math, springs and clocks.
-See [CONTRIBUTING.md](https://github.com/glowkit-rs/glowkit/blob/main/CONTRIBUTING.md) for the conventions every built-in component follows.
+See [CONTRIBUTING.md](https://github.com/ahmedzulfi/glowkit/blob/main/CONTRIBUTING.md) for the conventions every built-in component follows.
 
 ## Feature flags
 

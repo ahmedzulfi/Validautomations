@@ -7,7 +7,7 @@ AI agent interfaces, live dashboards, game menus and HUDs, node editors, charts,
 micro-interactions, for native Windows, macOS and Linux apps (and the web through WebAssembly).
 100% Rust, built on [egui](https://github.com/emilk/egui). No Electron, no webview.
 
-[Live gallery](https://glowkit-rs.github.io/glowkit/gallery/) · [Website](https://glowkit-rs.github.io/glowkit/) · [Catalog](CATALOG.md) · [Benchmarks](https://glowkit-rs.github.io/glowkit/benchmarks.html) · [Docs](https://docs.rs/glowkit) · [Customizing](crates/glowkit/docs/CUSTOMIZING.md) · [Contributing](CONTRIBUTING.md)
+[Live gallery](https://ahmedzulfi.github.io/glowkit/gallery/) · [Website](https://ahmedzulfi.github.io/glowkit/) · [Catalog](CATALOG.md) · [Benchmarks](https://ahmedzulfi.github.io/glowkit/benchmarks.html) · [Docs](https://docs.rs/glowkit) · [Customizing](crates/glowkit/docs/CUSTOMIZING.md) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -110,7 +110,7 @@ cargo run --release -p glowkit-gallery  # every component
 | `glowkit-canvas` | `canvas` | Infinite canvas, node editor (React Flow style), whiteboard, kanban, gantt, mind map, timeline editor, data grid, org chart, signature pad |
 | `glowkit-templates` | `templates` | MVP-Blocks-style sections, full pages (landing, auth, 404, pricing...), dashboard shells and 15 app templates |
 
-Browse everything in the **[live gallery](https://glowkit-rs.github.io/glowkit/gallery/)**, or run it locally:
+Browse everything in the **[live gallery](https://ahmedzulfi.github.io/glowkit/gallery/)**, or run it locally:
 
 ```bash
 cargo run --release -p glowkit-gallery

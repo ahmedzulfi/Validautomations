@@ -476,7 +476,7 @@ impl Gallery {
             let col = if resp.hovered() { t.foreground } else { t.muted_foreground };
             ui.painter().text(gr.center(), Align2::CENTER_CENTER, "GitHub", body(14.5), col);
             if resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
-                ui.ctx().open_url(egui::OpenUrl::new_tab("https://github.com/glowkit-rs/glowkit"));
+                ui.ctx().open_url(egui::OpenUrl::new_tab("https://github.com/ahmedzulfi/glowkit"));
             }
             cluster_left = gr.min.x - 6.0;
         }
