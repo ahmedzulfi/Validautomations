@@ -2231,7 +2231,8 @@
     {
      "name": "Conversation",
      "glowkit": [
-      "ai-conversation"
+      "ai-conversation",
+      "live-agent-stream"
      ]
     },
     {
@@ -2420,7 +2421,8 @@
     {
      "name": "Response Stream",
      "glowkit": [
-      "ai-streaming-text"
+      "ai-streaming-text",
+      "live-agent-stream"
      ]
     },
     {
@@ -11405,6 +11407,20 @@
     "CopilotKit: Generative UI (map)"
    ],
    "code": "let places = [Place::new(\"Blue Door Coffee\", \"14 Harbor St\", \"6 min\")];\nlet (_resp, _rows) = LocationResult::new(\"Coffee near you\", &places).show(ui);"
+  },
+  {
+   "id": "live-agent-stream",
+   "showcase": true,
+   "name": "Live agent stream",
+   "category": "AI",
+   "description": "A recorded agent run replayed through the real stream reducer: reasoning, streamed Markdown, tool calls with live arguments, an approval, a plan and an error. Switch between AG-UI, Vercel AI SDK and ACP-style sources.",
+   "covers": [
+    "Vercel AI Elements: Conversation",
+    "prompt-kit: Response Stream",
+    "assistant-ui: Thread",
+    "CopilotKit: CopilotChat"
+   ],
+   "code": "// background task: any adapter -> bridge\nlet (tx, mut rx) = glowkit_stream::bridge::channel();\nlet tx = tx.with_repaint(ctx);\nlet mut decoder = SseDecoder::new(SseProtocol::AgUi);\nfor chunk in body { tx.send_all(decoder.feed(&chunk)).ok(); }\n\n// UI, every frame\nrx.drain_into(&mut session);\nlet out = AgentThread::new(&mut session).show(ui);\nfor d in out.decisions {\n    // send the approval back to the agent\n}"
   },
   {
    "id": "animated-testimonials",

@@ -1,6 +1,6 @@
 # glowkit: full component list
 
-> 682 showcased components of glowkit, an animated UI library for Rust on egui 0.37 (native Windows/macOS/Linux and WebAssembly). Each entry: name, id, `use` path(s), crate and feature, description, web equivalents and its page. Install with `cargo add glowkit`; every component crate is a default feature of `glowkit`. Usage snippets are on each page.
+> 683 showcased components of glowkit, an animated UI library for Rust on egui 0.37 (native Windows/macOS/Linux and WebAssembly). Each entry: name, id, `use` path(s), crate and feature, description, web equivalents and its page. Install with `cargo add glowkit`; every component crate is a default feature of `glowkit`. Usage snippets are on each page.
 
 ## Text Animations (57)
 
@@ -527,7 +527,7 @@
 - **Orders Chart Card** (`board-orders-chart-card`): `glowkit::interactions::BoardOrders`; crate `glowkit-interactions`, feature `interactions`. Monthly orders as this-year bars beside last-year bars; the headline counts up with a delta chip and hovering a month swaps in that month's figures. Equivalent to: BoardUI Orders Chart Card. https://ahmedzulfi.github.io/glowkit/components/board-orders-chart-card/
 - **Stage Bars Card** (`board-stage-bars-card`): `glowkit::interactions::BoardStageBars`, `glowkit::interactions::BoardStage`; crate `glowkit-interactions`, feature `interactions`. A funnel as a list of rounded pills with value and share of the top stage, plus stat tiles; widths grow in and hovering a stage deepens it and fades the rest. Equivalent to: BoardUI Stage Bars Card. https://ahmedzulfi.github.io/glowkit/components/board-stage-bars-card/
 
-## AI (84)
+## AI (85)
 
 - **AI Chat** (`ai-chat`): `glowkit::ai::Conversation`, `glowkit::ai::ChatMessage`, `glowkit::ai::Reasoning`, `glowkit::ai::ToolCall`, `glowkit::ai::ToolStatus`, `glowkit::ai::PromptInput`, `glowkit::ai::ModelSelector`; crate `glowkit-ai`, feature `ai`. A complete, working chat: type a message and a simulated assistant thinks, calls a tool, cites sources and streams a Markdown answer. Equivalent to: Vercel AI Elements Chatbot example, assistant-ui Thread, shadcn-chatbot-kit Chat, prompt-kit Chat UI, simple-ai Chat. https://ahmedzulfi.github.io/glowkit/components/ai-chat/
 - **Markdown** (`ai-markdown`): `glowkit::ai::Markdown`; crate `glowkit-ai`, feature `ai`. Streaming-safe Markdown: headings, lists, tables, quotes, links and highlighted code blocks with a copy button. Equivalent to: Streamdown Markdown, Vercel AI Elements Response, prompt-kit Markdown, assistant-ui Markdown Text, shadcn-chatbot-kit Markdown Renderer, prompt-kit Code Block. https://ahmedzulfi.github.io/glowkit/components/ai-markdown/
@@ -613,6 +613,7 @@
 - **Progress Steps** (`asst-progress-steps`): `glowkit::agents::ProgressSteps`; crate `glowkit-agents`, feature `agents`. A horizontal tracker of an agent's phases: a gliding rail, pulsing current node and checks as phases complete. Equivalent to: Tool UI Progress Tracker, nextui (agent) Agent Steps, assistant-ui Job progress. https://ahmedzulfi.github.io/glowkit/components/asst-progress-steps/
 - **Code Result** (`asst-tool-code`): `glowkit::agents::CodeResult`; crate `glowkit-agents`, feature `agents`. Generated code with a Run button: a console slides open and output streams in, ending with an exit chip. Equivalent to: Tool UI Code Block, assistant-ui Code runner, nextui (agent) Code Execution. https://ahmedzulfi.github.io/glowkit/components/asst-tool-code/
 - **Location Result** (`asst-tool-location`): `glowkit::agents::Place`, `glowkit::agents::LocationResult`; crate `glowkit-agents`, feature `agents`. A painted map with a self-drawing route, bouncing pin and a place list that moves the pin on hover. Equivalent to: Tool UI Map, assistant-ui Geo map, CopilotKit Generative UI (map). https://ahmedzulfi.github.io/glowkit/components/asst-tool-location/
+- **Live agent stream** (`live-agent-stream`): `glowkit::stream::adapters::SseDecoder`, `glowkit::stream::adapters::SseProtocol`, `glowkit::stream::AgentThread`, `glowkit::stream::Session`; crate `glowkit-stream`, feature `stream`. A recorded agent run replayed through the real stream reducer: reasoning, streamed Markdown, tool calls with live arguments, an approval, a plan and an error. Switch between AG-UI, Vercel AI SDK and ACP-style sources. Equivalent to: Vercel AI Elements Conversation, prompt-kit Response Stream, assistant-ui Thread, CopilotKit CopilotChat. https://ahmedzulfi.github.io/glowkit/components/live-agent-stream/
 
 ## Blocks (28)
 
