@@ -65,7 +65,7 @@ impl Default for MusicApp {
             artist: a.into(),
             album: al.into(),
             secs: s,
-            liked: art % 3 == 0,
+            liked: art.is_multiple_of(3),
             art,
         };
         Self {

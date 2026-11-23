@@ -39,7 +39,7 @@ impl CardAnim {
 fn hash_angle(i: usize) -> f32 {
     let mut r = glowkit_core::Rng::new(i as u64 * 104_729 + 17);
     let mag = r.range(4.0, 9.0);
-    if i % 2 == 0 {
+    if i.is_multiple_of(2) {
         mag
     } else {
         -mag

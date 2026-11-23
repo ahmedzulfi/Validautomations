@@ -1,0 +1,41 @@
+# glowkit
+
+> Premium animated UI for Rust apps. glowkit is an open-source Rust UI library of 680+ animated components built on egui 0.37: AI agent interfaces, dashboards and charts, game menus and HUDs, node editors, 3D, text effects, backgrounds, micro-interactions and full app templates. It runs natively on Windows, macOS and Linux and in the browser through WebAssembly. 100% Rust; no Electron, no webview. Dual-licensed MIT or Apache-2.0.
+
+Install with `cargo add glowkit` (all component crates are default features of the `glowkit` umbrella crate). Components are egui widgets: `ui.add(ShinyText::new("Hi"))`. `use glowkit::prelude::*;` brings in Theme, Easing, Spring and Trigger. Install a theme once with `Theme::dark().install(ctx)` (presets: dark, light, ocean, ember, matrix).
+
+## Key pages
+
+- [Home](https://ahmedzulfi.github.io/glowkit/): overview and quick start.
+- [All components](https://ahmedzulfi.github.io/glowkit/components/): every component, grouped by category, one page each with usage code.
+- [Live gallery](https://ahmedzulfi.github.io/glowkit/gallery/): the full component gallery compiled to WebAssembly (a canvas; use the component pages for text).
+- [AI agent UIs](https://ahmedzulfi.github.io/glowkit/agents/), [Dashboards](https://ahmedzulfi.github.io/glowkit/dashboards/), [Game UI](https://ahmedzulfi.github.io/glowkit/games/), [Motion engine](https://ahmedzulfi.github.io/glowkit/motion/).
+- [Benchmarks](https://ahmedzulfi.github.io/glowkit/benchmarks.html): frame time, tessellation and memory for every component.
+- [llms-full.txt](https://ahmedzulfi.github.io/glowkit/llms-full.txt): every component with its description, `use` path and URL.
+
+## Categories
+
+21 categories: Text Animations, Backgrounds, Buttons, Cards & Borders, Cursor & Interaction, Micro-interactions, Motion & Layout, Motion Engine, 3D, Loaders & Progress, Inputs & Forms, Navigation, Overlays & Feedback, Data Display, Charts, AI, Blocks, Canvas & Editors, Dashboards & Shells, Templates, Game UI. Each has a page under https://ahmedzulfi.github.io/glowkit/components/.
+
+## Agent recipes (glowkit-stream)
+
+- [Local LLM chat with Ollama](https://ahmedzulfi.github.io/glowkit/docs/recipes/ollama-chat/): talks to Ollama, vLLM, LM Studio, OpenRouter.
+- [A rig agent UI](https://ahmedzulfi.github.io/glowkit/docs/recipes/rig-agent/): talks to a rig agent in your process.
+- [A desktop front-end for an AG-UI agent](https://ahmedzulfi.github.io/glowkit/docs/recipes/ag-ui-desktop/): talks to LangGraph, CrewAI, Mastra, Pydantic AI, ADK.
+- [A native client for a Vercel AI SDK backend](https://ahmedzulfi.github.io/glowkit/docs/recipes/vercel-ai-sdk-client/): talks to any toUIMessageStreamResponse() route.
+- [An ACP coding-agent viewer](https://ahmedzulfi.github.io/glowkit/docs/recipes/acp-viewer/): talks to Agent Client Protocol agents.
+
+## Crates
+
+- `glowkit`: umbrella crate; re-exports everything below behind cargo features.
+- `glowkit-core`: theme tokens, easings, springs, clocks, gradients, glows, noise, per-glyph text.
+- `glowkit-text` (feature `text`), `glowkit-backgrounds` (`backgrounds`), `glowkit-effects` (`effects`), `glowkit-components` (`components`), `glowkit-charts` (`charts`), `glowkit-ai` (`ai`), `glowkit-blocks` (`blocks`), `glowkit-motion` (`motion`), `glowkit-3d` (`three-d`, a software 3D renderer), `glowkit-canvas` (`canvas`), `glowkit-templates` (`templates`), `glowkit-interactions` (`interactions`), `glowkit-agents` (`agents`).
+- `glowkit-stream` (`stream`): drives the AI components from real agent streams: AG-UI, Vercel AI SDK, ACP, rig and async-openai adapters; `Session` and `AgentThread`.
+- `glowkit-mcp`: an MCP server for coding agents with component search, exact `use` paths, constructors and setters, templates, theme tokens and egui 0.37 notes. `cargo install glowkit-mcp`, then `claude mcp add glowkit -- glowkit-mcp`.
+- `glowkit-cli`: the `glowkit` command: `glowkit list`, `glowkit info <id>`, `glowkit add <id>` (copy a component's source into your project), `glowkit init <name>`.
+
+## Links
+
+- Source: https://github.com/ahmedzulfi/glowkit
+- API docs: https://docs.rs/glowkit
+- crates.io: https://crates.io/crates/glowkit

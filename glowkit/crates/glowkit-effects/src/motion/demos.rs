@@ -598,7 +598,7 @@ TransitionPanel::new(tab).show(ui, |ui, i| { ui.label(format!("Panel {i}")); });
                     ui.add_space(6.0);
                     let effects = [(PresenceEffect::SlideUp, "Slide up"), (PresenceEffect::Pop, "Pop"), (PresenceEffect::Scale, "Scale"), (PresenceEffect::SlideLeft, "Slide left")];
                     for (k, (e, name)) in effects.into_iter().enumerate() {
-                        let visible = ((now / 1.6 + k as f32 * 0.25) as usize) % 2 == 0;
+                        let visible = ((now / 1.6 + k as f32 * 0.25) as usize).is_multiple_of(2);
                         let (slot, _) = ui.allocate_exact_size(vec2(ui.available_width(), 46.0), Sense::hover());
                         let mut slot_ui = ui.new_child(egui::UiBuilder::new().max_rect(slot).id_salt(("slot", k)));
                         SpringPresence::new(visible).effect(e).distance(24.0).animate_height(false).id_salt(k).show(&mut slot_ui, |ui| {

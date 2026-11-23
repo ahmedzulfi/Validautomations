@@ -1,0 +1,18 @@
+Description (GitHub "About", under 350 characters):
+
+683 animated UI components for native Rust apps, built on egui: AI agent UIs with real protocol support (AG-UI, Vercel AI SDK, ACP, rig), dashboards and charts, game menus and HUDs, a motion engine, software 3D and full app templates. Windows, macOS, Linux and WebAssembly. MIT/Apache.
+
+Website:
+
+https://ahmedzulfi.github.io/glowkit/
+
+Topics:
+
+rust
+egui
+gui
+ui-components
+ai-agents
+animation
+desktop-app
+wasm

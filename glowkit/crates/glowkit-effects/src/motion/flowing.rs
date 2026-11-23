@@ -85,7 +85,7 @@ impl FlowingMenu {
             if slot % 4 != 3 {
                 let i = (slot * 3 / 2) % n;
                 hovered = Some(i);
-                sim_y = Some(if slot % 2 == 0 { rows[i].min.y } else { rows[i].max.y });
+                sim_y = Some(if slot.is_multiple_of(2) { rows[i].min.y } else { rows[i].max.y });
             }
             glowkit_core::animate(ui);
         }

@@ -314,7 +314,7 @@ impl Widget for Helix {
                     let (pa, pb) = (strand(k, 0.0), strand(k, PI));
                     let mid = (pa + pb) * 0.5;
                     let pair = (hash01(i as u64 * 7) * 4.0) as usize;
-                    let (c1, c2) = if pair % 2 == 0 { (b1, b2) } else { (b2, b1) };
+                    let (c1, c2) = if pair.is_multiple_of(2) { (b1, b2) } else { (b2, b1) };
                     scene.line_world(pa, mid, 0.09, c1, c1);
                     scene.line_world(mid, pb, 0.09, c2, c2);
                     scene.ball(pa, 0.2, ca);

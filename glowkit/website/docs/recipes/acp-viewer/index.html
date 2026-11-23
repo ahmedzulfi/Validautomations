@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACP agent viewer in Rust: Agent Client Protocol | glowkit</title>
+<meta name="description" content="Watch an Agent Client Protocol coding agent in a native Rust window: plans, tool calls, file diffs and permission requests over stdio, drawn with glowkit.">
+<link rel="canonical" href="https://ahmedzulfi.github.io/glowkit/docs/recipes/acp-viewer/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0b0d" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="glowkit">
+<meta property="og:title" content="ACP agent viewer in Rust: Agent Client Protocol | glowkit">
+<meta property="og:description" content="Watch an Agent Client Protocol coding agent in a native Rust window: plans, tool calls, file diffs and permission requests over stdio, drawn with glowkit.">
+<meta property="og:url" content="https://ahmedzulfi.github.io/glowkit/docs/recipes/acp-viewer/">
+<meta property="og:image" content="https://ahmedzulfi.github.io/glowkit/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="glowkit: Premium animated UI for Rust apps">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ACP agent viewer in Rust: Agent Client Protocol | glowkit">
+<meta name="twitter:description" content="Watch an Agent Client Protocol coding agent in a native Rust window: plans, tool calls, file diffs and permission requests over stdio, drawn with glowkit.">
+<meta name="twitter:image" content="https://ahmedzulfi.github.io/glowkit/og.png">
+<meta name="twitter:image:alt" content="glowkit: Premium animated UI for Rust apps">
+<link rel="icon" href="../../../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../../../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../../../apple-touch-icon.png">
+<link rel="manifest" href="../../../site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/site.css">
+<style>.k{color:#6d28d9}.s{color:#166534}.t{color:#9a3f07}.f{color:#1d4ed8}.c{color:#6b6b74}.n{color:#a8350a}@media (prefers-color-scheme:dark){.k{color:#c792ea}.s{color:#c3e88d}.t{color:#ffcb6b}.f{color:#82aaff}.c{color:#8a90a6}.n{color:#f78c6c}}</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"An ACP coding-agent viewer","description":"Watch an Agent Client Protocol coding agent in a native Rust window: plans, tool calls, file diffs and permission requests over stdio, drawn with glowkit.","url":"https://ahmedzulfi.github.io/glowkit/docs/recipes/acp-viewer/","inLanguage":"en","dateModified":"2026-11-23","proficiencyLevel":"Intermediate","programmingLanguage":"Rust","isPartOf":{"@type":"WebSite","name":"glowkit","url":"https://ahmedzulfi.github.io/glowkit/"},"about":{"@type":"SoftwareSourceCode","name":"glowkit-stream","codeRepository":"https://github.com/ahmedzulfi/glowkit"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ahmedzulfi.github.io/glowkit/"},{"@type":"ListItem","position":2,"name":"Recipes","item":"https://ahmedzulfi.github.io/glowkit/docs/recipes/"},{"@type":"ListItem","position":3,"name":"ACP agent viewer","item":"https://ahmedzulfi.github.io/glowkit/docs/recipes/acp-viewer/"}]}</script>
+</head>
+<body>
+<header class="nav"><div class="wrap">
+<a class="brand" href="../../../"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12C11.4 17.8 6.2 12.6 0 12 6.2 11.4 11.4 6.2 12 0z"/></svg></i>glowkit</a>
+<nav class="links" aria-label="Main"><a href="../../../components/">Components</a><a href="../../../agents/">AI agents</a><a href="../../../dashboards/">Dashboards</a><a href="../../../games/">Games</a><a href="../../../motion/">Motion</a><a href="../../../docs/recipes/" aria-current="page">Recipes</a><a href="../../../benchmarks.html">Benchmarks</a></nav>
+<div class="right"><a class="gh" href="https://github.com/ahmedzulfi/glowkit">GitHub</a><a class="btn primary sm" href="../../../gallery/">Live gallery</a></div>
+</div></header>
+<main>
+<div class="wrap">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../../../">Home</a></li><li><a href="../../../docs/recipes/">Recipes</a></li><li><span aria-current="page">ACP agent viewer</span></li></ol></nav>
+<div class="cols">
+<article class="prose">
+<div class="hero"><div class="eyebrow">Recipe · glowkit-stream</div>
+<h1>An ACP coding-agent viewer</h1>
+<div class="pills"><span class="pill">Talks to <b>Agent Client Protocol agents</b></span><span class="pill">egui 0.37</span><span class="pill">Native, no webview</span></div></div>
+<p><strong>What you get:</strong> a native window on top of a coding agent that speaks the <a href="https://agentclientprotocol.com">Agent Client Protocol</a> over stdio. The agent&#x27;s plan becomes a live checklist, file reads, edits (shown as diffs) and commands become tool cards with their status, thoughts stream into a reasoning panel, <code>session/request_permission</code> becomes an approval card with the agent&#x27;s own options (&quot;Allow once&quot;, &quot;Always allow&quot;, &quot;Reject&quot;), and the context-window usage drives a meter. No async runtime needed: two threads and the bridge.</p>
+<h2 id="cargo-toml">Cargo.toml</h2>
+<pre><code class="language-toml">[dependencies]
+glowkit = { version = &quot;0.1&quot;, features = [&quot;ai&quot;] }
+glowkit-stream = { version = &quot;0.1&quot;, features = [&quot;egui&quot;, &quot;acp-wire&quot;] }   # or &quot;acp&quot; for the typed SDK
+eframe = &quot;0.37&quot;
+serde_json = &quot;1&quot;</code></pre>
+<h2 id="code">Code</h2>
+<pre><code class="language-rust"><span class="k">use</span> glowkit::{ai::<span class="t">PromptInput</span>, prelude::*};
+<span class="k">use</span> glowkit_stream::adapters::acp::{permission_response, <span class="t">AcpAdapter</span>};
+<span class="k">use</span> glowkit_stream::{bridge, <span class="t">AgentThread</span>, <span class="t">Session</span>};
+<span class="k">use</span> serde_json::{json, <span class="t">Value</span>};
+<span class="k">use</span> std::io::{<span class="t">BufRead</span>, <span class="t">BufReader</span>, <span class="t">Write</span>};
+<span class="k">use</span> std::process::{<span class="t">ChildStdin</span>, <span class="t">Command</span>, <span class="t">Stdio</span>};
+<span class="k">use</span> std::sync::{<span class="t">Arc</span>, <span class="t">Mutex</span>};
+
+<span class="k">type</span> <span class="t">Pipe</span> = <span class="t">Arc</span>&lt;<span class="t">Mutex</span>&lt;<span class="t">ChildStdin</span>&gt;&gt;;
+<span class="k">fn</span> <span class="f">send</span>(pipe: &amp;<span class="t">Pipe</span>, msg: <span class="t">Value</span>) {
+    <span class="k">let</span> <span class="k">mut</span> p = pipe.<span class="f">lock</span>().<span class="f">unwrap</span>();
+    <span class="f">writeln!</span>(p, <span class="s">&quot;{msg}&quot;</span>).<span class="f">ok</span>();
+    p.<span class="f">flush</span>().<span class="f">ok</span>();
+}
+
+<span class="k">struct</span> <span class="t">App</span> { session: <span class="t">Session</span>, input: <span class="t">String</span>, rx: bridge::<span class="t">EventReceiver</span>, pipe: <span class="t">Pipe</span>, sid: <span class="t">Arc</span>&lt;<span class="t">Mutex</span>&lt;<span class="t">String</span>&gt;&gt;, next_id: u64 }
+
+<span class="k">impl</span> eframe::<span class="t">App</span> <span class="k">for</span> <span class="t">App</span> {
+    <span class="k">fn</span> <span class="f">ui</span>(&amp;<span class="k">mut</span> <span class="k">self</span>, ui: &amp;<span class="k">mut</span> egui::<span class="t">Ui</span>, _: &amp;<span class="k">mut</span> eframe::<span class="t">Frame</span>) {
+        <span class="k">self</span>.rx.<span class="f">drain_into</span>(&amp;<span class="k">mut</span> <span class="k">self</span>.session);
+        egui::<span class="t">Panel</span>::<span class="f">bottom</span>(<span class="s">&quot;prompt&quot;</span>).<span class="f">show</span>(ui, |ui| {
+            <span class="k">let</span> out = <span class="t">PromptInput</span>::<span class="f">new</span>(&amp;<span class="k">mut</span> <span class="k">self</span>.input).<span class="f">generating</span>(<span class="k">self</span>.session.<span class="f">is_running</span>()).<span class="f">show</span>(ui, |_| {});
+            <span class="k">if</span> <span class="k">let</span> <span class="t">Some</span>(text) = out.submitted {
+                <span class="k">self</span>.session.<span class="f">push_user</span>(text.<span class="f">clone</span>());
+                <span class="k">self</span>.next_id += <span class="n">1</span>;
+                <span class="k">let</span> sid = <span class="k">self</span>.sid.<span class="f">lock</span>().<span class="f">unwrap</span>().<span class="f">clone</span>();
+                <span class="f">send</span>(&amp;<span class="k">self</span>.pipe, <span class="f">json!</span>({<span class="s">&quot;jsonrpc&quot;</span>: <span class="s">&quot;2.0&quot;</span>, <span class="s">&quot;id&quot;</span>: <span class="k">self</span>.next_id, <span class="s">&quot;method&quot;</span>: <span class="s">&quot;session/prompt&quot;</span>,
+                    <span class="s">&quot;params&quot;</span>: {<span class="s">&quot;sessionId&quot;</span>: sid, <span class="s">&quot;prompt&quot;</span>: [{<span class="s">&quot;type&quot;</span>: <span class="s">&quot;text&quot;</span>, <span class="s">&quot;text&quot;</span>: text}]}}));
+            }
+        });
+        egui::<span class="t">CentralPanel</span>::<span class="f">default</span>().<span class="f">show</span>(ui, |ui| {
+            <span class="k">for</span> d <span class="k">in</span> <span class="t">AgentThread</span>::<span class="f">new</span>(&amp;<span class="k">mut</span> <span class="k">self</span>.session).<span class="f">max_width</span>(<span class="n">760.0</span>).<span class="f">show</span>(ui).decisions {
+                <span class="f">send</span>(&amp;<span class="k">self</span>.pipe, <span class="f">permission_response</span>(&amp;d.approval_id, d.option_id.<span class="f">as_deref</span>()));
+            }
+        });
+    }
+}
+
+<span class="k">fn</span> <span class="f">main</span>() -&gt; eframe::<span class="t">Result</span> {
+    <span class="k">let</span> <span class="k">mut</span> args = std::env::<span class="f">args</span>().<span class="f">skip</span>(<span class="n">1</span>);
+    <span class="k">let</span> program = args.<span class="f">next</span>().<span class="f">expect</span>(<span class="s">&quot;usage: app &lt;agent command&gt; [args...]&quot;</span>);
+    <span class="k">let</span> <span class="k">mut</span> child = <span class="t">Command</span>::<span class="f">new</span>(program).<span class="f">args</span>(args).<span class="f">stdin</span>(<span class="t">Stdio</span>::<span class="f">piped</span>()).<span class="f">stdout</span>(<span class="t">Stdio</span>::<span class="f">piped</span>()).<span class="f">spawn</span>().<span class="f">unwrap</span>();
+    <span class="k">let</span> pipe: <span class="t">Pipe</span> = <span class="t">Arc</span>::<span class="f">new</span>(<span class="t">Mutex</span>::<span class="f">new</span>(child.stdin.<span class="f">take</span>().<span class="f">unwrap</span>()));
+    <span class="k">let</span> stdout = child.stdout.<span class="f">take</span>().<span class="f">unwrap</span>();
+    <span class="f">send</span>(&amp;pipe, <span class="f">json!</span>({<span class="s">&quot;jsonrpc&quot;</span>: <span class="s">&quot;2.0&quot;</span>, <span class="s">&quot;id&quot;</span>: <span class="n">0</span>, <span class="s">&quot;method&quot;</span>: <span class="s">&quot;initialize&quot;</span>, <span class="s">&quot;params&quot;</span>: {<span class="s">&quot;protocolVersion&quot;</span>: <span class="n">1</span>, <span class="s">&quot;clientCapabilities&quot;</span>: {}}}));
+    <span class="k">let</span> cwd = std::env::<span class="f">current_dir</span>().<span class="f">unwrap</span>();
+    <span class="f">send</span>(&amp;pipe, <span class="f">json!</span>({<span class="s">&quot;jsonrpc&quot;</span>: <span class="s">&quot;2.0&quot;</span>, <span class="s">&quot;id&quot;</span>: <span class="n">1</span>, <span class="s">&quot;method&quot;</span>: <span class="s">&quot;session/new&quot;</span>, <span class="s">&quot;params&quot;</span>: {<span class="s">&quot;cwd&quot;</span>: cwd, <span class="s">&quot;mcpServers&quot;</span>: []}}));
+
+    eframe::<span class="f">run_native</span>(<span class="s">&quot;ACP agent&quot;</span>, <span class="t">Default</span>::<span class="f">default</span>(), <span class="t">Box</span>::<span class="f">new</span>(<span class="k">move</span> |cc| {
+        <span class="t">Theme</span>::<span class="f">dark</span>().<span class="f">install</span>(&amp;cc.egui_ctx);
+        <span class="k">let</span> (tx, rx) = bridge::<span class="f">channel</span>();
+        <span class="k">let</span> tx = tx.<span class="f">with_repaint</span>(&amp;cc.egui_ctx);
+        <span class="k">let</span> sid = <span class="t">Arc</span>::<span class="f">new</span>(<span class="t">Mutex</span>::<span class="f">new</span>(<span class="t">String</span>::<span class="f">new</span>()));
+        <span class="k">let</span> sid2 = sid.<span class="f">clone</span>();
+        std::thread::<span class="f">spawn</span>(<span class="k">move</span> || {
+            <span class="k">let</span> <span class="k">mut</span> adapter = <span class="t">AcpAdapter</span>::<span class="f">new</span>();
+            <span class="k">for</span> line <span class="k">in</span> <span class="t">BufReader</span>::<span class="f">new</span>(stdout).<span class="f">lines</span>().<span class="f">map_while</span>(<span class="t">Result</span>::ok) {
+                <span class="k">let</span> <span class="t">Ok</span>(msg) = serde_json::from_str::&lt;<span class="t">Value</span>&gt;(&amp;line) <span class="k">else</span> { <span class="k">continue</span> };
+                <span class="k">if</span> <span class="k">let</span> <span class="t">Some</span>(id) = msg.<span class="f">pointer</span>(<span class="s">&quot;/result/sessionId&quot;</span>).<span class="f">and_then</span>(<span class="t">Value</span>::as_str) {
+                    *sid2.<span class="f">lock</span>().<span class="f">unwrap</span>() = id.<span class="f">to_owned</span>();
+                }
+                <span class="k">if</span> tx.<span class="f">send_all</span>(adapter.<span class="f">push_message</span>(&amp;msg)).<span class="f">is_err</span>() { <span class="k">break</span>; }
+            }
+        });
+        <span class="t">Ok</span>(<span class="t">Box</span>::<span class="f">new</span>(<span class="t">App</span> { session: <span class="t">Session</span>::<span class="f">new</span>(), input: <span class="t">String</span>::<span class="f">new</span>(), rx, pipe, sid, next_id: <span class="n">1</span> }))
+    }))
+}</code></pre>
+<p>With the <code>acp</code> feature you can use the official <code>agent-client-protocol</code> SDK for the connection instead, and feed its typed values to <code>AcpAdapter::session_notification</code>, <code>AcpAdapter::request_permission</code> and <code>AcpAdapter::stop_reason</code>.</p>
+<h2 id="run-it">Run it</h2>
+<pre><code class="language-bash">cargo run --release -- &lt;your ACP agent command and its arguments&gt;</code></pre>
+<p>To see the view without an agent, open the gallery&#x27;s <strong>Live agent stream</strong> demo and pick &quot;ACP-style&quot;: it replays a recorded ACP session (plan, file read, an edit behind a permission request, a failing test run) through the same adapter:</p>
+<pre><code class="language-bash">cargo run --release -p glowkit-gallery</code></pre>
+<p>This viewer advertises no client capabilities, so agents will not ask it to read or write files or run terminals; add handlers for <code>fs/*</code> and <code>terminal/*</code> requests to support those.</p>
+</article>
+<aside>
+<div class="box"><h2>Other recipes</h2><ul><li><a href="../../../docs/recipes/ollama-chat/">Ollama chat</a></li><li><a href="../../../docs/recipes/rig-agent/">rig agent UI</a></li><li><a href="../../../docs/recipes/ag-ui-desktop/">AG-UI desktop client</a></li><li><a href="../../../docs/recipes/vercel-ai-sdk-client/">Vercel AI SDK client</a></li></ul></div>
+<div class="box"><h2>Components used</h2><ul>
+<li><a href="../../../components/ai-chat/">AI Chat</a></li><li><a href="../../../components/ai-tool-call/">Tool Call</a></li>
+<li><a href="../../../components/ai-reasoning/">Reasoning</a></li><li><a href="../../../components/ai-prompt-input/">Prompt Input</a></li>
+<li><a href="../../../components/ai-confirmation/">Confirmation</a></li><li><a href="../../../components/ai/">All AI components</a></li></ul></div>
+<div class="box"><h2>Source</h2><ul><li><a href="https://github.com/ahmedzulfi/glowkit/blob/main/docs/recipes/acp-viewer.md">This recipe on GitHub</a></li>
+<li><a href="https://github.com/ahmedzulfi/glowkit/tree/main/crates/glowkit-stream">glowkit-stream crate</a></li><li><a href="../../../agents/">Building AI agent UIs</a></li></ul></div>
+</aside>
+</div>
+</div>
+</main>
+<footer><div class="wrap">
+<div class="cols4">
+<div><h2>glowkit</h2><ul>
+<li><a href="../../../">Home</a></li><li><a href="../../../gallery/">Live gallery</a></li><li><a href="../../../components/">All components</a></li>
+<li><a href="../../../benchmarks.html">Benchmarks</a></li><li><a href="https://docs.rs/glowkit">API docs (docs.rs)</a></li>
+<li><a href="https://crates.io/crates/glowkit">crates.io</a></li><li><a href="https://github.com/ahmedzulfi/glowkit">GitHub</a></li></ul></div>
+<div><h2>Build</h2><ul>
+<li><a href="../../../agents/">AI agent UIs</a></li><li><a href="../../../dashboards/">Dashboards</a></li>
+<li><a href="../../../games/">Game menus and HUDs</a></li><li><a href="../../../motion/">Motion engine</a></li>
+<li><a href="../../../docs/recipes/">Agent recipes</a></li><li><a href="../../../docs/recipes/ollama-chat/">Ollama chat</a></li><li><a href="../../../docs/recipes/rig-agent/">rig agent UI</a></li><li><a href="../../../docs/recipes/ag-ui-desktop/">AG-UI desktop client</a></li><li><a href="../../../docs/recipes/vercel-ai-sdk-client/">Vercel AI SDK client</a></li><li><a href="../../../docs/recipes/acp-viewer/">ACP agent viewer</a></li></ul></div>
+<div><h2>Categories</h2><ul><li><a href="../../../components/text-animations/">Text Animations</a></li><li><a href="../../../components/backgrounds/">Backgrounds</a></li><li><a href="../../../components/buttons/">Buttons</a></li><li><a href="../../../components/cards-borders/">Cards &amp; Borders</a></li><li><a href="../../../components/cursor-interaction/">Cursor &amp; Interaction</a></li><li><a href="../../../components/micro-interactions/">Micro-interactions</a></li><li><a href="../../../components/motion-layout/">Motion &amp; Layout</a></li><li><a href="../../../components/motion-engine/">Motion Engine</a></li><li><a href="../../../components/3d/">3D</a></li><li><a href="../../../components/loaders-progress/">Loaders &amp; Progress</a></li><li><a href="../../../components/inputs-forms/">Inputs &amp; Forms</a></li></ul></div>
+<div><h2>More categories</h2><ul><li><a href="../../../components/navigation/">Navigation</a></li><li><a href="../../../components/overlays-feedback/">Overlays &amp; Feedback</a></li><li><a href="../../../components/data-display/">Data Display</a></li><li><a href="../../../components/charts/">Charts</a></li><li><a href="../../../components/ai/">AI</a></li><li><a href="../../../components/blocks/">Blocks</a></li><li><a href="../../../components/canvas-editors/">Canvas &amp; Editors</a></li><li><a href="../../../components/dashboards-shells/">Dashboards &amp; Shells</a></li><li><a href="../../../components/templates/">Templates</a></li><li><a href="../../../components/game-ui/">Game UI</a></li></ul></div>
+</div>
+<p class="legal">glowkit is dual-licensed under MIT or Apache-2.0. Component names from web libraries are used only to describe equivalence; all glowkit code is original Rust.</p>
+</div></footer>
+</body>
+</html>

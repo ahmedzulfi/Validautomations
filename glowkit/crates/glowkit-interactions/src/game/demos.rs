@@ -341,7 +341,7 @@ fn step_gun(ui: &Ui, g: &mut GunSim, size: u32, seed: u64) -> Option<f32> {
         } else {
             g.mag -= 1;
             g.burst += 1;
-            let pause = if g.burst % 6 == 0 { 0.9 + hash01(g.burst as u64 + seed) as f64 } else { 0.11 };
+            let pause = if g.burst.is_multiple_of(6) { 0.9 + hash01(g.burst as u64 + seed) as f64 } else { 0.11 };
             g.next_shot = t + pause;
         }
     }
@@ -431,7 +431,7 @@ ui.add(GameCrosshair::new(GameCrosshairShape::Cross).spread(spread));"##,
                 // crosshair
                 let firing = reload.is_none() && (t - (gun.next_shot - 0.11)).abs() < 0.3;
                 let hit_age = ((t * 1.3).fract() / 1.3) as f32;
-                put(ui, Rect::from_center_size(rect.center(), Vec2::splat(96.0)), GameCrosshair::new(GameCrosshairShape::Cross).spread(if firing { 0.7 } else { 0.1 }).hit(Some(hit_age), (t as u64) % 4 == 0));
+                put(ui, Rect::from_center_size(rect.center(), Vec2::splat(96.0)), GameCrosshair::new(GameCrosshairShape::Cross).spread(if firing { 0.7 } else { 0.1 }).hit(Some(hit_age), (t as u64).is_multiple_of(4)));
             },
         },
         Demo {
@@ -1133,7 +1133,7 @@ GameDamageNumbers::new(&feed).paint(ui, viewport_rect);"##,
                             .score(score)
                             .ping(20 + (hash01(i as u64 * 23) * 180.0) as u32)
                             .local(i == 2)
-                            .dead((tick + i as u64) % 7 == 0)
+                            .dead((tick + i as u64).is_multiple_of(7))
                     })
                     .collect();
                 inside(ui, rect.shrink2(vec2(16.0, 6.0)), |ui| {

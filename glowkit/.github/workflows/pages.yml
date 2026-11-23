@@ -33,6 +33,11 @@ jobs:
         run: |
           cargo run --release -p glowkit-gallery -- --dump-json > demos.json
           python3 scripts/catalog.py demos.json
+      # Static, crawlable pages (components, categories, recipes, landing pages, sitemap, llms.txt).
+      # Screenshots, og.png and favicons are committed (scripts/site-images.py, scripts/render-og.mjs),
+      # so CI needs no browser: it only regenerates HTML.
+      - name: Generate static site pages
+        run: python3 scripts/gen-site.py demos.json
       - uses: actions/upload-pages-artifact@v3
         with:
           path: website

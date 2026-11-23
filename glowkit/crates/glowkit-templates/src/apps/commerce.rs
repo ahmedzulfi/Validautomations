@@ -94,7 +94,7 @@ impl Default for CommerceApp {
             stock,
             threshold: th,
             rating: r,
-            featured: hue % 3 == 0,
+            featured: hue.is_multiple_of(3),
             hue,
         };
         let o = |n: u32, c: &str, d: &str, items: u32, paid: bool, ful: bool, total: f64| ShopOrder {

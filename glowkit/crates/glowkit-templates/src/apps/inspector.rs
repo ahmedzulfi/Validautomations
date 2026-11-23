@@ -287,7 +287,7 @@ impl DevInspectorApp {
                     born: now,
                 });
             }
-            if n % 5 == 0 {
+            if n.is_multiple_of(5) {
                 let opts: [(Lvl, &str, &str); 6] = [
                     (Lvl::Debug, "render", "draw calls 1,284 · triangles 2.1M · instanced 74%"),
                     (Lvl::Trace, "input", "mouse delta (3, -1)"),

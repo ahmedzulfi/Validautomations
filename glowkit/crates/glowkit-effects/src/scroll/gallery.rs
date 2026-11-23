@@ -181,7 +181,7 @@ impl egui::Widget for AppleCardsCarousel<'_> {
                 st.phase += 1;
                 if st.open.is_some() {
                     st.open = None;
-                } else if st.phase % 3 == 0 {
+                } else if st.phase.is_multiple_of(3) {
                     let first = ((st.target / step).round() as usize).min(n - 1);
                     let i = (first + 1).min(n - 1);
                     st.open = Some(i);

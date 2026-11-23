@@ -3,25 +3,90 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>glowkit gallery</title>
-  <meta name="description" content="Live gallery of every glowkit component, running as Rust compiled to WebAssembly." />
-  <link rel="icon" href="../favicon.svg" />
+  <!-- gen:head -->
+<title>Live gallery: Rust egui components in WebAssembly | glowkit</title>
+<meta name="description" content="Every glowkit component live in your browser: 680+ animated Rust UI components compiled from egui to WebAssembly. AI agents, charts, game UI, 3D and more.">
+<link rel="canonical" href="https://ahmedzulfi.github.io/glowkit/gallery/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0b0d" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="glowkit">
+<meta property="og:title" content="Live gallery: Rust egui components in WebAssembly | glowkit">
+<meta property="og:description" content="Every glowkit component live in your browser: 680+ animated Rust UI components compiled from egui to WebAssembly. AI agents, charts, game UI, 3D and more.">
+<meta property="og:url" content="https://ahmedzulfi.github.io/glowkit/gallery/">
+<meta property="og:image" content="https://ahmedzulfi.github.io/glowkit/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="glowkit: Premium animated UI for Rust apps">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Live gallery: Rust egui components in WebAssembly | glowkit">
+<meta name="twitter:description" content="Every glowkit component live in your browser: 680+ animated Rust UI components compiled from egui to WebAssembly. AI agents, charts, game UI, 3D and more.">
+<meta name="twitter:image" content="https://ahmedzulfi.github.io/glowkit/og.png">
+<meta name="twitter:image:alt" content="glowkit: Premium animated UI for Rust apps">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Live gallery: Rust egui components in WebAssembly | glowkit","description":"Every glowkit component live in your browser: 680+ animated Rust UI components compiled from egui to WebAssembly. AI agents, charts, game UI, 3D and more.","url":"https://ahmedzulfi.github.io/glowkit/gallery/","isPartOf":{"@id":"https://ahmedzulfi.github.io/glowkit/#website"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ahmedzulfi.github.io/glowkit/"},{"@type":"ListItem","position":2,"name":"Live gallery","item":"https://ahmedzulfi.github.io/glowkit/gallery/"}]}</script>
+<!-- /gen:head -->
   <style>
     html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #09090b; }
-    canvas#glowkit_canvas { position: absolute; inset: 0; width: 100%; height: 100%; outline: none; }
-    #loading { position: absolute; inset: 0; display: grid; place-items: center; color: #a1a1aa;
-      font: 14px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
+    canvas#glowkit_canvas { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; outline: none; }
+    #loading { position: absolute; top: 0; left: 0; right: 0; z-index: 2; padding: 56px 16px 0; text-align: center; color: #a1a1aa;
+      font: 15px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
     #loading .spinner { width: 28px; height: 28px; margin: 0 auto 12px; border-radius: 50%;
       border: 2px solid #27272a; border-top-color: #8b5cf6; animation: spin .8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* Static content for people waiting on the download, for crawlers and for no-JS visitors.
+       It sits under the canvas, which covers it once the gallery paints. */
+    #about { position: absolute; inset: 0; z-index: 0; overflow-y: auto; padding: 150px 16px 40px; color: #d4d4d8;
+      font: 16px/1.6 system-ui, -apple-system, Segoe UI, sans-serif; }
+    #about .in { max-width: 760px; margin: 0 auto; }
+    #about h1 { color: #fafafa; font-size: 28px; line-height: 1.2; margin: 0 0 10px; letter-spacing: -.02em; }
+    #about h2 { color: #fafafa; font-size: 17px; margin: 26px 0 8px; }
+    #about p { margin: 0 0 12px; color: #a1a1aa; }
+    #about a { color: #e4e4e7; text-decoration: underline; text-decoration-color: #52525b; text-underline-offset: 3px; }
+    #about ul { list-style: none; padding: 0; margin: 0; columns: 2 220px; column-gap: 24px; }
+    #about li { padding: 0; break-inside: avoid; }
+    #about li a { display: inline-block; padding: 8px 0; }
+    #about li span { color: #8e8e98; font-size: 14px; }
+    noscript p { position: relative; z-index: 3; }
   </style>
 </head>
 <body>
-  <canvas id="glowkit_canvas"></canvas>
+  <main id="about">
+    <div class="in">
+      <h1>glowkit live gallery</h1>
+      <p>This page runs the whole glowkit component gallery, <!-- gen:count -->
+682
+<!-- /gen:count --> animated Rust UI components, as one egui app compiled to WebAssembly. It is the same app that runs natively on Windows, macOS and Linux. Pick a component on the left, interact with it, switch themes and copy its code.</p>
+      <noscript><p><strong>The live gallery needs JavaScript and WebAssembly.</strong> Every component also has a static page with a screenshot and usage code: start at <a href="../components/">all components</a>.</p></noscript>
+      <h2>Browse components by category</h2>
+      <!-- gen:categories -->
+<ul><li><a href="../components/text-animations/">Text Animations</a> <span>57</span></li><li><a href="../components/backgrounds/">Backgrounds</a> <span>63</span></li><li><a href="../components/buttons/">Buttons</a> <span>30</span></li><li><a href="../components/cards-borders/">Cards &amp; Borders</a> <span>38</span></li><li><a href="../components/cursor-interaction/">Cursor &amp; Interaction</a> <span>29</span></li><li><a href="../components/micro-interactions/">Micro-interactions</a> <span>71</span></li><li><a href="../components/motion-layout/">Motion &amp; Layout</a> <span>46</span></li><li><a href="../components/motion-engine/">Motion Engine</a> <span>17</span></li><li><a href="../components/3d/">3D</a> <span>34</span></li><li><a href="../components/loaders-progress/">Loaders &amp; Progress</a> <span>3</span></li><li><a href="../components/inputs-forms/">Inputs &amp; Forms</a> <span>13</span></li><li><a href="../components/navigation/">Navigation</a> <span>18</span></li><li><a href="../components/overlays-feedback/">Overlays &amp; Feedback</a> <span>17</span></li><li><a href="../components/data-display/">Data Display</a> <span>15</span></li><li><a href="../components/charts/">Charts</a> <span>29</span></li><li><a href="../components/ai/">AI</a> <span>84</span></li><li><a href="../components/blocks/">Blocks</a> <span>28</span></li><li><a href="../components/canvas-editors/">Canvas &amp; Editors</a> <span>13</span></li><li><a href="../components/dashboards-shells/">Dashboards &amp; Shells</a> <span>9</span></li><li><a href="../components/templates/">Templates</a> <span>43</span></li><li><a href="../components/game-ui/">Game UI</a> <span>25</span></li></ul>
+<!-- /gen:categories -->
+      <h2>Guides</h2>
+      <ul>
+        <li><a href="../agents/">AI agent interfaces in Rust</a></li>
+        <li><a href="../dashboards/">Dashboards and charts in egui</a></li>
+        <li><a href="../games/">Game menus and HUDs</a></li>
+        <li><a href="../motion/">Framer-Motion-style animation</a></li>
+        <li><a href="../docs/recipes/">Connect real agents (recipes)</a></li>
+        <li><a href="../">glowkit home</a></li>
+      </ul>
+    </div>
+  </main>
+  <canvas id="glowkit_canvas" aria-label="glowkit component gallery"></canvas>
   <div id="loading"><div><div class="spinner"></div>Loading the gallery (Rust → WebAssembly)…</div></div>
   <script type="module">
     // ?pkg=<dir> loads an alternative build (used by per-crate dev builds)
     const pkg = new URLSearchParams(location.search).get("pkg") || "pkg";
+    // eframe adds a hidden text input for keyboard and IME input: give it an accessible name.
+    new MutationObserver(() => {
+      document.querySelectorAll("body > input[type=text]:not([aria-label])").forEach((el) => el.setAttribute("aria-label", "Gallery keyboard input"));
+    }).observe(document.body, { childList: true });
     const { default: init } = await import(`./${pkg}/glowkit-gallery.js`);
     init().catch((e) => {
       if (!String(e).includes("Using exceptions for control flow")) {

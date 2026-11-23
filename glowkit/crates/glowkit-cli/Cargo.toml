@@ -11,7 +11,7 @@ repository.workspace = true
 build = "build.rs"
 # `sources.bundle` is produced by `BUNDLE=1 scripts/gen-cli-registry.sh` before publishing, so the
 # published crate carries every component's source and works offline.
-include = ["src/**", "build.rs", "registry.json", "sources.bundle", "Cargo.toml", "README.md"]
+include = ["src/**", "build.rs", "registry.json", "sources.bundle", "Cargo.toml", "README.md", "LICENSE-MIT", "LICENSE-APACHE"]
 rust-version.workspace = true
 authors.workspace = true
 keywords = ["egui", "ui", "cli", "components", "scaffold"]

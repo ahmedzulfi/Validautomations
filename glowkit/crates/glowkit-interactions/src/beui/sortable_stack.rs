@@ -109,7 +109,7 @@ impl egui::Widget for SortableStack<'_> {
             glowkit_core::animate(ui);
             let ph = (idle - 3.0) % cycle;
             let k = ((idle - 3.0) / cycle) as u32;
-            let (from, to) = if k % 2 == 0 { (0usize, 2usize) } else { (2, 0) };
+            let (from, to) = if k.is_multiple_of(2) { (0usize, 2usize) } else { (2, 0) };
             let grip_x = rect.min.x + 26.0;
             let a = pos2(grip_x, slot_y(from) + CARD_H / 2.0);
             let b = pos2(grip_x, slot_y(to) + CARD_H / 2.0);

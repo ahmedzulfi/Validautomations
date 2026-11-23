@@ -1,24 +1,37 @@
 # Contributing to glowkit
 
 Thanks for helping. This guide is also the spec every component in the repo follows, so please
-read it fully before adding one.
+read it fully before adding one. By taking part you agree to the [Code of Conduct](CODE_OF_CONDUCT.md);
+report security problems privately as described in [SECURITY.md](SECURITY.md).
 
 ## Layout
 
 ```
 crates/
-  glowkit-core         theme tokens, animation engine, painting helpers (everything builds on this)
-  glowkit-text         animated text effects
-  glowkit-backgrounds  animated backgrounds
-  glowkit-effects      buttons, cards & borders, cursor & interaction, motion & layout
-  glowkit-components   everyday components: inputs, navigation, overlays, data display, loaders
-  glowkit-charts       animated charts
-  glowkit-ai           AI interface components
-  glowkit-blocks       full page sections composed from the others
-  glowkit              umbrella crate, re-exports everything behind cargo features
-apps/gallery           the gallery app (native + WebAssembly)
-website/               landing page + the WebAssembly gallery
-scripts/               build-web.sh, serve.sh, shot.mjs (headless screenshots)
+  glowkit-core          theme tokens, animation engine, painting helpers (everything builds on this)
+  glowkit-text          animated text effects
+  glowkit-backgrounds   animated backgrounds
+  glowkit-effects       buttons, cards & borders, cursor & interaction, menus, glass
+  glowkit-components    everyday components: inputs, navigation, overlays, data display, loaders
+  glowkit-charts        animated charts
+  glowkit-ai            AI interface components and the streaming Markdown renderer
+  glowkit-agents        agent supervision blocks and tool UIs
+  glowkit-stream        real agent streams: event model, reducer, bridge, protocol adapters
+  glowkit-motion        the motion engine
+  glowkit-3d            software 3D renderer and 3D components
+  glowkit-canvas        infinite canvas, node editor, whiteboard, kanban...
+  glowkit-interactions  micro-interactions, transitions and game UI
+  glowkit-blocks        page sections composed from the others
+  glowkit-templates     full pages, dashboard shells and app templates
+  glowkit               umbrella crate, re-exports everything behind cargo features
+  glowkit-mcp           MCP server for coding agents
+  glowkit-cli           `glowkit add` / `glowkit init`
+apps/gallery            the gallery app (native + WebAssembly)
+apps/bench              headless per-component benchmarks
+examples/               runnable examples (hello, ai-chat, agent-*)
+ports/                  separate workspaces for GPUI and Dioxus (not published)
+website/                landing page + the WebAssembly gallery
+scripts/                build-web.sh, serve.sh, shot.mjs (headless screenshots), publish.sh
 ```
 
 ## The rules for a component
@@ -86,6 +99,21 @@ Demo {
   equivalent to, as `"Library: Component"`.
 
 ## Checking your work
+
+Before opening a pull request, run what CI runs:
+
+```bash
+cargo fmt --all -- --check
+cargo clippy --workspace --all-features --all-targets -- -D warnings
+cargo test --workspace --all-features
+cargo check -p glowkit-gallery --target wasm32-unknown-unknown
+```
+
+The minimum supported Rust version is 1.95 (set by egui 0.37). The optional `rig` adapter in
+`glowkit-stream` is the exception: rig 0.45 and later need rustc 1.97.1, so `--all-features` needs a
+recent stable toolchain.
+
+While working on a single crate:
 
 ```bash
 cargo build -p glowkit-<crate> --features demos              # compile

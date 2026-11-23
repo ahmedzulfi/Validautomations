@@ -48,7 +48,7 @@ impl CloudShape {
             CloudShape::Cube => {
                 let face = i % 6;
                 let (s, t) = (h1 * 2.0 - 1.0, h2 * 2.0 - 1.0);
-                let sg = if face % 2 == 0 { 1.0 } else { -1.0 };
+                let sg = if face.is_multiple_of(2) { 1.0 } else { -1.0 };
                 let p = match face / 2 {
                     0 => vec3(sg, s, t),
                     1 => vec3(s, sg, t),

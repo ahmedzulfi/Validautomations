@@ -10,3 +10,6 @@
 *.pyc
 ports/*/examples/*/web/pkg/
 /website/live/
+
+# generated before publishing glowkit-cli (scripts/publish.sh)
+/crates/glowkit-cli/sources.bundle

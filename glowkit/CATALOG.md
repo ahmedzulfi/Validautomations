@@ -33,7 +33,7 @@ Some items are hard or impossible in an immediate-mode GPU painter without image
 | [Tremor](https://tremor.so) | 12 / 12 | 100% |
 | **Total** | **679 / 704** | **96%** |
 
-glowkit ships **700** components; the gallery showcases **682** of them (plain primitives are kept as building blocks but not showcased).
+glowkit ships **701** components; the gallery showcases **683** of them (plain primitives are kept as building blocks but not showcased).
 
 ## React Bits
 
@@ -435,7 +435,7 @@ glowkit ships **700** components; the gallery showcases **682** of them (plain p
 | Connection | ✅ `node-editor` |
 | Context | ✅ `ai-context-meter` |
 | Controls | ✅ `node-editor` |
-| Conversation | ✅ `ai-conversation` |
+| Conversation | ✅ `ai-conversation`, `live-agent-stream` |
 | Edge | ✅ `ai-workflow` |
 | Image | ✅ `ai-image-gen` |
 | Inline Citation | ✅ `ai-sources` |
@@ -471,7 +471,7 @@ glowkit ships **700** components; the gallery showcases **682** of them (plain p
 | Scroll Button | ✅ `ai-conversation` |
 | Loader | ✅ `ai-loaders` |
 | Prompt Suggestion | ✅ `ai-suggestions` |
-| Response Stream | ✅ `ai-streaming-text` |
+| Response Stream | ✅ `ai-streaming-text`, `live-agent-stream` |
 | Reasoning | ✅ `ai-reasoning` |
 | File Upload | ✅ `ai-prompt-input` |
 | JSX Preview | ✅ `ai-jsx-preview` |
@@ -880,7 +880,7 @@ glowkit ships **700** components; the gallery showcases **682** of them (plain p
 * **Clerk**: Sign-in
 * **CodePen**: Liquid button, Matrix Digital Rain, Neon button
 * **Codrops**: Image Trail, elastic trails
-* **CopilotKit**: Agentic plan, Copilot Textarea, CopilotPopup, CopilotSidebar, CopilotTextarea, Generative UI, Human-in-the-loop, Suggestions, Voice
+* **CopilotKit**: Agentic plan, Copilot Textarea, CopilotChat, CopilotPopup, CopilotSidebar, CopilotTextarea, Generative UI, Human-in-the-loop, Suggestions, Voice
 * **Creance**: AgentHandoffBanner, AgentRunLayout, ApprovalPrompt, BudgetMeter, DiffLine, DiffReview, ErrorCard, KillSwitch, NeedsYouInbox, PlanEditor, QuestionCard, RiskLabel, RunTimeline, StatusBadge, ToolCallCard
 * **Creative Tim**: Multi-step Agent, Tool Use, Workflow Status
 * **Cult UI**: Animated Link, Animated link, Dynamic Island, Floating Nav, Glitch Text, Text Roll, Text Scramble, Text Wave

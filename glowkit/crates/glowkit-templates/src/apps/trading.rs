@@ -342,7 +342,7 @@ impl TradingTerminalApp {
             self.price_flash = now;
         }
         // candles
-        if self.tick_n % TICKS_PER_BAR == 0 {
+        if self.tick_n.is_multiple_of(TICKS_PER_BAR) {
             let c = self.price;
             self.bars.push(Bar { o: c, h: c, l: c, c, v: 1.0 });
             if self.bars.len() > 400 {
@@ -386,7 +386,7 @@ impl TradingTerminalApp {
                 let t = tick_size(w.price);
                 w.price = ((w.price * (1.0 + rng.normal() as f64 * 0.0006)) / t).round() * t;
             }
-            if self.tick_n % TICKS_PER_BAR == 0 {
+            if self.tick_n.is_multiple_of(TICKS_PER_BAR) {
                 w.hist.remove(0);
                 w.hist.push(w.price);
             } else if let Some(l) = w.hist.last_mut() {

@@ -20,8 +20,12 @@ for (const r of routes) {
   await page.waitForFunction(() => !document.getElementById("loading"), null, { timeout: 60000 }).catch(() => errors.push("timeout loading " + r));
   await page.waitForTimeout(Number(process.env.WAIT || 1800));
   const file = `${outdir}/${r.replace(/[\/@]/g, "_")}.png`;
-  await page.screenshot({ path: file });
-  console.log("saved", file);
+  try {
+    await page.screenshot({ path: file, timeout: 60000 });
+    console.log("saved", file);
+  } catch (e) {
+    errors.push(`screenshot failed for ${r}: ${String(e).split("\n")[0]}`);  // keep going with the other routes
+  }
 }
 if (errors.length) console.log("ERRORS:\n" + [...new Set(errors)].slice(0, 20).join("\n"));
 await browser.close();

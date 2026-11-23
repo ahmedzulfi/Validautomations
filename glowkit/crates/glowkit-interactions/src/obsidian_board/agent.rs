@@ -128,7 +128,7 @@ impl egui::Widget for BoardAgentLimits {
         let open_flag: bool = glowkit_core::state(ui, id.with("open"), || false);
         let last_rect: Rect = glowkit_core::state(ui, id.with("rect"), || Rect::NOTHING);
         let idle = idle_for(ui, id, ui.rect_contains_pointer(last_rect));
-        let auto_open = self.autoplay && idle > 2.5 && (((idle - 2.5) / 3.2) as usize % 2 == 0);
+        let auto_open = self.autoplay && idle > 2.5 && (((idle - 2.5) / 3.2) as usize).is_multiple_of(2);
         let open = if self.autoplay && idle > 2.5 { auto_open } else { open_flag };
         let ok = glowkit_core::anim::spring(ui, id.with("openk"), if open { 1.0 } else { 0.0 }, 190.0, 23.0);
         let row_h = 26.0;

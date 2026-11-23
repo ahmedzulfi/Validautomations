@@ -227,7 +227,7 @@ impl TargetCursor {
             let now = glowkit_core::time(ui);
             if !self.targets.is_empty() {
                 let slot = (now / 1.6).floor() as usize;
-                if slot % 2 == 0 {
+                if slot.is_multiple_of(2) {
                     let r = self.targets[(slot / 2) % self.targets.len()];
                     target = Some(r);
                     p = r.center() + vec2((now * 2.0).sin() * r.width() * 0.2, (now * 1.7).cos() * r.height() * 0.15);

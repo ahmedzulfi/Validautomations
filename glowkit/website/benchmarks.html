@@ -3,16 +3,41 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>glowkit · Benchmarks</title>
-  <meta name="description" content="Frame time, tessellation, vertex counts and memory for every glowkit component, measured headlessly in release builds." />
-  <link rel="icon" href="favicon.svg" />
+  <!-- gen:head -->
+<title>Benchmarks: frame time and memory per component | glowkit</title>
+<meta name="description" content="Frame time, tessellation, vertex counts and memory for every glowkit component, measured headlessly in release builds, plus idle-repaint checks for each one.">
+<link rel="canonical" href="https://ahmedzulfi.github.io/glowkit/benchmarks.html">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0b0d" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="glowkit">
+<meta property="og:title" content="Benchmarks: frame time and memory per component | glowkit">
+<meta property="og:description" content="Frame time, tessellation, vertex counts and memory for every glowkit component, measured headlessly in release builds, plus idle-repaint checks for each one.">
+<meta property="og:url" content="https://ahmedzulfi.github.io/glowkit/benchmarks.html">
+<meta property="og:image" content="https://ahmedzulfi.github.io/glowkit/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="glowkit: Premium animated UI for Rust apps">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Benchmarks: frame time and memory per component | glowkit">
+<meta name="twitter:description" content="Frame time, tessellation, vertex counts and memory for every glowkit component, measured headlessly in release builds, plus idle-repaint checks for each one.">
+<meta name="twitter:image" content="https://ahmedzulfi.github.io/glowkit/og.png">
+<meta name="twitter:image:alt" content="glowkit: Premium animated UI for Rust apps">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Benchmarks: frame time and memory per component | glowkit","description":"Frame time, tessellation, vertex counts and memory for every glowkit component, measured headlessly in release builds, plus idle-repaint checks for each one.","url":"https://ahmedzulfi.github.io/glowkit/benchmarks.html","isPartOf":{"@id":"https://ahmedzulfi.github.io/glowkit/#website"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ahmedzulfi.github.io/glowkit/"},{"@type":"ListItem","position":2,"name":"Benchmarks","item":"https://ahmedzulfi.github.io/glowkit/benchmarks.html"}]}</script>
+<!-- /gen:head -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #ffffff; --surface: #f2f2f3; --surface-2: #e9e9eb; --card: #ffffff; --border: #e4e4e7; --border-2: #d4d4d8;
-      --fg: #111113; --muted: #5f5f68; --dim: #8a8a93;
+      --fg: #111113; --muted: #55555e; --dim: #6b6b74;
       --primary: #111113; --primary-fg: #ffffff; --accent: #7c3aed;
       --bar: #7c3aed; --bar-heavy: #c2410c; --ok: #15803d; --warn: #b45309; --bad: #b91c1c;
       --warn-bg: #fff4e5; --bad-bg: #fdecec; --ok-bg: #eaf6ee;
@@ -23,12 +48,12 @@
     }
     @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
       --bg: #0b0b0d; --surface: #161619; --surface-2: #1d1d21; --card: #111114; --border: #26262b; --border-2: #33333a;
-      --fg: #fafafa; --muted: #a1a1aa; --dim: #71717a; --primary: #fafafa; --primary-fg: #111113; --accent: #a78bfa;
+      --fg: #fafafa; --muted: #a1a1aa; --dim: #8e8e98; --primary: #fafafa; --primary-fg: #111113; --accent: #a78bfa;
       --bar: #a78bfa; --bar-heavy: #fb923c; --ok: #4ade80; --warn: #fbbf24; --bad: #f87171;
       --warn-bg: #2a1f0c; --bad-bg: #2a1212; --ok-bg: #0f2417; color-scheme: dark; } }
     :root[data-theme="dark"] {
       --bg: #0b0b0d; --surface: #161619; --surface-2: #1d1d21; --card: #111114; --border: #26262b; --border-2: #33333a;
-      --fg: #fafafa; --muted: #a1a1aa; --dim: #71717a; --primary: #fafafa; --primary-fg: #111113; --accent: #a78bfa;
+      --fg: #fafafa; --muted: #a1a1aa; --dim: #8e8e98; --primary: #fafafa; --primary-fg: #111113; --accent: #a78bfa;
       --bar: #a78bfa; --bar-heavy: #fb923c; --ok: #4ade80; --warn: #fbbf24; --bad: #f87171;
       --warn-bg: #2a1f0c; --bad-bg: #2a1212; --ok-bg: #0f2417; color-scheme: dark; }
     * { box-sizing: border-box; }
@@ -127,8 +152,13 @@
     pre { margin: 12px 0 0; padding: 14px 16px; border-radius: 14px; background: var(--bg); font: 13px/1.6 var(--mono); overflow-x: auto; }
     .ext { border: 1px dashed var(--border-2); background: transparent; grid-column: 1 / -1; }
 
-    footer { padding: 32px 0 56px; color: var(--muted); font-size: 14px; }
-    footer .wrap { display: flex; gap: 20px; flex-wrap: wrap; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 28px; }
+    footer { margin-top: 32px; padding: 36px 0 48px; border-top: 1px solid var(--border); color: var(--muted); font-size: 15px; }
+    footer .cols4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 24px; }
+    footer h2 { font: 600 13px var(--body); letter-spacing: .04em; text-transform: uppercase; color: var(--fg); margin: 0 0 10px; }
+    footer ul { list-style: none; padding: 0; margin: 0; }
+    footer li a { display: inline-block; padding: 6px 0; }
+    @media (pointer: coarse) { footer li a { padding: 10px 0; } }
+    footer .legal { margin-top: 28px; font-size: 14px; }
     footer a:hover { color: var(--fg); }
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .empty { padding: 40px; text-align: center; color: var(--muted); }
@@ -139,11 +169,12 @@
     <div class="wrap">
       <a class="brand" href="./"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12C11.4 17.8 6.2 12.6 0 12 6.2 11.4 11.4 6.2 12 0z"/></svg></i>glowkit</a>
       <div class="links">
-        <a href="gallery/">Components</a>
-        <a href="./#demo">Live demo</a>
-        <a href="./#catalog">Catalog</a>
+        <a href="components/">Components</a>
+        <a href="gallery/">Live gallery</a>
+        <a href="agents/">AI agents</a>
+        <a href="dashboards/">Dashboards</a>
+        <a href="docs/recipes/">Recipes</a>
         <a href="benchmarks.html" aria-current="page">Benchmarks</a>
-        <a href="./#start">Docs</a>
       </div>
       <div class="right">
         <a class="gh" href="https://github.com/ahmedzulfi/glowkit">GitHub</a>
@@ -258,12 +289,23 @@
     </div>
   </section>
 
-  <footer>
-    <div class="wrap">
-      <span>© 2026 glowkit contributors · MIT / Apache-2.0</span>
-      <span><a href="./">Home</a> · <a href="gallery/">Gallery</a> · <a href="https://docs.rs/glowkit">Docs</a> · <a href="https://github.com/ahmedzulfi/glowkit">GitHub</a></span>
-    </div>
-  </footer>
+  <!-- gen:footer -->
+<footer><div class="wrap">
+<div class="cols4">
+<div><h2>glowkit</h2><ul>
+<li><a href="">Home</a></li><li><a href="gallery/">Live gallery</a></li><li><a href="components/">All components</a></li>
+<li><a href="benchmarks.html">Benchmarks</a></li><li><a href="https://docs.rs/glowkit">API docs (docs.rs)</a></li>
+<li><a href="https://crates.io/crates/glowkit">crates.io</a></li><li><a href="https://github.com/ahmedzulfi/glowkit">GitHub</a></li></ul></div>
+<div><h2>Build</h2><ul>
+<li><a href="agents/">AI agent UIs</a></li><li><a href="dashboards/">Dashboards</a></li>
+<li><a href="games/">Game menus and HUDs</a></li><li><a href="motion/">Motion engine</a></li>
+<li><a href="docs/recipes/">Agent recipes</a></li><li><a href="docs/recipes/ollama-chat/">Ollama chat</a></li><li><a href="docs/recipes/rig-agent/">rig agent UI</a></li><li><a href="docs/recipes/ag-ui-desktop/">AG-UI desktop client</a></li><li><a href="docs/recipes/vercel-ai-sdk-client/">Vercel AI SDK client</a></li><li><a href="docs/recipes/acp-viewer/">ACP agent viewer</a></li></ul></div>
+<div><h2>Categories</h2><ul><li><a href="components/text-animations/">Text Animations</a></li><li><a href="components/backgrounds/">Backgrounds</a></li><li><a href="components/buttons/">Buttons</a></li><li><a href="components/cards-borders/">Cards &amp; Borders</a></li><li><a href="components/cursor-interaction/">Cursor &amp; Interaction</a></li><li><a href="components/micro-interactions/">Micro-interactions</a></li><li><a href="components/motion-layout/">Motion &amp; Layout</a></li><li><a href="components/motion-engine/">Motion Engine</a></li><li><a href="components/3d/">3D</a></li><li><a href="components/loaders-progress/">Loaders &amp; Progress</a></li><li><a href="components/inputs-forms/">Inputs &amp; Forms</a></li></ul></div>
+<div><h2>More categories</h2><ul><li><a href="components/navigation/">Navigation</a></li><li><a href="components/overlays-feedback/">Overlays &amp; Feedback</a></li><li><a href="components/data-display/">Data Display</a></li><li><a href="components/charts/">Charts</a></li><li><a href="components/ai/">AI</a></li><li><a href="components/blocks/">Blocks</a></li><li><a href="components/canvas-editors/">Canvas &amp; Editors</a></li><li><a href="components/dashboards-shells/">Dashboards &amp; Shells</a></li><li><a href="components/templates/">Templates</a></li><li><a href="components/game-ui/">Game UI</a></li></ul></div>
+</div>
+<p class="legal">glowkit is dual-licensed under MIT or Apache-2.0. Component names from web libraries are used only to describe equivalence; all glowkit code is original Rust.</p>
+</div></footer>
+<!-- /gen:footer -->
   <div class="tip" id="tip"></div>
 
   <script>

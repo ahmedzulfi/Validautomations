@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent recipes: Ollama, rig, AG-UI, Vercel AI SDK, ACP | glowkit</title>
+<meta name="description" content="Recipes for connecting real AI agents to a native Rust UI: Ollama, rig, AG-UI, the Vercel AI SDK and ACP, each a complete egui app in about 50 lines of code.">
+<link rel="canonical" href="https://ahmedzulfi.github.io/glowkit/docs/recipes/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0b0d" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="glowkit">
+<meta property="og:title" content="Agent recipes: Ollama, rig, AG-UI, Vercel AI SDK, ACP | glowkit">
+<meta property="og:description" content="Recipes for connecting real AI agents to a native Rust UI: Ollama, rig, AG-UI, the Vercel AI SDK and ACP, each a complete egui app in about 50 lines of code.">
+<meta property="og:url" content="https://ahmedzulfi.github.io/glowkit/docs/recipes/">
+<meta property="og:image" content="https://ahmedzulfi.github.io/glowkit/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="glowkit: Premium animated UI for Rust apps">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Agent recipes: Ollama, rig, AG-UI, Vercel AI SDK, ACP | glowkit">
+<meta name="twitter:description" content="Recipes for connecting real AI agents to a native Rust UI: Ollama, rig, AG-UI, the Vercel AI SDK and ACP, each a complete egui app in about 50 lines of code.">
+<meta name="twitter:image" content="https://ahmedzulfi.github.io/glowkit/og.png">
+<meta name="twitter:image:alt" content="glowkit: Premium animated UI for Rust apps">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+<link rel="manifest" href="../../site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>.k{color:#6d28d9}.s{color:#166534}.t{color:#9a3f07}.f{color:#1d4ed8}.c{color:#6b6b74}.n{color:#a8350a}@media (prefers-color-scheme:dark){.k{color:#c792ea}.s{color:#c3e88d}.t{color:#ffcb6b}.f{color:#82aaff}.c{color:#8a90a6}.n{color:#f78c6c}}</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ahmedzulfi.github.io/glowkit/"},{"@type":"ListItem","position":2,"name":"Recipes","item":"https://ahmedzulfi.github.io/glowkit/docs/recipes/"}]}</script>
+</head>
+<body>
+<header class="nav"><div class="wrap">
+<a class="brand" href="../../"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12C11.4 17.8 6.2 12.6 0 12 6.2 11.4 11.4 6.2 12 0z"/></svg></i>glowkit</a>
+<nav class="links" aria-label="Main"><a href="../../components/">Components</a><a href="../../agents/">AI agents</a><a href="../../dashboards/">Dashboards</a><a href="../../games/">Games</a><a href="../../motion/">Motion</a><a href="../../docs/recipes/" aria-current="page">Recipes</a><a href="../../benchmarks.html">Benchmarks</a></nav>
+<div class="right"><a class="gh" href="https://github.com/ahmedzulfi/glowkit">GitHub</a><a class="btn primary sm" href="../../gallery/">Live gallery</a></div>
+</div></header>
+<main>
+<div class="wrap">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../../">Home</a></li><li><span aria-current="page">Recipes</span></li></ol></nav>
+<div class="hero"><div class="eyebrow">Docs</div>
+<h1>Connect real agents to a native Rust UI</h1>
+<p class="lead">Each recipe is a complete app: what you get, the Cargo.toml, about 50 lines of code and how to run it. They all use glowkit-stream: an adapter turns the agent's stream into events, a <code>Session</code> folds them into a thread, and <code>AgentThread</code> draws it with glowkit's AI components.</p></div>
+<h2>Recipes</h2>
+<div class="features"><a class="feature" href="../../docs/recipes/ollama-chat/"><h3>Local LLM chat with Ollama</h3><p>Build a native Rust GUI for Ollama, vLLM or LM Studio: streaming chat, reasoning and tool calls in about 50 lines with glowkit-stream, egui and async-openai.</p></a><a class="feature" href="../../docs/recipes/rig-agent/"><h3>A rig agent UI</h3><p>Give a rig agent a native window: streamed answers, tool calls with live arguments and results, and reasoning, drawn by glowkit&#x27;s AgentThread in Rust.</p></a><a class="feature" href="../../docs/recipes/ag-ui-desktop/"><h3>A desktop front-end for an AG-UI agent</h3><p>A native Rust AG-UI client for LangGraph, CrewAI, Mastra, Pydantic AI or ADK agents: streamed text, tool calls and human-in-the-loop approvals, built with egui.</p></a><a class="feature" href="../../docs/recipes/vercel-ai-sdk-client/"><h3>A native client for a Vercel AI SDK backend</h3><p>Point a native Rust desktop app at the Vercel AI SDK route you already have: UI message streams, tool calls and reasoning drawn by glowkit. No webview.</p></a><a class="feature" href="../../docs/recipes/acp-viewer/"><h3>An ACP coding-agent viewer</h3><p>Watch an Agent Client Protocol coding agent in a native Rust window: plans, tool calls, file diffs and permission requests over stdio, drawn with glowkit.</p></a></div>
+<h2>The three parts</h2>
+<div class="features">
+<div class="feature"><h3>Adapters</h3><p>AG-UI, the Vercel AI SDK UI message stream, the Agent Client Protocol, rig and async-openai (Ollama, vLLM, LM Studio, OpenRouter) all map onto one event model.</p></div>
+<div class="feature"><h3>Session</h3><p>Folds events into a thread: messages, reasoning, tool calls with partially streamed JSON arguments, approvals, plans, sources and errors. Plain data you can inspect and save.</p></div>
+<div class="feature"><h3>AgentThread</h3><p>Renders the session with streaming Markdown, tool-call cards and approval prompts, and returns the user's decisions so you can send them back to the agent.</p></div>
+</div>
+<pre><code class="language-rust">rx.<span class="f">drain_into</span>(&amp;<span class="k">mut</span> session);                        <span class="c">// events from any thread or runtime</span>
+<span class="k">let</span> out = <span class="t">AgentThread</span>::<span class="f">new</span>(&amp;<span class="k">mut</span> session).<span class="f">show</span>(ui);  <span class="c">// the whole thread</span>
+<span class="k">for</span> decision <span class="k">in</span> out.decisions { /* send the approval back */ }</code></pre>
+</div>
+</main>
+<footer><div class="wrap">
+<div class="cols4">
+<div><h2>glowkit</h2><ul>
+<li><a href="../../">Home</a></li><li><a href="../../gallery/">Live gallery</a></li><li><a href="../../components/">All components</a></li>
+<li><a href="../../benchmarks.html">Benchmarks</a></li><li><a href="https://docs.rs/glowkit">API docs (docs.rs)</a></li>
+<li><a href="https://crates.io/crates/glowkit">crates.io</a></li><li><a href="https://github.com/ahmedzulfi/glowkit">GitHub</a></li></ul></div>
+<div><h2>Build</h2><ul>
+<li><a href="../../agents/">AI agent UIs</a></li><li><a href="../../dashboards/">Dashboards</a></li>
+<li><a href="../../games/">Game menus and HUDs</a></li><li><a href="../../motion/">Motion engine</a></li>
+<li><a href="../../docs/recipes/">Agent recipes</a></li><li><a href="../../docs/recipes/ollama-chat/">Ollama chat</a></li><li><a href="../../docs/recipes/rig-agent/">rig agent UI</a></li><li><a href="../../docs/recipes/ag-ui-desktop/">AG-UI desktop client</a></li><li><a href="../../docs/recipes/vercel-ai-sdk-client/">Vercel AI SDK client</a></li><li><a href="../../docs/recipes/acp-viewer/">ACP agent viewer</a></li></ul></div>
+<div><h2>Categories</h2><ul><li><a href="../../components/text-animations/">Text Animations</a></li><li><a href="../../components/backgrounds/">Backgrounds</a></li><li><a href="../../components/buttons/">Buttons</a></li><li><a href="../../components/cards-borders/">Cards &amp; Borders</a></li><li><a href="../../components/cursor-interaction/">Cursor &amp; Interaction</a></li><li><a href="../../components/micro-interactions/">Micro-interactions</a></li><li><a href="../../components/motion-layout/">Motion &amp; Layout</a></li><li><a href="../../components/motion-engine/">Motion Engine</a></li><li><a href="../../components/3d/">3D</a></li><li><a href="../../components/loaders-progress/">Loaders &amp; Progress</a></li><li><a href="../../components/inputs-forms/">Inputs &amp; Forms</a></li></ul></div>
+<div><h2>More categories</h2><ul><li><a href="../../components/navigation/">Navigation</a></li><li><a href="../../components/overlays-feedback/">Overlays &amp; Feedback</a></li><li><a href="../../components/data-display/">Data Display</a></li><li><a href="../../components/charts/">Charts</a></li><li><a href="../../components/ai/">AI</a></li><li><a href="../../components/blocks/">Blocks</a></li><li><a href="../../components/canvas-editors/">Canvas &amp; Editors</a></li><li><a href="../../components/dashboards-shells/">Dashboards &amp; Shells</a></li><li><a href="../../components/templates/">Templates</a></li><li><a href="../../components/game-ui/">Game UI</a></li></ul></div>
+</div>
+<p class="legal">glowkit is dual-licensed under MIT or Apache-2.0. Component names from web libraries are used only to describe equivalence; all glowkit code is original Rust.</p>
+</div></footer>
+</body>
+</html>

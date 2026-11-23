@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swirl: animated Rust background component (egui) | glowkit</title>
+<meta name="description" content="Psychedelic paint swirling into a slowly spinning vortex with marbled bands. Rust and egui, native and WebAssembly. Free background component for Rust (egui).">
+<link rel="canonical" href="https://ahmedzulfi.github.io/glowkit/components/swirl/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0b0d" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="glowkit">
+<meta property="og:title" content="Swirl: animated Rust background component (egui) | glowkit">
+<meta property="og:description" content="Psychedelic paint swirling into a slowly spinning vortex with marbled bands. Rust and egui, native and WebAssembly. Free background component for Rust (egui).">
+<meta property="og:url" content="https://ahmedzulfi.github.io/glowkit/components/swirl/">
+<meta property="og:image" content="https://ahmedzulfi.github.io/glowkit/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="glowkit: Premium animated UI for Rust apps">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Swirl: animated Rust background component (egui) | glowkit">
+<meta name="twitter:description" content="Psychedelic paint swirling into a slowly spinning vortex with marbled bands. Rust and egui, native and WebAssembly. Free background component for Rust (egui).">
+<meta name="twitter:image" content="https://ahmedzulfi.github.io/glowkit/og.png">
+<meta name="twitter:image:alt" content="glowkit: Premium animated UI for Rust apps">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+<link rel="manifest" href="../../site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>.k{color:#6d28d9}.s{color:#166534}.t{color:#9a3f07}.f{color:#1d4ed8}.c{color:#6b6b74}.n{color:#a8350a}@media (prefers-color-scheme:dark){.k{color:#c792ea}.s{color:#c3e88d}.t{color:#ffcb6b}.f{color:#82aaff}.c{color:#8a90a6}.n{color:#f78c6c}}</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"Swirl (glowkit)","description":"Psychedelic paint swirling into a slowly spinning vortex with marbled bands.","url":"https://ahmedzulfi.github.io/glowkit/components/swirl/","codeRepository":"https://github.com/ahmedzulfi/glowkit","programmingLanguage":{"@type":"ComputerLanguage","name":"Rust"},"runtimePlatform":"egui 0.37 (Windows, macOS, Linux, WebAssembly)","codeSampleType":"code snippet","text":"use glowkit::prelude::*;\nuse glowkit::backgrounds::Swirl;\n\nui.add(Swirl::new().colors([hex(\"#DE443B\"), hex(\"#006BB4\"), hex(\"#162325\")]));","license":"https://spdx.org/licenses/MIT.html","keywords":"Swirl, Backgrounds, Rust, egui, animated UI, Balatro","isPartOf":{"@type":"SoftwareSourceCode","name":"glowkit","codeRepository":"https://github.com/ahmedzulfi/glowkit"},"dateModified":"2026-11-23"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://ahmedzulfi.github.io/glowkit/"},{"@type":"ListItem","position":2,"name":"Components","item":"https://ahmedzulfi.github.io/glowkit/components/"},{"@type":"ListItem","position":3,"name":"Backgrounds","item":"https://ahmedzulfi.github.io/glowkit/components/backgrounds/"},{"@type":"ListItem","position":4,"name":"Swirl","item":"https://ahmedzulfi.github.io/glowkit/components/swirl/"}]}</script>
+</head>
+<body>
+<header class="nav"><div class="wrap">
+<a class="brand" href="../../"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12C11.4 17.8 6.2 12.6 0 12 6.2 11.4 11.4 6.2 12 0z"/></svg></i>glowkit</a>
+<nav class="links" aria-label="Main"><a href="../../components/" aria-current="page">Components</a><a href="../../agents/">AI agents</a><a href="../../dashboards/">Dashboards</a><a href="../../games/">Games</a><a href="../../motion/">Motion</a><a href="../../docs/recipes/">Recipes</a><a href="../../benchmarks.html">Benchmarks</a></nav>
+<div class="right"><a class="gh" href="https://github.com/ahmedzulfi/glowkit">GitHub</a><a class="btn primary sm" href="../../gallery/">Live gallery</a></div>
+</div></header>
+<main>
+<div class="wrap">
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../../">Home</a></li><li><a href="../../components/">Components</a></li><li><a href="../../components/backgrounds/">Backgrounds</a></li><li><span aria-current="page">Swirl</span></li></ol></nav>
+<div class="cols">
+<article>
+<div class="hero"><div class="eyebrow">Backgrounds</div>
+<h1>Swirl</h1>
+<p class="lead">Psychedelic paint swirling into a slowly spinning vortex with marbled bands.</p>
+<div class="pills"><span class="pill">Category <b>Backgrounds</b></span><span class="pill">Crate <b>glowkit-backgrounds</b></span><span class="pill">Feature <b>backgrounds</b></span><span class="pill">egui 0.37</span></div>
+<div class="actions"><a class="btn primary" href="../../gallery/#swirl">Try it live</a><a class="btn" href="../../components/backgrounds/">More Backgrounds</a></div>
+</div>
+
+<h2>Usage</h2>
+<p>Add glowkit next to eframe:</p>
+<pre><code class="language-bash">cargo add glowkit eframe</code></pre>
+<p>Then draw it inside any egui <code>Ui</code>:</p>
+<pre><code class="language-rust"><span class="k">use</span> glowkit::prelude::*;
+<span class="k">use</span> glowkit::backgrounds::<span class="t">Swirl</span>;
+
+ui.<span class="f">add</span>(<span class="t">Swirl</span>::<span class="f">new</span>().<span class="f">colors</span>([<span class="f">hex</span>(<span class="s">&quot;#DE443B&quot;</span>), <span class="f">hex</span>(<span class="s">&quot;#006BB4&quot;</span>), <span class="f">hex</span>(<span class="s">&quot;#162325&quot;</span>)]));</code></pre>
+<p>Prefer to own the code? The glowkit CLI copies this component's source into your project, shadcn-style:</p><pre><code class="language-bash">cargo install glowkit-cli
+glowkit add swirl</code></pre>
+<h2>Equivalent to</h2><p>If you know this pattern from React Bits, Swirl is the Rust version: an original egui implementation, not a port, that runs natively and in WebAssembly.</p><ul class="equiv"><li><b>Balatro</b><span><a class="link" href="https://reactbits.dev" rel="nofollow noopener">React Bits</a></span></li></ul>
+<h2>About Swirl</h2>
+<p>Swirl is one of 63 components in glowkit's Backgrounds category. It lives in the <code>glowkit-backgrounds</code> crate, enabled by the <code>backgrounds</code> feature of <code>glowkit</code> (on by default). It reads its colors from the active glowkit theme, so it matches the rest of your app in light, dark or a custom brand theme, and every color, size and timing has a setter to override it.</p>
+<p class="muted">Full-panel animated backgrounds built from vertex-colored meshes, so they stay cheap on the GPU: aurora, silk, plasma, particles, meteors, starfields, beams, grids, waves, liquid metal and dozens more. Paint one behind any egui layout with a single call.</p>
+</article>
+<aside>
+<div class="box"><h2>Install</h2><pre><code class="language-bash">cargo add glowkit</code></pre><ul><li><a href="https://docs.rs/glowkit">API docs on docs.rs</a></li><li><a href="https://github.com/ahmedzulfi/glowkit/tree/main/crates/glowkit-backgrounds">glowkit-backgrounds source</a></li></ul></div>
+<div class="box"><h2>Backgrounds</h2><ul><li><a href="../../components/vortex/">Vortex</a></li><li><a href="../../components/metallic-paint/">Metallic Paint</a></li><li><a href="../../components/galaxy/">Galaxy</a></li><li><a href="../../components/dark-veil/">Dark Veil</a></li><li><a href="../../components/silk/">Silk</a></li><li><a href="../../components/pixel-blast/">Pixel Blast / Dither</a></li><li><a href="../../components/backgrounds/">All 63 Backgrounds components</a></li></ul></div>
+</aside>
+</div>
+<h2>More in Backgrounds</h2>
+<div class="grid"><a class="card" href="../../components/vortex/"><div class="body"><h3>Vortex</h3><small>Backgrounds</small><p>Hundreds of glowing particles swirling into a vortex with short colorful trails.</p></div></a><a class="card" href="../../components/metallic-paint/"><div class="body"><h3>Metallic Paint</h3><small>Backgrounds</small><p>A shape or logo filled with flowing liquid metal: rippling chrome bands, a bevelled rim and a highlight that follows the pointer.</p></div></a><a class="card" href="../../components/galaxy/"><img src="../../img/c/t/galaxy.webp" width="480" height="252" loading="lazy" decoding="async" alt="Galaxy preview"><div class="body"><h3>Galaxy</h3><small>Backgrounds</small><p>A slowly rotating spiral galaxy with a bright core and colorful arms. Stars scatter from the pointer.</p></div></a><a class="card" href="../../components/dark-veil/"><div class="body"><h3>Dark Veil</h3><small>Backgrounds</small><p>A dark, slowly flowing veil of tinted light, like light through smoke.</p></div></a><a class="card" href="../../components/silk/"><img src="../../img/c/t/silk.webp" width="480" height="252" loading="lazy" decoding="async" alt="Silk preview"><div class="body"><h3>Silk</h3><small>Backgrounds</small><p>Smooth, undulating folds of shaded silk with soft specular highlights.</p></div></a><a class="card" href="../../components/pixel-blast/"><div class="body"><h3>Pixel Blast / Dither</h3><small>Backgrounds</small><p>Animated noise or waves quantized with a 4x4 Bayer ordered dither into pixels, dots or diamonds; ripples burst from the pointer.</p></div></a></div>
+</div>
+</main>
+<footer><div class="wrap">
+<div class="cols4">
+<div><h2>glowkit</h2><ul>
+<li><a href="../../">Home</a></li><li><a href="../../gallery/">Live gallery</a></li><li><a href="../../components/">All components</a></li>
+<li><a href="../../benchmarks.html">Benchmarks</a></li><li><a href="https://docs.rs/glowkit">API docs (docs.rs)</a></li>
+<li><a href="https://crates.io/crates/glowkit">crates.io</a></li><li><a href="https://github.com/ahmedzulfi/glowkit">GitHub</a></li></ul></div>
+<div><h2>Build</h2><ul>
+<li><a href="../../agents/">AI agent UIs</a></li><li><a href="../../dashboards/">Dashboards</a></li>
+<li><a href="../../games/">Game menus and HUDs</a></li><li><a href="../../motion/">Motion engine</a></li>
+<li><a href="../../docs/recipes/">Agent recipes</a></li><li><a href="../../docs/recipes/ollama-chat/">Ollama chat</a></li><li><a href="../../docs/recipes/rig-agent/">rig agent UI</a></li><li><a href="../../docs/recipes/ag-ui-desktop/">AG-UI desktop client</a></li><li><a href="../../docs/recipes/vercel-ai-sdk-client/">Vercel AI SDK client</a></li><li><a href="../../docs/recipes/acp-viewer/">ACP agent viewer</a></li></ul></div>
+<div><h2>Categories</h2><ul><li><a href="../../components/text-animations/">Text Animations</a></li><li><a href="../../components/backgrounds/">Backgrounds</a></li><li><a href="../../components/buttons/">Buttons</a></li><li><a href="../../components/cards-borders/">Cards &amp; Borders</a></li><li><a href="../../components/cursor-interaction/">Cursor &amp; Interaction</a></li><li><a href="../../components/micro-interactions/">Micro-interactions</a></li><li><a href="../../components/motion-layout/">Motion &amp; Layout</a></li><li><a href="../../components/motion-engine/">Motion Engine</a></li><li><a href="../../components/3d/">3D</a></li><li><a href="../../components/loaders-progress/">Loaders &amp; Progress</a></li><li><a href="../../components/inputs-forms/">Inputs &amp; Forms</a></li></ul></div>
+<div><h2>More categories</h2><ul><li><a href="../../components/navigation/">Navigation</a></li><li><a href="../../components/overlays-feedback/">Overlays &amp; Feedback</a></li><li><a href="../../components/data-display/">Data Display</a></li><li><a href="../../components/charts/">Charts</a></li><li><a href="../../components/ai/">AI</a></li><li><a href="../../components/blocks/">Blocks</a></li><li><a href="../../components/canvas-editors/">Canvas &amp; Editors</a></li><li><a href="../../components/dashboards-shells/">Dashboards &amp; Shells</a></li><li><a href="../../components/templates/">Templates</a></li><li><a href="../../components/game-ui/">Game UI</a></li></ul></div>
+</div>
+<p class="legal">glowkit is dual-licensed under MIT or Apache-2.0. Component names from web libraries are used only to describe equivalence; all glowkit code is original Rust.</p>
+</div></footer>
+</body>
+</html>
